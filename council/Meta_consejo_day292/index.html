@@ -1,0 +1,1027 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Meta_consejo_day292/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Meta consejo day292 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-b-vs-b-sin-victim_pps-vs-hibrido" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Meta consejo day292
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-b-vs-b-sin-victim_pps-vs-hibrido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. B vs B sin victim_pps vs híbrido
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-dependencia-de-firma-estais-aprendiendo-los-generadores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Dependencia de firma: estáis aprendiendo los generadores
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-cablear-ya-o-iterar-dataset-antes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ¿Cablear ya o iterar dataset antes?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-politica-de-agregacion-por-paquete-bloqueo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Política de agregación por paquete -&gt; bloqueo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-arbol-poco-profundo-o-regla-explicita" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ¿Árbol poco profundo o regla explícita?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-sacar-los-2-primeros-segundos-del-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. ¿Sacar los 2 primeros segundos del entrenamiento?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-que-se-os-ha-pasado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. ¿Qué se os ha pasado?
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Meta consejo day292</h1>
+
+<p>Consejo convocado. Día 292 es el día donde dejáis de hacer un clasificador y empezáis a hacer un detector de régimen. Lo que tenéis es bueno, pero está aprendiendo mal por razones correctas.</p>
+<p>Voy punto por punto, con qué medir para decidir, no con voto.</p>
+<h3 id="1-b-vs-b-sin-victim_pps-vs-hibrido">1. B vs B sin victim_pps vs híbrido</h3>
+<p><strong>Tenéis razón: B sin victim_pps es el candidato correcto para hospital.</strong></p>
+<p>Por qué B es peligroso:
+B aprendió <code>victim_pps &gt; 35</code>. Eso es un artefacto de vuestro lab: benigno máximo 20 pps, ataque mínimo 30 pps. En producción un hospital a las 09:00 puede tener <code>victim_pps = 200</code> benigno hacia un PACS. B bloquearía todo. El fallo es silencioso y no acotable. El umbral absoluto depende de la escala absoluta de tráfico que pongáis en el lab, que nunca será la de producción.</p>
+<p>Por qué B sin victim_pps es defendible:
+Aprendió <code>victim_rate_ratio &gt; K</code> + firma. Eso es <strong>relativo a la historia de esa víctima</strong>. Eso es exactamente para lo que diseñasteis la EWMA con histéresis. Su fallo en frío es explicable, acotable y medible: si la clave <code>{IP, proto}</code> tiene &lt;30 ventanas, está en frío, no puedes usar ratio. No es un fallo silencioso, es un estado del sistema.</p>
+<p><strong>Propuesta híbrida que sí vale para frío:</strong></p>
+<p>No es <code>victim_pps &gt; 35</code>. Es una regla de admisión para régimen frío:</p>
+<pre><code>if key.windows_seen &lt; 30:
+  # No hay historia, no uses ratio
+  decision = ALLOW # nunca BLOCK por paquete
+  alert_level = SUSPECT if (reflection_signature &amp;&amp; mean_packet_size in [firma]) else 0
+else:
+  decision = forest_B_sin_victim_pps(packet)
+</code></pre>
+<p>En frío nunca bloqueas, solo observas. Eso cumple "cero falsos bloqueos". Cuando la víctima entre en presión, ya tienes historia.</p>
+<p>Medid esto:
+- <code>cold_duration = tiempo hasta windows_seen &gt;= 30</code> para cada víctima real del hospital en 7 días de espejo (sin bloqueo). Si es &lt;5 min, el híbrido es suficiente.
+- Si necesitáis detectar en frío sí o sí, la segunda regla fría debe ser <code>flow_packet_count + syn_ack_ratio + packet_size_entropy</code>, nunca <code>victim_pps</code> solo.</p>
+<p>Conclusión: <strong>Cablead B sin victim_pps + puerta de frío en ALLOW.</strong></p>
+<h3 id="2-dependencia-de-firma-estais-aprendiendo-los-generadores">2. Dependencia de firma: estáis aprendiendo los generadores</h3>
+<p>El dato demoledor es: <code>sin NTP recall ~0%</code>. Eso es overfitting de generador, no de DDoS. Y <code>mean_packet_size</code> dominando lo confirma.</p>
+<p>Vuestro dataset actual tiene:</p>
+<ul>
+<li>Ataque: <code>size = const por familia</code> (NTP=~500, DNS=~1420, etc)</li>
+<li>Benigno: <code>size = distinto</code> (DNS pequeño, DNS grande)</li>
+</ul>
+<p>El bosque hace lo óptimo: <code>if packet_size == 1420 -&gt; DDoS</code>. Es un clasificador de tamaño.</p>
+<p><strong>Dataset que rompe eso:</strong></p>
+<p>Necesitáis solapar las distribuciones a propósito.</p>
+<ol>
+<li><strong>Randomizar tamaños en ataque:</strong> no 1420 fijo. <code>size ~ Uniform(1200, 1450)</code> + jitter por fragmentación real. Para SYN: <code>size ~ 60 +- 20</code> con opciones TCP reales.</li>
+<li><strong>Benigno con mismos tamaños:</strong> Generad tráfico benigno que ocupe exactamente los mismos buckets de tamaño que el ataque. iPerf UDP de 1400B a 20 pps, backups DNS de 1420B, transferencias NTP legítimas. Si no solapa, no aprende comportamiento.</li>
+<li><strong>Base mixta obligatoria:</strong> Vuestra base benigna actual es pobre. Necesitáis:<ul>
+<li>TCP benigno con SYN/ACK real (subidas de 10KB/s, 100KB/s, 1MB/s). Ahora mismo sin SYN no tenéis TCP benigno, por eso marca 99% TCP inocente como SYN flood. Grave.</li>
+<li>UDP benigno a 10/50/200 pps hacia la misma víctima. No solo 10 pps. El bosque debe ver 200 pps benigno y decir ALLOW.</li>
+<li>Tráfico cruzado:.50 atacando,.51 benigno alto al mismo tiempo hacia.1. Ya lo hacéis, mantenedlo.</li>
+</ul>
+</li>
+<li><strong>Etiqueta por paquete, no por IP:</strong> Ahora mismo si.50 es atacante, todo lo de.50 es ataque, aunque.50 haga DNS pequeño benigno de contraste. Eso contamina. Etiquetad por <code>(IP origen, flujo 5-tupla, tiempo)</code> con ventana de ataque exacta.</li>
+</ol>
+<p>Experimento para medirlo:
+Haced <code>permutation importance</code> por familia dejada fuera + <code>partial dependence</code> de <code>mean_packet_size</code>. Objetivo: cuando dejáis una familia fuera, recall &gt;80% y la importancia de <code>mean_packet_size</code> debe caer de #1 a #3 o #4, subiendo <code>syn_ack_ratio</code> y <code>flow_completion_rate</code>.</p>
+<p>Si no, no cableéis familia nueva hasta que eso pase.</p>
+<h3 id="3-cablear-ya-o-iterar-dataset-antes">3. ¿Cablear ya o iterar dataset antes?</h3>
+<p><strong>Cablead ya, pero detrás de feature flag y con puertas.</strong></p>
+<p>Razón: vuestro contrato de rasgos v2 + histéresis EWMA + cálculo una vez en eBPF es lo más difícil y lo tenéis bien. El bosque B sin victim_pps es pequeño (3714 nodos, profundidad 14) -&gt; cabe en L1, latencia predecible. Si no lo cableáis ahora, no vais a medir paridad Python/C++ real ni latencia por paquete E2E con XDP.</p>
+<p>Puertas que propongo, en orden:</p>
+<ol>
+<li>Paridad: mismo vector de rasgos en Python y C++ para 10k paquetes de pcap hospital. <code>diff &lt; 1e-6</code>. Si falla, no hay modelo que valga.</li>
+<li>Umbrales crudos: loguead <code>victim_rate_ratio</code>, <code>flow_completion_rate</code> crudos sin bosque durante 24h en hospital espejo. Verificad que benigno no llega a 3 de forma sostenida.</li>
+<li>Tamaño/latencia: <code>ml-detector &lt; 500ns p99 por paquete</code>, bosque &lt; 50KB generado.</li>
+<li>Cero bloqueos E2E en laboratorio con vuestros 19 corridas + TCP benigno de 10KB/s que antes daba 100% FP.</li>
+</ol>
+<p>Una vez pase puertas, iterad dataset en rama <code>dataset-v3</code>. No bloqueéis el pipeline de integración por dataset.</p>
+<h3 id="4-politica-de-agregacion-por-paquete-bloqueo">4. Política de agregación por paquete -&gt; bloqueo</h3>
+<p>Decisión por paquete no puede ir directa a firewall en hospital. Necesitáis dos acumuladores desacoplados:</p>
+<p><strong>Nivel víctima (¿estamos bajo ataque?):</strong>
+<code>victim_ratio &gt;=3</code> durante <code>T_victim = 1s</code> (3 ventanas seguidas) -&gt; estado <code>VICTIM_UNDER_PRESSURE</code>. Esto ya lo tenéis con histéresis. Publicadlo como métrica, no como bloqueo.</p>
+<p><strong>Nivel origen (¿quién atacá?):</strong>
+Solo si <code>VICTIM_UNDER_PRESSURE == true</code>:
+Contador por <code>{victim, attacker_ip}</code> deslizante de 1s: <code>k de n</code>. Ej: <code>n=50 paquetes, k=35 marcados por bosque</code>. Si supera, <code>BLOCK attacker_ip -&gt; victim_ip</code> por 60s, con decaimiento exponencial.</p>
+<p>Esto os da:
+- Un benigno.51 a 10 pps nunca llega a k=35, aunque haya 1 FP por bosque (0.78% de antes).
+- Un atacante a 30 pps llega en ~1.2s. Latencia medida, no teórica.
+- Cero bloqueos si víctima no está bajo presión.</p>
+<p>Métrica a reportar: <code>time_to_block</code> distribución + <code>FP_block = 0</code> en 7 días de tráfico hospital espejo. Si <code>FP_block &gt;0</code>, subid k o exigid <code>VICTIM_UNDER_PRESSURE</code> durante 2s.</p>
+<h3 id="5-arbol-poco-profundo-o-regla-explicita">5. ¿Árbol poco profundo o regla explícita?</h3>
+<p>Sí, probadlo. Bosque de 100 árboles para esto es overkill y oscurece.</p>
+<p>Experimento:</p>
+<ul>
+<li>Regla explícita: <code>if victim_ratio &gt; 4.0 AND (reflection_signature OR syn_ack_ratio &gt; 0.8) AND flow_completion_rate &lt; 0.2 -&gt; SUSPECT</code></li>
+<li>Árbol de profundidad 3 entrenado solo con <code>victim_rate_ratio, syn_ack_ratio, reflection_signature, flow_completion_rate</code> (sacad los de tamaño).</li>
+</ul>
+<p>Comparad en:
+- Recall fuera de arranque en test (el mismo que usáis)
+- FP por millón de paquetes benignos hospital
+- Explicabilidad: ¿podéis escribir en 1 párrafo por qué bloquea?</p>
+<p>Si la regla explícita está a &lt;2% del bosque en recall con 0 FP block, <strong>quedaos con la regla</strong>. En crítico, un árbol de 8 nodos auditable vale más que 3714 nodos. Vosotros queréis certificar esto algún día.</p>
+<h3 id="6-sacar-los-2-primeros-segundos-del-entrenamiento">6. ¿Sacar los 2 primeros segundos del entrenamiento?</h3>
+<p><strong>Sí, es correcto, pero publicadlo como lo que es: latencia de calentamiento del rasgo, no latencia del modelo.</strong></p>
+<p>Esas filas son indistinguibles porque <code>victim_pps</code> y <code>victim_rate_ratio</code> aún miran a la ventana anterior. Entrenar con ellas obliga al modelo a inventar. Quitarlas es honesto.</p>
+<p>Lo que debéis hacer:</p>
+<ul>
+<li>En la ficha del modelo: <code>detection_latency = max(ventana_rasgo, k_de_n) = 1s + 0.5-1.5s = 1.5-2.5s</code>. No digáis "recall 100%".</li>
+<li>En eval frío: reportad <code>recall@t</code> para <code>t = 0-0.5s, 0.5-1s, 1-2s, &gt;2s</code> por separado. Ahora todos vuestros fallos están en 0-1.4s, es informativo.</li>
+</ul>
+<p>No enmascara nada si lo medís así.</p>
+<h3 id="7-que-se-os-ha-pasado">7. ¿Qué se os ha pasado?</h3>
+<p>Tres sesgos gordos:</p>
+<ol>
+<li><strong>Fuga por escala temporal:</strong> Entrenáis y testeáis con mismas tasas (30/60/100). El modelo aprende esas tasas. Testeáis con 60 pps (visto) y el frío falla en 30 pps. Test debe ser con tasas NO vistas: 45, 75, 150 pps. Si no, no sabéis si generaliza.</li>
+<li><strong>Etiqueta por IP origen = fuga de identidad:</strong> Si.50 siempre es malo en ventana de ataque, el modelo puede aprender patrones de.50 (TTL, puerto efímero) aunque IP no sea rasgo. Aleatorizad puertos origen y aseguraos de que.50 también genera benigno en la misma corrida.</li>
+<li><strong>Métrica de FP mal contada:</strong> Contáis filas, no eventos de bloqueo. 6 FPs en 0.5s suenan poco, pero si esos 6 hacen <code>k de n</code> -&gt; bloqueáis IP inocente. Medid <code>FP_block_event</code>, no <code>FP_row</code>.</li>
+</ol>
+<p>Y una última: el bosque anterior que marcaba 100% de subida TCP legítima y 0% SYN flood es síntoma de que <code>flow_completion_rate</code> no estaba bien calculado en kernel vs Python. Revisad paridad de ese rasgo en concreto antes de nada.</p>
+<p>Resumen ejecutivo para cablear:</p>
+<p><strong>Candidato: B sin victim_pps + puerta fría en ALLOW + agregación <code>k=35/n=50</code> solo bajo <code>VICTIM_UNDER_PRESSURE</code>. No cableéis B con <code>victim_pps</code>. Iterad dataset-v3 con tamaños solapados y TCP benigno real.</strong></p>
+<p>Si queréis, os genero el script de evaluación <code>recall@t</code> y <code>FP_block</code> para vuestras 19 corridas.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

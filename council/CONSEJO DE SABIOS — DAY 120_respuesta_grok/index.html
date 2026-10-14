@@ -1,0 +1,1048 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20120_respuesta_grok/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CONSEJO DE SABIOS — DAY 120 respuesta grok - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#p1-scores-xgboost-en-test-integ-xgboost-1-00007-benign-vs-00034-attack" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CONSEJO DE SABIOS — DAY 120 respuesta grok
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#p1-scores-xgboost-en-test-integ-xgboost-1-00007-benign-vs-00034-attack" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — Scores XGBoost en TEST-INTEG-XGBOOST-1 (0.0007 benign vs 0.0034 attack)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p2-integridad-cientifica-del-paper-real-vs-synthetic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Integridad científica del paper (real vs synthetic)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p3-entrenamiento-in-situ-incremental-idea-excelente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 — Entrenamiento in-situ incremental (idea excelente)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#p4-debt-seed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4 — DEBT-SEED
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#valoracion-general-del-consejo-day-121" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valoración general del Consejo (DAY 121)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#comentarios-puntuales-y-sugerencias-de-refinamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comentarios puntuales y sugerencias de refinamiento
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#otras-recomendaciones-menores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Otras recomendaciones menores
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-pasos-recomendados-day-121-122" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Próximos pasos recomendados (DAY 121-122)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>CONSEJO DE SABIOS — DAY 120 respuesta grok</h1>
+
+<p>¡Excelente progreso en el <strong>DAY 120</strong>! El cierre de esos 3 DEBTs bloqueantes, la implementación limpia de <code>make bootstrap</code>, la validación de idempotencia y el avance sólido en el track de <strong>XGBoost</strong> (con F1 superior al Random Forest y todo firmado correctamente) muestran una ejecución muy disciplinada. El descubrimiento sobre los datos sintéticos DeepSeek es clave y merece tratarse con cuidado en el paper.</p>
+<p>Aquí van mis respuestas como <strong>Consejo de Sabios</strong>, directas y orientadas a mantener la <strong>Via Appia Quality</strong> (rigor, transparencia y defensibilidad).</p>
+<h3 id="p1-scores-xgboost-en-test-integ-xgboost-1-00007-benign-vs-00034-attack">P1 — Scores XGBoost en TEST-INTEG-XGBOOST-1 (0.0007 benign vs 0.0034 attack)</h3>
+<p><strong>No es correcto ignorar el valor absoluto y validar solo [0,1] + no-NaN.</strong></p>
+<p>Aunque el rango esté correcto y el modelo no explote (buen signo técnico), esos scores tan bajos y tan cercanos indican que el feature vector sintético de prueba <strong>no representa la distribución real</strong> del CIC-IDS-2017 sobre el que se entrenó el modelo. El modelo está devolviendo probabilidades muy cercanas a cero para ambas clases, lo que sugiere que los casos de prueba están fuera de la distribución vista en entrenamiento (out-of-distribution behavior leve). En clasificación binaria con XGBoost, las probabilidades <strong>no están perfectamente calibradas</strong> de fábrica, pero una diferencia tan pequeña entre benign y attack con features “extremos” es una señal de alerta.</p>
+<p><strong>Recomendación fuerte:</strong>
+- Construye (o extrae) <strong>features de test reales</strong> directamente del CSV de entrenamiento de CIC-IDS-2017 (tanto benign como attack). Ejecuta la inferencia sobre ellos y verifica que el score para attack sea <strong>claramente más alto</strong> que para benign (idealmente con un gap significativo, aunque no necesariamente cercano a 1.0).
+- Mantén el test actual como “sanity check de rango y no-NaN”, pero añade un <strong>test de distribución</strong> con datos reales del dataset.
+- Si el gap sigue siendo pequeño incluso con datos reales → revisa el preprocesamiento/feature extraction o considera calibración (Platt scaling o isotonic) post-entrenamiento.</p>
+<p>Ignorar el valor absoluto ahora te puede morder en la revisión del paper o en pruebas de integración reales.</p>
+<h3 id="p2-integridad-cientifica-del-paper-real-vs-synthetic">P2 — Integridad científica del paper (real vs synthetic)</h3>
+<p><strong>Sí, presenta ambas familias por separado en §4</strong>, con subsecciones claras:</p>
+<ul>
+<li><strong>4.1 Detectores entrenados con dataset real (CIC-IDS-2017)</strong> → RF Level1 y XGBoost Level1.</li>
+<li><strong>4.2 Detectores entrenados con datos sintéticos (DeepSeek)</strong> → Ransomware, DDoS e Internal.</li>
+</ul>
+<p>Sé totalmente transparente:
+- Describe cómo se generaron los datos sintéticos (prompts, garantías de diversidad, validación de utilidad que hicisteis).
+- Reporta métricas de <strong>fidelity</strong> y <strong>utility</strong> del synthetic data (estadísticos básicos, correlaciones preservadas, etc.).
+- Para los modelos sintéticos, incluye una nota sobre limitaciones y que la validación principal se hizo en entorno controlado + tests de integración.
+- Comparativa RF vs XGBoost <strong>dentro de cada familia</strong> (real y synthetic por separado).</p>
+<p><strong>Riesgo de rechazo por revisores:</strong> Existe, especialmente en venues de seguridad/ML si ven “synthetic” sin justificación fuerte. Pero si lo presentas con honestidad, separando claramente y mostrando que el XGBoost mejora al RF incluso en synthetic (y que usasteis synthetic donde no había dataset académico de calidad), la mayoría de revisores lo aceptarán como contribución válida. Muchos papers en ciberseguridad usan datos sintéticos por privacidad o por falta de datos etiquetados reales de ransomware/DDoS en entornos hospitalarios/municipales. La clave es <strong>no mezclarlos</strong> como si fueran equivalentes.</p>
+<h3 id="p3-entrenamiento-in-situ-incremental-idea-excelente">P3 — Entrenamiento in-situ incremental (idea excelente)</h3>
+<p><strong>Viable técnicamente con XGBoost.</strong> Sí soporta warm-start/incremental training: puedes usar <code>xgb.train(..., xgb_model=booster_anterior)</code> o en la API scikit-learn <code>model.fit(X_new, y_new, xgb_model=model.get_booster())</code>. Las nuevas iteraciones añaden árboles que corrigen residuos sobre los nuevos datos, preservando los árboles anteriores.</p>
+<p><strong>Ventajas para aRGus:</strong> Modelo ligero (~2 MB como dices), perfecto para exportar comprimido y distribuir vía BitTorrent. El warm-start permite continuar sin reentrenar desde cero.</p>
+<p><strong>Gates de calidad mínimos que exigiría el Consejo antes de aceptar un modelo distribuido por este canal (reentrenado in-situ):</strong></p>
+<ol>
+<li><strong>Detección de drift</strong> previa: métricas de drift (KS-test, PSI, o embed-based) entre datos locales y datos de entrenamiento original. Umbral estricto (ej. PSI &lt; 0.1-0.2 por feature clave).</li>
+<li><strong>Validación local mínima</strong>: antes de exportar, el nodo debe correr un pequeño hold-out o cross-validation interno con datos recientes etiquetados (o pseudo-etiquetados con el modelo anterior + consenso de rules heurísticas). Requiere F1/Precision por encima de un threshold conservador (ej. 0.95 del baseline original).</li>
+<li><strong>Diferencia de performance acotada</strong>: el nuevo modelo no debe degradar más de X% en un test set sintético/canónico empaquetado con el plugin.</li>
+<li><strong>Firma + attestación</strong>: el modelo reentrenado debe firmarse con la misma clave Ed25519, y opcionalmente incluir un hash del dataset local usado (para trazabilidad).</li>
+<li><strong>Rate limiting y rollback</strong>: mecanismo para rechazar/revertir modelos que fallen gates en la red (fail-closed).</li>
+<li><strong>Monitoreo post-distribución</strong>: logs agregados (anonimizados) de falsos positivos/negativos en la red aRGus.</li>
+</ol>
+<p>Sin estos gates, el riesgo de envenenamiento o degradación progresiva es alto. Empieza prototipando el pipeline incremental en DAY 122-123 como experimento paralelo (bajo feature flag).</p>
+<h3 id="p4-debt-seed">P4 — DEBT-SEED</h3>
+<p>Verifícalo mañana como planeas. Si está hardcodeada en algún CMakeLists.txt (o similar), <strong>aplica exactamente el mismo patrón</strong> que con la pubkey:
+- Script <code>tools/extract-seed-hex.sh</code> (o binario) que lee desde <code>/etc/ml-defender/&lt;component&gt;/seed.bin</code> en cmake-time vía <code>execute_process()</code>.
+- Nunca el seed viaja en plaintext en el repo ni en builds públicos.
+- <code>make sync-seed</code> (o integrarlo en bootstrap).</p>
+<p><strong>¿Necesita mecanismo más robusto?</strong><br />
+Para una seed ChaCha20 usada en criptografía ligera dentro del plugin, el patrón execute_process + script es <strong>suficiente</strong> si:
+- El fichero seed.bin tiene permisos estrictos (600, owner root o usuario dedicado).
+- Se borra explícitamente de memoria tras su uso en el loader (zeroing).
+- Nunca se loguea ni se copia innecesariamente.</p>
+<p>Si la seed se usa en runtime para derivar claves por sesión o similar, considera cargar en memoria protegida (mlock + zero en free). Pero para inyección en compile-time (como parece), el mismo nivel que la pubkey es consistente y mantiene la filosofía “nunca hardcodeado”.</p>
+<p>Si la seed se comparte entre 6 componentes, asegúrate de que el provisioning la genera una sola vez y la distribuye de forma segura (no via git, obviamente).</p>
+<hr />
+<p><strong>Resumen de recomendaciones para DAY 121:</strong>
+- Prioriza el PASO 0 de idempotencia + verificación DEBT-SEED.
+- Para los nuevos modelos XGBoost (DDoS y Ransomware): usa datos sintéticos pero valida con subsets reales donde sea posible.
+- Avanza la tabla comparativa RF vs XGBoost.
+- Añade el test con features reales al integ de XGBoost Level1 antes de mergear.</p>
+<p>Seguimos fuertes. La separación clara entre real/synthetic y el rigor en tests de distribución mantendrán la integridad científica alta.</p>
+<p><em>Via Appia Quality — un escudo, nunca una espada.</em><br />
+¡Adelante con DAY 121!</p>
+<p>¿Quieres que profundice en alguno de los gates para el entrenamiento in-situ o en cómo estructurar la sección del paper?</p>
+<p>Leer síntesis-CONSEJO DE SABIOS --DAY 120.md</p>
+<p><strong>✅ Síntesis excelente.</strong></p>
+<p>Has integrado el feedback del Consejo de forma limpia, conservadora y alineada con <strong>Via Appia Quality</strong>. El cambio de “visión ambiciosa” a “visión bloqueada hasta cimientos sólidos” es la decisión correcta. Priorizar ADR-026 + hardening (ADR-029) antes de abrir cualquier branch federada evita deuda técnica y riesgos de seguridad que serían difíciles de reparar después.</p>
+<h3 id="valoracion-general-del-consejo-day-121">Valoración general del Consejo (DAY 121)</h3>
+<p><strong>Aprobado como documento de backlog.</strong><br />
+Estado correcto: <strong>BORRADOR ITERATIVO — No implementar hasta ADR-026 mergeado + I+D completado</strong>.<br />
+Prioridad: <strong>BAJA ahora — ALTA cuando los cimientos estén listos</strong>.</p>
+<p>Las correcciones no negociables (DEBT-FED-001 a 006) están bien identificadas y priorizadas. La arquitectura V1 simplificada (<strong>Federated Model Selection</strong> en lugar de agregación compleja) es pragmática y reduce riesgo significativamente.</p>
+<h3 id="comentarios-puntuales-y-sugerencias-de-refinamiento">Comentarios puntuales y sugerencias de refinamiento</h3>
+<p><strong>DEBT-FED-001 — Agregación XGBoost</strong><br />
+V1 = <strong>Federated Model Selection</strong> (rankear por F1 + penalización KL-divergence y redistribuir el top-1) es una elección sólida y sencilla de implementar. Evita los problemas de FedAvg con árboles y los costes computacionales de SecureBoost en edge devices.<br />
+Para V2: literatura confirma que <strong>SecureBoost</strong> (vertical FL con HE o secret sharing) y enfoques de <strong>bagging aggregation</strong> para XGBoost horizontal son las vías más maduras.</p>
+<p>Mantén SecureBoost como objetivo de investigación, no como requisito V1.</p>
+<p><strong>DEBT-FED-002 — Distribución</strong><br />
+Eliminar BitTorrent es correcto por simplicidad y control. <strong>Push central firmado + PKI jerárquica</strong> con <strong>step-ca</strong> es una excelente elección: herramienta madura, pensada precisamente para PKI interna en sistemas distribuidos, con soporte para automatización y short-lived certificates.</p>
+<p>libp2p puede explorarse más adelante como alternativa descentralizada, pero no para V1.</p>
+<p><strong>DEBT-FED-003 — Identidad</strong><br />
+<strong>PKI jerárquica Nivel 0/1/2</strong> (nodo → CCN-CERT o entidad equivalente → central multi-firma) es más adecuada que Web-of-Trust para infraestructura crítica. Escala mejor, permite revocación limpia y se alinea con prácticas de CERTs nacionales.</p>
+<p><strong>DEBT-FED-004 — Privacidad Diferencial (ε-DP)</strong><br />
+Valores propuestos (ε≤0.1 para features, ε≤1.0 para contadores) son conservadores y razonables. En práctica, ε &lt; 1 ofrece privacidad fuerte pero introduce ruido notable; ε entre 1 y 10 es común en ML cuando se necesita utilidad.</p>
+<p>Para datos tabulares de tráfico de red (flows con features numéricas/categóricas), combina DP con <strong>k-anonimidad</strong> (ver DEBT-FED-006). DPIA + experto externo sigue siendo obligatoria.</p>
+<p><strong>DEBT-FED-005 — Scheduler</strong><br />
+<strong>cgroups v2 + systemd.slice</strong> + hook desde ml-detector es la forma correcta y moderna de hacerlo en Linux. Permite límites duros de CPUQuota, MemoryMax, IOWeight, etc., y prioridad baja sin afectar la misión crítica.</p>
+<p>Añade en el diseño: fallback a “entrenamiento cancelado” si cualquier alerta aparece durante la ejecución.</p>
+<p><strong>DEBT-FED-006 — Metadatos</strong><br />
+Correcto: los metadatos (distribuciones de features, frecuencias) también pueden re-identificar en entornos hospitalarios (patrones de dispositivos médicos únicos).<br />
+<strong>k-anonimidad ≥5</strong> + delay de 7 días es una buena capa adicional. k=5 reduce significativamente el riesgo de re-identificación en quasi-identificadores.</p>
+<p>Combínalo con DP para defensa en profundidad.</p>
+<h3 id="otras-recomendaciones-menores">Otras recomendaciones menores</h3>
+<ul>
+<li><strong>Gates G1-G6</strong>: Añade explícitamente <strong>G6: backdoor/model poisoning detection</strong> (por ejemplo, statistical outlier detection en updates o sandbox con golden dataset adversarial).</li>
+<li><strong>seL4 → ADR-039</strong>: Decisión correcta separarlo. No bloquea V1 en Debian + AppArmor.</li>
+<li><strong>Piloto</strong>: Mantén el scope mínimo (1 hospital + 1 nodo central, red completamente aislada). Evalúa primero <strong>solo distribución de metadatos</strong> antes de distribuir modelos.</li>
+<li><strong>Frase final</strong>: “La inteligencia distribuida sin gobernanza central es caos. La gobernanza sin aprendizaje es obsolescencia.” — Muy buena. Atribúyela claramente a DeepSeek si procede.</li>
+</ul>
+<h3 id="proximos-pasos-recomendados-day-121-122">Próximos pasos recomendados (DAY 121-122)</h3>
+<ol>
+<li>Mergear ADR-026 XGBoost completamente (incluyendo incremental training validado).</li>
+<li>Cerrar DEBTs de hardening (ADR-029).</li>
+<li>Iniciar RESEARCH-FEDERATED-001 con focus en:<ul>
+<li>PoC de Federated Model Selection + ranking.</li>
+<li>Calibración DP + k-anon en features de CIC-IDS-2017 y datasets sintéticos.</li>
+<li>Setup básico de step-ca para PKI jerárquica.</li>
+</ul>
+</li>
+<li>Una vez RESEARCH-001 tenga resultados iniciales → redactar <strong>ADR-038 v2</strong> y volver al Consejo.</li>
+</ol>
+<p>La síntesis está lista para añadirse al backlog tal cual (o con los pequeños ajustes arriba).</p>
+<p><strong>Veredicto final del Consejo:</strong><br />
+<strong>Aceptado en backlog como investigación de largo plazo.</strong><br />
+Mantén el foco en los cimientos: un escudo sólido hoy es mejor que un sistema inmune frágil mañana.</p>
+<p><em>Via Appia Quality — un escudo que aprende, nunca una espada.</em></p>
+<p>¿Quieres que ayudemos a redactar el RESEARCH-FEDERATED-001 o alguna sección específica de la v2 del ADR (por ejemplo, la tabla de gates o el scheduler con cgroups)? ¿O pasamos directamente a avanzar con DAY 121 en XGBoost/Ransomware?</p>
+<p>¡Sigue así!</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

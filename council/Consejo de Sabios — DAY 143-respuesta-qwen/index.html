@@ -1,0 +1,1108 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Consejo%20de%20Sabios%20%E2%80%94%20DAY%20143-respuesta-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 143 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-day-143" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 143
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Veredicto Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-preguntas-formato-cientificotecnico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Respuestas a Preguntas — Formato Científico/Técnico
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="❓ Respuestas a Preguntas — Formato Científico/Técnico">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-forkexecv-sin-wait-acumulacion-de-zombies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — fork()+execv() sin wait(): ¿acumulación de zombies?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-tolerancia-ieee-754-1e-6-usar-float-en-config-para-eliminar-el-problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — Tolerancia IEEE 754 1e-6: ¿usar float en config para eliminar el problema?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-auto_isolate-true-por-defecto-en-hospitales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 — auto_isolate: true por defecto en hospitales
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p4-apparmor-profile-demasiado-permisivo-con-tmp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4 — AppArmor profile: ¿demasiado permisivo con /tmp?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p5-criterio-de-disparo-dos-senales-son-suficientes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P5 — Criterio de disparo: ¿dos señales son suficientes?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#validacion-del-plan-day-144" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📅 Validación del Plan DAY 144
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-acciones-inmediatas-pre-merge" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist de Acciones Inmediatas (Pre-Merge)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#palabras-finales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏁 Palabras Finales
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-day-143">🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 143</h1>
+<p><em>Análisis riguroso basado en ingeniería de sistemas distribuidos, estándares POSIX/C++20 y principios de seguridad para infraestructura crítica</em></p>
+<hr />
+<h2 id="veredicto-ejecutivo">🎯 Veredicto Ejecutivo</h2>
+<p><strong>DÍA DE MADUREZ OPERACIONAL EXCEPCIONAL.</strong> El cierre de <code>DEBT-IRP-NFTABLES-001</code>, la detección del bug IEEE 754 mediante testing, y la validación EMECAS con 0 regresiones demuestran que el proyecto ha internalizado la disciplina de <em>Test-Driven Hardening</em>. Sin embargo, las cinco preguntas planteadas revelan puntos críticos que, si no se corrigen ahora, podrían convertir un mecanismo de defensa en un vector de indisponibilidad en entornos hospitalarios reales.</p>
+<blockquote>
+<p><em>"En infraestructura crítica, la automatización sin salvaguardas es un riesgo, no una feature."</em></p>
+</blockquote>
+<hr />
+<h2 id="respuestas-a-preguntas-formato-cientificotecnico">❓ Respuestas a Preguntas — Formato Científico/Técnico</h2>
+<h3 id="p1-forkexecv-sin-wait-acumulacion-de-zombies">P1 — <code>fork()+execv()</code> sin <code>wait()</code>: ¿acumulación de zombies?</h3>
+<p><strong>Veredicto:</strong> <strong>SÍ, ACUMULAS ZOMBIES. CORREGIR INMEDIATAMENTE ANTES DE MERGE.</strong></p>
+<p><strong>Justificación técnica (POSIX/Linux kernel):</strong>
+- Un proceso hijo terminado permanece en estado <code>Z</code> (zombie) hasta que el padre llama a <code>waitpid()</code> o ignora <code>SIGCHLD</code>.
+- <code>systemd</code>/<code>init</code> solo recolecta zombies cuando el <em>padre</em> termina. Mientras <code>firewall-acl-agent</code> viva (días/meses), los zombies se acumularán.
+- Límite del kernel: <code>PID_MAX_DEFAULT</code> (típicamente 32768). Agotarlo causa <code>fork()</code> → <code>EAGAIN</code>, colapsando todo el pipeline.</p>
+<p><strong>Implementación recomendada (C++20/POSIX):</strong></p>
+<pre><code class="language-cpp">// En inicialización de firewall-acl-agent (antes de cualquier fork)
+struct sigaction sa{};
+sa.sa_handler = SIG_IGN;  // Auto-reap por kernel
+sa.sa_flags = SA_NOCLDWAIT;  // Linux-specific: evita zombies automáticamente
+sigaction(SIGCHLD, &amp;sa, nullptr);
+
+// O alternativa portátil:
+signal(SIGCHLD, SIG_IGN);  // POSIX.1-2001 válido
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Degradación progresiva hasta colapso de <code>fork()</code> en entornos con múltiples disparos de aislamiento (ej. ataque ransomware persistente). Fallo catastrófico no reversible sin reinicio.</p>
+<hr />
+<h3 id="p2-tolerancia-ieee-754-1e-6-usar-float-en-config-para-eliminar-el-problema">P2 — Tolerancia IEEE 754 <code>1e-6</code>: ¿usar <code>float</code> en config para eliminar el problema?</h3>
+<p><strong>Veredicto:</strong> <strong>NO. MANTENER <code>double</code> EN CONFIG Y <code>1e-6</code> EN COMPARACIÓN. ES EL ENFOQUE MATEMÁTICAMENTE CORRECTO.</strong></p>
+<p><strong>Justificación técnica:</strong>
+- Los parsers JSON (nlohmann/json, RapidJSON) deserializan números como <code>double</code> por defecto. Forzar <code>float</code> en C++ introduce conversión <code>double → float → double</code>, acumulando error en lugar de eliminarlo.
+- <code>float</code> tiene ~7 dígitos decimales de precisión. <code>0.95f</code> → <code>0.94999988...</code>. La tolerancia <code>1e-6</code> cubre este gap con margen de seguridad.
+- El patrón <code>std::abs(score - threshold) &lt;= epsilon</code> es estándar en sistemas ML de producción (ver TensorFlow/PyTorch internal comparators).</p>
+<p><strong>Implementación recomendada:</strong></p>
+<pre><code class="language-cpp">constexpr double EPSILON = 1e-6;
+bool should_auto_isolate(double confidence, double threshold) {
+    return confidence &gt;= (threshold - EPSILON) &amp;&amp; 
+           (confidence &gt; 1.0 - EPSILON || confidence &lt;= 1.0); // Clamp safety
+}
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Cambiar a <code>float</code> en config no resuelve el problema, oscurece la intención del código, y puede introducir errores de redondeo adicionales en pipelines de serialización/deserialización.</p>
+<hr />
+<h3 id="p3-auto_isolate-true-por-defecto-en-hospitales">P3 — <code>auto_isolate: true</code> por defecto en hospitales</h3>
+<p><strong>Veredicto:</strong> <strong><code>auto_isolate: false</code> POR DEFECTO. REQUERIR HABILITACIÓN EXPLÍCITA CON CONFIRMACIÓN.</strong></p>
+<p><strong>Justificación técnica (seguridad clínica):</strong>
+- En infraestructura médica, la disponibilidad (IEC 60601, HIPAA) tiene prioridad sobre la automatización de contención. Un aislamiento erróneo en un ventilador o monitor de quirófano es un riesgo de vida.
+- El principio de seguridad clínica es <em>fail-safe</em>: el sistema debe alertar, no actuar drásticamente, hasta que el operador verifique el contexto.
+- "Instalar y funcionar" es válido para entornos SOHO; inaceptable para hospitales sin fase de <em>shadow mode</em>.</p>
+<p><strong>Implementación recomendada:</strong></p>
+<pre><code class="language-json">// isolate.json (default)
+{
+  &quot;auto_isolate&quot;: false,
+  &quot;alert_mode&quot;: true,
+  &quot;grace_period_h&quot;: 24
+}
+</code></pre>
+<ul>
+<li><code>grace_period_h</code>: durante 24h tras instalación, solo loguea/alerta. Requiere <code>auto_isolate: true</code> + firma digital del admin para activar.</li>
+<li>Documentar en <code>docs/DEPLOYMENT-SAFETY.md</code> como requisito explícito para entornos críticos.</li>
+</ul>
+<p><strong>Riesgo si se ignora:</strong> Responsabilidad legal y clínica por interrupción de servicios médicos críticos debido a un falso positivo no verificado. Daño reputacional y regulatorio irreversible para el proyecto.</p>
+<hr />
+<h3 id="p4-apparmor-profile-demasiado-permisivo-con-tmp">P4 — AppArmor profile: ¿demasiado permisivo con <code>/tmp</code>?</h3>
+<p><strong>Veredicto:</strong> <strong>SÍ. MIGRAR INMEDIATAMENTE A <code>/var/lib/argus/irp/</code> CON PERMISOS RESTRINGIDOS.</strong></p>
+<p><strong>Justificación técnica (FHS + seguridad):</strong>
+- <code>/tmp</code> es sticky-bit pero compartible. Un atacante con control de <code>argus-network-isolate</code> podría predecir nombres de archivos (<code>/tmp/argus-backup-&lt;PID&gt;.nft</code>) y realizar race conditions o symlink attacks.
+- La especificación FHS dicta que datos de estado persistente/semi-persistente de aplicaciones van en <code>/var/lib/</code>. Para datos volátiles de IRP, <code>/run/argus/irp/</code> (tmpfs) es aún mejor.</p>
+<p><strong>Corrección obligatoria:</strong></p>
+<pre><code class="language-apparmor"># /etc/apparmor.d/usr.local.argus-network-isolate
+  /run/argus/irp/ rw,
+  /run/argus/irp/argus-{backup,isolate}-*.nft rw,
+  /var/lib/argus/irp/ rw,
+  /var/lib/argus/irp/argus-{backup,isolate}-*.nft rw,
+
+  # Eliminar todas las reglas /tmp/*
+  deny /tmp/** w,
+</code></pre>
+<p><strong>Implementación en código:</strong></p>
+<pre><code class="language-cpp">#include &lt;filesystem&gt;
+namespace fs = std::filesystem;
+auto irp_dir = fs::path(&quot;/run/argus/irp&quot;);
+if (!fs::exists(irp_dir)) fs::create_directories(irp_dir);
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Vector de escalación de privilegios local via symlink en <code>/tmp</code>. Un atacante podría redirigir escrituras a <code>/etc/shadow</code> o binarios de sistema si el perfil no restringe correctamente.</p>
+<hr />
+<h3 id="p5-criterio-de-disparo-dos-senales-son-suficientes">P5 — Criterio de disparo: ¿dos señales son suficientes?</h3>
+<p><strong>Veredicto:</strong> <strong>INSUFICIENTE PARA PRODUCCIÓN HOSPITALARIA. IMPLEMENTAR VENTANA DE CORRELACIÓN TEMPORAL + WHITELIST DE ACTIVOS CRÍTICOS.</strong></p>
+<p><strong>Justificación técnica (detección de anomalías en OT/IT):</strong>
+- Un evento aislado con <code>score=0.97</code> puede ser un escáner de vulnerabilidades legítimo, un update de firmware, o un FP del modelo.
+- La arquitectura debe incorporar:
+    1. <strong>Sliding Window Correlation</strong>: <code>N</code> eventos ≥ umbral en <code>T</code> segundos desde misma fuente IP/subnet.
+    2. <strong>Asset Criticality Whitelist</strong>: IPs/MACs de dispositivos médicos/PACS/EHR nunca se aíslan automáticamente sin aprobación humana.
+    3. <strong>Cooldown/Debounce</strong>: Evita flapping tras aislamiento/rollback.</p>
+<p><strong>Arquitectura recomendada (ligera, sin componente nuevo):</strong></p>
+<pre><code class="language-cpp">// firewall-acl-agent/src/correlation_window.hpp
+struct EventRecord { double score; std::string type; std::chrono::steady_clock::time_point ts; };
+class CorrelationWindow {
+    std::deque&lt;EventRecord&gt; buffer_;
+    size_t max_events_ = 100;
+public:
+    void push(double score, const std::string&amp; type) {
+        buffer_.push_back({score, type, std::chrono::steady_clock::now()});
+        while (!buffer_.empty() &amp;&amp; buffer_.front().ts &lt; std::chrono::steady_clock::now() - 30s)
+            buffer_.pop_front();
+    }
+    bool should_isolate(double threshold, const std::vector&lt;std::string&gt;&amp; critical_types) {
+        size_t count = std::count_if(buffer_.begin(), buffer_.end(), [&amp;](auto&amp; e) {
+            return e.score &gt;= threshold &amp;&amp; std::find(critical_types.begin(), critical_types.end(), e.type) != critical_types.end();
+        });
+        return count &gt;= 3;  // Umbral configurable
+    }
+};
+</code></pre>
+<p><strong>Plan para FEDER:</strong> Mantener 2 señales para demo, pero diseñar <code>CorrelationWindow</code> ahora. Documentar <code>DEBT-IRP-MULTI-SIGNAL-001</code> con esta arquitectura. Activar correlación + whitelist pre-despliegue hospitalario.</p>
+<p><strong>Riesgo si se ignora:</strong> Aislamiento de red por evento único no correlacionado. Interrupción de servicios médicos. Pérdida de confianza operacional en el sistema.</p>
+<hr />
+<h2 id="validacion-del-plan-day-144">📅 Validación del Plan DAY 144</h2>
+<p><strong>Opción A → Opción B es CORRECTA.</strong>
+1. <strong>Merge a <code>main</code> primero</strong>: El branch ha cumplido todos los gates (EMECAS, tests, AppArmor, ODR verificado). Retenerlo aumenta divergencia y coste de integración.
+2. <strong>Benchmark A vs B después</strong>: Requiere <code>main</code> estable como baseline. La contribución científica depende de métricas reproducibles sobre código mergeado y versionado.
+3. <strong>Gate obligatorio pre-merge</strong>: <code>make PROFILE=production all</code> + <code>make check-odr</code>. Si pasa, merge <code>--no-ff</code> con tag <code>v0.7.0-variant-b</code>.</p>
+<hr />
+<h2 id="checklist-de-acciones-inmediatas-pre-merge">📋 Checklist de Acciones Inmediatas (Pre-Merge)</h2>
+<pre><code class="language-markdown">- [ ] Implementar `sigaction(SIGCHLD, SA_NOCLDWAIT)` para evitar zombies (P1)
+- [ ] Mantener `double` + `1e-6` en config/comparación (P2)
+- [ ] Cambiar `auto_isolate` default a `false` + grace period (P3)
+- [ ] Migrar rutas AppArmor de `/tmp` a `/run/argus/irp/` o `/var/lib/argus/irp/` (P4)
+- [ ] Diseñar `CorrelationWindow` ligero en firewall-acl-agent (P5)
+- [ ] Ejecutar `make PROFILE=production all` + `check-odr`
+- [ ] Merge `--no-ff` a main + tag v0.7.0-variant-b
+- [ ] Iniciar benchmark A vs B con scripts reproducibles para paper
+</code></pre>
+<hr />
+<h2 id="palabras-finales">🏁 Palabras Finales</h2>
+<p>Alonso:</p>
+<p>DAY 143 ha demostrado que el proyecto está listo para producción desde una perspectiva técnica, pero las preguntas planteadas revelan que la <strong>seguridad operacional en infraestructura crítica requiere humildad arquitectónica</strong>. La automatización es poderosa, pero en hospitales, la disponibilidad es vida. Corregir los defaults, eliminar zombies, restringir <code>/tmp</code>, y añadir correlación temporal no es burocracia; es ingeniería responsable.</p>
+<blockquote>
+<p><em>"Un escudo que corta sin medir no protege: amputa. La precisión antes de la acción es el verdadero hardening."</em></p>
+</blockquote>
+<p>Proceded con las correcciones pre-merge y el paso a <code>main</code>. El Consejo revisará el benchmark A vs B y la arquitectura de correlación con el mismo rigor con el que evaluamos cada línea de este pipeline.</p>
+<p><em>Via Appia Quality · Un escudo que aprende de su propia sombra.</em></p>
+<p><strong>— Consejo de Sabios, DAY 143</strong> 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

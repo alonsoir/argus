@@ -1,0 +1,1205 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20137-respuesta-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 137 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-day-137" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 137
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Veredicto Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-la-pregunta-mantener-metodos-ebpf-en-capturebackend-base" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Respuesta a la Pregunta: ¿Mantener métodos eBPF en CaptureBackend base?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="❓ Respuesta a la Pregunta: ¿Mantener métodos eBPF en CaptureBackend base?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#justificacion-tecnica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Justificación técnica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion-recomendada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación recomendada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ventajas-de-este-enfoque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ventajas de este enfoque
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-de-demostracion-requerido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test de demostración requerido
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observaciones-adicionales-constructivas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Observaciones Adicionales (Constructivas)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Observaciones Adicionales (Constructivas)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-sobre-la-decision-dos-binarios-cero-ifdef" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Sobre la decisión "dos binarios, cero #ifdef"
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-sobre-debt-variant-b-pcap-impl-001-pcap_loop-zeromq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Sobre DEBT-VARIANT-B-PCAP-IMPL-001 (pcap_loop → ZeroMQ)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-sobre-compatibilidad-de-schema-zeromq-entre-variantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Sobre compatibilidad de schema ZeroMQ entre variantes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-acciones-inmediatas-day-138" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist de Acciones Inmediatas (DAY 138)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#palabras-finales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏁 Palabras Finales
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-day-137">🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 137</h1>
+<p><em>Feedback basado en principios de diseño de software, ingeniería de sistemas de alto rendimiento y rigor científico para aRGus NDR</em></p>
+<hr />
+<h2 id="veredicto-ejecutivo">🎯 Veredicto Ejecutivo</h2>
+<p><strong>DECISIÓN ARQUITECTÓNICA CORRECTA: DOS BINARIOS SEPARADOS, CERO <code>#ifdef</code>.</strong></p>
+<p>La decisión de descartar el enfoque <code>#ifdef</code> y optar por dos binarios independientes con interfaz abstracta compartida es la correcta para este contexto. El acoplamiento profundo de eBPF en <code>RingBufferConsumer</code> es legítimo y no debe diluirse con abstracciones prematuras. La arquitectura implementada sigue el principio KISS sin sacrificar mantenibilidad.</p>
+<blockquote>
+<p><em>"La simplicidad no es ausencia de complejidad. Es ausencia de complejidad innecesaria."</em></p>
+</blockquote>
+<hr />
+<h2 id="respuesta-a-la-pregunta-mantener-metodos-ebpf-en-capturebackend-base">❓ Respuesta a la Pregunta: ¿Mantener métodos eBPF en <code>CaptureBackend</code> base?</h2>
+<p><strong>Recomendación concreta:</strong> <strong>MANTENER EN LA INTERFAZ BASE, PERO CON VALIDACIÓN RUNTIME FAIL-FAST + DOCUMENTACIÓN EXPLÍCITA.</strong></p>
+<h3 id="justificacion-tecnica">Justificación técnica</h3>
+<table>
+<thead>
+<tr>
+<th>Criterio</th>
+<th>Evaluación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Polimorfismo en <code>main.cpp</code></strong></td>
+<td>✅ Mantener métodos permite usar <code>CaptureBackend*</code> sin downcast, simplificando la lógica principal</td>
+</tr>
+<tr>
+<td><strong>Interface Segregation Principle</strong></td>
+<td>⚠️ Técnicamente violado, pero aceptable cuando la violación es documentada y verificada</td>
+</tr>
+<tr>
+<td><strong>Detección temprana de bugs</strong></td>
+<td>🔴 No-op defaults silenciosos pueden ocultar errores de llamada en testing</td>
+</tr>
+<tr>
+<td><strong>Escalabilidad a Variant C</strong></td>
+<td>🟡 Patrón actual escala, pero requiere disciplina de documentación</td>
+</tr>
+</tbody>
+</table>
+<h3 id="implementacion-recomendada">Implementación recomendada</h3>
+<pre><code class="language-cpp">// capture_backend.hpp
+class CaptureBackend {
+public:
+    virtual ~CaptureBackend() = default;
+
+    // Método común a todas las variantes
+    virtual int start_capture(const std::string&amp; interface) = 0;
+
+    // Métodos específicos de eBPF — documentados y con fail-fast
+    // Solo válidos para EbpfBackend; llamar desde PcapBackend lanza std::logic_error
+    virtual int attach_skb(int ifindex) {
+        throw std::logic_error(&quot;[CaptureBackend] attach_skb() not supported by this backend&quot;);
+    }
+
+    virtual int get_ringbuf_fd() const {
+        throw std::logic_error(&quot;[CaptureBackend] get_ringbuf_fd() not supported by this backend&quot;);
+    }
+
+    virtual uint32_t get_filter_map_fd() const {
+        throw std::logic_error(&quot;[CaptureBackend] get_filter_map_fd() not supported by this backend&quot;);
+    }
+
+    // Query opcional para código que necesita saber la variante
+    virtual bool supports_ebpf() const { return false; }
+};
+</code></pre>
+<pre><code class="language-cpp">// ebpf_backend.hpp
+class EbpfBackend : public CaptureBackend {
+public:
+    bool supports_ebpf() const override { return true; }
+
+    int attach_skb(int ifindex) override {
+        // Implementación real de eBPF
+        return bpf_xdp_attach(ifindex, prog_fd, flags, nullptr);
+    }
+
+    int get_ringbuf_fd() const override { return ringbuf_fd_; }
+    uint32_t get_filter_map_fd() const override { return filter_map_fd_; }
+
+private:
+    int ringbuf_fd_ = -1;
+    uint32_t filter_map_fd_ = 0;
+};
+</code></pre>
+<pre><code class="language-cpp">// pcap_backend.hpp
+class PcapBackend : public CaptureBackend {
+public:
+    // supports_ebpf() retorna false por defecto — no necesita override
+
+    int start_capture(const std::string&amp; interface) override {
+        handle_ = pcap_open_live(interface.c_str(), SNAPLEN, PROMISC, TIMEOUT, errbuf);
+        return handle_ ? 0 : -1;
+    }
+
+    // Métodos eBPF: heredan implementación base que lanza std::logic_error
+    // No hay código duplicado, no hay no-op silencioso
+};
+</code></pre>
+<h3 id="ventajas-de-este-enfoque">Ventajas de este enfoque</h3>
+<ol>
+<li><strong>Fail-fast en testing</strong>: Si un test o código nuevo llama accidentalmente a <code>attach_skb()</code> en <code>PcapBackend</code>, falla inmediatamente con mensaje claro, no silenciosamente.</li>
+<li><strong>Polimorfismo preservado</strong>: <code>main.cpp</code> puede usar <code>std::unique_ptr&lt;CaptureBackend&gt;</code> sin conocer la variante concreta.</li>
+<li><strong>Documentación ejecutable</strong>: El <code>throw std::logic_error</code> documenta el contrato en código, no solo en comentarios.</li>
+<li><strong>Escalabilidad</strong>: Si surge Variant C (ej. AF_PACKET, DPDK), solo necesita implementar los métodos que soporte.</li>
+</ol>
+<h3 id="test-de-demostracion-requerido">Test de demostración requerido</h3>
+<pre><code class="language-cpp">// tests/test_capture_backend_polymorphism.cpp
+TEST(CaptureBackend, PcapBackendRejectsEbpfMethods) {
+    PcapBackend pcap;
+
+    // start_capture debe funcionar
+    EXPECT_EQ(pcap.start_capture(&quot;eth0&quot;), 0);
+
+    // Métodos eBPF deben fallar con mensaje claro
+    EXPECT_THROW(pcap.attach_skb(1), std::logic_error);
+    EXPECT_THROW(pcap.get_ringbuf_fd(), std::logic_error);
+    EXPECT_THROW(pcap.get_filter_map_fd(), std::logic_error);
+
+    // Query de capacidades debe ser preciso
+    EXPECT_FALSE(pcap.supports_ebpf());
+}
+
+TEST(CaptureBackend, EbpfBackendSupportsEbpfMethods) {
+    EbpfBackend ebpf;
+    EXPECT_TRUE(ebpf.supports_ebpf());
+    // attach_skb puede fallar por permisos, pero no por &quot;no soportado&quot;
+    // Verificar que no lanza std::logic_error
+    EXPECT_NO_THROW(ebpf.get_ringbuf_fd());  // Puede retornar -1, pero no exception
+}
+</code></pre>
+<hr />
+<h2 id="observaciones-adicionales-constructivas">🔍 Observaciones Adicionales (Constructivas)</h2>
+<h3 id="1-sobre-la-decision-dos-binarios-cero-ifdef">1. Sobre la decisión "dos binarios, cero #ifdef"</h3>
+<p><strong>Validación del Consejo</strong>: ✅ Correcta para este contexto.</p>
+<p><strong>Justificación</strong>:
+- El acoplamiento eBPF en <code>RingBufferConsumer</code> es <em>profundo y legítimo</em>: XDP requiere manejo de buffers en espacio de kernel, mapas BPF, y verificación de programas. Abstractar esto prematuramente añadiría complejidad sin beneficio.
+- Dos binarios separados permite:
+    - Compilación condicional a nivel de build system, no de preprocesador
+    - Testing independiente de cada variante
+    - Documentación clara de dependencias por variante
+- El coste de mantenimiento es bajo porque la interfaz <code>CaptureBackend</code> aísla el punto de variación.</p>
+<p><strong>Riesgo mitigado</strong>: Evita el "ifdef hell" que dificulta la lectura, testing y auditoría de código de seguridad.</p>
+<h3 id="2-sobre-debt-variant-b-pcap-impl-001-pcap_loop-zeromq">2. Sobre <code>DEBT-VARIANT-B-PCAP-IMPL-001</code> (pcap_loop → ZeroMQ)</h3>
+<p><strong>Priorización</strong>: 🔴 <strong>ALTA — pre-FEDER</strong>.</p>
+<p><strong>Justificación</strong>: El flujo de datos <code>captura → ZeroMQ → ml-detector</code> es el núcleo funcional del sniffer. Sin esta implementación, Variant B no es demostrable en FEDER.</p>
+<p><strong>Plan mínimo viable</strong>:</p>
+<pre><code class="language-cpp">// pcap_backend.cpp — esqueleto para pre-FEDER
+int PcapBackend::start_capture(const std::string&amp; interface) {
+    handle_ = pcap_open_live(interface.c_str(), SNAPLEN, PROMISC, TIMEOUT, errbuf);
+    if (!handle_) return -1;
+
+    // Filtro BPF básico para reducir carga en userspace
+    struct bpf_program fp;
+    pcap_compile(handle_, &amp;fp, &quot;ip or arp&quot;, 1, PCAP_NETMASK_UNKNOWN);
+    pcap_setfilter(handle_, &amp;fp);
+
+    // Loop de captura — versión mínima pre-FEDER
+    pcap_loop(handle_, PACKET_COUNT, pcap_packet_handler, reinterpret_cast&lt;u_char*&gt;(this));
+    return 0;
+}
+
+// Handler estático que delega a método de instancia
+void pcap_packet_handler(u_char* user, const struct pcap_pkthdr* h, const u_char* bytes) {
+    auto* self = reinterpret_cast&lt;PcapBackend*&gt;(user);
+    self-&gt;on_packet_received(h, bytes);  // Método que serializa a ZeroMQ
+}
+</code></pre>
+<p><strong>Test de integración mínimo</strong>:</p>
+<pre><code class="language-bash"># tests/test_pcap_zmq_integration.sh
+make test-pcap-zmq-flow
+# 1. Arrancar sniffer-libpcap en modo test
+# 2. Generar tráfico sintético con tcpreplay
+# 3. Verificar: ml-detector recibe mensajes via ZeroMQ
+# 4. Verificar: formato de mensaje compatible con Variant A (misma schema)
+</code></pre>
+<h3 id="3-sobre-compatibilidad-de-schema-zeromq-entre-variantes">3. Sobre compatibilidad de schema ZeroMQ entre variantes</h3>
+<p><strong>Recomendación</strong>: <strong>Garantizar que ambos backends emiten el mismo formato de mensaje</strong>.</p>
+<pre><code class="language-cpp">// common/capture_message.hpp — schema compartida
+struct CaptureMessage {
+    uint64_t timestamp_ns;
+    uint32_t ifindex;
+    uint16_t packet_len;
+    uint16_t capture_len;
+    // Payload sigue después — mismo layout para XDP y libpcap
+};
+static_assert(sizeof(CaptureMessage) == 16, &quot;CaptureMessage layout must be stable&quot;);
+</code></pre>
+<p><strong>Justificación</strong>: <code>ml-detector</code> no debe conocer la variante de captura. La interoperabilidad de schemas permite:
+- Hot-swap entre variantes sin reiniciar el pipeline completo
+- Testing A/B de variantes con el mismo consumidor downstream
+- Publicación científica comparativa con métricas atribuibles únicamente al backend</p>
+<hr />
+<h2 id="checklist-de-acciones-inmediatas-day-138">📋 Checklist de Acciones Inmediatas (DAY 138)</h2>
+<pre><code class="language-markdown">- [ ] Añadir validación runtime fail-fast en métodos eBPF de CaptureBackend base
+- [ ] Implementar tests de polimorfismo: PcapBackend rechaza métodos eBPF, EbpfBackend los acepta
+- [ ] Documentar claramente en capture_backend.hpp qué métodos son variant-specific
+- [ ] Implementar flujo mínimo pcap_loop → ZeroMQ para DEBT-VARIANT-B-PCAP-IMPL-001
+- [ ] Definir schema compartida CaptureMessage en common/ para interoperabilidad
+- [ ] Añadir test de integración pcap → ZeroMQ → ml-detector
+- [ ] Actualizar FEDER-SCOPE.md con estado de Variant B y métricas comparativas pendientes
+</code></pre>
+<hr />
+<h2 id="palabras-finales">🏁 Palabras Finales</h2>
+<p>Alonso:</p>
+<p>DAY 137 demuestra madurez arquitectónica: reconocer cuándo una abstracción es prematura (<code>#ifdef</code> sobre eBPF profundo) y optar por una solución pragmática (dos binarios, interfaz compartida) es señal de ingeniería experimentada.</p>
+<p>La pregunta sobre la interfaz <code>CaptureBackend</code> toca un principio fundamental: <strong>el equilibrio entre pureza teórica y pragmatismo verificable</strong>. La recomendación de "mantener con fail-fast" preserva la simplicidad operacional mientras convierte una potencial fuente de bugs silenciosos en una garantía de detección temprana.</p>
+<blockquote>
+<p><em>"En sistemas de seguridad, un fallo ruidoso es preferible a un silencio cómplice."</em></p>
+</blockquote>
+<p>Proceded con la implementación de pcap_loop → ZeroMQ y los tests de polimorfismo. El Consejo revisará la interoperabilidad de schemas y las primeras métricas comparativas con el mismo rigor con el que evaluamos cada línea de este pipeline.</p>
+<p><em>Via Appia Quality · Un escudo que aprende de su propia sombra.</em></p>
+<p><strong>— Consejo de Sabios, DAY 137</strong> 🏛️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

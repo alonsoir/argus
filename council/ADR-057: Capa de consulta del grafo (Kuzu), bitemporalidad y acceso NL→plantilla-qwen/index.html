@@ -1,0 +1,1133 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-057%3A%20Capa%20de%20consulta%20del%20grafo%20%28Kuzu%29%2C%20bitemporalidad%20y%20acceso%20NL%E2%86%92plantilla-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 057: Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla qwen - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-puntos-debiles-identificados-y-argumentacion-medible" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 057: Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla qwen
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-puntos-debiles-identificados-y-argumentacion-medible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 1. Puntos débiles identificados y argumentación medible
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 1. Puntos débiles identificados y argumentación medible">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-capa-in-process-21" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Capa in-process (§2.1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-bitemporalidad-22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Bitemporalidad (§2.2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-acceso-nlplantilla-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Acceso NL→plantilla (§2.3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-respuesta-explicita-a-marcadores-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📜 2. Respuesta explícita a marcadores [CONSEJO]
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-protocolo-de-medicion-obligatorio-antes-de-promocion-a-aprobado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📊 3. Protocolo de Medición Obligatorio (antes de promoción a 🟢 APROBADO)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-final" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Veredicto Final
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 057: Capa de consulta del grafo (Kuzu), bitemporalidad y acceso NL→plantilla qwen</h1>
+
+<p>Sin embargo, bajo el principio rector "medir, no votar", hemos identificado 4 puntos débiles estructurales y 1 riesgo de ejecución que requieren evidencia empírica antes de ser ratificados. A continuación, se detalla el análisis y las pruebas medibles exigidas.
+1. Capa de Consulta In-Process (Sección 2.1)</p>
+<p>Premisa del ADR: Al ser in-process, se evita el conflicto de locks de Kuzu y se mantiene la regla Falco. Se asume que la concurrencia lectura/escritura en el mismo proceso es viable. Punto Débil: Kuzu utiliza MVCC (Multi-Version Concurrency Control). Aunque permite lecturas y escrituras concurrentes, una carga alta de escritura (ej. ingestión masiva de flujos en el engine) puede causar inanición (starvation) de las consultas de lectura, o viceversa, bloqueando el hilo principal del correlation-engine. El ADR no define límites de QoS (Quality of Service). 📏 Prueba Medible Requerida (Fase 2 ampliada):
+Smoke Test de Contención: Ejecutar un script C++ que simule una ingesta continua de 10,000 nodos/segundo (escritura) mientras se ejecutan concurrentemente las plantillas T1 y T2 (lectura).
+Métrica de Aceptación: La latencia p95 de las consultas de lectura no debe degradarse más de un 20% respecto a su ejecución en una BD en reposo, y el hilo de escritura no debe bloquearse (&gt;100ms) por las lecturas. Si falla, se requiere un patrón de "réplica de solo lectura" o colas de prioridad, no solo "in-process".
+2. Bitemporalidad y Semántica de ingested_at (Sección 2.2)</p>
+<p>Premisa del ADR: ingested_at se estampa en ON CREATE SET por el reloj del engine, desacoplándolo del reloj envenenado del sniffer. El histórico vive en el WAL. Punto Débil: El ADR no contempla el escenario de Replay o Backfill. Si el sistema se reinicia o se reprocesan datos del WAL (DEBT-LABEL-WAL-001), el ingested_at reflejará el tiempo del replay, no el tiempo original de conocimiento. Esto corrompe la forense "a fecha de", ya que un evento ocurrido el día 1 y reprocesado el día 5 aparecerá como "conocido" el día 5. 📏 Prueba Medible Requerida:
+Test de Replay Temporal: Inyectar un lote de datos con flow_start_window = T0. Estampar ingested_at = T1. Simular un fallo y replay del WAL en T2.
+Métrica de Aceptación: El sistema debe ser capaz de distinguir entre ingested_at (primera vez) y replayed_at (última vez). Si el schema actual solo permite un campo ingested_at inmutable, el ADR debe especificar que el WAL es la única fuente de verdad para el tiempo de conocimiento histórico, y que el campo en Kuzu es meramente una optimización del "estado actual". El Consejo debe ratificar esta jerarquía de fuentes.
+3. Límites del Modelo NL (TinyLlama) (Sección 2.3)</p>
+<p>Premisa del ADR: TinyLlama (1.1B parámetros) clasificará la intención y extraerá parámetros tipados sin alucinar, rechazando si la confianza es baja. Punto Débil: Los modelos de &lt;3B parámetros tienen un rendimiento notablemente bajo en extracción estructurada de entidades (ej. extraer un community_id con formato específico o una ventana temporal compleja de una frase ambigua). Confiar ciegamente en su "umbral de confianza" interno (logprobs) suele generar falsos negativos (rechazo de consultas válidas) o falsos positivos (parámetros mal extraídos que fallan en la validación de tipo posterior). 📏 Prueba Medible Requerida (Fase 3):
+Dataset de Evaluación: Crear un conjunto de 100 consultas en lenguaje natural realistas (con ambigüedades, jerga técnica y errores tipográficos).
+Métrica de Aceptación: Ejecutar el pipeline TinyLlama + Validación de Tipos. Se exige un F1-Score ≥ 0.85 en la extracción correcta de parámetros. Si el F1 es &lt; 0.85, el ADR debe incluir un fallback obligatorio: pre-procesamiento por expresiones regulares (Regex) para parámetros estrictos (IDs, fechas), usando el LLM solo para la clasificación de la plantilla (T1-T6).
+4. Honestidad Arquitectónica: Consultas de Conveniencia (T5, T6)</p>
+<p>Premisa del ADR: Se incluyen T5 y T6 (filtros tabulares) en el grafo por "conveniencia", reconociendo que el plano ORO (Parquet) lo hace mejor. Punto Débil: Esto es un anti-patrón de "God Object". Permitir consultas tabulares en un motor de grafos desperdicia CPU/RAM, infla el catálogo de mantenimiento y entrena a los usuarios a usar la herramienta incorrecta. Si ORO es mejor, la capa de consulta debe enrutar estas peticiones a ORO, no ejecutarlas en Kuzu. 📏 Prueba Medible Requerida:
+Benchmark Comparativo: Ejecutar T5 y T6 sobre un dataset de 10 millones de registros en Kuzu vs. DuckDB (representando ORO).
+Métrica de Aceptación: Si Kuzu es &gt;2x más lento o consume &gt;2x de memoria que DuckDB para estas consultas, T5 y T6 deben ser eliminados del catálogo de Kuzu. La capa NL debe traducir estas intenciones a consultas ORO, manteniendo la honestidad de diseño que el propio ADR proclama.
+5. Firma del Catálogo (Fase 4)</p>
+<p>Punto Débil: El ADR menciona firma Ed25519 del catálogo, pero no especifica cuándo se verifica. Verificar la firma criptográfica en cada consulta NL añadiría una latencia innecesaria. 📏 Aclaración Requerida: El ADR debe especificar explícitamente que la verificación de la firma Ed25519 ocurre únicamente en el arranque (startup) del correlation-engine o al recargar el catálogo, no por cada query.
+🏛️ Dictamen Provisional del Consejo</p>
+<p>El ADR-057 es aprobado condicionalmente, sujeto a la resolución de las siguientes acciones medibles antes de pasar a "Estado: Aceptado":
+[CONSEJO] Ratifica el default in-process, pero exige el Smoke Test de Contención (Punto 1) para garantizar que la lectura no bloquee la escritura en el hilo principal.
+[CONSEJO] Ratifica ingested_at en ON CREATE SET, con la condición explícita de que, en escenarios de replay, el WAL (DEBT-LABEL-WAL-001) prevalece como fuente de verdad del tiempo de conocimiento, y el campo de Kuzu es solo una vista del estado actual.
+[CONSEJO] Exige la eliminación de T5 y T6 del catálogo de Kuzu si el benchmark (Punto 4) demuestra una penalización de rendimiento &gt;2x frente a ORO. La honestidad arquitectónica debe prevalecer sobre la "conveniencia".
+[CONSEJO] Establece un umbral de F1-Score ≥ 0.85 para la extracción de parámetros con TinyLlama. Si no se alcanza, se debe implementar el fallback de Regex para parámetros tipados antes de aprobar la Fase 3.
+Próximo paso para el autor: Ejecutar las pruebas medibles indicadas, adjuntar los resultados (gráficos de latencia, métricas de F1, tiempos de ejecución) al ADR, y volver a convocar al Consejo para la firma final.</p>
+<p>Respuesta 2</p>
+<p>El Consejo de Sabios revisa el <strong>ADR-057</strong> bajo el principio rector <code>medir, no votar</code>. A continuación, se exponen los puntos débiles identificados, sustentados con referencias técnicas comprobables y métricas de validación obligatoria. Se responde explícitamente a cada marcador <code>[CONSEJO]</code>.</p>
+<hr />
+<h2 id="1-puntos-debiles-identificados-y-argumentacion-medible">🔍 1. Puntos débiles identificados y argumentación medible</h2>
+<h3 id="11-capa-in-process-21">1.1 Capa in-process (§2.1)</h3>
+<table>
+<thead>
+<tr>
+<th>Afirmación del ADR</th>
+<th>Verificación técnica</th>
+<th>Punto débil</th>
+<th>Métrica de validación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Kuzu solo permite un dueño del lock de escritura; un segundo proceso lector choca con la concurrencia</code></td>
+<td>Kuzu (≥v0.6) usa <strong>MVCC</strong> y permite múltiples conexiones <code>READ_ONLY</code> concurrentes sobre el mismo directorio <code>.kuzu</code>. El lock exclusivo solo aplica a transacciones de escritura. La documentación oficial y el código fuente (<code>transaction_manager.cpp</code>) confirman lecturas concurrentes sin bloqueo mutuo.</td>
+<td>El argumento de "imposibilidad física" es <strong>prematura optimización defensiva</strong>. Un lector externo <em>técnicamente</em> es viable si se abre en modo <code>READ_ONLY</code> y se gestiona el <code>flock</code> compartido. La decisión in-process es válida por <strong>aislamiento de fallos</strong>, no por limitación de Kuzu.</td>
+<td><strong>Smoke Test (Fase 2):</strong> 1) Abrir <code>libkuzu</code> en modo <code>READ_ONLY</code> desde proceso hijo mientras el engine mantiene handle <code>READ_WRITE</code>. 2) Medir: throughput de queries concurrentes (QPS), latencia p99, y si se dispara <code>SIGBUS</code>/corrupción de WAL interno. 3) Si <code>READ_ONLY</code> externo funciona, el argumento de Falco pasa de "técnico" a "político".</td>
+</tr>
+<tr>
+<td><code>In-process evita reabrir autenticación y mantiene invariante Falco</code></td>
+<td>Falco monitoriza <code>open/read</code> sobre <code>*.kuzu</code>. Un proceso separado requería <code>ptrace</code>/<code>bpf</code> o reglas <code>syscall</code> más granulares.</td>
+<td><strong>Acoplamiento de ciclo de vida:</strong> Un fallo de segmentación en una consulta Cypher mal construida o en <code>libkuzu</code> derrumba el <code>correlation-engine</code>. No hay aislamiento de memoria ni límites de CPU/RAM por consulta.</td>
+<td><strong>Métrica obligatoria:</strong> Medir <code>max_rss</code> y <code>cpu_throttle</code> del proceso engine bajo carga de consultas simultáneas (≥50 threads). Definir <code>thread_pool</code> dedicado con <code>cgroups</code>/<code>setrlimit</code>. Si el engine cae por OOM en test de carga, el modelo in-process requiere mitigación de aislamiento (sandboxing ligero o <code>fork</code> efímero para lecturas pesadas).</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-bitemporalidad-22">1.2 Bitemporalidad (§2.2)</h3>
+<table>
+<thead>
+<tr>
+<th>Afirmación del ADR</th>
+<th>Verificación técnica</th>
+<th>Punto débil</th>
+<th>Métrica de validación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ingested_at en ON CREATE SET captura transaction-time inmutable</code></td>
+<td><code>ON CREATE SET</code> solo se ejecuta la primera vez que el nodo se materializa. Refleja correctamente <strong>"cuándo se supo por primera vez"</strong>.</td>
+<td>No captura <strong>tiempo de conocimiento de actualizaciones</strong> (ej. reclasificación de alerta, parche de score). La bitemporalidad completa requiere tracking de estados, no solo de nacimiento. El ADR delega esto al WAL, pero la reconstrucción histórica no tiene métricas de viabilidad aún.</td>
+<td><strong>Métrica obligatoria:</strong> Medir latencia de reconstrucción WAL → grafo histórico para ventanas de 1h, 24h, 7d. Medir inflación de storage (<code>WAL size / graph size ratio</code>). Si <code>&gt;30%</code> overhead o reconstrucción <code>&gt;500ms</code> por query, se requiere índice secundario en WAL o particionamiento temporal.</td>
+</tr>
+<tr>
+<td><code>ingested_at UINT64 con reloj NTP-disciplinado desacopla de CLOCK-INJECTION</code></td>
+<td><code>UINT64</code> sin especificación de época es ambiguo. NTP puede sufrir <em>step jumps</em> (≤1000ms en Linux por defecto) que violan monotonicidad.</td>
+<td><code>ingested_at</code> no es estrictamente monótono si hay correcciones NTP negativas. Para forense reproducible, se requiere <code>CLOCK_MONOTONIC</code> + offset UTC, o garantía de <code>time_steering</code> en el engine.</td>
+<td><strong>Métrica obligatoria:</strong> Inyectar <code>ntpdate -b -0.5s</code> y <code>+0.5s</code> durante carga. Verificar tasa de <code>ingested_at[t] &lt; ingested_at[t-1]</code>. Si <code>&gt;0%</code>, aplicar <code>std::chrono::steady_clock</code> + sincronización periódica a UTC, o usar <code>libkuzu</code>'s <code>transaction_id</code> como proxy monótono.</td>
+</tr>
+<tr>
+<td><code>Kuzu no tiene bitemporalidad nativa; se modela a mano</code></td>
+<td>Correcto. Kuzu sigue el modelo Cypher/property-graph, sin soporte para <code>SYSTEM_TIME PERIOD</code> (SQL:2011) ni <code>valid_from/valid_to</code> automáticos.</td>
+<td>Ninguno técnico. Es una decisión arquitectónica alineada con la realidad del motor.</td>
+<td>Validar que el catálogo de plantillas (T4) filtra eficientemente por <code>ingested_at</code>. Medir costo de indexar <code>UINT64</code> vs filtrado lineal. Si <code>&gt;5ms</code> por 10k nodos, declarar índice explícito en <code>CREATE NODE TABLE</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-acceso-nlplantilla-23">1.3 Acceso NL→plantilla (§2.3)</h3>
+<table>
+<thead>
+<tr>
+<th>Afirmación del ADR</th>
+<th>Verificación técnica</th>
+<th>Punto débil</th>
+<th>Métrica de validación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Validación trivial por construcción; parámetros se validan por TIPO</code></td>
+<td>TinyLlama (1.1B) genera texto libre. La extracción de <code>$community_id</code>, <code>$n</code>, ventanas temporales <strong>no es determinista</strong>. Un LLM pequeño puede producir <code>1:src=10.0.0.1/dst=192.168.1.1</code> (válido) o <code>community_42</code> (inválido).</td>
+<td>La validación post-LLM requiere <strong>esquema rígido</strong> (JSON Schema, regex, coerción de tipos). Decir "trivial" subestima la tasa de fallo en dominio operativo.</td>
+<td><strong>Métrica obligatoria:</strong> Construir corpus de 100 consultas operativas reales. Medir: 1) Tasa de mapeo correcto a plantilla (precision@1), 2) Tasa de validación de parámetros post-LLM, 3) Tasa de rechazo por ambigüedad. Si validación <code>&lt;95%</code>, implementar parser híbrido (LLM → JSON estructurado → validador determinista).</td>
+</tr>
+<tr>
+<td><code>NL solo selecciona plantilla; nunca genera Cypher</code></td>
+<td>Arquitectura segura por diseño. Elimina superficie de inyección.</td>
+<td>Ninguno técnico. Es la única vía aceptable para sistemas de alta integridad.</td>
+<td>Medir latencia del pipeline NL→clasificación→extracción→validación. Si <code>&gt;800ms</code> p95, considerar modelo más ligero (ej. <code>distilbert-base</code> fine-tuneado) o caching de intents frecuentes.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-respuesta-explicita-a-marcadores-consejo">📜 2. Respuesta explícita a marcadores <code>[CONSEJO]</code></h2>
+<table>
+<thead>
+<tr>
+<th><code>[CONSEJO]</code></th>
+<th>Decisión del Consejo (basada en evidencia)</th>
+<th>Condición de cierre</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Default in-process</strong></td>
+<td>✅ <strong>Aceptado</strong>, pero con mitigación de aislamiento: queries de lectura pesada (<code>T1</code> con <code>$n≥3</code>) deben ejecutarse en <code>thread_pool</code> con <code>setrlimit(RLIMIT_AS)</code> y timeout estricto. Falco se mantiene sin excepciones.</td>
+<td>Cerrar con métrica de <code>max_rss</code> bajo carga y 0 caídas en smoke de 10k queries.</td>
+</tr>
+<tr>
+<td><strong>Semántica <code>ingested_at</code> (<code>ON CREATE SET</code>)</strong></td>
+<td>✅ <strong>Aceptado</strong>. Es la única forma coherente de capturar "primer conocimiento". Se añade requisito: época <code>Unix UTC</code>, monotonicidad garantizada por <code>steady_clock + offset</code>, y rechazo de queries si <code>ingested_at</code> no es estrictamente creciente en lote.</td>
+<td>Cerrar con test de inyección NTP y validación de monotonía.</td>
+</tr>
+<tr>
+<td><strong>Catálogo T1–T6</strong></td>
+<td>✅ <strong>Aceptado con poda explícita</strong>: <code>T5</code> y <code>T6</code> se marcan como <code>BRIDGE_ORO</code> en metadatos. No se optimizan para grafo; se delegan a ORO si el catálogo crece. <code>T4</code> es la plantilla canónica que justifica la inversión bitemporal.</td>
+<td>Cerrar con benchmark comparativo: T4 en grafo vs T4 en ORO (latencia, precisión, coste).</td>
+</tr>
+<tr>
+<td><strong>Firma del catálogo (Ed25519)</strong></td>
+<td>✅ <strong>Aceptado en Fase 4</strong>. No bloquea el diseño actual. Se requiere rotación de claves y verificación en <code>cypher_builder.hpp</code> antes de compilar plantillas en memoria.</td>
+<td>Cerrar con métrica de verificación <code>&lt;50μs</code> por plantilla y gestión de claves en <code>vault</code>/<code>KMS</code> existente.</td>
+</tr>
+<tr>
+<td><strong>Umbral de confianza NL + ambigüedad</strong></td>
+<td>✅ <strong>Umbral 0.85</strong>. Comportamiento ante ambigüedad: <strong>devolver top-2 con scores y pedir selección explícita al operador</strong>. Rechazo duro solo si <code>max_confidence &lt; 0.60</code>.</td>
+<td>Cerrar con evaluación de corpus: medir F1@1, tasa de fallback, y tiempo de resolución operador.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="3-protocolo-de-medicion-obligatorio-antes-de-promocion-a-aprobado">📊 3. Protocolo de Medición Obligatorio (antes de promoción a <code>🟢 APROBADO</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>Eje</th>
+<th>Test</th>
+<th>Métrica objetivo</th>
+<th>Herramienta</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Concurrencia Kuzu</strong></td>
+<td>1 proceso <code>RW</code> + 5 procesos <code>RO</code> ejecutando T1/T2/T3 concurrentemente</td>
+<td><code>0</code> errores de lock/corrupción, p99 latencia <code>&lt;200ms</code></td>
+<td><code>libkuzu</code> C++ API + <code>hyperfine</code></td>
+</tr>
+<tr>
+<td><strong>Bitemporal <code>ingested_at</code></strong></td>
+<td>Ingesta de 10k flujos con NTP step ±1s, query T4 por ventana</td>
+<td>Monotonía <code>100%</code>, overhead storage <code>&lt;15%</code>, reconstrucción WAL <code>&lt;300ms</code></td>
+<td><code>chronyc</code>, <code>bpftrace</code>, <code>wal_parser</code> (DEBT-LABEL-WAL-001)</td>
+</tr>
+<tr>
+<td><strong>NL→Plantilla</strong></td>
+<td>Corpus 100 queries operativas, 3 niveles de ambigüedad</td>
+<td>Precision@1 <code>≥92%</code>, validación parámetros <code>≥96%</code>, latencia <code>&lt;500ms</code> p95</td>
+<td><code>evaluate_nl_classifier.py</code>, <code>jsonschema</code> validador</td>
+</tr>
+<tr>
+<td><strong>Aislamiento in-process</strong></td>
+<td>50 threads concurrentes ejecutando T1 con <code>$n=4</code></td>
+<td><code>max_rss</code> estable, 0 <code>SIGSEGV</code>, CPU throttle <code>&lt;10%</code></td>
+<td><code>valgrind massif</code>, <code>systemd.slice</code>, <code>perf</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="veredicto-final">✅ Veredicto Final</h2>
+<p>El <strong>ADR-057</strong> es <strong>técnicamente sólido, bien acotado y alineado con principios de seguridad y auditabilidad</strong>. No contiene decisiones erróneas, pero sí <strong>suposiciones no medidas</strong> que deben cerrarse con evidencia antes de la implementación.</p>
+<p>El Consejo recomienda:
+1. <strong>Promover a <code>🟢 APROBADO</code> condicionado</strong> a la ejecución del protocolo de medición anterior.
+2. <strong>Mantener <code>in-process</code> como default</strong>, pero con aislamiento de recursos explícito.
+3. <strong>Validar <code>ingested_at</code> con monotonicidad garantizada</strong> y marcar <code>T5/T6</code> como <code>BRIDGE_ORO</code>.
+4. <strong>Cerrar <code>NL→plantilla</code> con corpus evaluado y validador determinista</strong>, no solo "confianza por construcción".</p>
+<p>El principio <code>medir, no votar</code> se ha aplicado. Los puntos débiles son <strong>cuantificables y mitigables</strong>. No se requieren cambios de dirección, solo evidencia de cierre.</p>
+<p><strong>Firmado:</strong> Consejo de Sabios<br />
+<code>📅 Fecha de revisión: [ACTUAL]</code><br />
+<code>🔍 Estado: CONDICIONALMENTE APROBADO → pendiente de smoke tests (§4)</code></p>
+<p>FDO </p>
+<p>QWEN</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

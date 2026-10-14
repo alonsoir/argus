@@ -1,0 +1,1298 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-046-V2-respuesta-CHATGPT/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>🏛️ Consejo de Sabios — Revisión ADR-046 v2 (DAY 158) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-adr-046-v2-day-158" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏛️ Consejo de Sabios — Revisión ADR-046 v2 (DAY 158)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-adr-046-v2-day-158">🏛️ Consejo de Sabios — Revisión ADR-046 v2 (DAY 158)</h1>
+<p>El ADR ha madurado muchísimo respecto a la v1. Ya no parece “cuatro herramientas conectadas”, sino una arquitectura coherente con una tesis operativa clara:</p>
+<blockquote>
+<p><strong>La crisis como unidad de correlación.</strong></p>
+</blockquote>
+<p>Ese cambio conceptual es importante. El ADR deja de pensar en “joins de logs” y empieza a pensar en “eventos físicos observados desde múltiples planos”. Eso acerca el diseño a sistemas reales de DFIR/NDR maduros.</p>
+<p>La separación entre:</p>
+<ul>
+<li>detección,</li>
+<li>correlación,</li>
+<li>entrenamiento,</li>
+<li>y enforcement,</li>
+</ul>
+<p>está bastante bien resuelta.</p>
+<p>El consejo cree que este ADR ya tiene entidad de paper serio y de arquitectura desplegable real.</p>
+<hr />
+<h1 id="1-timeout-de-espera-60s">1. Timeout de espera (60s)</h1>
+<h2 id="evaluacion">Evaluación</h2>
+<p>El timeout de 60s es razonable como:</p>
+<ul>
+<li>valor inicial conservador,</li>
+<li>compatible con Wazuh,</li>
+<li>tolerante a congestión,</li>
+<li>y seguro para entornos edge lentos.</li>
+</ul>
+<p>El problema es que ahora mismo el timeout mezcla dos conceptos distintos:</p>
+<table>
+<thead>
+<tr>
+<th>Concepto</th>
+<th>Naturaleza</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Latencia de ingestión</td>
+<td>técnica</td>
+</tr>
+<tr>
+<td>Duración de la crisis</td>
+<td>semántica</td>
+</tr>
+</tbody>
+</table>
+<p>Y no son lo mismo.</p>
+<hr />
+<h2 id="riesgo-arquitectonico">Riesgo arquitectónico</h2>
+<p>Imaginemos:</p>
+<pre><code class="language-text">t=0    Suricata alerta C2
+t=2    Zeek observa JA3
+t=4    aRGus sube score
+t=45   Wazuh detecta proceso raro
+t=90   segundo beacon del mismo C2
+</code></pre>
+<p>Con timeout fijo:</p>
+<ul>
+<li>o cierras demasiado pronto,</li>
+<li>o fusionas múltiples ataques distintos.</li>
+</ul>
+<hr />
+<h2 id="recomendacion-del-consejo">Recomendación del Consejo</h2>
+<h3 id="separar">Separar:</h3>
+<h2 id="a-correlation_wait_timeout">A) <code>correlation_wait_timeout</code></h2>
+<p>Tiempo máximo esperado para convergencia de señales.</p>
+<p>Ejemplo:</p>
+<pre><code class="language-yaml">wait_timeout:
+  argus: 5s
+  suricata: 10s
+  zeek: 15s
+  wazuh: 60s
+</code></pre>
+<hr />
+<h2 id="b-crisis_idle_timeout">B) <code>crisis_idle_timeout</code></h2>
+<p>Tiempo sin nueva señal antes de cerrar la crisis.</p>
+<p>Ejemplo:</p>
+<pre><code class="language-yaml">crisis_idle_timeout: 120s
+</code></pre>
+<p>Esto convierte la crisis en:</p>
+<blockquote>
+<p>“ventana viva mientras siga llegando actividad correlacionada”.</p>
+</blockquote>
+<p>Mucho más robusto para:</p>
+<ul>
+<li>beaconing,</li>
+<li>movimiento lateral,</li>
+<li>campañas multi-step,</li>
+<li>ransomware lento,</li>
+<li>hands-on-keyboard.</li>
+</ul>
+<hr />
+<h2 id="recomendacion-adicional">Recomendación adicional</h2>
+<p>Añadir:</p>
+<pre><code class="language-cpp">uint64_t crisis_generation;
+</code></pre>
+<p>Porque un nodo puede tener:</p>
+<ul>
+<li>múltiples crisis simultáneas,</li>
+<li>o crisis consecutivas parcialmente solapadas.</li>
+</ul>
+<p>Especialmente importante cuando existan:</p>
+<ul>
+<li>múltiples interfaces,</li>
+<li>múltiples tenants,</li>
+<li>o microsegmentación.</li>
+</ul>
+<hr />
+<h1 id="2-orden-de-integracion-suricata-vs-zeek">2. Orden de integración — Suricata vs Zeek</h1>
+<h2 id="recomendacion-clara-del-consejo">Recomendación clara del Consejo</h2>
+<h2 id="primero-suricata">Primero Suricata.</h2>
+<p>No por calidad arquitectónica.</p>
+<p>Por retorno inmediato.</p>
+<hr />
+<h2 id="motivos">Motivos</h2>
+<h3 id="a-ground-truth-instantaneo">A) Ground truth instantáneo</h3>
+<p>Suricata permite:</p>
+<ul>
+<li>etiquetas automáticas,</li>
+<li>benchmarking,</li>
+<li>datasets enriquecidos,</li>
+<li>validación de correlación.</li>
+</ul>
+<p>Eso desbloquea medio ADR.</p>
+<hr />
+<h3 id="b-evejson-es-extremadamente-comodo">B) Eve.json es extremadamente cómodo</h3>
+<p>La integración operativa es simple:</p>
+<ul>
+<li>JSON,</li>
+<li>eventos estructurados,</li>
+<li>severidad,</li>
+<li>flow_id,</li>
+<li>community_id.</li>
+</ul>
+<p>Zeek requiere más normalización.</p>
+<hr />
+<h3 id="c-suricata-valida-el-pipeline-entero">C) Suricata valida el pipeline entero</h3>
+<p>Con Suricata podéis validar:</p>
+<pre><code class="language-text">detección
+→ crisis
+→ flush
+→ parquet
+→ Neo4j
+→ retraining
+</code></pre>
+<p>sin esperar a:</p>
+<ul>
+<li>parsers complejos,</li>
+<li>semántica TLS,</li>
+<li>grafos ricos.</li>
+</ul>
+<hr />
+<h2 id="despues-zeek">Después Zeek</h2>
+<p>Zeek aporta:</p>
+<ul>
+<li>el valor científico,</li>
+<li>el grafo semántico,</li>
+<li>el contexto profundo,</li>
+<li>la trazabilidad ATT&amp;CK sofisticada.</li>
+</ul>
+<p>Pero no es el mejor “primer ladrillo”.</p>
+<hr />
+<h2 id="recomendacion-operativa-exacta">Recomendación operativa exacta</h2>
+<pre><code class="language-text">Fase 1:
+aRGus + Suricata + correlation-engine mínimo
+
+Fase 2:
+añadir Zeek
+
+Fase 3:
+añadir Wazuh
+</code></pre>
+<hr />
+<h1 id="3-wazuh-en-edge-prioridad">3. Wazuh en edge — prioridad</h1>
+<h2 id="recomendacion-p2">Recomendación: P2.</h2>
+<p>Y esto es importante.</p>
+<hr />
+<h2 id="razon-principal">Razón principal</h2>
+<p>Wazuh no es “una fuente más”.</p>
+<p>Es:</p>
+<ul>
+<li>agente,</li>
+<li>manager,</li>
+<li>indexing,</li>
+<li>reglas,</li>
+<li>decoders,</li>
+<li>colas,</li>
+<li>sincronización,</li>
+<li>persistencia.</li>
+</ul>
+<p>Operacionalmente es un sistema entero.</p>
+<hr />
+<h2 id="riesgo-real">Riesgo real</h2>
+<p>Ahora mismo el mayor peligro del ADR no es precisión.</p>
+<p>Es:</p>
+<blockquote>
+<p>colapsar el edge antes de medir nada.</p>
+</blockquote>
+<p>Suricata + Zeek ya pueden consumir muchísimo.</p>
+<p>Añadir Wazuh demasiado pronto puede ocultar:</p>
+<ul>
+<li>cuellos reales,</li>
+<li>problemas de captura,</li>
+<li>pérdidas de paquetes,</li>
+<li>degradación del sniffer.</li>
+</ul>
+<hr />
+<h2 id="recomendacion-fuerte">Recomendación fuerte</h2>
+<h3 id="validar-primero">Validar primero:</h3>
+<pre><code class="language-text">aRGus + Suricata + Zeek
+</code></pre>
+<p>en:</p>
+<ul>
+<li>RPi5,</li>
+<li>N100,</li>
+<li>tráfico real,</li>
+<li>MITRE real,</li>
+<li>stress prolongado.</li>
+</ul>
+<p>Después medir cuánto margen queda.</p>
+<hr />
+<h2 id="observacion-importante">Observación importante</h2>
+<p>Wazuh tiene muchísimo valor…</p>
+<p>pero principalmente para:</p>
+<ul>
+<li>EDR,</li>
+<li>persistencia,</li>
+<li>post-exploitation,</li>
+<li>compliance,</li>
+<li>DFIR.</li>
+</ul>
+<p>No es el núcleo de vuestro diferencial científico actual.</p>
+<p>El núcleo sigue siendo:</p>
+<blockquote>
+<p>comportamiento + correlación distribuida.</p>
+</blockquote>
+<hr />
+<h1 id="4-scope-minimo-del-correlation-engine">4. Scope mínimo del <code>correlation-engine</code></h1>
+<h2 id="total-acuerdo-con-el-enfoque-incremental">Total acuerdo con el enfoque incremental.</h2>
+<p>La propuesta del ADR es correcta.</p>
+<hr />
+<h2 id="recomendacion-exacta-de-v1">Recomendación exacta de v1</h2>
+<h3 id="correlation-engine-v1">correlation-engine v1</h3>
+<p>Implementar SOLO:</p>
+<pre><code class="language-text">- trigger aRGus
+- lifecycle crisis
+- buffers circulares
+- flush parquet
+- timestamps
+- IDs correlación
+- persistencia
+</code></pre>
+<p>SIN:</p>
+<ul>
+<li>joins complejos,</li>
+<li>Neo4j sofisticado,</li>
+<li>multi-trigger real,</li>
+<li>lógica ATT&amp;CK,</li>
+<li>graph features.</li>
+</ul>
+<hr />
+<h2 id="por-que">¿Por qué?</h2>
+<p>Porque el riesgo principal ahora mismo es:</p>
+<blockquote>
+<p>complejidad accidental.</p>
+</blockquote>
+<p>No falta visión.</p>
+<p>Falta validación empírica.</p>
+<hr />
+<h2 id="el-peligro-actual">El peligro actual</h2>
+<p>El ADR ya está entrando en:</p>
+<ul>
+<li>NDR,</li>
+<li>EDR,</li>
+<li>SIEM,</li>
+<li>graph intelligence,</li>
+<li>federated learning,</li>
+<li>ATT&amp;CK orchestration.</li>
+</ul>
+<p>Eso puede explotar cognitivamente el proyecto.</p>
+<hr />
+<h2 id="recomendacion-del-consejo_1">Recomendación del Consejo</h2>
+<p>Construir primero:</p>
+<pre><code class="language-text">CrisisWindow lifecycle engine
+</code></pre>
+<p>como núcleo puro.</p>
+<p>Si eso funciona:</p>
+<ul>
+<li>todo lo demás es extensión natural.</li>
+</ul>
+<p>Si eso falla:</p>
+<ul>
+<li>el resto del ADR colapsa.</li>
+</ul>
+<hr />
+<h1 id="5-adr-propio-para-mitre-generator">5. ¿ADR propio para <code>mitre-generator</code>?</h1>
+<h2 id="si-absolutamente-si">Sí. Absolutamente sí.</h2>
+<p>Debe ser ADR-047.</p>
+<hr />
+<h2 id="motivo">Motivo</h2>
+<p>No es una utilidad auxiliar.</p>
+<p>Es:</p>
+<h1 id="infraestructura-experimental">infraestructura experimental.</h1>
+<p>Y además:</p>
+<ul>
+<li>define reproducibilidad científica,</li>
+<li>define ground truth,</li>
+<li>define metodología de evaluación,</li>
+<li>define comparabilidad futura.</li>
+</ul>
+<hr />
+<h2 id="mas-importante-todavia">Más importante todavía</h2>
+<p>Ese componente puede acabar siendo:</p>
+<blockquote>
+<p>uno de los activos científicos más valiosos de aRGus.</p>
+</blockquote>
+<p>Porque la mayoría de papers:</p>
+<ul>
+<li>no automatizan ATT&amp;CK correctamente,</li>
+<li>no generan datasets reproducibles,</li>
+<li>no sincronizan telemetría multi-fuente.</li>
+</ul>
+<p>Vosotros sí vais hacia eso.</p>
+<p>Eso tiene muchísimo valor académico.</p>
+<hr />
+<h1 id="6-experimento-academico-vs-sintetico">6. Experimento académico vs sintético</h1>
+<h2 id="la-hipotesis-es-extremadamente-interesante">La hipótesis es extremadamente interesante.</h2>
+<p>Y coherente con lo observado en sistemas reales.</p>
+<p>El consejo cree que probablemente habéis descubierto algo importante:</p>
+<blockquote>
+<p>el modelo aprendía “artefactos del dataset”, no invariantes del ataque.</p>
+</blockquote>
+<p>Eso encaja perfectamente con Machine Learning moderno y con las críticas clásicas de Robin Sommer y Vern Paxson.</p>
+<hr />
+<h2 id="pero">PERO</h2>
+<p>Necesitáis muchísimo rigor aquí.</p>
+<p>Porque esta afirmación es fuerte.</p>
+<p>Muy fuerte.</p>
+<hr />
+<h2 id="el-consejo-recomienda">El Consejo recomienda:</h2>
+<h3 id="no-afirmar-todavia">NO afirmar todavía:</h3>
+<pre><code class="language-text">“los datasets académicos son malos”
+</code></pre>
+<hr />
+<h2 id="si-afirmar">Sí afirmar:</h2>
+<pre><code class="language-text">“en nuestras condiciones experimentales,
+los datasets sintéticos generalizaron mejor”
+</code></pre>
+<p>Mucho más defendible.</p>
+<hr />
+<h2 id="recomendacion-critica">Recomendación crítica</h2>
+<p>Guardar inmediatamente:</p>
+<ul>
+<li>seeds,</li>
+<li>hiperparámetros,</li>
+<li>ratios mezcla,</li>
+<li>métricas,</li>
+<li>datasets exactos,</li>
+<li>commits,</li>
+<li>notebooks,</li>
+<li>curvas.</li>
+</ul>
+<p>Porque esa sección puede acabar siendo:</p>
+<blockquote>
+<p>uno de los resultados más citables del paper.</p>
+</blockquote>
+<p>Y sería terrible perder reproducibilidad.</p>
+<hr />
+<h1 id="observaciones-arquitectonicas-adicionales">Observaciones arquitectónicas adicionales</h1>
+<h2 id="1-community-id">1. Community ID</h2>
+<p>El ADR no lo menciona explícitamente y debería.</p>
+<p>Suricata y Zeek soportan:</p>
+<pre><code class="language-text">community_id
+</code></pre>
+<p>Eso puede convertirse en:</p>
+<blockquote>
+<p>la columna vertebral de correlación cross-tool.</p>
+</blockquote>
+<p>Muchísimo más robusto que:</p>
+<ul>
+<li>timestamps,</li>
+<li>5-tuplas,</li>
+<li>heurísticas temporales.</li>
+</ul>
+<p>El consejo recomienda elevarlo a:</p>
+<pre><code class="language-text">Correlation Primary Key
+</code></pre>
+<p>si está disponible.</p>
+<hr />
+<h2 id="2-riesgo-de-duplicacion-masiva">2. Riesgo de duplicación masiva</h2>
+<p>Las cuatro fuentes observarán:</p>
+<ul>
+<li>el mismo flujo,</li>
+<li>múltiples veces,</li>
+<li>con granularidades distintas.</li>
+</ul>
+<p>Necesitáis definir:</p>
+<pre><code class="language-text">canonical event identity
+</code></pre>
+<p>o Neo4j acabará lleno de duplicados semánticos.</p>
+<hr />
+<h2 id="3-grafo-cuidado-con-explosion-cardinal">3. Grafo — cuidado con explosión cardinal</h2>
+<p>El modelo de grafo es potente.</p>
+<p>Pero:</p>
+<pre><code class="language-text">Flow
+→ Domain
+→ Cert
+→ Process
+→ File
+→ AuthEvent
+</code></pre>
+<p>puede crecer explosivamente.</p>
+<p>Necesitaréis:</p>
+<ul>
+<li>TTL,</li>
+<li>compactación,</li>
+<li>agregación,</li>
+<li>snapshots,</li>
+<li>cold storage.</li>
+</ul>
+<p>Antes de producción real.</p>
+<hr />
+<h1 id="veredicto-del-consejo">Veredicto del Consejo</h1>
+<h2 id="el-adr-ya-tiene-coherencia-arquitectonica-seria">El ADR ya tiene coherencia arquitectónica seria.</h2>
+<p>La idea central:</p>
+<blockquote>
+<p>correlación dirigida por crisis y no por polling pasivo</p>
+</blockquote>
+<p>es buena.</p>
+<p>Muy buena.</p>
+<p>Y además diferenciadora.</p>
+<hr />
+<h2 id="recomendacion-estrategica-final">Recomendación estratégica final</h2>
+<p>No intentéis construir “la plataforma definitiva” en una sola iteración.</p>
+<p>El ADR ya contiene:</p>
+<ul>
+<li>NDR,</li>
+<li>EDR,</li>
+<li>SIEM,</li>
+<li>graph analytics,</li>
+<li>ML retraining,</li>
+<li>federated intelligence,</li>
+<li>ATT&amp;CK orchestration.</li>
+</ul>
+<p>Eso son años de producto.</p>
+<hr />
+<h2 id="prioridad-recomendada">Prioridad recomendada</h2>
+<pre><code class="language-text">1. Crisis lifecycle engine
+2. Suricata integration
+3. Parquet enrichment
+4. MITRE reproducibility
+5. Zeek semantic enrichment
+6. Wazuh
+7. Graph intelligence
+8. Ensemble federation
+</code></pre>
+<p>Ese orden minimiza riesgo y maximiza validación científica temprana.</p>
+<hr />
+<p><em>"Primero demostrar que la sombra existe. Después enseñarle a aprender."</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

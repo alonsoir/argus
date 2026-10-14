@@ -1,0 +1,1482 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Brief%20para%20el%20Consejo%20de%20Sabios%20%E2%80%94%20DAY%20184%20%E2%86%92%20DAY%20185-mistral/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Brief para el Consejo de Sabios — DAY 184 → DAY 185 mistral - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-medir-primero-vs-construir-la-capa-avro" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Brief para el Consejo de Sabios — DAY 184 → DAY 185 mistral
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-medir-primero-vs-construir-la-capa-avro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. ¿Medir primero vs. Construir la capa Avro?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. ¿Medir primero vs. Construir la capa Avro?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tesis-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tesis actual:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#argumentos-a-favor-de-medir-primero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Argumentos a favor de medir primero:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#argumentos-en-contra-para-debate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Argumentos en contra (para debate):
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propuesta-de-validacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propuesta de validación:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-opcion-b-struct-plano-vs-a-protobuf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Opción B (struct plano) vs. A (protobuf)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Opción B (struct plano) vs. A (protobuf)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tesis-actual_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tesis actual:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgos-de-b" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgos de B:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mitigacion-propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mitigación propuesta:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-al-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta al Consejo:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-que-le-falta-al-injector-adversarial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ¿Qué le falta al injector adversarial?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. ¿Qué le falta al injector adversarial?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#casos-actuales-cubiertos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Casos actuales cubiertos:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#posibles-casos-faltantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Posibles casos faltantes:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propuesta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propuesta:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-injector-a-fichero-vs-tcpreplay" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Injector-a-fichero vs. tcpreplay
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Injector-a-fichero vs. tcpreplay">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tesis-actual_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tesis actual:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#argumentos-a-favor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Argumentos a favor:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#argumentos-en-contra" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Argumentos en contra:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propuesta-de-compromiso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propuesta de compromiso:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-refactor-correlationwriter-libreria-compartida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Refactor CorrelationWriter → librería compartida
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Refactor CorrelationWriter → librería compartida">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tesis-actual_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tesis actual:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgos:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pregunta-al-consejo_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pregunta al Consejo:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propuesta_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propuesta:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-hmac-en-el-banco-de-tortura" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. HMAC en el banco de tortura
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. HMAC en el banco de tortura">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#tesis-actual_4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tesis actual:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#argumentos-a-favor_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Argumentos a favor:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#argumentos-en-contra_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Argumentos en contra:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propuesta_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propuesta:
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-decisiones-pendientes-y-experimentos-propuestos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de decisiones pendientes y experimentos propuestos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#preguntas-directas-al-consejo-de-sabios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas directas al Consejo de Sabios
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Brief para el Consejo de Sabios — DAY 184 → DAY 185 mistral</h1>
+
+<p>Aironman DirtDiver, tu brief es exhaustivo y refleja una disciplina técnica admirable. Vamos a desglosar las preguntas clave para el Consejo, <strong>centrándonos en la evidencia, el riesgo medible y la economía de esfuerzo</strong>. Aquí tienes un análisis estructurado, con preguntas concretas para cada punto y propuestas de experimentos o métricas que validarían las decisiones.</p>
+<hr />
+<h2 id="1-medir-primero-vs-construir-la-capa-avro"><strong>1. ¿Medir primero vs. Construir la capa Avro?</strong></h2>
+<h3 id="tesis-actual"><strong>Tesis actual:</strong></h3>
+<p>Medir el camino <strong>CSV directo → correlation-engine → Kuzu</strong> es suficiente para validar la <strong>no-pérdida de datos</strong> en el pipeline actual. Construir Avro/Parquet/Iceberg antes de la primera tortura sería <strong>asumir</strong> que el cuello de botella está en la serialización, no en la ingesta o el grafo.</p>
+<h3 id="argumentos-a-favor-de-medir-primero"><strong>Argumentos a favor de medir primero:</strong></h3>
+<ul>
+<li><strong>Economía de esfuerzo:</strong> Si el pipeline actual (CSV → Kuzu) ya pierde filas a caudal alto, el problema es <strong>anterior a Avro</strong>. Construir Avro no lo resolvería.</li>
+<li><strong>Aislamiento de variables:</strong> El eje no negociable es la <strong>aprendizaje de modelos ensemble desde nodos distribuidos</strong>. La serialización es un detalle de implementación; el riesgo crítico es la <strong>durabilidad y consistencia</strong> de los datos.</li>
+<li><strong>Baseline medible:</strong> El coste actual del <code>KuzuGraphSink</code> (0.86s/batch) es un dato concreto. Si la tortura demuestra que este coste es aceptable, se valida el suelo.</li>
+</ul>
+<h3 id="argumentos-en-contra-para-debate"><strong>Argumentos en contra (para debate):</strong></h3>
+<ul>
+<li><strong>Falso verde:</strong> Si el pipeline CSV-directo <strong>no pierde filas</strong>, pero el <strong>volumen real de producción</strong> (con Avro/Parquet) sí lo haría (por ejemplo, por overhead de serialización), la medición sería <strong>optimista</strong>.</li>
+<li><strong>Costo de cambio:</strong> Si luego se descubre que Avro es necesario, el refactor de <code>CorrelationWriter</code> podría requerir cambios en el injector y el consumidor.</li>
+</ul>
+<h3 id="propuesta-de-validacion"><strong>Propuesta de validación:</strong></h3>
+<ul>
+<li><strong>Experimento:</strong> Ejecutar el injector adversarial con <strong>CSV directo</strong> y medir:<ul>
+<li><strong>Pérdida de filas</strong> (comparar <code>rows_flushed</code> en <code>FlushResult</code> vs. filas inyectadas).</li>
+<li><strong>Latencia por batch</strong> (¿0.86s se mantiene estable bajo carga?).</li>
+<li><strong>Uso de memoria</strong> (¿el acumulador de <code>KuzuGraphSink</code> desborda?).</li>
+</ul>
+</li>
+<li><strong>Métrica de corte:</strong> Si la pérdida es <strong>0%</strong> y la latencia es <strong>&lt;1s/batch</strong> a caudal máximo, el CSV-directo es válido para la primera tortura. Si no, se prioriza Avro.</li>
+</ul>
+<hr />
+<h2 id="2-opcion-b-struct-plano-vs-a-protobuf"><strong>2. Opción B (struct plano) vs. A (protobuf)</strong></h2>
+<h3 id="tesis-actual_1"><strong>Tesis actual:</strong></h3>
+<p><strong>Opción B</strong> (<code>CorrelationV1Row</code> + adaptador) es mejor porque:
+- <strong>Desacople:</strong> El injector no depende de protobuf.
+- <strong>Peso ligero:</strong> No arrastra el schema completo de <code>NetworkSecurityEvent</code>.
+- <strong>Unificación:</strong> El contrato ya existe como struct en el consumidor (<code>CorrelationRecord</code>).</p>
+<h3 id="riesgos-de-b"><strong>Riesgos de B:</strong></h3>
+<ul>
+<li><strong>Divergencia:</strong> La conversión <code>protobuf → CorrelationV1Row</code> podría no ser byte-idéntica.</li>
+<li><strong>Mantenimiento:</strong> Si el schema de <code>CorrelationV1Row</code> cambia, hay que actualizar <strong>dos lugares</strong> (productor y consumidor).</li>
+</ul>
+<h3 id="mitigacion-propuesta"><strong>Mitigación propuesta:</strong></h3>
+<ul>
+<li><strong>Test de equivalencia byte-idéntica:</strong><ul>
+<li>Input: Un <code>NetworkSecurityEvent</code> con todos los campos posibles (incluyendo edge cases: strings con comillas, timestamps límite, etc.).</li>
+<li>Output: Comparar la salida de <code>build_row(event)</code> (viejo) vs. <code>event → row → build_row(row)</code> (nuevo).</li>
+<li><strong>Assert:</strong> Los bytes deben ser <strong>idénticos</strong>. Si falla, el test lo detecta <strong>antes de merge</strong>.</li>
+</ul>
+</li>
+</ul>
+<h3 id="pregunta-al-consejo"><strong>Pregunta al Consejo:</strong></h3>
+<p>¿Es suficiente este test para garantizar que <strong>no hay divergencia</strong>? ¿O hay casos donde la serialización de protobuf podría introducir diferencias no detectables por este test (ej: orden de campos, metadatos ocultos)?</p>
+<hr />
+<h2 id="3-que-le-falta-al-injector-adversarial"><strong>3. ¿Qué le falta al injector adversarial?</strong></h2>
+<h3 id="casos-actuales-cubiertos"><strong>Casos actuales cubiertos:</strong></h3>
+<ul>
+<li><code>node_id</code> con comillas/backslash (H-1).</li>
+<li>Timestamps que disparan <code>temporal_anomaly</code>.</li>
+<li>Colisiones de <code>flow_uid</code>.</li>
+<li>Ráfagas que fuerzan flush inline.</li>
+<li>Volumen que desborda el acumulador.</li>
+</ul>
+<h3 id="posibles-casos-faltantes"><strong>Posibles casos faltantes:</strong></h3>
+<table>
+<thead>
+<tr>
+<th><strong>Categoría</strong></th>
+<th><strong>Ejemplo</strong></th>
+<th><strong>¿Por qué rompería el pipeline?</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Corrupción de datos</strong></td>
+<td>HMAC inválido (pero no por clave, sino por datos mal formados).</td>
+<td>El consumidor descarta la fila → pérdida de datos.</td>
+</tr>
+<tr>
+<td><strong>Esquemas incompatibles</strong></td>
+<td>Campos faltantes en <code>CorrelationV1Row</code> (ej: <code>src_ip</code> vacío).</td>
+<td>Error en <code>build_row</code> o en Kuzu (NULL no esperado).</td>
+</tr>
+<tr>
+<td><strong>Carga maliciosa</strong></td>
+<td><code>payload</code> con bytes no UTF-8 o SQL injection (ej: <code>'; DROP TABLE--</code>).</td>
+<td>Fallo en <code>execute(prepared)</code> o corrupción de la BD.</td>
+</tr>
+<tr>
+<td><strong>Concurrencia</strong></td>
+<td>Múltiples hilos escribiendo al mismo fichero CSV.</td>
+<td>Corrupción del fichero → pérdida de filas.</td>
+</tr>
+<tr>
+<td><strong>Límites de Kuzu</strong></td>
+<td>Batch con &gt;10K filas (¿límite de transacción en Kuzu?).</td>
+<td>Fallo en <code>COMMIT</code> → rollback silencioso.</td>
+</tr>
+<tr>
+<td><strong>Tiempo real</strong></td>
+<td>Timestamps fuera de orden (ej: <code>ingested_at</code> futuro).</td>
+<td>Fallo en <code>temporal_anomaly</code> o en el grafo.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="propuesta"><strong>Propuesta:</strong></h3>
+<ul>
+<li><strong>Añadir al injector:</strong><ul>
+<li><strong>HMAC inválido</strong> (pero con datos bien formados, para probar el descarte).</li>
+<li><strong>Campos nulos</strong> (ej: <code>src_ip = ""</code>).</li>
+<li><strong>Batch gigante</strong> (ej: 50K filas) para probar límites de Kuzu.</li>
+<li><strong>Timestamps desordenados</strong> (ej: <code>ingested_at</code> en el pasado lejano).</li>
+</ul>
+</li>
+<li><strong>Métrica:</strong> % de filas descartadas por el consumidor (debe ser <strong>0%</strong> si el injector es correcto).</li>
+</ul>
+<hr />
+<h2 id="4-injector-a-fichero-vs-tcpreplay"><strong>4. Injector-a-fichero vs. tcpreplay</strong></h2>
+<h3 id="tesis-actual_2"><strong>Tesis actual:</strong></h3>
+<p>El <strong>NIC de VirtualBox</strong> es un cuello de botella conocido ("Message too long", drops de MTU). Usar <strong>injector-a-fichero</strong> aísla el pipeline de este problema.</p>
+<h3 id="argumentos-a-favor"><strong>Argumentos a favor:</strong></h3>
+<ul>
+<li><strong>Aislamiento:</strong> Mide <strong>solo el código de aRGus</strong> (ingesta, grafo, durabilidad).</li>
+<li><strong>Reproducibilidad:</strong> El fichero CSV puede reutilizarse para múltiples pruebas.</li>
+</ul>
+<h3 id="argumentos-en-contra"><strong>Argumentos en contra:</strong></h3>
+<ul>
+<li><strong>Falso aislamiento:</strong> En producción, el cuello podría ser <strong>el NIC de las Raspberries</strong> (no VirtualBox). Si no se mide ahora, se descubrirá tarde.</li>
+<li><strong>Diferencias de comportamiento:</strong> Un fichero CSV no simula la <strong>latencia de red</strong> o <strong>pérdida de paquetes</strong> de un tcpreplay real.</li>
+</ul>
+<h3 id="propuesta-de-compromiso"><strong>Propuesta de compromiso:</strong></h3>
+<ol>
+<li><strong>Primera tortura:</strong> Injector-a-fichero (para validar el pipeline interno).</li>
+<li><strong>Segunda tortura:</strong> tcpreplay con <strong>CTU-13 Neris</strong> (para medir el sistema completo, aceptando el techo de VirtualBox).</li>
+<li><strong>Métrica clave:</strong> Comparar la <strong>pérdida de filas</strong> entre ambos métodos. Si es similar, el NIC no es el cuello. Si es mayor en tcpreplay, el NIC es el problema.</li>
+</ol>
+<hr />
+<h2 id="5-refactor-correlationwriter-libreria-compartida"><strong>5. Refactor <code>CorrelationWriter</code> → librería compartida</strong></h2>
+<h3 id="tesis-actual_3"><strong>Tesis actual:</strong></h3>
+<p>Extraer <code>CorrelationWriter</code> a <code>libcorrelation_v1</code> es el <strong>primer ladrillo</strong> del <code>argus-adapter-producer</code>, porque:
+- <strong>Reutilización:</strong> Sirve a ml-detector, injector de tortura y futuro producer.
+- <strong>Desacople:</strong> Separar serialización de lógica de negocio (ml-detector no debe saber cómo se serializa).</p>
+<h3 id="riesgos"><strong>Riesgos:</strong></h3>
+<ul>
+<li><strong>Sobre-anticipación:</strong> El producer real podría necesitar <strong>leer de log + ZMQ</strong>, no solo serializar desde struct.</li>
+<li><strong>Acoplamiento oculto:</strong> Si <code>libcorrelation_v1</code> asume que el input es siempre un struct, podría no servir para el producer real (que lee de logs).</li>
+</ul>
+<h3 id="pregunta-al-consejo_1"><strong>Pregunta al Consejo:</strong></h3>
+<p>¿Es mejor <strong>esperar</strong> a tener el producer real y extraer entonces la librería (con requisitos claros), o <strong>construir ahora</strong> con la suposición de que el contrato <code>CorrelationV1Row</code> es estable?</p>
+<h3 id="propuesta_1"><strong>Propuesta:</strong></h3>
+<ul>
+<li><strong>Validar la suposición:</strong> ¿El producer real <strong>necesitará</strong> leer de log + ZMQ, o puede adaptarse a <code>CorrelationV1Row</code>?<ul>
+<li>Si la respuesta es <strong>sí</strong>, entonces <code>libcorrelation_v1</code> es un buen ladrillo.</li>
+<li>Si la respuesta es <strong>no</strong>, entonces el refactor actual podría ser <strong>prematuro</strong>.</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="6-hmac-en-el-banco-de-tortura"><strong>6. HMAC en el banco de tortura</strong></h2>
+<h3 id="tesis-actual_4"><strong>Tesis actual:</strong></h3>
+<p>El HMAC en el injector <strong>no es seguridad</strong>, sino <strong>correctitud de medición</strong>:
+- Sin HMAC válido, el consumidor descarta la fila → <strong>pérdida de datos ficticia</strong>.
+- El objetivo es <strong>garantizar que el consumidor acepte todas las filas inyectadas</strong>.</p>
+<h3 id="argumentos-a-favor_1"><strong>Argumentos a favor:</strong></h3>
+<ul>
+<li><strong>Aislamiento:</strong> El banco de tortura no debe depender de la provisión de claves (DEBT-BRONZE-KEY-PROVISIONING-001).</li>
+<li><strong>Simplicidad:</strong> Usar la misma clave para firmar y verificar es suficiente para el test.</li>
+</ul>
+<h3 id="argumentos-en-contra_1"><strong>Argumentos en contra:</strong></h3>
+<ul>
+<li><strong>Acoplamiento:</strong> Si el HMAC se genera en el injector con una clave fija, el banco <strong>sí depende</strong> de esa clave (aunque sea local).</li>
+<li><strong>Falso positivo:</strong> Si el HMAC es incorrecto, el consumidor descarta filas → la medición sería <strong>pérdida de datos</strong>, no un fallo del pipeline.</li>
+</ul>
+<h3 id="propuesta_2"><strong>Propuesta:</strong></h3>
+<ul>
+<li><strong>Solución:</strong> Que el injector <strong>no firme</strong> las filas, pero el consumidor <strong>no verifique el HMAC</strong> en modo tortura (flag <code>--skip-hmac</code>).<ul>
+<li><strong>Ventaja:</strong> El banco no depende de claves.</li>
+<li><strong>Riesgo:</strong> Si el consumidor <strong>sí verifica HMAC en producción</strong>, el test no sería representativo.</li>
+</ul>
+</li>
+<li><strong>Alternativa:</strong> Usar una <strong>clave de test fija</strong> (ej: <code>0xDEADBEEF</code>) en el injector y el consumidor, documentada como <strong>solo para tortura</strong>.</li>
+</ul>
+<hr />
+<hr />
+<h2 id="resumen-de-decisiones-pendientes-y-experimentos-propuestos"><strong>Resumen de decisiones pendientes y experimentos propuestos</strong></h2>
+<table>
+<thead>
+<tr>
+<th><strong>Pregunta</strong></th>
+<th><strong>Decisión actual</strong></th>
+<th><strong>Experimento/Validación propuesta</strong></th>
+<th><strong>Métrica clave</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>¿Medir primero?</td>
+<td>Sí (CSV directo)</td>
+<td>Injector adversarial → medir pérdida de filas y latencia.</td>
+<td>% pérdida, latencia/batch.</td>
+</tr>
+<tr>
+<td>Opción B vs A</td>
+<td>B (struct plano)</td>
+<td>Test de equivalencia byte-idéntica.</td>
+<td>Bytes idénticos en salida.</td>
+</tr>
+<tr>
+<td>¿Qué falta en el injector?</td>
+<td>Casos de corrupción y límites.</td>
+<td>Añadir HMAC inválido, campos nulos, batch gigante.</td>
+<td>% filas descartadas.</td>
+</tr>
+<tr>
+<td>Injector-a-fichero vs tcpreplay</td>
+<td>Injector-a-fichero (primera)</td>
+<td>Comparar pérdida de filas entre ambos métodos.</td>
+<td>Diferencia en % pérdida.</td>
+</tr>
+<tr>
+<td>Refactor <code>CorrelationWriter</code></td>
+<td>Extraer a librería.</td>
+<td>Validar si el producer real usará <code>CorrelationV1Row</code>.</td>
+<td>Requisitos del producer.</td>
+</tr>
+<tr>
+<td>HMAC en tortura</td>
+<td>Usar clave fija o <code>--skip-hmac</code>.</td>
+<td>Probar con y sin verificación de HMAC.</td>
+<td>% filas aceptadas.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="preguntas-directas-al-consejo-de-sabios"><strong>Preguntas directas al Consejo de Sabios</strong></h2>
+<ol>
+<li>
+<p><strong>¿Aceptáis el orden "medir primero" con el experimento propuesto (injector adversarial + CSV directo)?</strong> ¿O veis un riesgo crítico que no se cubre?</p>
+</li>
+<li>
+<p><strong>¿El test de equivalencia byte-idéntica es suficiente para validar la Opción B?</strong> ¿O hay casos donde protobuf podría introducir diferencias no detectables?</p>
+</li>
+<li>
+<p><strong>¿Qué otros casos de tortura añadiríais al injector?</strong> (Ej: ¿ataques de inyección SQL en <code>payload</code>? ¿Batch con 100K filas?)</p>
+</li>
+<li>
+<p><strong>¿Es legítimo posponer tcpreplay hasta después de validar el pipeline interno?</strong> ¿O el NIC de VirtualBox es un cuello que debe medirse <strong>ya</strong>?</p>
+</li>
+<li>
+<p><strong>¿El refactor a <code>libcorrelation_v1</code> es el primer paso correcto, o es prematuro?</strong> ¿Deberíamos esperar a tener el producer real?</p>
+</li>
+<li>
+<p><strong>¿Cómo manejar el HMAC en el banco de tortura sin acoplarlo a la provisión de claves?</strong> ¿Clave fija? ¿Flag <code>--skip-hmac</code>?</p>
+</li>
+</ol>
+<hr />
+<p><strong>Observación final:</strong>
+El enfoque actual es <strong>científico y pragmático</strong>: cada decisión se basa en <strong>mediciones concretas</strong> (ej: <code>FlushResult</code>, test de equivalencia, % pérdida de filas). El Consejo debería validar si los experimentos propuestos <strong>cubren todos los riesgos críticos</strong> o si hay huecos. <strong>¿Qué medición falta para estar seguros de que el pipeline no perderá datos en producción?</strong></p>
+<p>FDO</p>
+<p>MISTRAL</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

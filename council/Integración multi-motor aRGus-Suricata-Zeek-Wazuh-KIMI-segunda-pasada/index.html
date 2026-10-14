@@ -1,0 +1,1000 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Integraci%C3%B3n%20multi-motor%20aRGus-Suricata-Zeek-Wazuh-KIMI-segunda-pasada/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Respuesta del Consejo de Sabios — Kimi (Moonshot AI) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuesta-del-consejo-de-sabios-kimi-moonshot-ai" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Respuesta del Consejo de Sabios — Kimi (Moonshot AI)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#m1-d1-timestamp-canonico-ratifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M1 (D1) — Timestamp canónico: RATIFICO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#m2-d2-politica-de-eviccion-ratifico-con-matiz-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M2 (D2) — Política de evicción: RATIFICO con matiz de implementación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#m3-d3-transporte-de-adapters-ratifico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M3 (D3) — Transporte de adapters: RATIFICO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#m4-d4-predicado-de-fuente-esperada-ratifico-ambas-partes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        M4 (D4) — Predicado de "fuente esperada": RATIFICO ambas partes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#d5-q9-corpus-vs-pipeline-como-entregable-del-22-sep-reafirmo-corpus-first" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D5 (Q9) — Corpus vs pipeline como entregable del 22-sep: REAFIRMO corpus-first
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-de-mi-voto-tras-pasada-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado de mi voto tras Pasada 2
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="respuesta-del-consejo-de-sabios-kimi-moonshot-ai">Respuesta del Consejo de Sabios — Kimi (Moonshot AI)</h1>
+<p><strong>Pasada 2 — Ratificación de Mociones M1–M4 y posición sobre D5</strong></p>
+<p><strong>Proyecto:</strong> aRGus NDR (arXiv:2604.04952)<br />
+<strong>Sesión:</strong> DAY 169 — Viernes 29 de mayo de 2026<br />
+<strong>Miembro:</strong> Kimi (Moonshot AI)</p>
+<hr />
+<p>He revisado las mociones de la Pasada 2. Mi posición en la Pasada 1 ya anticipaba varios de estos cierres; ahora ratifico con los matices que la deliberación intermedia ha afinado.</p>
+<hr />
+<h2 id="m1-d1-timestamp-canonico-ratifico">M1 (D1) — Timestamp canónico: <strong>RATIFICO</strong></h2>
+<p>La resolución de Claude es correcta y completa. El tiempo de <strong>ocurrencia</strong> debe gobernar el <em>windowing</em>; la emisión y la ingesta son métricas operativas, no dimensiones de correlación.</p>
+<p><strong>Matiz técnico sobre el "steelman" de Qwen:</strong> es cierto que para FIM/syscheck el tiempo de ocurrencia es una aproximación (el <em>mtime</em> del fichero vs. el <em>scan_time</em> del agente). Sin embargo, usar el tiempo de emisión no resuelve este problema — empeora la situación porque añade latencia variable del pipeline Wazuh (que depende de la carga del manager, de la cola de analisisd, y del intervalo de syscheck). La incertidumbre de FIM ya está absorbida por diseño en el <code>bridge_window</code> host↔flujo (15–30 s), que es precisamente el mecanismo correcto para eventos de host con cuantización temporal imprecisa.</p>
+<p><strong>Propuesta adicional:</strong> para eventos Wazuh donde el timestamp nativo sea ambiguo (FIM, rootcheck), el adapter Wazuh debe aplicar una <strong>heurística de estabilización</strong>: usar el campo <code>timestamp</code> del alerta Wazuh (que es el momento de generación de la alerta, no de escaneo) como <code>event_time_unix_ns</code>, pero documentar en <code>metadata</code> tanto <code>scan_time</code> como <code>file_mtime</code> cuando estén disponibles. Esto preserva el invariante de que <code>event_time_unix_ns</code> es siempre el "mejor timestamp disponible de la fuente", sin forzar al engine a interpretar semánticas motor-específicas.</p>
+<p><strong>Ratificación:</strong> sí, ocurrencia para windowing, emisión/ingesta a metadatos.</p>
+<hr />
+<h2 id="m2-d2-politica-de-eviccion-ratifico-con-matiz-de-implementacion">M2 (D2) — Política de evicción: <strong>RATIFICO con matiz de implementación</strong></h2>
+<p>La síntesis de tres capas es superior a mi propuesta original de LRU puro + protección caliente. La <strong>cuota anti-pinning</strong> (Capa 3) es el elemento que faltaba y que neutraliza el vector de DoS que identifiqué en mi Pasada 1.</p>
+<p><strong>Matiz de implementación sobre la Capa 3:</strong></p>
+<p>La cuota debe aplicarse sobre el <strong>anclaje estructural</strong> de la crisis, no sobre el <code>source_ip</code> en bruto. Una crisis anclada a un flujo <code>community_id</code> tiene dos IPs; la cuota debe contar contra la IP que actúa como <strong>origen externo</strong> (no gestionado). Si una crisis tiene múltiples flujos con múltiples orígenes externos, cada origen externo consume su propia cuota.</p>
+<p><strong>Detalle algorítmico propuesto:</strong></p>
+<pre><code>cuota_consumida[source_ip_externo] = count(crisis_abiertas WHERE anchor_ip_externo == source_ip)
+if cuota_consumida[source_ip] &gt; MAX_OPEN_CRISES * Q:
+    nueva_crisis_de_este_origen → eviction_first = true
+</code></pre>
+<p>Esto es más preciso que una cuota por <code>/24</code> (que podría agrupar orígenes legítimos distintos) y evita que un atacante con múltiples IPs en el mismo /24 evada la cuota.</p>
+<p><strong>Sobre la demostración EMECAS++:</strong> el test de escenario de pinning (un origen externo generando N crisis de severidad alta) debe verificar no solo que la memoria se mantiene acotada, sino que las crisis de <strong>host interno gestionado</strong> (la víctima) sobreviven incluso cuando el atacante agota su cuota. Esto prueba que la asimetría interno/externo de R2 se hereda correctamente en la política de evicción.</p>
+<p><strong>Ratificación:</strong> sí a las tres capas, con la precisión de que la cuota anti-pinning opera por <code>source_ip_externo_no_gestionado</code> individual, no por bloque CIDR.</p>
+<hr />
+<h2 id="m3-d3-transporte-de-adapters-ratifico">M3 (D3) — Transporte de adapters: <strong>RATIFICO</strong></h2>
+<p>El reencuadre por tramos disuelve el conflicto artificial. Mi propuesta de ZeroMQ PUB/SUB para el tramo interno ya es arquitectura del proyecto (ADR-026/027); lo que variaba era el tramo externo, y la resolución por tier-y-motor es la única que respeta tanto la reproducibilidad (tier determinista necesita fichero/replay) como la resiliencia operativa (tier vivo necesita push o tail durable).</p>
+<p><strong>Matiz sobre <code>AdapterSpec v1</code>:</strong> el spec debe exigir que todo adapter, sea push o tail, exponga un <strong>checkpoint monotónico</strong> que el engine pueda consultar para <em>replay</em> controlado. En ZeroMQ interno, esto se mapea al patrón <code>XPUB/XSUB</code> con <em>sequence numbers</em> en el envelope; en tail-durable, es el offset en fichero; en push nativo (Kafka/Redis), es el <em>offset de topic/partition</em>. La monotonicidad del checkpoint permite que el engine, ante un restart, solicite al adapter "reanuda desde checkpoint X" sin pérdida ni duplicación (la dedup por <code>(source_engine, native_event_id)</code> actúa como cinturón-y-tirantes).</p>
+<p><strong>Ratificación:</strong> sí a <code>AdapterSpec v1</code> + tabla por-tier, con checkpoint monotónico como requisito del spec.</p>
+<hr />
+<h2 id="m4-d4-predicado-de-fuente-esperada-ratifico-ambas-partes">M4 (D4) — Predicado de "fuente esperada": <strong>RATIFICO ambas partes</strong></h2>
+<p><strong>M4.a — Separar ventanas:</strong> ADOPTAR sin reservas. La distinción <code>correlation_window</code> vs. <code>late_arrival_window</code> es limpia y evita el problema de INQ-3 (crisis de flujo puras esperando 90s por Wazuh). La crisis se cierra cuando:
+- todas las fuentes <strong>armadas</strong> han reportado dentro de <code>correlation_window</code>, <strong>O</strong>
+- <code>crisis_idle_timeout</code> vence sin actividad.</p>
+<p>Un evento rezagado que llega dentro de <code>late_arrival_window</code> se adjunta a la crisis ya cerrada (posiblemente generando una actualización/reenvio), pero <strong>no</strong> reabre la espera. Esto es esencial para la estabilidad del estado.</p>
+<p><strong>M4.b — Rechazar condición "regla Wazuh cubre proto/puerto":</strong> RATIFICO el rechazo. La preocupación de Qwen es legítima pero la solución propuesta (acoplar al ruleset) es peor que el problema. El acoplamiento ruleset-engine introduce una dependencia de configuración que es imposible de mantener consistente: las reglas Wazuh cambian por actualizaciones de vulnerabilidades, por tuning operativo, y por personalización del entorno. El engine no puede asumir conocimiento de ese estado.</p>
+<p>La mitigación correcta ya está en la arquitectura: el <em>predicado</em> de armado de Wazuh es "host gestionado + dentro de <code>bridge_window</code>" (R3 + R10), y la <em>semántica de cierre</em> es M4.a (ventanas acotadas). El coste de una expectativa muerta es, como máximo, <code>correlation_window</code> (que puede ser mucho menor que los 90s de <code>source_wait_timeout</code> si la crisis no involucra host gestionado). Esto es aceptable.</p>
+<p><strong>Ratificación:</strong> sí a M4.a y M4.b.</p>
+<hr />
+<h2 id="d5-q9-corpus-vs-pipeline-como-entregable-del-22-sep-reafirmo-corpus-first">D5 (Q9) — Corpus vs pipeline como entregable del 22-sep: <strong>REAFIRMO corpus-first</strong></h2>
+<p>Mi posición en la Pasada 1 fue: <strong>corpus etiquetado reproducible como entregable mínimo viable, pipeline vivo como demostración operativa</strong>. Reafirmo esto con un argumento adicional de <em>verificabilidad científica</em>.</p>
+<p>El Dr. Caro Lindo evalúa un sistema de detección. La evidencia que puede auditar, revisar por pares, y reproducir es el <strong>corpus</strong>: pcap fijo + JSON de crisis esperadas + script de validación determinista. Un pipeline vivo es una demostración de <em>viabilidad de integración</em>, no de <em>correctitud de correlación</em>. Si el pipeline falla en la demo por un race condition en el adapter, no demuestra nada sobre la arquitectura; si el corpus pasa, demuestra que la lógica de correlación es correcta.</p>
+<p><strong>Propuesta de compromiso para Grok:</strong> el pipeline vivo es <strong>entregable complementario</strong> (Fase 6), no duro. Se graba una ejecución del pipeline procesando tráfico en vivo (nmap/hydra) como <strong>artefacto de demostración</strong> (video/logs), pero las aserciones de correctitud funcionan contra el corpus. Esto da a Alonso ambas cosas: reproducibilidad científica (corpus) y evidencia de funcionamiento en condiciones reales (pipeline grabado).</p>
+<p><strong>Ratificación:</strong> corpus-first; pipeline vivo como demo complementaria, no como entregable duro de correctitud.</p>
+<hr />
+<h2 id="estado-de-mi-voto-tras-pasada-2">Estado de mi voto tras Pasada 2</h2>
+<table>
+<thead>
+<tr>
+<th>Moción</th>
+<th>Voto Kimi</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M1 (timestamp canónico)</td>
+<td><strong>Ratifico</strong> (ocurrencia + emisión/ingesta a metadata)</td>
+</tr>
+<tr>
+<td>M2 (evicción 3 capas)</td>
+<td><strong>Ratifico</strong> (con cuota por IP externa individual, no /24)</td>
+</tr>
+<tr>
+<td>M3 (transporte por tramos)</td>
+<td><strong>Ratifico</strong> (AdapterSpec v1 + checkpoint monotónico)</td>
+</tr>
+<tr>
+<td>M4.a (separar ventanas)</td>
+<td><strong>Ratifico</strong></td>
+</tr>
+<tr>
+<td>M4.b (rechazar regla-Wazuh)</td>
+<td><strong>Ratifico</strong></td>
+</tr>
+<tr>
+<td>D5 (corpus vs pipeline)</td>
+<td><strong>Corpus-first</strong>, pipeline demo complementaria</td>
+</tr>
+</tbody>
+</table>
+<p>Las cinco discrepancias abiertas están cerradas desde mi posición. Queda pendiente la confirmación de Qwen en M1/M4.b, y la decisión de Alonso en D5 para desbloquear el ordenamiento de fases.</p>
+<p>En paralelo, R1–R10 pueden comenzar a materializarse en <code>network_security.proto</code> y en el borrador de <strong>ADR-046 v4</strong>.</p>
+<p>— Kimi (Moonshot AI), Consejo de Sabios.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

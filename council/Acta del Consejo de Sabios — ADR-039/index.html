@@ -1,0 +1,1286 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Acta%20del%20Consejo%20de%20Sabios%20%E2%80%94%20ADR-039/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Acta del Consejo de Sabios — ADR-039 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#acta-del-consejo-de-sabios-adr-039" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Acta del Consejo de Sabios — ADR-039
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-global" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto global
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-por-pregunta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuestas por pregunta
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuestas por pregunta">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-opcion-b-suficiente-para-feder-o-se-exige-opcion-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 — ¿Opción B suficiente para FEDER o se exige Opción A?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2-el-axioma-de-separacion-es-cientificamente-correcto-y-publicable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2 — ¿El axioma de separación es científicamente correcto y publicable?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-los-flags-de-compilacion-son-adecuados-para-entornos-hospitalarios" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 — ¿Los flags de compilación son adecuados para entornos hospitalarios?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p4-marchx86-64-v2-vs-marchx86-64-baseline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4 — -march=x86-64-v2 vs -march=x86-64 (baseline)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#observaciones-adicionales-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observaciones adicionales del Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Observaciones adicionales del Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#robustez-de-check-prod-no-compiler-kimi-qwen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Robustez de CHECK-PROD-NO-COMPILER (Kimi + Qwen)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dist-control-critico-todos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dist/ — control crítico (todos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#firma-ed25519-deepseek-qwen" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Firma Ed25519 (DeepSeek + Qwen)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#simbolos-de-debug-separados-para-forense-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Símbolos de debug separados para forense (Kimi)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metricas-adicionales-para-el-paper-gemini-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Métricas adicionales para el paper (Gemini + Kimi)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-vinculantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones vinculantes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deuda-tecnica-generada-por-el-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deuda técnica generada por el Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#frases-del-consejo-day-130" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Frases del Consejo DAY 130
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="acta-del-consejo-de-sabios-adr-039">Acta del Consejo de Sabios — ADR-039</h1>
+<p><em>DAY 130 — 25 Abril 2026</em></p>
+<p><strong>Documento revisado:</strong> ADR-039 (Build/Runtime Separation for Production Variants)
+<strong>Quórum:</strong> 8/8 — Claude · Grok · ChatGPT · DeepSeek · Qwen · Gemini · Kimi · Mistral
+<strong>Resultado:</strong> APROBADO con enmiendas</p>
+<hr />
+<h2 id="veredicto-global">Veredicto global</h2>
+<p><strong>ADR-039 APROBADO — 8/8.</strong>
+Opción B aprobada para demo FEDER. Enmiendas técnicas incorporadas al documento.
+Listo para implementación en DAY 131.</p>
+<hr />
+<h2 id="respuestas-por-pregunta">Respuestas por pregunta</h2>
+<h3 id="p1-opcion-b-suficiente-para-feder-o-se-exige-opcion-a">P1 — ¿Opción B suficiente para FEDER o se exige Opción A?</h3>
+<p><strong>Decisión: 8/8 Opción B aprobada. Opción A → DEBT-BUILD-PIPELINE-001 post-FEDER.</strong></p>
+<p>Argumentos convergentes del Consejo:</p>
+<ul>
+<li>La demo FEDER requiere demostrar separación build/runtime funcional, no un pipeline
+  de CI industrial. La Opción B logra la invariante crítica: el compilador nunca
+  está presente en la imagen de runtime.</li>
+<li>La Opción A añadiría ~3-4 semanas de complejidad (tercer Vagrantfile, orquestación
+  de dist/, gestión de claves entre VMs) sin beneficio demostrable para la evaluación.</li>
+<li>La VM de desarrollo ya es confiable por la REGLA EMECAS: se reconstruye desde cero
+  en cada sesión.</li>
+</ul>
+<p><strong>Condición impuesta (ChatGPT + Qwen):</strong> Los artefactos en <code>dist/</code> deben acompañarse
+de SHA256SUMS obligatorio. El provisioner de la hardened VM verifica checksums antes
+de instalar. Fallo en mismatch = provisioning abortado.</p>
+<p><strong>Condición adicional (Kimi):</strong> SBOM mínimo por artefacto: hash SHA-256, commit del
+repo, versión del compilador, lista de librerías dinámicas (<code>ldd</code> output).
+Documentado como DEBT-PROD-METRICS-001.</p>
+<hr />
+<h3 id="p2-el-axioma-de-separacion-es-cientificamente-correcto-y-publicable">P2 — ¿El axioma de separación es científicamente correcto y publicable?</h3>
+<p><strong>Decisión: 8/8 CORRECTO y PUBLICABLE con matización obligatoria.</strong></p>
+<p>El axioma captura una propiedad de seguridad estructural real alineada con:
+- Principio de mínimo privilegio (Saltzer &amp; Schroeder, 1975)
+- Attack Surface Reduction (Howard &amp; Lipner, 2006)
+- Defensa en profundidad por capas (NIST SP 800-160)
+- "Living off the Land" como vector bloqueado estructuralmente (Gemini)</p>
+<p><strong>Matización obligatoria para publicación (Claude + DeepSeek + Kimi):</strong>
+El axioma asume que el entorno de build no está comprometido. Si lo está, el binario
+firmado también lo está — supply chain attack clásico. El paper §5 debe declarar
+explícitamente el "trusted build environment assumption". No es un defecto del diseño;
+es honestidad científica necesaria.</p>
+<p><strong>Formulación publicable aprobada (síntesis Kimi + Qwen):</strong></p>
+<blockquote>
+<p>"Dado un sistema S con un conjunto de componentes C, si el subconjunto de
+componentes necesarios para la compilación C_build está ausente del entorno
+de ejecución E_runtime, entonces la superficie de ataque de E_runtime es
+estrictamente menor que la de E_runtime ∪ C_build, para cualquier ataque
+que requiera C_build. La verificación criptográfica de integridad de los
+binarios en E_runtime es condición necesaria para que el principio BSR sea
+efectivo."</p>
+</blockquote>
+<p><strong>Referencias a citar en §5:</strong>
+- Saltzer &amp; Schroeder (1975) — Principio de mínimo privilegio
+- Howard &amp; Lipner (2006) — Security Development Lifecycle
+- NIST SP 800-160 Vol. 1 (2016) — Systems Security Engineering
+- Manadhata &amp; Wing (2011) — An attack surface metric (IEEE TSE)</p>
+<hr />
+<h3 id="p3-los-flags-de-compilacion-son-adecuados-para-entornos-hospitalarios">P3 — ¿Los flags de compilación son adecuados para entornos hospitalarios?</h3>
+<p><strong>Decisión: 8/8 APROBADOS con enmiendas. Flags adicionales obligatorios.</strong></p>
+<p>Flags base aprobados como correctos y alineados con Debian hardening defaults,
+CIS Benchmarks, y OpenSSF recommendations.</p>
+<p><strong>Enmiendas obligatorias (consenso 6+/8):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Flag añadido</th>
+<th>Propuesto por</th>
+<th>Justificación</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-fstack-clash-protection</code></td>
+<td>ChatGPT, Gemini, Kimi</td>
+<td>Protege procesos de larga duración (sniffer, detector)</td>
+</tr>
+<tr>
+<td><code>-fno-strict-overflow</code></td>
+<td>Qwen</td>
+<td>Crítico para código de validación de paths y buffers</td>
+</tr>
+<tr>
+<td><code>-Werror=format-security</code></td>
+<td>Kimi, Mistral</td>
+<td>Previene format string bugs en logs de alertas</td>
+</tr>
+<tr>
+<td><code>-fasynchronous-unwind-tables</code></td>
+<td>Mistral</td>
+<td>Genera core dumps útiles para forense</td>
+</tr>
+<tr>
+<td><code>-Wl,-z,noexecstack</code></td>
+<td>Kimi</td>
+<td>Stack nunca ejecutable en sistema de seguridad</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Flag condicional (evaluación por componente):</strong>
+- <code>-fcf-protection=full</code> (solo x86-64 moderno, clang) — ChatGPT, Gemini, Kimi.
+  Documentado como evaluación post-implementación.</p>
+<p><strong>Flag propuesto pero no obligatorio para v1:</strong>
+- <code>-ftrivial-auto-var-init=zero</code> (DeepSeek) — inicializa stack a cero. Útil pero
+  requiere gcc ≥12. Documentado como mejora futura.
+- <code>-D_GLIBCXX_ASSERTIONS</code> (DeepSeek) — aserciones de libstdc++ sin overhead debug.
+  Evaluar en CI.</p>
+<p><strong>CHECK-PROD-CHECKSEC (ChatGPT):</strong> Target Makefile que verifica via <code>checksec</code>:
+PIE enabled, RELRO full, NX enabled en todos los binarios de <code>dist/</code>. Gate BLOQUEANTE.</p>
+<hr />
+<h3 id="p4-marchx86-64-v2-vs-marchx86-64-baseline">P4 — <code>-march=x86-64-v2</code> vs <code>-march=x86-64</code> (baseline)</h3>
+<p><strong>Decisión: 5/8 <code>-march=x86-64</code> como DEFAULT. 8/8 <code>-march=x86-64-v2</code> como OPT-IN.</strong></p>
+<p>Posiciones:
+- <strong>x86-64 baseline (Claude, Kimi, Qwen, Mistral, ChatGPT):</strong> Hospitales tienen
+  infraestructura heterogénea con ciclos de renovación de 5-10 años. Hardware 2008-2012
+  es común. Un SIGILL en despliegue es un bloqueante operativo inaceptable.
+  Kimi cita Linux Hardware Probe: ~12% de sistemas x86_64 en producción no soportan v2.
+- <strong>x86-64-v2 (DeepSeek, Gemini, Grok):</strong> CPUs pre-Nehalem (2008) son &lt;1% en data
+  centers hospitalarios europeos en 2026. El beneficio de SSE4.2+POPCNT en
+  operaciones de red y hashing es ~10-20%.</p>
+<p><strong>Resolución:</strong> El principio "funciona en lo disponible" prevalece para la imagen
+default. Un hospital rural que no puede desplegar aRGus por incompatibilidad de
+instrucciones es un hospital sin protección.</p>
+<p><strong>Target adicional aprobado 8/8:</strong> <code>make build-production-x86-v2</code> como opt-in
+documentado en <code>docs/HARDWARE-REQUIREMENTS.md</code>.</p>
+<p><strong>Frase de cierre sobre P4 — Kimi:</strong></p>
+<blockquote>
+<p>"La seguridad no se optimiza para el hardware ideal. Se diseña para el hardware
+disponible."</p>
+</blockquote>
+<hr />
+<h2 id="observaciones-adicionales-del-consejo">Observaciones adicionales del Consejo</h2>
+<h3 id="robustez-de-check-prod-no-compiler-kimi-qwen">Robustez de CHECK-PROD-NO-COMPILER (Kimi + Qwen)</h3>
+<p><code>which</code> no es suficiente. La verificación debe incluir:
+1. <code>command -v</code> para cada compilador conocido
+2. <code>dpkg -l | grep -E 'build-essential|gcc|clang|cmake'</code> para verificar base de datos
+3. Verificación de paths no estándar (<code>/usr/local/bin</code>, <code>/opt/</code>)</p>
+<h3 id="dist-control-critico-todos"><code>dist/</code> — control crítico (todos)</h3>
+<ul>
+<li><code>.gitignore</code> obligatorio</li>
+<li><code>README.md</code> dentro de <code>dist/</code>: "Artefactos generados automáticamente. No editar."</li>
+<li>SHA256SUMS obligatorio, verificado por provisioner antes de instalación</li>
+</ul>
+<h3 id="firma-ed25519-deepseek-qwen">Firma Ed25519 (DeepSeek + Qwen)</h3>
+<p>ADR-025 firma plugins. Extender a binarios principales y modelos XGBoost.
+<code>sign-production</code> debe firmar: binarios + plugins + modelos + configs críticos.</p>
+<h3 id="simbolos-de-debug-separados-para-forense-kimi">Símbolos de debug separados para forense (Kimi)</h3>
+<p>En producción hospitalaria, un crash a las 3 AM durante un incidente de ransomware
+requiere capacidad forense sin recompilar. Técnica: <code>objcopy --only-keep-debug</code>
+genera <code>binario.debug</code> que se guarda en vault seguro, no en imagen hardened.
+Documentado como DEBT-PROD-DEBUG-SYMBOLS-001.</p>
+<h3 id="metricas-adicionales-para-el-paper-gemini-kimi">Métricas adicionales para el paper (Gemini + Kimi)</h3>
+<p>Añadir a la tabla §5:
+- Número de syscalls permitidas por componente (comparativa seccomp)
+- Tiempo de arranque del pipeline (dev vs production)
+- Memoria RSS máxima por componente</p>
+<hr />
+<h2 id="decisiones-vinculantes">Decisiones vinculantes</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Decisión</th>
+<th>Votos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D1</td>
+<td>Opción B aprobada para FEDER</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>D2</td>
+<td>Axioma BSR publicable con "trusted build environment assumption"</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>D3</td>
+<td>Flags base + enmiendas obligatorias (sección 4.1 ADR-039)</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>D4</td>
+<td><code>-march=x86-64</code> baseline como default</td>
+<td>5/8</td>
+</tr>
+<tr>
+<td>D5</td>
+<td><code>-march=x86-64-v2</code> como target opt-in</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>D6</td>
+<td>SHA256SUMS obligatorio en dist/</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>D7</td>
+<td>CHECK-PROD-CHECKSEC gate BLOQUEANTE</td>
+<td>8/8</td>
+</tr>
+<tr>
+<td>D8</td>
+<td>CHECK-PROD-NO-COMPILER via dpkg (no solo which)</td>
+<td>8/8</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="deuda-tecnica-generada-por-el-consejo">Deuda técnica generada por el Consejo</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Origen</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBT-BUILD-PIPELINE-001</td>
+<td>Opción A builder VM separada</td>
+<td>post-FEDER</td>
+</tr>
+<tr>
+<td>DEBT-PROD-METRICS-001</td>
+<td>Completar tabla métricas §5</td>
+<td>DAY 131-135</td>
+</tr>
+<tr>
+<td>DEBT-PROD-COMPAT-BASELINE-001</td>
+<td>HARDWARE-REQUIREMENTS.md con requisitos CPU</td>
+<td>DAY 131</td>
+</tr>
+<tr>
+<td>DEBT-PROD-DEBUG-SYMBOLS-001</td>
+<td>Símbolos separados para forense</td>
+<td>v1.1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="frases-del-consejo-day-130">Frases del Consejo DAY 130</h2>
+<blockquote>
+<p>"La separación build/runtime no es un detalle de implementación. Es una garantía
+estructural de que la imagen de producción no puede ser usada como plataforma
+de ataque." — Qwen</p>
+<p>"La seguridad no se optimiza para el hardware ideal. Se diseña para el hardware
+disponible." — Kimi</p>
+<p>"Has eliminado otro vector de ataque que requería presencia del compilador.
+Eso es defensa en profundidad real, no prometida." — ChatGPT</p>
+<p>"El axioma BSR es publicable porque formaliza una intuición operativa en un
+principio verificable con tests de CI reproducibles." — DeepSeek</p>
+<p>"Via Appia Quality — Lo que no está presente no puede ser atacado." — Gemini</p>
+</blockquote>
+<hr />
+<p><em>Consejo de Sabios (8/8) — DAY 130 — 25 Abril 2026</em>
+<em>ADR-039 APROBADO — Implementación autorizada para DAY 131</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

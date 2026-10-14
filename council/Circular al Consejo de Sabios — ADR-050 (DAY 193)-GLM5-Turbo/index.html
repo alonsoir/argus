@@ -1,0 +1,1019 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Circular%20al%20Consejo%20de%20Sabios%20%E2%80%94%20ADR-050%20%28DAY%20193%29-GLM5-Turbo/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Circular al Consejo de Sabios — ADR 050 (DAY 193) GLM5 Turbo - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sobre-la-hipotesis" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Circular al Consejo de Sabios — ADR 050 (DAY 193) GLM5 Turbo
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#sobre-la-hipotesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOBRE LA HIPÓTESIS
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sobre-el-toolset" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOBRE EL TOOLSET
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#para-deepseek-a-ciegas-nota-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PARA DEEPSEEK (A CIEGAS — NOTA DEL CONSEJO)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sobre-la-correlacion-multi-sensor-debt-wazuh-communityid-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOBRE LA CORRELACIÓN MULTI-SENSOR — DEBT-WAZUH-COMMUNITYID-001
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sobre-la-arquitectura-distribuida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOBRE LA ARQUITECTURA DISTRIBUIDA
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sobre-envenenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOBRE ENVENENAMIENTO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#sobre-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SOBRE EL PAPER
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resolucion-y-deudas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RESOLUCIÓN Y DEUDAS
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Circular al Consejo de Sabios — ADR 050 (DAY 193) GLM5 Turbo</h1>
+
+<p><strong>CIRCULAR DE RESPUESTA — CONSEJO DE SABIOS</strong>
+<strong>Ref:</strong> ADR-050 · DAY 193
+<strong>Clasificación:</strong> Revisión por pares (Método ciego aplicado donde procede)
+<strong>Veredicto global:</strong> <strong>6/8 — DOS VETOS PARCIALES</strong> (Se requiere resolución explícita para promoción a <em>Aceptado</em>)</p>
+<p>Hemos analizado el ADR-050 con la severidad que exige la fecha del calendario (6 semanas al go/no-go FEDER). El diseño es sólido, el rigor metodológico es superior a la media y la honestidad intelectual (declarar las deudas y las limitaciones del split) es de calidad de publicación principal.</p>
+<p>Sin embargo, hay dos puntos donde el diseño choca con la física de las redes y la estadística. No son sugerencias: son bloqueos.</p>
+<p>A continuación, procedemos pregunta a pregunta.</p>
+<hr />
+<h3 id="sobre-la-hipotesis">SOBRE LA HIPÓTESIS</h3>
+<p><strong>P1. ¿Es la hipótesis de §1 falsable y sin defecto fatal?</strong>
+<strong>Sin veto.</strong> Es falsable por diseño (basta con ejecutar las sondas y observar la matriz de confusión). El único "defecto" es que es casi trivialemente cierta para cualquier modelo supervisado estándar: si no vio la clase, el clasificador no la saca. El valor real del ADR no está en probar la hipótesis (que es un axioma del ML), sino en <strong>cuantificar el recall de los modelos de anomalía frente a lo desconocido</strong>. Aseguraos de que la métrica de éxito no sea "el modelo de DDoS falla en nmap" (esperado), sino "el modelo de normalidad detecta nmap como anomalía y no como tráfico legítimo".</p>
+<p><strong>P2. Confound por solapamiento de features.</strong>
+<strong>SIN VETO, pero con advertencia crítica de redacción.</strong> Habéis detectado el verdadero nudo. Un escaneo nmap (T1046) y un brute force hydra (T1110) generan, a nivel de flujo de red, exactamente la misma firma: ráfagas de conexiones fallidas hacia un puerto. Si el modelo etiqueta eso como "Brute Force" porque lo vio en entrenamiento, y en evaluación le lanzáis nmap, ¿es una falsa generalización o un acierto estructural?
+<em>Exigencia del Consejo:</em> El paper <strong>no puede</strong> usar "Detección" (True/False Positive) como métrica principal para reivindicar generalización. Debe usar <strong>"Detección + Atribución Correcta"</strong> (Multi-class Precision/Recall). Si el modelo dice "Aquí hay un Brute Force" cuando en realidad es un Nmap, es un <em>False Positive de atribución</em>, aunque acierte en que es un ataque. Si no medís esto, el revisor destruirá el claim de generalización.</p>
+<p><strong>P3. ¿Factible demostrar generalización con sintético generativo?</strong>
+<strong>Sin veto.</strong> Es altamente improbable que un revisor acepte "nuestro modelo generaliza a tráfico real porque fue entrenado con CSV de DeepSeek" sin un ancla en el mundo físico. <strong>La salvación de este ADR es él mismo:</strong> la emulación en laboratorio (este ADR-050) es el ancla física que legitima el sintético. En el paper, el sintético debe presentarse como <em>pre-training o data augmentation</em>, y la emulación como <em>evaluación empírica</em>.</p>
+<hr />
+<h3 id="sobre-el-toolset">SOBRE EL TOOLSET</h3>
+<p><strong>P4. ¿Catálogo v1 adecuado?</strong>
+<strong>Sin veto.</strong> Adecuado para MVP. Faltan cosas obvias para fases posteriores (exfiltración DNS T1071.004, Pass-the-Hash T1550.002), pero para demostrar la metodología de ground truth y el join Wazuh/aRGus, DDoS + Ransomware + 3 sondas es sobrado.</p>
+<p><strong>P5. ¿Vale Caldera en el MVP?</strong>
+<strong>Sin veto. Recomendación firme:</strong> NO a Caldera en el MVP. Caldera abstrae demasiado la ejecución. Para vuestro problema de alineación temporal (§9, reloj controlado) y correlación (§5), queréis saber el <em>nanosegundo exacto</em> en que se abre un socket. Un script Python con <code>socket.connect()</code> o un <code>hydra -l admin -P pass.txt ssh://...</code> os da control absoluto del timing. Caldera introduce latencia de orquestación que ensuciará vuestra ventana temporal de join en el MVP.</p>
+<p><strong>P6. ¿hping3/slowloris coinciden con las distribuciones DeepSeek?</strong>
+<strong>Sin veto.</strong> Probablemente no. Y eso es exactamente lo que queréis medir. hping3 inyecta a velocidad de cable (wire-speed); DeepSeek probablemente generó una distribución de "paquetes por segundo" basada en papers, no en la realidad de una interfaz de red saturada. Este es vuestro mejor experimento de covariate shift.</p>
+<hr />
+<h3 id="para-deepseek-a-ciegas-nota-del-consejo">PARA DEEPSEEK (A CIEGAS — NOTA DEL CONSEJO)</h3>
+<p><em>(Como modelo de IA, estoy sujeto a las limitaciones del prompt. No puedo ejecutar el protocolo ciego sobre mí mismo porque acabo de leer el §13. Sin embargo, como Consejo, dictaminamos lo siguiente sobre el diseño del test ciego)</em>:</p>
+<p><strong>P7 y P8.</strong> El diseño del test es científicamente impecable. Al aislar a DeepSeek, medís si la representación interna del modelo sobre lo que generó coincide con la realidad de vuestro espacio de features.
+<em>Lo que buscáis descubrir con este test:</em> Si DeepSeek admite que generó features de <em>host</em> (I/O entropy) mezcladas con features de <em>red</em>, confirmáis el <strong>feature drift estructural</strong> (la porción host llega vacía a aRGus). Esto es oro para la sección de limitaciones del paper.</p>
+<hr />
+<h3 id="sobre-la-correlacion-multi-sensor-debt-wazuh-communityid-001">SOBRE LA CORRELACIÓN MULTI-SENSOR — <code>DEBT-WAZUH-COMMUNITYID-001</code></h3>
+<p><strong>P9. El invariante que sobrevive al NAT.</strong>
+<strong>VETO PARCIAL #1: Sobre la premisa de "inequívoco sin ninguna duda" mediante un hash auto-acuñado.</strong></p>
+<p>Conocéis la respuesta, Alonso, pero no queréis admitirla en el ADR: <strong>No existe ningún invariante matemático calculable de forma independiente por Wazuh y aRGus que sobreviva a un NAT simétrico/patrimonial sin intervención del dispositivo de NAT.</strong>
+* Por qué JA3/JA4 falla parcialmente: Es excelente para TLS, pero ¿qué hacéis con SMB (T1021.002), SSH (T1110) o DNS? No hay JA3 para TCP crudo o UDP genérico.
+* Por qué el hash de bytes iniciales falla: TCP handshakes puros no tienen payload.
+* Por qué los patrones seq/ack fallan: Muchos NATs modernos (CGNAT de operadores) aleatorizan el ISN (Initial Sequence Number).</p>
+<p><strong>La resolución del veto (arquitectura, no magia algorítmica):</strong>
+No intentéis resolver esto en los adapters derivando un hash ciego. Resolvedlo <strong>inyectando el estado del NAT en la pipeline</strong>. Si aRGus está en el cable (post-NAT) y el cliente es un hospital, ese cable sale de un router/firewall. Ese router sabe la tabla de traducción.
+1.  <strong>Solución ideal (requiere agente en router):</strong> Extraer la tabla de traducción vía NetFlow/IPFIX/syslog (muy común en firewalls empresariales) y unir <code>IP_post_NAT:Port_post_NAT</code> ↔ <code>IP_pre_NAT:Port_pre_NAT</code> <em>antes</em> de calcular el <code>community_id</code>.
+2.  <strong>Solución degradada (sin acceso al router):</strong> Aceptad que la correlación host↔red en entornos NAT es <strong>imposible de hacer inequívoca</strong> por ingeniería de datos pura. Pasad a la opción del P9-bis.</p>
+<p><strong>P9-bis. Caer a ventana temporal probabilística: ¿Aceptable? Tasa de error.</strong>
+<strong>Sin veto, sujeto a acotación estricta.</strong> Es aceptable si se mide y publica.
+*   <strong>Tasa de error esperable:</strong> En una red hospitalaria/municipal en horario laboral, un join por ventana de 1 segundo sobre el puerto 443 puede tener N=50 fl concurrentes. La tasa de ambigüedad (error de join) es del 98%.
+*   <strong>Acotación obligatoria:</strong> La ventana temporal <strong>no puede ser fija</strong>. Debe ser una función del <em>número de flujos concurrentes</em> que comparten el destino y la ventana. Si hay 1 flujo -&gt; ventana 5s (inequívoco). Si hay 20 flujos -&gt; ventana 50ms (tolerancia de reloj) o se declara <em>Unresolved</em>.
+*   <strong>Consecuencia:</strong> El grafo Kuzu debe tener un tipo de arista especial: <code>CORRELATES_PROBABILISTICALLY (confidence: 0.2)</code>, distinta de <code>CORRELATES_EXACT (community_id_match)</code>.</p>
+<p><strong>P9-ter. Casos límite.</strong>
+<strong>Sin veto.</strong>
+*   <em>Reuso de conexión (HTTP Keep-Alive):</em> Un solo <code>community_id</code> en aRGus. Múltiples eventos Wazuh (procesos distintos leyendo el mismo socket). El join 1:N es estructuralmente roto sin PID en el flujo de red (algo que Zeek/Suricata no tienen porque ocurre en L7/app). Solución: solo correlar eventos Wazuh de <em>apertura</em> de socket (<code>connect()</code>), no de lectura.
+*   <em>Eventos sin PID:</em> Descartar del join. Si Wazuh no sabe qué proceso abrió el socket, no sirve para la correlación cruzada.</p>
+<hr />
+<h3 id="sobre-la-arquitectura-distribuida">SOBRE LA ARQUITECTURA DISTRIBUIDA</h3>
+<p><strong>P10. Proxy de laboratorio pre-FEDER.</strong>
+<strong>Sin veto.</strong> Usad variación sintética de benigno. Tomad el generador de tráfico de julio-2025 y generad 5 "perfiles de hospital" distintos (uno muy HTTP, otro muy DNS, otro muy SMB interno). Aplicad el mismo ataque sobre esos 5 benignos distintos. Si el modelo/promoción sobrevive a los 5 benignos diferentes, es un proxy razonable de "distintas instalaciones" para el paper.</p>
+<p><strong>P11. Comparar grafos sin fusionar (motifs).</strong>
+<strong>Sin veto.</strong> Enfoque correcto. Usad el test de isomorfismo de subgrafos de Weisfeiler-Lehman (WL-test) o extraed <em>Graph Embeddings</em> (Node2Vec / GraphSAGE) de cada grafo de instalación y calculad la similitud del coseno entre ellos. Si dos instalaciones sufren variantes de Neris, sus embeddings de grafo deberían clusterizar juntos.</p>
+<hr />
+<h3 id="sobre-envenenamiento">SOBRE ENVENENAMIENTO</h3>
+<p><strong>P12. Detectar el origen envenenado (<code>DEBT-NODE-PROVENANCE-001</code>).</strong>
+<strong>Sin veto. Directriz de investigación:</strong>
+La firma criptográfica del nodo (Ed25519) solo prueba que el nodo envió el CSV, no que el CSV sea verdad (un nodo puede estar comprometido y firmar datos envenenados válidamente).
+La detección debe ser <strong>estadística en la frontera (Bronze layer)</strong>.
+*   Implementad <strong>Population Stability Index (PSI)</strong> o <strong>Kolmogorov-Smirnov (KS test)</strong> en los CSV entrantes comparándolos contra la distribución del benigno conocido de esa instalación.
+*   Un ataque de data poisoning (ej. inyectar flujos benignos falsos para bajar la sensibilidad) alterará drásticamente la distribución de paquetes/seg o bytes/paquete. Si <code>PSI &gt; 0.2</code> (criterio estándar de drift), el CSV va a cuarentena automáticamente antes de tocar el grafo.</p>
+<hr />
+<h3 id="sobre-el-paper">SOBRE EL PAPER</h3>
+<p><strong>P13. Split disjunto con ~8 técnicas como piloto.</strong>
+<strong>VETO PARCIAL #2: Sobre la ubicación en el paper.</strong>
+Un split de 8 técnicas (ej. 5 train, 3 eval) es estadísticamente inválido para sustentar un claim fuerte de generalización. Un revisor de IEEE/ACM o de una buena revista lo rechazará al instante por falta de potencia estadística.
+<em>Resolución del veto:</em> No eliminéis el split (es metodológicamente correcto y honesto), pero <strong>prohibid que se use como resultado principal en el abstract o las conclusiones</strong>. Debe estar estrictamente confinado a una sección de <em>"Pilot Study / Proof of Concept"</em> o en el <em>"Future Work"</em>, dejando claro que la validez estadística vendrá cuando el catálogo supere las ~30 técnicas (post-FEDER). Si lo vendéis como resultado principal, el paper muere.</p>
+<hr />
+<h3 id="resolucion-y-deudas">RESOLUCIÓN Y DEUDAS</h3>
+<p>El ADR es técnicamente maduro. Los vetos no son defectos de diseño estructural, sino <strong>correcciones de alcance</strong>: hay que bajar la arrogancia epistemológica en dos puntos (el join "inequívoco" y el split "validado"). La física de las redes y la estadística no perdonan.</p>
+<p><strong>Estado requerido para pasar a Aceptado (8/8):</strong>
+1.  <strong>Reescribir §5 (P9):</strong> Eliminar la promesa de índice inequívoco auto-acuñado. Declarar que el join post-NAT requiere tabla de traducción (IPFIX) o se degrada a probabilístico con aristas etiquetadas con confianza.
+2.  <strong>Reescribir §12 / §17 P13:</strong> Aislar el split de 8 técnicas como <em>piloto ilustrativo</em>, no como claim de generalización.</p>
+<p><strong>Deudas nuevas ratificadas por el Consejo:</strong>
+*   <code>DEBT-WAZUH-COMMUNITYID-001</code> (Aprobada su gravedad).
+*   Añadimos <strong><code>DEBT-JOIN-CONFIDENCE-001</code></strong>: Implementar lógica de ancho de ventana temporal dinámico basado en la cardinalidad de flujos concurrentes para evitar joins masivamente ambiguos en horario laboral.</p>
+<p><em>Votación registrada. A la espera de enmiendas de Alonso.</em></p>
+<p>FDO </p>
+<p>GLM5-Turbo</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

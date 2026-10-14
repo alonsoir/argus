@@ -1,0 +1,1230 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/CONSEJO-DAY119-preguntas-respuesta_qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 119 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-day-119" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 119
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#reconocimiento-inicial" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Reconocimiento Inicial
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#revision-tecnica-de-day-119" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Revisión Técnica de DAY 119
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Revisión Técnica de DAY 119">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#puntos-fuertes-verificables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ✅ Puntos Fuertes (verificables)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#puntos-de-atencion-con-codigo-verificable" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⚠️ Puntos de Atención (con código verificable)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuestas-a-preguntas-formato-solicitado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Respuestas a Preguntas — Formato Solicitado
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="❓ Respuestas a Preguntas — Formato Solicitado">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#q1-robustez-de-sync-pubkey" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q1 — Robustez de sync-pubkey
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q2-vagrantfile-vs-makefile-separacion-de-responsabilidades" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q2 — Vagrantfile vs Makefile: separación de responsabilidades
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q3-make-bootstrap-automatizar-la-secuencia-completa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q3 — make bootstrap: ¿automatizar la secuencia completa?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q4-plugin_xgboost-fase-2-contrato-minimo-para-ctx-payload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q4 — plugin_xgboost Fase 2: contrato mínimo para ctx-&gt;payload
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#q5-reproducibilidad-tras-vagrant-destroy-puntos-ciegos-anticipados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Q5 — Reproducibilidad tras vagrant destroy: puntos ciegos anticipados
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-acciones-inmediatas-day-120" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist de Acciones Inmediatas (DAY 120)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#palabras-finales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏁 Palabras Finales
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-day-119">🏛️ CONSEJO DE SABIOS — REVISIÓN DAY 119</h1>
+<p><em>Feedback profesional, verificable y constructivo para ML Defender (aRGus NDR)</em></p>
+<hr />
+<h2 id="reconocimiento-inicial">🎯 Reconocimiento Inicial</h2>
+<p><strong>Excelente trabajo de depuración en DAY 119.</strong> Diez problemas identificados y resueltos, una secuencia canónica documentada, y una lección operacional crítica internalizada: <em>"El Vagrantfile y el Makefile son la única fuente de verdad"</em>. Eso no es solo progreso; es madurez ingenieril.</p>
+<blockquote>
+<p><em>"La reproducibilidad no es un feature, es un requisito. Y vosotros lo estáis tratando como tal."</em></p>
+</blockquote>
+<hr />
+<h2 id="revision-tecnica-de-day-119">🔍 Revisión Técnica de DAY 119</h2>
+<h3 id="puntos-fuertes-verificables">✅ Puntos Fuertes (verificables)</h3>
+<table>
+<thead>
+<tr>
+<th>Logro</th>
+<th>Evidencia verificable</th>
+<th>Por qué importa</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Tabla de 10 problemas con causa raíz</strong></td>
+<td>Cada fila: problema → causa → fix</td>
+<td>Metodología de debugging replicable</td>
+</tr>
+<tr>
+<td><strong><code>make sync-pubkey</code> robusto</strong></td>
+<td>Lee pubkey de VM → actualiza CMakeLists → recompila</td>
+<td>Evita fallo de firma post-reset criptográfico</td>
+</tr>
+<tr>
+<td><strong>Secuencia canónica de 9 pasos</strong></td>
+<td>Documentada en markdown, ejecutable línea por línea</td>
+<td>Onboarding reproducible para nuevos colaboradores</td>
+</tr>
+<tr>
+<td><strong>Lección operacional documentada</strong></td>
+<td>"Cada dependencia instalada a mano = deuda técnica"</td>
+<td>Previene regresiones futuras por provisioning manual</td>
+</tr>
+</tbody>
+</table>
+<h3 id="puntos-de-atencion-con-codigo-verificable">⚠️ Puntos de Atención (con código verificable)</h3>
+<table>
+<thead>
+<tr>
+<th>Hallazgo</th>
+<th>Riesgo</th>
+<th>Mitigación propuesta + snippet verificable</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong><code>sync-pubkey</code> sin verificación post-escritura</strong></td>
+<td>CMakeLists.txt actualizado pero caché de CMake no invalidado → binario con pubkey antigua</td>
+<td>Añadir verificación: <br><code>@echo "✓ Pubkey sync: $(shell grep MLD_PLUGIN_PUBKEY plugin-loader/CMakeLists.txt)"</code></td>
+</tr>
+<tr>
+<td><strong>Separación Vagrantfile/Makefile sin contrato explícito</strong></td>
+<td>Nueva dependencia añadida en Makefile pero olvidada en Vagrantfile → fallo en <code>vagrant destroy</code></td>
+<td>Crear <code>make check-system-deps</code> que valide prerequisitos: <br><code>@command -v xgboost &gt;/dev/null || { echo "❌ xgboost missing"; exit 1; }</code></td>
+</tr>
+<tr>
+<td><strong>Secuencia de 9 pasos sin checkpoint intermedio</strong></td>
+<td>Fallo en paso 5 obliga a reiniciar desde paso 1</td>
+<td>Añadir <code>make checkpoint-N</code> targets que guarden estado intermedio en <code>/tmp/argus-bootstrap/</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="respuestas-a-preguntas-formato-solicitado">❓ Respuestas a Preguntas — Formato Solicitado</h2>
+<h3 id="q1-robustez-de-sync-pubkey">Q1 — Robustez de <code>sync-pubkey</code></h3>
+<p><strong>Veredicto:</strong> <strong>Mecanismo sólido, pero añadir verificación post-sync + mantener Continuity Prompt manual</strong>.</p>
+<p><strong>Justificación:</strong> El flujo actual (leer pubkey de VM → actualizar CMakeLists.txt → recompilar) es correcto. Pero falta un paso de verificación: confirmar que el binario recompilado realmente contiene la nueva pubkey. El Continuity Prompt debe permanecer manual para preservar el audit trail: un operador humano debe confirmar explícitamente el cambio de identidad criptográfica.</p>
+<p><strong>Código verificable para verificación post-sync:</strong></p>
+<pre><code class="language-makefile"># Makefile: target sync-pubkey mejorado
+.PHONY: sync-pubkey
+sync-pubkey:
+    @echo &quot;🔐 Reading active pubkey from VM...&quot;
+    @PUBKEY=$$(vagrant ssh defender -c &quot;cat /etc/ml-defender/keys/plugin_signing.pk&quot; 2&gt;/dev/null | tr -d '\n'); \
+    if [ -z &quot;$$PUBKEY&quot; ]; then \
+        echo &quot;❌ Failed to read pubkey from VM&quot;; exit 1; \
+    fi; \
+    echo &quot;📝 Updating plugin-loader/CMakeLists.txt...&quot;; \
+    sed -i.bak &quot;s/set(MLD_PLUGIN_PUBKEY .*)/set(MLD_PLUGIN_PUBKEY \&quot;$$PUBKEY\&quot;)/&quot; plugin-loader/CMakeLists.txt; \
+    echo &quot;🔨 Recompiling plugin-loader...&quot;; \
+    cd build-debug &amp;&amp; cmake .. &amp;&amp; make plugin-loader; \
+    echo &quot;✅ Verification: pubkey in binary matches VM&quot;; \
+    ./build-debug/plugin-loader --print-pubkey | grep -q &quot;$$PUBKEY&quot; || { echo &quot;❌ Mismatch&quot;; exit 1; }
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Un <code>sync-pubkey</code> que no verifica el resultado podría dejar el sistema en estado inconsistente: CMakeLists.txt actualizado pero binario sin recompilar, causando fallos de firma difíciles de diagnosticar.</p>
+<hr />
+<h3 id="q2-vagrantfile-vs-makefile-separacion-de-responsabilidades">Q2 — Vagrantfile vs Makefile: separación de responsabilidades</h3>
+<p><strong>Veredicto:</strong> <strong>Separación correcta, pero añadir contrato explícito vía <code>make check-system-deps</code></strong>.</p>
+<p><strong>Justificación:</strong> Vagrantfile debe gestionar "lo que el sistema necesita" (paquetes, librerías, rutas); Makefile debe gestionar "lo que nosotros construimos" (componentes, plugins, tests). Pero esta separación requiere un contrato explícito: el Makefile debe poder verificar que las dependencias del sistema están presentes antes de intentar construir.</p>
+<p><strong>Código verificable para contrato de dependencias:</strong></p>
+<pre><code class="language-makefile"># Makefile: target check-system-deps
+.PHONY: check-system-deps
+check-system-deps:
+    @echo &quot;🔍 Verifying system dependencies...&quot;
+    @command -v xxd &gt;/dev/null || { echo &quot;❌ xxd missing: run 'apt install xxd'&quot;; exit 1; }
+    @command -v tmux &gt;/dev/null || { echo &quot;❌ tmux missing: run 'apt install tmux'&quot;; exit 1; }
+    @pkg-config --exists libsodium || { echo &quot;❌ libsodium missing: check Vagrantfile&quot;; exit 1; }
+    @python3 -c &quot;import xgboost&quot; 2&gt;/dev/null || { echo &quot;❌ python3-xgboost missing&quot;; exit 1; }
+    @test -f /usr/local/lib/libxgboost.so || { echo &quot;❌ libxgboost.so missing&quot;; exit 1; }
+    @echo &quot;✓ All system dependencies present&quot;
+
+# Hacer que pipeline-build dependa de check-system-deps
+pipeline-build: check-system-deps crypto-transport-build etcd-client-build plugin-loader-build
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Un desarrollador podría añadir una nueva dependencia en el código C++ sin actualizar el Vagrantfile, funcionando en su entorno local pero rompiendo <code>vagrant destroy</code> para otros colaboradores.</p>
+<hr />
+<h3 id="q3-make-bootstrap-automatizar-la-secuencia-completa">Q3 — <code>make bootstrap</code>: ¿automatizar la secuencia completa?</h3>
+<p><strong>Veredicto:</strong> <strong>Sí, crear <code>make bootstrap</code> pero con modo verbose y checkpoints intermedios</strong>.</p>
+<p><strong>Justificación:</strong> Un target <code>bootstrap</code> reduce la fricción de onboarding para nuevos colaboradores. Pero automatizar completamente los 9 pasos oculta fallos y dificulta el debugging. La solución es un bootstrap con: (1) flag <code>--verbose</code> que muestre cada paso, (2) checkpoints que permitan reanudar desde un punto intermedio, y (3) rollback automático si un paso falla.</p>
+<p><strong>Código verificable para bootstrap con checkpoints:</strong></p>
+<pre><code class="language-makefile"># Makefile: target bootstrap
+.PHONY: bootstrap
+bootstrap:
+    @echo &quot;🚀 Starting aRGus NDR bootstrap (verbose mode)...&quot;
+    @mkdir -p /tmp/argus-bootstrap
+    @echo &quot;[1/9] make up&quot; &amp;&amp; make up &amp;&amp; touch /tmp/argus-bootstrap/step1
+    @echo &quot;[2/9] make sync-pubkey&quot; &amp;&amp; make sync-pubkey &amp;&amp; touch /tmp/argus-bootstrap/step2
+    @echo &quot;[3/9] make set-build-profile&quot; &amp;&amp; make set-build-profile &amp;&amp; touch /tmp/argus-bootstrap/step3
+    @echo &quot;[4/9] make install-systemd-units&quot; &amp;&amp; make install-systemd-units &amp;&amp; touch /tmp/argus-bootstrap/step4
+    @echo &quot;[5/9] make sign-plugins&quot; &amp;&amp; make sign-plugins &amp;&amp; touch /tmp/argus-bootstrap/step5
+    @echo &quot;[6/9] make test-provision-1&quot; &amp;&amp; make test-provision-1 &amp;&amp; touch /tmp/argus-bootstrap/step6
+    @echo &quot;[7/9] make pipeline-start&quot; &amp;&amp; make pipeline-start &amp;&amp; touch /tmp/argus-bootstrap/step7
+    @echo &quot;[8/9] make pipeline-status&quot; &amp;&amp; make pipeline-status &amp;&amp; touch /tmp/argus-bootstrap/step8
+    @echo &quot;[9/9] make plugin-integ-test&quot; &amp;&amp; make plugin-integ-test &amp;&amp; touch /tmp/argus-bootstrap/step9
+    @echo &quot;✅ Bootstrap complete. All checkpoints saved in /tmp/argus-bootstrap/&quot;
+
+# Target para reanudar desde checkpoint
+.PHONY: bootstrap-resume
+bootstrap-resume:
+    @if [ -f /tmp/argus-bootstrap/step6 ]; then \
+        echo &quot;🔄 Resuming from step 7...&quot;; \
+        make pipeline-start pipeline-status plugin-integ-test; \
+    else \
+        echo &quot;❌ No valid checkpoint found. Run 'make bootstrap' from start.&quot;; \
+        exit 1; \
+    fi
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Sin bootstrap, nuevos colaboradores pueden cometer errores en la secuencia manual; con bootstrap sin checkpoints, un fallo en el paso 8 obliga a reiniciar desde cero, frustrando el proceso de onboarding.</p>
+<hr />
+<h3 id="q4-plugin_xgboost-fase-2-contrato-minimo-para-ctx-payload">Q4 — plugin_xgboost Fase 2: contrato mínimo para <code>ctx-&gt;payload</code></h3>
+<p><strong>Veredicto:</strong> <strong>Contrato explícito de 5 condiciones + validación en runtime con error accionable</strong>.</p>
+<p><strong>Justificación:</strong> Para que el plugin pueda construir un <code>DMatrix</code> sin asumir nada del llamador, el contrato debe ser auto-validante: el plugin verifica las precondiciones y falla con un mensaje claro si no se cumplen. Esto permite debugging rápido y previene corrupción silenciosa de memoria.</p>
+<p><strong>Código verificable para validación de contrato en plugin:</strong></p>
+<pre><code class="language-cpp">// plugins/xgboost/xgboost_plugin.cpp
+extern &quot;C&quot; PluginResult plugin_process_message(PluginContext* ctx, const MessageContext* msg) {
+    // Contrato mínimo: validar payload antes de construir DMatrix
+    if (msg == nullptr) {
+        log_critical(&quot;[xgboost] null MessageContext&quot;);
+        return PLUGIN_RESULT_ERROR;
+    }
+    if (msg-&gt;payload == nullptr) {
+        log_critical(&quot;[xgboost] null payload pointer&quot;);
+        return PLUGIN_RESULT_ERROR;
+    }
+    constexpr size_t EXPECTED_FEATURES = 42;  // CTU-13 Neris baseline
+    if (msg-&gt;payload_len != EXPECTED_FEATURES * sizeof(float)) {
+        log_critical(&quot;[xgboost] payload_len mismatch: expected %zu, got %zu&quot;,
+                     EXPECTED_FEATURES * sizeof(float), msg-&gt;payload_len);
+        return PLUGIN_RESULT_ERROR;
+    }
+    // Validar que todos los valores son finitos (no NaN/Inf)
+    const float* features = reinterpret_cast&lt;const float*&gt;(msg-&gt;payload);
+    for (size_t i = 0; i &lt; EXPECTED_FEATURES; ++i) {
+        if (!std::isfinite(features[i])) {
+            log_critical(&quot;[xgboost] non-finite feature at index %zu: %f&quot;, i, features[i]);
+            return PLUGIN_RESULT_ERROR;
+        }
+    }
+    // Construir DMatrix seguro
+    DMatrixHandle dmatrix;
+    if (XGDMatrixCreateFromMat(features, 1, EXPECTED_FEATURES, -1, &amp;dmatrix) != 0) {
+        log_critical(&quot;[xgboost] failed to create DMatrix&quot;);
+        return PLUGIN_RESULT_ERROR;
+    }
+    // ... inferencia ...
+    return PLUGIN_RESULT_OK;
+}
+</code></pre>
+<p><strong>Riesgo si se ignora:</strong> Sin validación explícita, un payload malformado podría causar comportamiento indefinido (crash, corrupción de memoria, predicciones erróneas) sin mensaje de error útil para debugging.</p>
+<hr />
+<h3 id="q5-reproducibilidad-tras-vagrant-destroy-puntos-ciegos-anticipados">Q5 — Reproducibilidad tras <code>vagrant destroy</code>: puntos ciegos anticipados</h3>
+<p><strong>Veredicto:</strong> <strong>Añadir <code>make pre-destroy-checklist</code> + <code>make post-up-verify</code> para capturar estado y validar entorno</strong>.</p>
+<p><strong>Justificación:</strong> La reproducibilidad no es binaria; es un espectro. Incluso con Vagrantfile y Makefile actualizados, factores como tiempo de red, estado de caché de paquetes, o diferencias de arquitectura host/guest pueden introducir variabilidad. Documentar y validar explícitamente el estado pre/post destrucción reduce estos riesgos.</p>
+<p><strong>Código verificable para checklist pre/post:</strong></p>
+<pre><code class="language-makefile"># Makefile: targets de validación de reproducibilidad
+.PHONY: pre-destroy-checklist
+pre-destroy-checklist:
+    @echo &quot;📋 Capturing pre-destroy state...&quot;
+    @mkdir -p /tmp/argus-destroy-checklist
+    @vagrant ssh defender -c &quot;dpkg -l | grep -E 'libsodium|xgboost|tmux'&quot; &gt; /tmp/argus-destroy-checklist/packages.txt
+    @vagrant ssh defender -c &quot;ls -la /usr/local/lib/libxgboost.so&quot; &gt; /tmp/argus-destroy-checklist/libs.txt
+    @vagrant ssh defender -c &quot;cat /etc/ml-defender/keys/plugin_signing.pk&quot; &gt; /tmp/argus-destroy-checklist/pubkey.txt
+    @echo &quot;✓ State saved in /tmp/argus-destroy-checklist/&quot;
+
+.PHONY: post-up-verify
+post-up-verify:
+    @echo &quot;🔍 Verifying post-up environment...&quot;
+    @vagrant ssh defender -c &quot;command -v xxd &amp;&amp; command -v tmux&quot; || { echo &quot;❌ Missing base tools&quot;; exit 1; }
+    @vagrant ssh defender -c &quot;pkg-config --modversion libsodium&quot; | grep -q &quot;1.0.19&quot; || { echo &quot;❌ libsodium version mismatch&quot;; exit 1; }
+    @vagrant ssh defender -c &quot;python3 -c 'import xgboost; assert xgboost.__version__ == \&quot;3.2.0\&quot;'&quot; || { echo &quot;❌ xgboost version mismatch&quot;; exit 1; }
+    @vagrant ssh defender -c &quot;test -f /usr/lib/ml-defender/plugins/libplugin_hello.so&quot; || { echo &quot;❌ plugins directory missing&quot;; exit 1; }
+    @echo &quot;✓ Environment verified. Ready for bootstrap.&quot;
+</code></pre>
+<p><strong>Puntos ciegos específicos a monitorear en DAY 120:</strong>
+1. <strong>Timeout de red en pip/apt</strong>: Añadir <code>--timeout=300</code> y fallback como ya hicisteis.
+2. <strong>Caché de CMake no invalidada</strong>: Ejecutar <code>cmake --fresh</code> en bootstrap si hay dudas.
+3. <strong>Permisos de archivos post-provision</strong>: Verificar que <code>seed.bin</code> tiene <code>0640</code> tras <code>vagrant up</code>.
+4. <strong>Reloj de la VM desincronizado</strong>: Añadir <code>vagrant plugin install vagrant-timezone</code> si hay problemas de timestamp en firmas.</p>
+<p><strong>Riesgo si se ignora:</strong> Un fallo no detectado en <code>post-up-verify</code> podría llevar a construir sobre un entorno inconsistente, generando bugs que solo aparecen tras <code>vagrant destroy</code> y son difíciles de reproducir.</p>
+<hr />
+<h2 id="checklist-de-acciones-inmediatas-day-120">📋 Checklist de Acciones Inmediatas (DAY 120)</h2>
+<pre><code class="language-markdown">- [ ] Añadir verificación post-sync en `make sync-pubkey`
+- [ ] Crear `make check-system-deps` como dependencia de pipeline-build
+- [ ] Implementar `make bootstrap` con checkpoints y modo verbose
+- [ ] Añadir validación de contrato en plugin_xgboost (5 condiciones)
+- [ ] Crear `make pre-destroy-checklist` + `post-up-verify`
+- [ ] Ejecutar `vagrant destroy &amp;&amp; vagrant up` completo en DAY 120
+- [ ] Documentar contrato de payload en docs/xgboost/plugin-contract.md
+- [ ] Actualizar docs/XGBOOST-VALIDATION.md con validación de contrato como gate
+</code></pre>
+<hr />
+<h2 id="palabras-finales">🏁 Palabras Finales</h2>
+<p>Alonso:</p>
+<p>DAY 119 ha sido una jornada de ingeniería de infraestructura ejemplar. Habéis transformado diez problemas en diez fixes documentados, y una lección operativa en un principio rector del proyecto.</p>
+<blockquote>
+<p><em>"La reproducibilidad no se logra por accidente. Se construye commit a commit, test a test, y vagrant destroy a vagrant up."</em></p>
+</blockquote>
+<p>Las cinco preguntas que planteáis reflejan una mentalidad preventiva: no solo <em>"¿funciona ahora?"</em>, sino <em>"¿seguirá funcionando después de la próxima destrucción del entorno?"</em>.</p>
+<p>Proceded con DAY 120. El Consejo estará atento a la validación completa de reproducibilidad y a la primera inferencia end-to-end del plugin XGBoost con contrato validado.</p>
+<p><em>Via Appia Quality · Un escudo, nunca una espada.</em></p>
+<p><strong>— Consejo de Sabios, DAY 119</strong> 🛡️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

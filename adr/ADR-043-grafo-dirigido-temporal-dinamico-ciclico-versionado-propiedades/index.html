@@ -1,0 +1,1887 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-043-grafo-dirigido-temporal-dinamico-ciclico-versionado-propiedades/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-0043 — Memoria Episódica Distribuida con Coherencia Temporal - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-0043-memoria-episodica-distribuida-con-coherencia-temporal" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-0043 — Memoria Episódica Distribuida con Coherencia Temporal
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#historial-de-versiones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Historial de versiones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proposito-de-este-documento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propósito de este documento
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Contexto">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#restricciones-no-negociables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Restricciones no negociables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#arquitectura-de-referencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitectura de referencia
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Decisiones">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d1-tres-niveles-de-memoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D1 — Tres niveles de memoria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d2-identidad-de-entidad-mac-unicast-como-campo-primario" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D2 — Identidad de entidad: MAC unicast como campo primario
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D2 — Identidad de entidad: MAC unicast como campo primario">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#filtro-mac-unicast" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Filtro MAC unicast
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#jerarquia-de-resolucion-de-identidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Jerarquía de resolución de identidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pseudonimizacion-de-flujos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pseudonimización de flujos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#limitacion-conocida-identidades-multiples-del-mismo-dispositivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Limitación conocida: identidades múltiples del mismo dispositivo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d3-pseudonimizacion-determinista-con-clave-por-instalacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D3 — Pseudonimización determinista con clave por instalación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d4-paquete-mensual-por-nodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4 — Paquete mensual por nodo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D4 — Paquete mensual por nodo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#d4a-clave-de-idempotencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4a — Clave de idempotencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d4b-dos-ficheros-parquet-por-nodo-por-mes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4b — Dos ficheros Parquet por nodo por mes
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d4c-plugin-de-modelo-ensemble-firmado-desactivado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4c — Plugin de modelo ensemble firmado (desactivado)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d4d-metadatos-del-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D4d — Metadatos del batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d5-modelo-de-grafo-neo4j-dag-temporal-sin-ciclos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D5 — Modelo de grafo Neo4j: DAG temporal sin ciclos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D5 — Modelo de grafo Neo4j: DAG temporal sin ciclos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ontologia-minima-viable-mvp-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ontología mínima viable (MVP FEDER)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ordenamiento-temporal-sin-aristas-materializadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ordenamiento temporal sin aristas materializadas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#merge-en-ingesta-idempotente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Merge en ingesta (idempotente)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#indices-recomendados-en-el-playbook-de-despliegue" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Índices recomendados en el playbook de despliegue
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d6-topologia-etcd-parametrizable-por-instalacion-cierra-adr-035-oq-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D6 — Topología etcd: parametrizable por instalación (cierra ADR-035 OQ-2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d7-jerarquia-de-vault" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D7 — Jerarquía de Vault
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d8-flujo-de-derecho-al-olvido-gdpr-art-17" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D8 — Flujo de derecho al olvido (GDPR Art. 17)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d9-cola-local-de-batches-pendientes-resuelve-oq-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        D9 — Cola local de batches pendientes (resuelve OQ-1)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="D9 — Cola local de batches pendientes (resuelve OQ-1)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#estructura-de-la-cola" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estructura de la cola
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ciclo-de-vida-de-un-batch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ciclo de vida de un batch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#propiedades-de-la-cola" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Propiedades de la cola
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#almacenamiento-duradero-en-el-servidor-central" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Almacenamiento duradero en el servidor central
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deudas-tecnicas-registradas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas técnicas registradas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#impacto-sobre-adrs-existentes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impacto sobre ADRs existentes
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#proximos-pasos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Próximos pasos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#alcance-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alcance FEDER
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-0043-memoria-episodica-distribuida-con-coherencia-temporal">ADR-0043 — Memoria Episódica Distribuida con Coherencia Temporal</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Aceptado — Consejo de Sabios, DAY 147</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>2026-05-10</td>
+</tr>
+<tr>
+<td><strong>Autor</strong></td>
+<td>Alonso Isidoro Román</td>
+</tr>
+<tr>
+<td><strong>Versión</strong></td>
+<td>v4 (final)</td>
+</tr>
+<tr>
+<td><strong>ADRs relacionados</strong></td>
+<td>ADR-004, ADR-021, ADR-025, ADR-032, ADR-034, ADR-035, ADR-038, ADR-040</td>
+</tr>
+<tr>
+<td><strong>ADRs modificados</strong></td>
+<td>ADR-035 (cierra OQ-2), ADR-038 (supersede §Anonimización y §Canal de distribución)</td>
+</tr>
+<tr>
+<td><strong>Deudas abiertas</strong></td>
+<td>DEBT-PARQUET-SCHEMA-001, DEBT-VAULT-FEDERATION-001, DEBT-LEGAL-DATA-RETENTION-001, DEBT-KPSEUDO-ROTATION-MIGRATION-001, DEBT-GDPR-ERASURE-001, DEBT-KPSEUDO-HKDF-HIERARCHY-001</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="historial-de-versiones">Historial de versiones</h2>
+<table>
+<thead>
+<tr>
+<th>Versión</th>
+<th>Cambios principales</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>v1</td>
+<td>Borrador inicial (sesión ChatGPT, DAY ~145). Ciclos permitidos, anonimización con salt rotante, BitTorrent.</td>
+</tr>
+<tr>
+<td>v2</td>
+<td>Reescritura completa. Elimina ciclos (DAG), HMAC determinista, ZeroMQ. Consolida ADR-035 OQ-2 y ADR-038.</td>
+</tr>
+<tr>
+<td>v3</td>
+<td>Incorpora dictamen Consejo ronda 1: MAC como identidad primaria, idempotencia Ed25519, UTC epoch ns, ontología Neo4j mínima, schema Parquet candidato, eliminación de PRECEDES, DEBT-GDPR-ERASURE-001.</td>
+</tr>
+<tr>
+<td>v4</td>
+<td>Incorpora dictamen Consejo ronda 2: OQ-1 convertida en D9 (cola local persistente), filtro MAC unicast en D2, installation_id y node_id en schema Parquet, almacenamiento duradero de batches en paso 5. Estado → Aceptado.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="proposito-de-este-documento">Propósito de este documento</h2>
+<p>Doble rol:</p>
+<ol>
+<li>
+<p><strong>Decisión nueva</strong>: arquitectura de memoria episódica distribuida del sistema federado aRGus — modelo de grafo Neo4j, pseudonimización de telemetría, paquete mensual edge→central, jerarquía de Vault, schema Parquet candidato, cola local de batches pendientes.</p>
+</li>
+<li>
+<p><strong>Consolidación</strong>: resuelve conflictos abiertos en ADR-035 (OQ-2) y ADR-038 (§Anonimización, §Canal de distribución). Los apartados supersedidos deben anotarse con referencia a este documento.</p>
+</li>
+</ol>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p>aRGus NDR despliega nodos edge en instalaciones de infraestructura crítica (hospitales, colegios, municipios). Cada instalación agrupa uno o más nodos bajo una entidad organizativa común. Un servidor central compartido consolida información de todas las instalaciones de la red aRGus.</p>
+<p>El pipeline C++20 existente produce telemetría operativa continua (<code>ml-detector</code>, <code>firewall-acl-agent</code>) almacenada en SQLite local con horizonte de ~30 días. No existe mecanismo para consolidar esa telemetría en una memoria histórica global coherente, ni para representar la evolución causal de entidades a lo largo del tiempo y a través de instalaciones.</p>
+<h3 id="restricciones-no-negociables">Restricciones no negociables</h3>
+<ul>
+<li><strong>GDPR</strong>: datos personales (IPs, MACs, hostnames) no pueden abandonar el nodo en claro. La pseudonimización es obligatoria antes de cualquier transmisión al servidor central.</li>
+<li><strong>Misión crítica</strong>: el nodo edge no puede degradar su capacidad de detección para consolidar memoria. Todo proceso de consolidación es asíncrono y de baja prioridad.</li>
+<li><strong>Soberanía de datos</strong>: cada instalación es dueña de sus datos. El servidor central recibe contribuciones, no extrae datos.</li>
+<li><strong>Coherencia temporal</strong>: la misma entidad física debe producir el mismo identificador en todos los batches, independientemente de cuándo se envíen o cuántos reintentos haya habido.</li>
+<li><strong>Escala global</strong>: el sistema debe poder desplegarse en múltiples países. Todos los timestamps son UTC. No existe formato de fecha local en ninguna interfaz entre componentes.</li>
+</ul>
+<hr />
+<h2 id="arquitectura-de-referencia">Arquitectura de referencia</h2>
+<pre><code>SERVIDOR CENTRAL
+├── Neo4j cluster            ← memoria consolidada e histórica
+├── Vault central            ← root of trust, wrapping keys globales
+├── Jenkins cluster          ← CI/CD, aprovisionamiento de instalaciones
+├── etcd replicas (learner)  ← ≥1 observer/learner por instalación, sin voto Raft
+└── Wazuh, OpenCanary, RAG, Falco...
+
+POR INSTALACIÓN (ej. Hospital General de Badajoz)
+├── Vault local              ← claves operativas de la instalación
+├── etcd cluster HA          ← topología parametrizada por tamaño (ver D6)
+└── N nodos edge
+    ├── SQLite               ← fuente de verdad local, episódica (~30 días, sin anonimizar)
+    ├── /var/spool/argus/batches/  ← cola local de batches pendientes (ver D9)
+    ├── Pipeline C++20       ← sniffer, ml-detector, firewall-acl-agent, ml-trainer
+    └── ZeroMQ + Ed25519     ← transporte cifrado
+</code></pre>
+<p>Flujo de telemetría (unidireccional):</p>
+<pre><code>nodo edge → [batch mensual pseudonimizado] → cola local → servidor central
+</code></pre>
+<p>Canal de comando bidireccional:</p>
+<pre><code>Jenkins → Vault central → etcd (cifrado, ZeroMQ) → Vault local → nodo edge
+</code></pre>
+<hr />
+<h2 id="decisiones">Decisiones</h2>
+<h3 id="d1-tres-niveles-de-memoria">D1 — Tres niveles de memoria</h3>
+<table>
+<thead>
+<tr>
+<th>Nivel</th>
+<th>Ubicación</th>
+<th>Horizonte</th>
+<th>Contenido</th>
+<th>Patrón de acceso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Episódica</strong></td>
+<td>SQLite por nodo</td>
+<td>~30 días</td>
+<td>Eventos crudos, identidades reales</td>
+<td>Write-heavy, read-light</td>
+</tr>
+<tr>
+<td><strong>Consolidada</strong></td>
+<td>Neo4j central</td>
+<td>Indefinido</td>
+<td>Snapshots mensuales pseudonimizados</td>
+<td>Read-heavy, write-batch</td>
+</tr>
+<tr>
+<td><strong>Histórica</strong></td>
+<td>Neo4j central</td>
+<td>Indefinido</td>
+<td>Patrones agregados, campañas</td>
+<td>Read-heavy, write-raro</td>
+</tr>
+</tbody>
+</table>
+<p>Los eventos crudos nunca abandonan el nodo sin pseudonimización previa. SQLite es la fuente de verdad operativa local; Neo4j es la fuente de verdad histórica global. La cola local de batches (D9) es una capa de resiliencia de transmisión, no un nivel de memoria adicional.</p>
+<hr />
+<h3 id="d2-identidad-de-entidad-mac-unicast-como-campo-primario">D2 — Identidad de entidad: MAC unicast como campo primario</h3>
+<p>La IP es un arrendamiento DHCP, no una identidad. En una red hospitalaria típica, un dispositivo puede obtener IPs distintas en días consecutivos. Usar la IP como campo de identidad produce nodos <code>Host</code> duplicados en Neo4j para el mismo dispositivo físico.</p>
+<p><strong>La MAC unicast es el campo de identidad primario.</strong> En infraestructura crítica gestionada (hospitales, colegios, municipios), la randomización de MAC está desactivada por política de red. La MAC identifica de forma estable al dispositivo físico.</p>
+<p><strong>Lo que viaja al servidor central no es la MAC.</strong> Es <code>HMAC-SHA256(K_pseudo, MAC)</code>: una cadena opaca de 32 bytes sin contenido recuperable sin conocer <code>K_pseudo</code>. La posición legal bajo GDPR es equivalente a cualquier otro esquema de pseudonimización.</p>
+<h4 id="filtro-mac-unicast">Filtro MAC unicast</h4>
+<p>Solo se usan MACs unicast globalmente asignadas como identidad primaria. MACs multicast, broadcast o con bit de administración local activo se tratan como <code>NetworkPresence</code> y caen al fallback.</p>
+<pre><code class="language-python">def is_valid_primary_mac(mac: str) -&gt; bool:
+    # Primer byte: bit 0 = 0 (unicast), bit 1 = 0 (globally assigned)
+    first_byte = int(mac[0:2], 16)
+    return (first_byte &amp; 0x03) == 0x00
+</code></pre>
+<h4 id="jerarquia-de-resolucion-de-identidad">Jerarquía de resolución de identidad</h4>
+<p>Ejecutada en el nodo, antes de serializar a Parquet:</p>
+<pre><code>función resolve_identity(registro):
+    si registro.mac_src existe y is_valid_primary_mac(registro.mac_src):
+        return HMAC-SHA256(K_pseudo, registro.mac_src)      → nodo Host
+    si registro.hostname existe y es estable:
+        return HMAC-SHA256(K_pseudo, registro.hostname)     → nodo Host (fallback)
+    return HMAC-SHA256(K_pseudo, registro.ip_src)           → nodo NetworkPresence
+</code></pre>
+<p><code>Host</code> representa un dispositivo físico identificable. <code>NetworkPresence</code> representa un punto de presencia en la red con identidad no garantizada (dispositivos IoT sin nombre ni MAC estable). Son semánticamente distintos y se etiquetan de forma diferente en Neo4j.</p>
+<h4 id="pseudonimizacion-de-flujos">Pseudonimización de flujos</h4>
+<pre><code>anon_flow_id = HMAC-SHA256(K_pseudo, concat(MAC_src, MAC_dst, proto, dst_port))
+</code></pre>
+<p>Si <code>MAC_dst</code> es externa (salida a internet), se usa el literal <code>"external"</code>.</p>
+<h4 id="limitacion-conocida-identidades-multiples-del-mismo-dispositivo">Limitación conocida: identidades múltiples del mismo dispositivo</h4>
+<p>Si un dispositivo cambia de identidad primaria entre períodos (MAC → hostname → IP por cambio de hardware o política), genera <code>anon_id</code> distintos en Neo4j. El derecho al olvido (D8) opera sobre identidades individuales; no alcanza automáticamente a las identidades alternativas del mismo dispositivo. La mitigación es de política operativa: las instalaciones deben mantener inventario de activos con MAC estática para dispositivos críticos.</p>
+<hr />
+<h3 id="d3-pseudonimizacion-determinista-con-clave-por-instalacion">D3 — Pseudonimización determinista con clave por instalación</h3>
+<p>La clave de pseudonimización (<code>K_pseudo</code>) es única por instalación y se custodia en el <strong>Vault local</strong>. Es generada por Jenkins en el aprovisionamiento y nunca abandona el Vault local en claro.</p>
+<p><strong>La rotación de <code>K_pseudo</code> es un evento excepcional</strong>, no periódico. Una rotación rompe la continuidad del <code>anon_id</code> en Neo4j salvo re-pseudonimización retroactiva. El procedimiento de migración está registrado como <code>DEBT-KPSEUDO-ROTATION-MIGRATION-001</code>. La disciplina de cooldown y máximo 2 claves concurrentes establecida en ADR-004 se aplica como constraint.</p>
+<p><strong>Si se rota <code>K_pseudo</code></strong>, el <code>anon_id</code> se versiona: <code>HMAC-SHA256(K_pseudo_vN, MAC)</code>. Los nodos históricos en Neo4j conservan el <code>anon_id</code> de su versión y se vinculan al nuevo mediante una relación <code>:PREVIOUS_IDENTITY</code>. Las queries de evolución histórica a través de múltiples rotaciones requieren recursividad Cypher con límite de profundidad explícito; vigilar rendimiento a partir de 3+ rotaciones por instalación.</p>
+<p><strong>Canal de rotación:</strong></p>
+<pre><code>Jenkins → genera K_pseudo_new → cifra con wrapping key del Vault central
+→ distribuye via etcd (ChaCha20-Poly1305 + Ed25519)
+→ nodo edge → desencripta → almacena en Vault local
+→ cooldown: nodos siguen usando K_pseudo_old hasta drenado completo de batches en vuelo
+→ activación de K_pseudo_new coordinada por Jenkins
+</code></pre>
+<p>Una jerarquía de derivación HKDF (<code>K_pseudo_host</code>, <code>K_pseudo_flow</code>, <code>K_pseudo_model</code> desde una <code>K_root</code>) reduciría el radio de daño ante compromiso de subclave y permitiría rotación selectiva. Registrado como <code>DEBT-KPSEUDO-HKDF-HIERARCHY-001</code> (P3, post-FEDER) para instalaciones de alto valor.</p>
+<hr />
+<h3 id="d4-paquete-mensual-por-nodo">D4 — Paquete mensual por nodo</h3>
+<p>Cada nodo genera, una vez al mes, un batch comprimido y firmado que se deposita en la cola local (D9) para transmisión al servidor central.</p>
+<h4 id="d4a-clave-de-idempotencia">D4a — Clave de idempotencia</h4>
+<pre><code>idempotency_key = firma Ed25519(batch_content)
+</code></pre>
+<p>El batch tiene contenido determinista. La firma no cambia entre reintentos si el contenido no cambia. El servidor central verifica <code>IF EXISTS Batch WHERE idempotency_key = $key → ACK, skip</code> antes de procesar. Estable a través de cualquier número de reintentos en cualquier ventana de tiempo.</p>
+<h4 id="d4b-dos-ficheros-parquet-por-nodo-por-mes">D4b — Dos ficheros Parquet por nodo por mes</h4>
+<p>El schema es un <strong>candidato</strong> que será validado y ajustado contra los CSVs reales del pipeline (<code>DEBT-PARQUET-SCHEMA-001</code>). Granularidad de eventos (por flow vs. por paquete) y política de registro (todos los eventos vs. solo alertas) se confirman con datos reales; esto determina volumen esperado y necesidad de fragmentación.</p>
+<p><strong>Schema candidato: <code>ml-detector-YYYY-MM-{anon_node_id}.parquet</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo Arrow</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timestamp_utc_ns</code></td>
+<td>int64</td>
+<td>Epoch nanoseconds UTC. Sin timezone.</td>
+</tr>
+<tr>
+<td><code>installation_id</code></td>
+<td>utf8</td>
+<td>Identificador opaco de instalación.</td>
+</tr>
+<tr>
+<td><code>node_id</code></td>
+<td>utf8</td>
+<td>HMAC(K_pseudo, node_identifier).</td>
+</tr>
+<tr>
+<td><code>anon_host_id</code></td>
+<td>utf8</td>
+<td>HMAC(K_pseudo, MAC_src). Hex lowercase.</td>
+</tr>
+<tr>
+<td><code>anon_flow_id</code></td>
+<td>utf8</td>
+<td>HMAC(K_pseudo, concat(MAC_src, MAC_dst, proto, dst_port)).</td>
+</tr>
+<tr>
+<td><code>event_type</code></td>
+<td>utf8</td>
+<td><code>normal</code>, <code>anomaly</code>, <code>attack</code></td>
+</tr>
+<tr>
+<td><code>confidence</code></td>
+<td>float32</td>
+<td>Score del modelo [0.0, 1.0]</td>
+</tr>
+<tr>
+<td><code>model_version</code></td>
+<td>utf8</td>
+<td>Versión del plugin activo</td>
+</tr>
+<tr>
+<td><code>protocol</code></td>
+<td>int8</td>
+<td>Número de protocolo IP</td>
+</tr>
+<tr>
+<td><code>dst_port_class</code></td>
+<td>utf8</td>
+<td><code>well-known</code>, <code>registered</code>, <code>dynamic</code></td>
+</tr>
+<tr>
+<td><code>bytes_count</code></td>
+<td>int64</td>
+<td>Bytes del flow</td>
+</tr>
+<tr>
+<td><code>packets_count</code></td>
+<td>int32</td>
+<td>Paquetes del flow</td>
+</tr>
+<tr>
+<td><code>alert_severity</code></td>
+<td>utf8</td>
+<td><code>low</code>, <code>medium</code>, <code>high</code>, <code>critical</code>; null si event_type=normal</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Schema candidato: <code>firewall-acl-agent-YYYY-MM-{anon_node_id}.parquet</code></strong></p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Tipo Arrow</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>timestamp_utc_ns</code></td>
+<td>int64</td>
+<td>Epoch nanoseconds UTC.</td>
+</tr>
+<tr>
+<td><code>installation_id</code></td>
+<td>utf8</td>
+<td>Identificador opaco de instalación.</td>
+</tr>
+<tr>
+<td><code>node_id</code></td>
+<td>utf8</td>
+<td>HMAC(K_pseudo, node_identifier).</td>
+</tr>
+<tr>
+<td><code>anon_src_id</code></td>
+<td>utf8</td>
+<td>HMAC(K_pseudo, MAC_src)</td>
+</tr>
+<tr>
+<td><code>anon_dst_id</code></td>
+<td>utf8</td>
+<td>HMAC(K_pseudo, MAC_dst) si LAN; null si externo</td>
+</tr>
+<tr>
+<td><code>action</code></td>
+<td>utf8</td>
+<td><code>ALLOW</code>, <code>DENY</code>, <code>DROP</code></td>
+</tr>
+<tr>
+<td><code>rule_id</code></td>
+<td>utf8</td>
+<td>ID de la regla que disparó la acción</td>
+</tr>
+<tr>
+<td><code>protocol</code></td>
+<td>int8</td>
+<td>Número de protocolo IP</td>
+</tr>
+<tr>
+<td><code>dst_port</code></td>
+<td>int32</td>
+<td>Puerto destino</td>
+</tr>
+<tr>
+<td><code>direction</code></td>
+<td>utf8</td>
+<td><code>inbound</code>, <code>outbound</code>, <code>lateral</code></td>
+</tr>
+<tr>
+<td><code>bytes_count</code></td>
+<td>int64</td>
+<td></td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td>utf8</td>
+<td>Motivo de la decisión</td>
+</tr>
+</tbody>
+</table>
+<p>Los ficheros Parquet son autocontenidos: <code>installation_id</code> y <code>node_id</code> están embebidos en cada fichero, no solo en los metadatos JSON del batch. Esto garantiza que el fichero no pierde su contexto ante cualquier tipo de reenvío parcial, procesamiento manual o auditoría futura.</p>
+<p><strong>Timestamps</strong>: epoch nanoseconds int64 UTC en Parquet. ISO 8601 con sufijo <code>Z</code> explícito en metadatos JSON. No existe formato local en ninguna interfaz. Los nodos convierten a UTC antes de escribir. El código C++20 usa <code>std::chrono::system_clock</code> (wall clock), nunca <code>steady_clock</code>.</p>
+<h4 id="d4c-plugin-de-modelo-ensemble-firmado-desactivado">D4c — Plugin de modelo ensemble firmado (desactivado)</h4>
+<p>Modelo XGBoost local del período, empaquetado como plugin aRGus (ADR-025, ADR-032), firmado con Ed25519, en estado desactivado. El servidor central lo valida, agrega con modelos de otros nodos (ADR-038 §Agregación, pendiente) y puede redistribuir modelo global mejorado. Cualquier agregación debe incluir defensa contra envenenamiento (robust aggregation + outlier detection) antes de redistribuir.</p>
+<h4 id="d4d-metadatos-del-batch">D4d — Metadatos del batch</h4>
+<pre><code class="language-json">{
+  &quot;node_id&quot;:           &quot;anon-node-{hmac}&quot;,
+  &quot;installation_id&quot;:   &quot;inst-{opaque_id}&quot;,
+  &quot;period_start&quot;:      &quot;2026-01-01T00:00:00Z&quot;,
+  &quot;period_end&quot;:        &quot;2026-01-31T23:59:59Z&quot;,
+  &quot;pipeline_version&quot;:  &quot;v0.7.0-variant-b&quot;,
+  &quot;active_model_hash&quot;: &quot;sha256:...&quot;,
+  &quot;idempotency_key&quot;:   &quot;ed25519:...&quot;,
+  &quot;batch_signature&quot;:   &quot;ed25519:...&quot;
+}
+</code></pre>
+<p><code>installation_id</code> es un identificador opaco generado por Jenkins en el aprovisionamiento. El mapping a nombre real (hospital, municipio) se almacena solo en Vault central, accesible únicamente a roles autorizados.</p>
+<hr />
+<h3 id="d5-modelo-de-grafo-neo4j-dag-temporal-sin-ciclos">D5 — Modelo de grafo Neo4j: DAG temporal sin ciclos</h3>
+<p><strong>Los ciclos en el grafo de causalidad quedan explícitamente rechazados.</strong> Los comportamientos cíclicos reales (beaconing, reconexiones, retries) se representan mediante tipos de relación semánticamente distintos (<code>:RECURRENCE</code>, <code>:BEHAVIORAL_PATTERN</code>) sobre el DAG, sin introducir ciclos estructurales.</p>
+<h4 id="ontologia-minima-viable-mvp-feder">Ontología mínima viable (MVP FEDER)</h4>
+<pre><code>Nodos:
+  Host            — dispositivo físico con MAC unicast estable
+  NetworkPresence — punto de presencia en red (sin MAC estable)
+  Flow            — comunicación entre dos identidades en un episodio
+  Alert           — detección generada por ml-detector
+  Episode         — snapshot mensual de un nodo en una instalación
+  Installation    — entidad organizativa (hospital, colegio, municipio)
+  Batch           — registro de batch procesado (garantía de idempotencia)
+
+Relaciones:
+  (Host|NetworkPresence)-[:OBSERVED_IN]-&gt;(Episode)
+  (Flow)-[:OCCURRED_IN]-&gt;(Episode)
+  (Alert)-[:TRIGGERED_BY]-&gt;(Flow)
+  (Episode)-[:BELONGS_TO]-&gt;(Installation)
+  (Host)-[:PREVIOUS_IDENTITY]-&gt;(Host)    ← solo tras rotación de K_pseudo
+</code></pre>
+<p>Entidades como <code>Campaign</code> están fuera del scope MVP FEDER. La Graph Reconciliation Layer que convierte histórico consistente en conocimiento interpretable es investigación de siguiente fase, no objetivo de este ADR.</p>
+<h4 id="ordenamiento-temporal-sin-aristas-materializadas">Ordenamiento temporal sin aristas materializadas</h4>
+<p>La relación <code>PRECEDES</code> entre episodios <strong>no se materializa</strong>. El ordenamiento temporal usa comparación del campo <code>Episode.period</code> (string ISO 8601: <code>"2026-01"</code> &lt; <code>"2026-02"</code>), ordenable directamente en Cypher.</p>
+<pre><code class="language-cypher">// Evolución de un host en los últimos 6 meses
+MATCH (h:Host {id: $anon_id})-[:OBSERVED_IN]-&gt;(e:Episode)
+WHERE e.period &gt;= &quot;2025-11&quot; AND e.period &lt;= &quot;2026-04&quot;
+RETURN e.period, e.node_id ORDER BY e.period ASC
+</code></pre>
+<h4 id="merge-en-ingesta-idempotente">Merge en ingesta (idempotente)</h4>
+<pre><code class="language-cypher">// Verificar idempotencia antes de procesar
+MERGE (b:Batch {idempotency_key: $idempotency_key})
+  ON CREATE SET b.ingested_at = $now, b.status = &quot;processed&quot;
+  ON MATCH SET b.status = &quot;duplicate_ignored&quot;
+WITH b WHERE b.status = &quot;processed&quot;
+
+// Solo si el batch es nuevo, proceder con la ingesta
+MERGE (h:Host {id: $anon_host_id, installation: $inst_id})
+MERGE (e:Episode {period: $period, node_id: $anon_node_id, installation: $inst_id})
+MERGE (h)-[:OBSERVED_IN]-&gt;(e)
+</code></pre>
+<h4 id="indices-recomendados-en-el-playbook-de-despliegue">Índices recomendados en el playbook de despliegue</h4>
+<pre><code class="language-cypher">CREATE INDEX FOR (h:Host) ON (h.id);
+CREATE INDEX FOR (b:Batch) ON (b.idempotency_key);
+CREATE INDEX episode_period_installation FOR (e:Episode) ON (e.period, e.installation);
+</code></pre>
+<hr />
+<h3 id="d6-topologia-etcd-parametrizable-por-instalacion-cierra-adr-035-oq-2">D6 — Topología etcd: parametrizable por instalación (cierra ADR-035 OQ-2)</h3>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Miembros locales (con voto Raft)</th>
+<th>En servidor central</th>
+<th>SPOF</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Pequeña (1-2 nodos)</td>
+<td>1 single-node</td>
+<td>1 observer/learner</td>
+<td>Sí, documentado y aceptado</td>
+</tr>
+<tr>
+<td>Mediana (3-9 nodos)</td>
+<td>3, uno por nodo edge</td>
+<td>1 observer/learner</td>
+<td>No</td>
+</tr>
+<tr>
+<td>Grande (10+ nodos)</td>
+<td>3, hardware dedicado</td>
+<td>1-2 observers/learners</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<p>Tres miembros etcd en la misma máquina física no aportan tolerancia a fallos. El observer en el servidor central recibe replicación sin participar en Raft.</p>
+<p>Para instalaciones pequeñas: single-node etcd es SPOF documentado y aceptado. Mitigación: snapshot diario automático, retención 7 días, destino cifrado con wrapping key del Vault local (ADR-035 D5).</p>
+<p><strong>ADR-035 OQ-2 queda cerrada.</strong></p>
+<hr />
+<h3 id="d7-jerarquia-de-vault">D7 — Jerarquía de Vault</h3>
+<pre><code>Vault central (servidor central)
+├── Custodia: wrapping keys globales, keypairs Jenkins, CA raíz
+├── Mapping installation_id opaco → nombre real (acceso autorizado)
+└── Rol: root of trust
+
+Vault local (por instalación)
+├── Custodia: K_pseudo, keypairs Ed25519 de nodos, seeds etcd
+└── Rol: operativo
+</code></pre>
+<p><strong>Procedimiento de recuperación de Vault local</strong> ante desastre físico o ransomware:
+1. Jenkins detecta pérdida de heartbeat del Vault local durante &gt;72h.
+2. Nuevo hardware de instalación genera Vault local vacío.
+3. Administrador autorizado aprueba la recuperación via Jenkins (aprobación manual auditada, log firmado con timestamp en servidor central).
+4. Vault central entrega backup cifrado via canal seguro (etcd + Ed25519).
+5. Nuevo Vault local desencripta con wrapping key pre-registrada.
+6. Post-restauración: rotación forzosa de <code>K_pseudo</code>; ruptura temporal de coherencia registrada en Neo4j como evento <code>VaultRestored</code>.</p>
+<hr />
+<h3 id="d8-flujo-de-derecho-al-olvido-gdpr-art-17">D8 — Flujo de derecho al olvido (GDPR Art. 17)</h3>
+<p>Registrado como <code>DEBT-GDPR-ERASURE-001</code> (P1 pre-FEDER). Flujo conceptual:</p>
+<pre><code>Solicitud de borrado (identidad real: MAC o IP)
+→ Instalación local calcula anon_id = HMAC(K_pseudo, identidad)
+→ Borra registros en SQLite local
+→ Envía comando firmado (Ed25519) al servidor central:
+  {&quot;action&quot;: &quot;erase&quot;, &quot;anon_id&quot;: &quot;...&quot;, &quot;installation&quot;: &quot;inst-...&quot;, &quot;timestamp&quot;: &quot;...Z&quot;}
+→ Servidor central ejecuta DELETE en Neo4j para ese anon_id
+→ Registra auditoría firmada del borrado (inmutable)
+→ Instalación recibe confirmación y certifica cumplimiento
+</code></pre>
+<p>El borrado opera sobre el <code>anon_id</code> resuelto. Si el mismo dispositivo generó múltiples <code>anon_id</code> por cambio de identidad primaria (ver limitación en D2), el borrado de uno no alcanza automáticamente a los demás. Documentado como limitación conocida.</p>
+<p>La implementación completa requiere validación jurídica con INCIBE/UEx (Dr. Andrés Caro Lindo). Pregunta específica: ¿cuándo exactamente los datos pseudonimizados con HMAC dejan de ser datos personales si la clave de reversión existe pero está técnicamente aislada en un Vault destruido?</p>
+<hr />
+<h3 id="d9-cola-local-de-batches-pendientes-resuelve-oq-1">D9 — Cola local de batches pendientes (resuelve OQ-1)</h3>
+<p>La generación mensual del batch y su transmisión al servidor central son operaciones desacopladas. Un nodo edge en infraestructura crítica puede estar desconectado durante días o semanas por mantenimiento, fallo de ISP o incidente. La cola local garantiza que ningún batch se pierde por conectividad intermitente, independientemente de SQLite.</p>
+<h4 id="estructura-de-la-cola">Estructura de la cola</h4>
+<pre><code>/var/spool/argus/batches/
+├── pending/    ← batches firmados listos para envío
+│   └── {period}-{idempotency_key}.tar.zst
+├── sent/       ← batches con ACK confirmado (retención 7 días, luego purga)
+└── expired/    ← batches no enviados tras 90 días (alerta administrativa)
+</code></pre>
+<h4 id="ciclo-de-vida-de-un-batch">Ciclo de vida de un batch</h4>
+<ol>
+<li>El pipeline de consolidación genera el batch mensual y lo serializa en <code>pending/</code>.</li>
+<li>El agente de transmisión intenta envío al servidor central via ZeroMQ + Ed25519.</li>
+<li>Si el servidor responde ACK: mueve el fichero a <code>sent/</code>.</li>
+<li>Si falla: reintenta con backoff exponencial (1h, 2h, 4h, 8h, 16h, 24h, luego cada 24h).</li>
+<li>A los 90 días sin ACK: mueve a <code>expired/</code>, emite alerta administrativa (log local + etcd si hay conectividad).</li>
+</ol>
+<h4 id="propiedades-de-la-cola">Propiedades de la cola</h4>
+<ul>
+<li><strong>Independiente de SQLite</strong>: el batch, una vez generado y firmado, no requiere los datos crudos para ser retransmitido. SQLite puede haber rotado sus datos sin afectar a la cola.</li>
+<li><strong>Idempotente en el servidor</strong>: el servidor central identifica batches duplicados por <code>idempotency_key</code> y descarta los reintentos sin reprocesar.</li>
+<li><strong>Ordenada FIFO</strong>: el agente de transmisión envía batches en orden cronológico de generación, priorizando los más antiguos para minimizar la ventana de memoria no consolidada.</li>
+<li><strong>Retención de 90 días</strong>: cubre 3 ciclos mensuales sin conectividad. Si un nodo está aislado más de 90 días sin enviar, los batches se archivan y se emite alerta; los datos de SQLite habrán rotado, pero los batches firmados están intactos en <code>expired/</code>.</li>
+</ul>
+<h4 id="almacenamiento-duradero-en-el-servidor-central">Almacenamiento duradero en el servidor central</h4>
+<p>Antes de procesar un batch en Neo4j, el servidor central lo persiste en almacenamiento de objetos duradero (MinIO u equivalente). Esto convierte el sistema en event sourcing real: Neo4j puede reconstruirse desde cero a partir de los batches almacenados sin depender de los nodos edge. Los batches crudos son la fuente de verdad para disaster recovery del grafo Neo4j.</p>
+<hr />
+<h2 id="deudas-tecnicas-registradas">Deudas técnicas registradas</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Prioridad</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-PARQUET-SCHEMA-001</code></td>
+<td><strong>P0 bloqueante</strong></td>
+<td>Validar schema candidato contra CSVs reales de <code>ml-detector</code> y <code>firewall-acl-agent</code> en entorno Vagrant. Confirmar granularidad de eventos y política de registro.</td>
+</tr>
+<tr>
+<td><code>DEBT-VAULT-FEDERATION-001</code></td>
+<td>P1 pre-FEDER</td>
+<td>Procedimiento de offboarding: destrucción certificada de Vault local, retención de datos históricos en Neo4j post-offboarding.</td>
+</tr>
+<tr>
+<td><code>DEBT-LEGAL-DATA-RETENTION-001</code></td>
+<td>P1 pre-FEDER</td>
+<td>Dictamen jurídico GDPR sobre retención de datos pseudonimizados post-cliente. Interlocutor: Dr. Andrés Caro Lindo (UEx/INCIBE).</td>
+</tr>
+<tr>
+<td><code>DEBT-KPSEUDO-ROTATION-MIGRATION-001</code></td>
+<td>P1 pre-FEDER</td>
+<td>Procedimiento de migración de identidades en Neo4j tras rotación de K_pseudo: coordinación con drenado de batches en vuelo, atomicidad, auditoría.</td>
+</tr>
+<tr>
+<td><code>DEBT-GDPR-ERASURE-001</code></td>
+<td>P1 pre-FEDER</td>
+<td>Implementar flujo de derecho al olvido (D8): comando firmado de borrado de anon_id en Neo4j, auditoría certificada.</td>
+</tr>
+<tr>
+<td><code>DEBT-KPSEUDO-HKDF-HIERARCHY-001</code></td>
+<td>P3 post-FEDER</td>
+<td>Jerarquía HKDF para K_pseudo (K_pseudo_host, K_pseudo_flow, K_pseudo_model desde K_root). Reduce radio de daño ante compromiso de subclave. Para instalaciones de alto valor.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="impacto-sobre-adrs-existentes">Impacto sobre ADRs existentes</h2>
+<table>
+<thead>
+<tr>
+<th>ADR</th>
+<th>Impacto</th>
+<th>Acción requerida</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>ADR-004</td>
+<td>Compatible. Cooldown y máximo 2 claves concurrentes se extienden como constraint a K_pseudo.</td>
+<td>Añadir referencia a ADR-043 en §8 Future Work.</td>
+</tr>
+<tr>
+<td>ADR-025</td>
+<td>Compatible. Ed25519 firma el batch e idempotency_key. Sin cambios.</td>
+<td>Ninguna.</td>
+</tr>
+<tr>
+<td>ADR-032</td>
+<td>Compatible. Plugin modelo mensual sigue Plugin Distribution Chain. Sin cambios.</td>
+<td>Ninguna.</td>
+</tr>
+<tr>
+<td>ADR-034</td>
+<td>Compatible. Topología etcd parametrizada se expresa en <code>deployment.yml</code>.</td>
+<td>Añadir campo <code>etcd.topology_class</code> a spec de deployment.yml.</td>
+</tr>
+<tr>
+<td>ADR-035</td>
+<td><strong>OQ-2 cerrada</strong> por D6.</td>
+<td>Actualizar OQ-2 a CLOSED con referencia a ADR-043 D6.</td>
+</tr>
+<tr>
+<td>ADR-038</td>
+<td><strong>Dos secciones supersedidas</strong>: §Anonimización (D2-D3 de este ADR) y §Canal de distribución (D4, ZeroMQ sobre BitTorrent). El resto de ADR-038 permanece vigente.</td>
+<td>Marcar secciones supersedidas con referencia a ADR-043.</td>
+</tr>
+<tr>
+<td>ADR-040</td>
+<td>Compatible. Contrato de reentrenamiento ML se aplica al plugin modelo mensual. Sin cambios.</td>
+<td>Ninguna.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="proximos-pasos">Próximos pasos</h2>
+<p>El orden es estricto.</p>
+<ol>
+<li>Esbozar ontología Neo4j mínima completa (D5 es el punto de partida; validar con queries forenses de ejemplo antes de tocar el schema Parquet).</li>
+<li><strong>[DEBT-PARQUET-SCHEMA-001]</strong> Examinar CSVs reales en Vagrant. Validar y ajustar schema candidato. Este schema es el contrato de interfaz; todo el pipeline depende de él.</li>
+<li>Implementar pseudonimización en nodo: jerarquía de identidad con filtro MAC unicast, <code>K_pseudo</code> del Vault local.</li>
+<li>Implementar empaquetado mensual y cola local (D9): Parquet ×2 + plugin firmado + metadatos + <code>idempotency_key</code> → <code>pending/</code>.</li>
+<li>Diseñar pipeline de ingesta en servidor central: verificación Ed25519 → persistencia en almacenamiento duradero → check idempotencia → deserialización Parquet → MERGE Neo4j.</li>
+<li>Actualizar ADR-035 (cerrar OQ-2) y ADR-038 (marcar secciones supersedidas).</li>
+<li><strong>[DEBT-VAULT-FEDERATION-001 + DEBT-LEGAL-DATA-RETENTION-001 + DEBT-GDPR-ERASURE-001]</strong> Iniciar validación jurídica en paralelo con pasos técnicos.</li>
+</ol>
+<hr />
+<h2 id="alcance-feder">Alcance FEDER</h2>
+<p>Los pasos 1–5 están dentro del horizonte técnico del proyecto FEDER (deadline 22 septiembre 2026). Constituyen la contribución de investigación aplicada: una arquitectura de memoria episódica distribuida para NDR en infraestructura crítica de bajo presupuesto, con pseudonimización verificable, coherencia histórica garantizada, identidad estable frente a condiciones de red reales (DHCP, conectividad intermitente) y resiliencia ante particiones de red prolongadas.</p>
+<p>Los pasos 6–7 son de gestión técnica y legal, sin dependencia de financiación externa.</p>
+<hr />
+<p><em>Consejo de Sabios: Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral</em>
+<em>Via Appia Quality — DAY 147</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

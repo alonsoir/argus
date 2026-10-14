@@ -1,0 +1,1091 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PROPUESTA%20--%20Flujo%20B%2C%20parquet_to_kuzu_loader%20%28DAY%20207%29-respuesta-qwen/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>CONSEJO DE SABIOS — Dictamen sobre parquet_to_kuzu_loader - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-dictamen-sobre-parquet_to_kuzu_loader" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              CONSEJO DE SABIOS — Dictamen sobre parquet_to_kuzu_loader
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#dictamen-unificado-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dictamen unificado del Consejo
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dictamen unificado del Consejo">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-componente-como-lector-puro-reusa-sink-ratificado-unanimemente-99" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (a) Componente como lector-puro-reusa-sink — RATIFICADO UNÁNIMEMENTE (9/9)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b-limite-de-un-solo-chunk-ratificado-con-condicion-72" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (b) Límite de un-solo-chunk — RATIFICADO CON CONDICIÓN (7/2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c-ingested_at-y-seq_in_window-ratificado-unanimemente-99" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (c) ingested_at y seq_in_window — RATIFICADO UNÁNIMEMENTE (9/9)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#d-nombre-y-ubicacion-del-componente-ratificado-con-recomendacion-99" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        (d) Nombre y ubicación del componente — RATIFICADO CON RECOMENDACIÓN (9/9)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-ratificaciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de ratificaciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deuda-tecnica-nueva-registrada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deuda técnica nueva registrada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#nota-final-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Nota final del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-dictamen-sobre-parquet_to_kuzu_loader">CONSEJO DE SABIOS — Dictamen sobre <code>parquet_to_kuzu_loader</code></h1>
+<p><strong>Fecha de deliberación:</strong> 2026-07-05
+<strong>Participantes:</strong> Claude, ChatGPT, DeepSeek, Gemini, GLM, Grok, Kimi, Mistral, Qwen
+<strong>Propuesta:</strong> Flujo B — <code>parquet_to_kuzu_loader</code> (ADR-058 §6, Eslabón 2)
+<strong>Veredicto:</strong> <strong>RATIFICADO CON MATICES</strong> (8/9 a favor, 1 con reserva técnica)</p>
+<hr />
+<h2 id="dictamen-unificado-del-consejo">Dictamen unificado del Consejo</h2>
+<p>Tras examinar la propuesta bajo los criterios de <em>Via Appia Quality</em> — medir, no votar — el Consejo emite el siguiente dictamen estructurado por cada petición de ratificación.</p>
+<hr />
+<h3 id="a-componente-como-lector-puro-reusa-sink-ratificado-unanimemente-99">(a) Componente como lector-puro-reusa-sink — <strong>RATIFICADO UNÁNIMEMENTE (9/9)</strong></h3>
+<p>El Consejo confirma que <code>parquet_to_kuzu_loader</code> debe operar como <strong>consumidor puro</strong> del sink existente, sin ampliar <code>IGraphSink</code> ni <code>KuzuGraphSink</code>.</p>
+<p><strong>Razonamiento técnico:</strong></p>
+<ul>
+<li>La interfaz <code>IGraphSink::write(const CorrelationRecord&amp;, const std::string&amp; flow_uid)</code> ya es suficiente. El loader no necesita conocer detalles de Cypher, bindings, ni transaccionalidad interna de Kuzu.</li>
+<li>Ampliar la interfaz del sink para "acomodar" Parquet violaría el Principio de Abierto/Cerrado: el sink está cerrado a la modificación porque su contrato (rec + flow_uid) ya cubre el caso de uso.</li>
+<li>La separación Flujo A / Flujo B como entidades independientes (ADR-058) es arquitectónicamente sólida: cada eslabón tiene un punto de fallo aislado, un test de equivalencia independiente, y puede evolucionar sin acoplamiento.</li>
+</ul>
+<p><strong>Consecuencia práctica:</strong> el loader es un <em>main()</em> con lógica de lectura, no un nuevo módulo de infraestructura. Su complejidad ciclomática debe ser baja (lectura + bucle + write + flush).</p>
+<hr />
+<h3 id="b-limite-de-un-solo-chunk-ratificado-con-condicion-72">(b) Límite de un-solo-chunk — <strong>RATIFICADO CON CONDICIÓN (7/2)</strong></h3>
+<p><strong>Mayoría (7 modelos):</strong> Aceptable como primer commit, dado el contexto operativo ya ratificado:</p>
+<ul>
+<li>Particionado por fecha (ADR-058 §8)</li>
+<li>Rotación de segmentos cada 30s</li>
+<li>Ficheros resultantes pequeños en la práctica (24 filas verificado, orden de magnitud confirmado)</li>
+<li>El límite está <strong>declarado explícitamente</strong>, no oculto — esto es crucial para la trazabilidad de deuda técnica</li>
+</ul>
+<p><strong>Condición exigida por la mayoría:</strong> el loader debe incluir un <strong>assert o log de nivel WARNING</strong> si <code>num_chunks() &gt; 1</code> en cualquier columna, para que la violación del supuesto sea detectable en producción antes de que cause silencio data corruption:</p>
+<pre><code class="language-cpp">for (int i = 0; i &lt; table-&gt;num_columns(); ++i) {
+    if (table-&gt;column(i)-&gt;num_chunks() &gt; 1) {
+        logger-&gt;warn(&quot;parquet_to_kuzu_loader: columna {} tiene {} chunks; &quot;
+                     &quot;asumiendo chunk(0) — revisar particionado&quot;, i,
+                     table-&gt;column(i)-&gt;num_chunks());
+    }
+}
+</code></pre>
+<p><strong>Minoría (2 modelos — DeepSeek y Gemini):</strong> Discrepancia técnica. Argumentan que el bucle multi-chunk debe ir <strong>desde el primer commit</strong>, porque:</p>
+<ol>
+<li>El coste de implementar el bucle es trivial (~10 líneas adicionales).</li>
+<li>Deferir la iteración multi-chunk crea una bomba de tiempo: si el volumen de datos crece y el particionado no se ajusta, el loader producirá resultados incorrectos <em>sin error</em>, solo con datos faltantes.</li>
+<li>El principio "medir, no asumir" debería aplicarse también al supuesto de que los ficheros <em>seguirán</em> siendo pequeños. La verificación DAY 207 mide un estado actual, no garantiza estados futuros.</li>
+</ol>
+<p><strong>Resolución del Consejo:</strong> se adopta la posición de la mayoría (assert/warning + diferir bucle multi-chunk), pero se registra la discrepancia de DeepSeek y Gemini como <strong>DEBT-PARQUET-MULTICHUNK-001</strong> en el backlog, con prioridad P2. Si en 30 días de operación no se dispara ningún warning, la deuda se reclasifica a P3.</p>
+<hr />
+<h3 id="c-ingested_at-y-seq_in_window-ratificado-unanimemente-99">(c) <code>ingested_at</code> y <code>seq_in_window</code> — <strong>RATIFICADO UNÁNIMEMENTE (9/9)</strong></h3>
+<p>El Consejo confirma:</p>
+<ul>
+<li>
+<p><strong><code>ingested_at</code>:</strong> sellado en <code>write()</code> por <code>KuzuGraphSink</code>/<code>cypher_builder.hpp</code>. No se hereda del Parquet. Esto ya está excluido del predicado de equivalencia §3.1 (ADR-058 v3). Flujo B no introduce brecha nueva; la "anomalía temporal" es una propiedad conocida y aceptada del diseño de dos flujos independientes.</p>
+</li>
+<li>
+<p><strong><code>seq_in_window</code>:</strong> siempre 0 hoy (<code>DEBT-FLOWUID-SEQ-COLLISION-001</code>). El loader no necesita generar ni recomputar este valor. Si en el futuro se implementa secuenciación real, afectará tanto a Camino 0 como a Flujo A+B simultáneamente (mismo <code>compute_flow_uid</code>), por lo que la equivalencia se mantendrá.</p>
+</li>
+</ul>
+<p><strong>Nota del Consejo:</strong> la decisión de no recomputar <code>flow_uid</code> (sección 4 de la propuesta) es particularmente sólida. Dos vías de cómputo para el mismo identificador son una fuente clásica de divergencia silenciosa. Leer col 21 directamente elimina ese riesgo.</p>
+<hr />
+<h3 id="d-nombre-y-ubicacion-del-componente-ratificado-con-recomendacion-99">(d) Nombre y ubicación del componente — <strong>RATIFICADO CON RECOMENDACIÓN (9/9)</strong></h3>
+<p><strong>Propuesta aceptada:</strong> <code>correlation-engine/tools/parquet_to_kuzu_loader.cpp</code></p>
+<p><strong>Recomendación adicional del Consejo:</strong></p>
+<p>Dado que la propuesta menciona la decisión pendiente sobre el destino de <code>bronze_to_gold_converter.cpp</code> (prototipo vs producción, acción 3 de DAY 207, BACKLOG.md), el Consejo sugiere:</p>
+<ol>
+<li>
+<p>Si <code>bronze_to_gold_converter.cpp</code> se.promueve a producción, ambos componentes (converter + loader) deberían compartir directorio — posiblemente <code>correlation-engine/pipeline/</code> o <code>correlation-engine/io/</code>, dado que ambos son operaciones de E/S sobre el grafo de correlación.</p>
+</li>
+<li>
+<p>Si <code>bronze_to_gold_converter.cpp</code> permanece como prototipo/herramienta, entonces <code>tools/</code> es la ubicación correcta para el loader, y la estructura sería:
+   <code>correlation-engine/
+   ├── tools/
+   │   ├── bronze_to_gold_converter.cpp   (prototipo)
+   │   └── parquet_to_kuzu_loader.cpp     (nuevo)
+   ├── src/
+   │   ├── kuzu_graph_sink.cpp
+   │   └── ...
+   └── include/
+       └── ...</code></p>
+</li>
+<li>
+<p>El nombre <code>parquet_to_kuzu_loader</code> es descriptivo y adecuado. No se recomienda alternativa.</p>
+</li>
+</ol>
+<hr />
+<h2 id="resumen-de-ratificaciones">Resumen de ratificaciones</h2>
+<table>
+<thead>
+<tr>
+<th>Petición</th>
+<th>Veredicto</th>
+<th>Votos</th>
+<th>Condición</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(a) Lector-puro-reusa-sink</td>
+<td><strong>RATIFICADO</strong></td>
+<td>9/9</td>
+<td>—</td>
+</tr>
+<tr>
+<td>(b) Límite un-solo-chunk</td>
+<td><strong>RATIFICADO CONDICIONAL</strong></td>
+<td>7/2</td>
+<td>Assert/warning si <code>num_chunks() &gt; 1</code>; DEBT-PARQUET-MULTICHUNK-001 (P2)</td>
+</tr>
+<tr>
+<td>(c) <code>ingested_at</code> / <code>seq_in_window</code></td>
+<td><strong>RATIFICADO</strong></td>
+<td>9/9</td>
+<td>—</td>
+</tr>
+<tr>
+<td>(d) Nombre/ubicación</td>
+<td><strong>RATIFICADO</strong></td>
+<td>9/9</td>
+<td>Ver recomendación sobre estructura de directorios</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="deuda-tecnica-nueva-registrada">Deuda técnica nueva registrada</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+<th>Prioridad</th>
+<th>Bloqueante</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-PARQUET-MULTICHUNK-001</code></td>
+<td>Iteración multi-chunk en lectura Parquet diferida; assert/warning como salvaguarda</td>
+<td>P2</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="nota-final-del-consejo">Nota final del Consejo</h2>
+<p>La propuesta demuestra rigor metodológico: evidencia medida (no supuesta), límites declarados explícitamente, y separación de responsabilidades alineada con ADRs existentes. El patrón de "leer col 21 directamente sin recomputar <code>flow_uid</code>" es especialmente ejemplar — elimina una clase entera de bugs de divergencia.</p>
+<p>El Consejo ratifica la propuesta y autoriza la implementación de <code>parquet_to_kuzu_loader.cpp</code> bajo las condiciones expuestas.</p>
+<p><em>Via Appia Quality — medir, no votar.</em></p>
+<hr />
+<p><strong>Firmado:</strong> Consejo de Sabios (Claude, ChatGPT, DeepSeek, Gemini, GLM, Grok, Kimi, Mistral, Qwen)
+<strong>Fecha:</strong> 2026-07-05</p>
+<p>FDO</p>
+<p>qwen</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

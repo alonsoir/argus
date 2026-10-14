@@ -1,0 +1,1079 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Informe%20day266/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>INFORME DAY266 — Cabeza DDoS: el reentreno no era la pregunta - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#informe-day266-cabeza-ddos-el-reentreno-no-era-la-pregunta" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              INFORME DAY266 — Cabeza DDoS: el reentreno no era la pregunta
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#lo-hecho-hoy-medido-en-orden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo hecho hoy (medido, en orden)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Lo hecho hoy (medido, en orden)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-censo-del-binetflow-de-neris-hecho-neris-no-contiene-ddos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Censo del binetflow de Neris → HECHO: Neris NO contiene DDoS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-baseline-de-reproducibilidad-ancla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Baseline de reproducibilidad (ancla)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-reconocimiento-que-reencuadra-el-pendiente-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Reconocimiento que reencuadra el PENDIENTE 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-especificidad-de-la-cabeza-ddos-vieja-desplegada-sobre-neris" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Especificidad de la cabeza DDoS VIEJA (desplegada) sobre Neris
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-reentreno-python-de-la-cabeza-a-camino-2-cerrado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Reentreno Python de la cabeza A — Camino 2 CERRADO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deudas-nuevas-medidas-no-de-hoy-no-perder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas nuevas MEDIDAS (no de hoy, no perder)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pendiente-abierto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pendiente / abierto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#untracked-decidir-ramapr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Untracked (decidir rama/PR)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#invariantes-no-re-litigar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Invariantes (no re-litigar)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="informe-day266-cabeza-ddos-el-reentreno-no-era-la-pregunta">INFORME DAY266 — Cabeza DDoS: el reentreno no era la pregunta</h1>
+<p><strong>Titular del día:</strong> la cabeza DDoS <strong>desplegada es específica</strong> (0 FP sobre Neris), el
+"reentrenar sobre A con labels reales" del PENDIENTE 1 <strong>ya estaba medido</strong> (es el
+0,9269 macro del baseline, no una mejora escondida), y el 69 % de "MALICIOUS" sobre
+Neris <strong>no lo dispara DDoS sino un fast-path de ransomware con score constante 0,750</strong>
+(bug medido, deuda nueva). Camino 2 (reentreno Python) CERRADO con artefacto persistido;
+Camino 1 (especificidad de A sobre Neris) a un comando de arrancar. Cero producción
+escrita, <code>main</code> protegida intacta.</p>
+<hr />
+<h2 id="lo-hecho-hoy-medido-en-orden">Lo hecho hoy (medido, en orden)</h2>
+<h3 id="1-censo-del-binetflow-de-neris-hecho-neris-no-contiene-ddos">1. Censo del binetflow de Neris → HECHO: Neris NO contiene DDoS</h3>
+<ul>
+<li>Fichero: <code>datasets/ctu13/capture20110810.binetflow</code>, <strong>2.824.636 flujos</strong>.</li>
+<li>Desglose (censo limpio, cuadra al flujo): Background <strong>2.753.288</strong> / Normal <strong>30.387</strong>
+  / From-Botnet <strong>40.961</strong> / Otros 0.</li>
+<li>Los <code>From-Botnet-V42</code> leídos enteros = DNS (~29 k), SPAM (~8,5 k), C&amp;C
+  (<code>CC1/16/53/54/55…</code>), click-fraud (constelación <code>HTTP-Ad-N</code>), descargas de binario y
+  <code>TCP-Attempt</code> (escaneo). <strong>Ni un flood.</strong> El <code>grep</code> de keywords DDoS salió vacío, pero
+  eso era el chequeo débil; lo que decide es el desglose: botnet C&amp;C+spam+scan de manual.</li>
+<li><strong>Consecuencia (fork zanjado con dato):</strong> el sustrato de <strong>recall</strong> de la cabeza A es
+  <strong>CICDDoS2019</strong> (único corpus con el fenómeno). Medir recall de A contra Neris mediría
+  el vacío. Neris <strong>cambia de rol</strong> → banco de <strong>especificidad/FPR contra tráfico real</strong>
+  (lo que CIC no puede dar: su benigno es ~0,11 %, homogéneo, misma captura) + banco del
+  <strong>FP de la regla de handshake</strong> (los <strong>105.438</strong> <code>Background-TCP-Attempt</code> = conexión
+  rota real, el modo de FP predicho de la regla Syn).</li>
+</ul>
+<h3 id="2-baseline-de-reproducibilidad-ancla">2. Baseline de reproducibilidad (ancla)</h3>
+<ul>
+<li><code>train_ddos_head_v2.py</code> sobre CICDDoS2019 <strong>reproduce byte-idéntico el DAY265</strong>.</li>
+<li>Recall A: LDAP/MSSQL/NetBIOS/UDP <strong>0,9999</strong> · Portmap held-out <strong>0,9972</strong> ·
+  UDPLag <strong>0,9204</strong> · <strong>Syn 0,5713</strong>. macro A <strong>0,9269</strong>. Δ(B−A) <strong>+0,0047</strong>,
+  IC95 <strong>[+0,0000, +0,0113]</strong>. FPR reales A=5,88 % / B=2,58 % (defecto conocido, ignorado).</li>
+<li>SEED + core anti-leakage heredados de <code>train_ddos_head.py</code> = deterministas. Ancla firme.</li>
+</ul>
+<h3 id="3-reconocimiento-que-reencuadra-el-pendiente-1">3. Reconocimiento que reencuadra el PENDIENTE 1</h3>
+<ul>
+<li><strong>"Reentrenar A con labels reales" = ES este harness.</strong> Entrena un RF sobre las 9
+  features de A con labels reales de CIC. El <strong>0,9269 macro ES la cabeza A</strong>; no hay una
+  versión mejor esperando al reentreno. El PENDIENTE 1 <strong>no sube recall</strong>: sustituye la
+  cabeza vieja (Betas sintéticas + geo + <code>syn_ack_ratio</code> + sintético-9) por A limpia, y
+  mata dos grietas del pipeline viejo. Es higiene + artefacto, no mejora de detección.</li>
+</ul>
+<h3 id="4-especificidad-de-la-cabeza-ddos-vieja-desplegada-sobre-neris">4. Especificidad de la cabeza DDoS VIEJA (desplegada) sobre Neris</h3>
+<p>Vía el oro del paper <code>logs/lab/argus-20260804-080140.parquet</code> (1369 flujos; <code>.165</code> domina
+con 970; sensor argus 100 % → es Neris, confirmado).
+- <strong>Hallazgo de diseño:</strong> el oro <strong>NO persiste features</strong>, solo el veredicto (5-tupla +
+  <code>final_classification</code> + scores). No hay vector que auditar. → obliga a recomputar para
+  el Camino 1 (ver Deudas).
+- <code>final_classification</code>: MALICIOUS <strong>945</strong> / BENIGN <strong>424</strong>.
+- <strong>Pero</strong> <code>threat_category</code>: <code>RANSOMWARE_FAST_DETECTION</code> <strong>945</strong> / <code>RAW_CAPTURE</code> <strong>424</strong>
+  → los 945 los dispara el <strong>fast-path de ransomware</strong>, NO la cabeza DDoS.
+- <code>ml_detector_score</code> (el de DDoS): rango <strong>0,0118–0,3949</strong>, media <strong>0,0974</strong>,
+  <strong>0 flujos &gt; 0,5</strong>, 0 &gt; 0,8. → <strong>la cabeza DDoS vieja NO alucina sobre Neris: es
+  específica (0 FP sobre 1369).</strong> Buena noticia sobria.
+- <code>fast_detector_score</code> <strong>clavado en 0,750 exacto</strong> en los 945 → huele a valor
+  hardcodeado / rama con literal, no a medición. <strong>Deuda nueva</strong> (ver abajo).</p>
+<h3 id="5-reentreno-python-de-la-cabeza-a-camino-2-cerrado">5. Reentreno Python de la cabeza A — Camino 2 CERRADO</h3>
+<ul>
+<li>Script hermano nuevo: <code>retrain_ddos_head_A.py</code> (124 líneas, en
+  <code>ml-training/scripts/ddos_detection/</code>, <strong>untracked</strong>). Importa <code>load_day</code> /
+  <code>pick_features</code> / <code>SEED</code> de <code>train_ddos_head.py</code> y <code>RF23_SERVED</code> / <code>EXCLUDE_MEASURED</code>
+  de v2 (no reescribe de memoria — lección Init_Win).</li>
+<li><strong>A derivada, no tecleada:</strong> <code>pick_features(0.60) ∩ RF23_SERVED − EXCLUDE_MEASURED</code> →
+  las <strong>9 exactas</strong>, verificado en seco (mismo orden que el baseline).</li>
+<li><code>syn_ack_ratio</code> y el sintético-9 <strong>mueren por ausencia</strong> (no están en RF23_SERVED ni en
+  el summary de CIC); assert <code>FORBIDDEN_OLD</code> lo convierte en garantía medida.</li>
+<li><strong>Novedad frente a los dos harness</strong> (que solo miden y tiran el modelo): <strong>persiste</strong>
+  <code>ddos_head_A.pkl</code> (joblib) + <code>feature_names.json</code> (<strong>el contrato del cableado C++</strong>) +
+  <code>metadata.json</code> en <code>artifacts_ddos_A/</code>.</li>
+<li>Resultado (umbral 0,5, otro punto de la curva que el baseline): reflexión <strong>0,9999</strong> ·
+  Portmap <strong>0,9973</strong> · UDPLag <strong>0,9254</strong> · <strong>Syn 0,5766</strong> · <strong>FP benigno CIC 0,0878</strong>.
+  <strong>Perfil fiel al baseline</strong> (reflexión saturada, Syn roto) → es la misma cabeza,
+  ahora persistida. Objetivo cumplido: fidelidad + artefacto auditable, no mejora.</li>
+</ul>
+<hr />
+<h2 id="deudas-nuevas-medidas-no-de-hoy-no-perder">Deudas nuevas MEDIDAS (no de hoy, no perder)</h2>
+<ul>
+<li><strong><code>fast_detector_score</code> constante 0,750</strong> marcando el 69 % de Neris como MALICIOUS →
+  huele a hardcode. Familia de <code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code> (P0 del BACKLOG), ahora
+  con NÚMERO medido. Verificar en <code>main</code> si es la cabeza ML o una rama del fast-path.</li>
+<li><strong>El oro no persiste el vector de features servido</strong>, solo el veredicto → impide auditar
+  "dado este veredicto, ¿sobre qué evidencia?" y obliga a recomputar features para
+  cualquier test de especificidad. Nombre propuesto (verificar contra BACKLOG):
+  <code>DEBT-GOLD-FEATURES-NOT-PERSISTED-001</code>. Si se arreglara, cada decisión del clasificador
+  sería auditable = "medir, no votar" aplicado al propio artefacto. <strong>Rediseño grande, NO
+  de hoy.</strong></li>
+</ul>
+<h2 id="pendiente-abierto">Pendiente / abierto</h2>
+<ul>
+<li><strong>Camino 1 pleno:</strong> especificidad de la cabeza <strong>A</strong> (el <code>.pkl</code> nuevo) sobre Neris.
+  Necesita computar las 9 features sobre <code>botnet-capture-20110810-neris.pcap</code>. Fork sin
+  resolver: <strong>S1</strong> CICFlowMeter (transferencia pura; según registros NO está en VM, es
+  tool Java de host <code>ahlashkari/CICFlowMeter</code>; sus columnas casan literalmente con
+  <code>feature_names</code>) vs <strong>S2</strong> extractor de aRGus (despliegue real; hoy el pipeline no
+  persiste features → habría que desarrollarlo). <strong>Decisión de prioridad diferida a
+  cabeza fresca.</strong> Primer comando: verificar si CICFlowMeter está en el host.</li>
+<li><strong>PENDIENTE 2 (cableado C++ de A):</strong> el contrato es <code>artifacts_ddos_A/feature_names.json</code>
+  (9 features, orden fijo; compilador = árbitro). Sin empezar.</li>
+<li><strong>PENDIENTE 3 (regla de handshake Syn):</strong> <code>syn_count alto ∧ connection_established==false
+  ∧ ack_count bajo</code>. FP a medir sobre los 105.438 <code>Background-TCP-Attempt</code> de Neris.
+  Sin empezar. El sniffer YA cuenta bien (no re-litigar).</li>
+</ul>
+<h2 id="untracked-decidir-ramapr">Untracked (decidir rama/PR)</h2>
+<ul>
+<li><code>retrain_ddos_head_A.py</code> (nuevo hoy) + <code>artifacts_ddos_A/</code>.</li>
+<li><code>train_ddos_head_v2.py</code> (DAY265) + los 7 scripts DDoS del DAY264.</li>
+</ul>
+<h2 id="invariantes-no-re-litigar">Invariantes (no re-litigar)</h2>
+<p><code>main</code> protegida (PR only). Un commit una idea. <code>add</code> explícito por fichero. <code>git grep</code> o
+fichero concreto — NUNCA <code>grep -rn</code> desde raíz. No encadenar salidas grandes en un bloque.
+Manivela en la VM, push desde el HOST. Compilador/ctest = árbitro. El sniffer cuenta flags
+BIEN (DAY265). El FPR de despliegue sale de <code>operating_point.py</code>, no del harness de ranking.
+<code>ACK Flag Count</code>/<code>PSH Flag Count</code>/<code>Init_Win_bytes_forward</code> fuera del vector servible.
+Verificar la SEMÁNTICA del conteo, no solo que sea no-cero.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

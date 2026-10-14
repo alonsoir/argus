@@ -1,0 +1,1056 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/Informe%20day264/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Informe final — DAY264: Fase 2 arrancada. Cabeza DDoS por-flujo sobre CICDDoS2019 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#informe-final-day264-fase-2-arrancada-cabeza-ddos-por-flujo-sobre-cicddos2019" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Informe final — DAY264: Fase 2 arrancada. Cabeza DDoS por-flujo sobre CICDDoS2019
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-objetivo-del-dia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Objetivo del día
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-giro-estrategico-y-el-fork-ab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Giro estratégico y el fork A/B
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-cadena-de-mediciones-lo-que-de-verdad-dijeron-los-datos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Cadena de mediciones (lo que de verdad dijeron los datos)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-la-correccion-honesta-medir-no-votar-aplicado-a-mi-mismo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. La corrección honesta (medir, no votar, aplicado a mí mismo)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-veredicto-por-via" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Veredicto por vía
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-riesgos-y-caveats-para-no-sobre-vender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Riesgos y caveats (para no sobre-vender)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-decision-para-manana-arbol" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Decisión para mañana (árbol)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-inventario-scripts-nuevos-untracked" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Inventario (scripts nuevos, untracked)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="informe-final-day264-fase-2-arrancada-cabeza-ddos-por-flujo-sobre-cicddos2019">Informe final — DAY264: Fase 2 arrancada. Cabeza DDoS por-flujo sobre CICDDoS2019</h1>
+<h2 id="1-objetivo-del-dia">1. Objetivo del día</h2>
+<p>Pasar de "reparar el método sobre el generador sintético de Betas" a <strong>entrenar una cabeza
+detectora DDoS real</strong> con features reales y labels reales, usando CICDDoS2019 como sustrato.
+Todo por medición; cero código de producción; <code>main</code> protegida sin tocar. Los siete scripts
+producidos viven untracked en <code>ml-training/scripts/ddos_detection/</code>.</p>
+<h2 id="2-giro-estrategico-y-el-fork-ab">2. Giro estratégico y el fork A/B</h2>
+<p>Al abrir Fase 2 apareció una bifurcación de arquitectura:</p>
+<ul>
+<li><strong>Path A</strong> — reconstruir las 9 features sintéticas de aRGus offline y entrenar sobre ellas
+  (entraría directa en el extractor serve actual).</li>
+<li><strong>Path B</strong> — entrenar sobre features nativas CICFlowMeter y servirlas por el extractor
+  BASE (las 102+ base network features, linaje CICIDS/XGBoost, mismo linaje que
+  CICFlowMeter-V3 que produce CICDDoS2019).</li>
+</ul>
+<p>Dos mediciones empujaron a Path B, no una opinión:
+1. <code>source_ip_dispersion</code> degenera bajo flood: el cap de 10000 del ring buffer muerde en el
+   <strong>~95% de las lecturas</strong> (<code>event_count</code> clavado en 10000) → la fórmula
+   <code>log2(uniq+1)/log2(event_count+2)</code> se vuelve constante en el denominador y deja de ser un
+   ratio de dispersión. Apoyar un detector real sobre el contrato sintético-9 es construir
+   sobre arena.
+2. Ninguna de las features que resultaron transferibles (ver §3) es una sintético-9. La
+   señal DDoS real de CICFlowMeter vive en otro sitio.</p>
+<h2 id="3-cadena-de-mediciones-lo-que-de-verdad-dijeron-los-datos">3. Cadena de mediciones (lo que de verdad dijeron los datos)</h2>
+<p><strong>Censo del dataset.</strong> 50.063.112 filas train (01-12) / 20.364.525 test (03-11). Benigno
+≈0,16% del total (0,11% en train, 0,28% en test) → desbalance severo, a pesar de clases.
+Trampa de naming cazada: <code>DrDoS_LDAP</code> (train) y <code>LDAP</code> (test) son el MISMO ataque de
+reflexión; LDAP/MSSQL/NetBIOS/UDP NO son inéditos. El único held-out limpio real es
+<strong>Portmap</strong>.</p>
+<p><strong>Salud de columnas.</strong> Inf confinado a <code>Flow Bytes/s</code> y <code>Flow Packets/s</code> (cols 22-23),
+confirmado. Constantes por-fichero (12 en Portmap) — a decidir sobre TODOS los ficheros, no
+sobre uno.</p>
+<p><strong>Barrido AUC cross-ataque (la disciplina anti-atajo).</strong> El AUC de una feature en un fichero
+roza lo perfecto por puro atajo de herramienta; el criterio válido es la ESTABILIDAD del AUC
+a través de muchos ataques (<code>sep_min</code>). Resultado:
+- Atajo confirmado: <code>Min Packet Length</code> / <code>Fwd Packet Length Min</code> — sep_min 0,55, max 1,00,
+  portmap 0,996. La estrella de Portmap era un espejismo de herramienta.
+- Núcleo transferible: familia de estadísticos <strong>backward</strong> (<code>Bwd IAT *</code>, <code>Bwd Packet
+  Length *</code>, <code>Total Backward Packets</code>, <code>Bwd Header Length</code>) + <strong>agregados de tamaño</strong>
+  (<code>Average/Max/Packet Length Mean</code>, <code>Fwd Packet Length Max</code>). Asimetría física real:
+  backward transfiere, forward no.
+- <code>Inbound</code> (sep_min 0,886) domina pero es leakage de ENTORNO (todo el ataque va a una
+  víctima fija) → no física de DDoS.</p>
+<p><strong>Entrenamiento honesto (RF, split cruzado por día, Portmap held-out, ablación de Inbound).</strong>
+- Quitar <code>Inbound</code> casi no mueve el PR-AUC (delta +0,0006) → la señal transferible se
+  sostiene sola; no era leakage de entorno. Path B tiene piernas.
+- Portmap held-out: recall <strong>0,998</strong>. Generalización cross-ataque real, dentro de la familia
+  reflexión/amplificación.
+- SYN: recall se hunde a 0,59.</p>
+<p><strong>Punto de operación.</strong> El FPR de 7,86% a umbral 0,5 era artefacto del corte arbitrario. A
+<strong>umbral 0,647: FPR benigno 0,95%, recall global 88,8%, Portmap 99,7%.</strong> Para
+reflexión/amplificación, ESTO es un detector con punto de trabajo deployable. Los falsos
+positivos del benigno son un <strong>clúster coherente</strong> (carga forward ~0, 1 paquete backward,
+URG=1 — control/teardown o flujos degenerados), no ruido difuso → addressable.</p>
+<p><strong>SYN: intento de rescate fallido y diagnóstico.</strong>
+- Añadir flags (SYN/ACK/RST + <code>syn_ack_ratio</code>) NO rescató SYN (delta −0,0047); el RF los
+  ignoró.
+- <code>SYN Flag Count</code> está al <strong>100% en cero</strong> en el dataset → CICFlowMeter-V3 no puebla el flag
+  SYN en CICDDoS2019, así que <code>syn_ack_ratio</code> es irreconstruible aquí (hallazgo de calidad de
+  dataset).
+- <strong>Pero H2 (techo fundamental por-flujo) queda REFUTADA:</strong> al aislar el SYN escapado (38,7%)
+  y preguntar qué lo separa del benigno, <code>ACK Flag Count</code> da <strong>AUC 0,90</strong>, y las features de
+  tamaño lo separan en dirección INVERTIDA (0,82).</p>
+<h2 id="4-la-correccion-honesta-medir-no-votar-aplicado-a-mi-mismo">4. La corrección honesta (medir, no votar, aplicado a mí mismo)</h2>
+<p>Durante dos sesiones sostuve la hipótesis "SYN es un fenómeno de tasa que solo las features
+de ventana (grieta B) pueden cazar". <strong>Los datos la matan.</strong> El SYN escapado SÍ tiene señal
+por-flujo. El modelo conjunto la entierra por dos causas medibles:
+1. <strong>Conflicto de signo entre familias:</strong> reflexión = paquete grande = ataque; SYN = paquete
+   diminuto = ataque. Un único RF no puede dar signos opuestos a la misma feature de forma
+   global, así que aprende el signo de la familia dominante (reflexión) y activamente
+   malclasifica el SYN de paquete pequeño como benigno.
+2. <strong>SYN es masa minoritaria:</strong> pierde el voto frente a las 4 reflexiones que dominan el
+   train, y la feature que lo salvaría (<code>ACK Flag Count</code>) quedó fuera del conjunto base
+   porque nuestra propia disciplina cross-ataque la excluyó como atajo. El atajo era, para
+   SYN, exactamente lo que hacía falta.</p>
+<p>Conclusión: el punto ciego de SYN <strong>no es techo de datos, es arquitectura de entrenamiento.</strong>
+Y grieta B queda DEGRADADA de "requisito de cobertura de SYN" a hilo independiente (sigue
+siendo un bug real del cap, pero ya no está en el camino crítico de esta cabeza).</p>
+<h2 id="5-veredicto-por-via">5. Veredicto por vía</h2>
+<ul>
+<li><strong>Cabeza por-flujo (Path B) para reflexión/amplificación: VIABLE.</strong> Punto de operación
+  medido y deployable. Recomendación: continuar.</li>
+<li><strong>Cobertura de SYN: alcanzable, pendiente de arquitectura.</strong> No requiere ventana; requiere
+  entrenamiento consciente de clase (o cabeza dedicada).</li>
+</ul>
+<h2 id="6-riesgos-y-caveats-para-no-sobre-vender">6. Riesgos y caveats (para no sobre-vender)</h2>
+<ul>
+<li>El benigno es escaso y homogéneo (misma captura) → los números son un TECHO, no garantía de
+  despliegue. El FPR real con benigno diverso probablemente sube.</li>
+<li><code>ACK Flag Count</code> separando SYN puede ser un TERCER atajo (que el benigno tenga ACK=0 es
+  sospechoso). Verificar antes de confiar.</li>
+<li>La generalización probada es DENTRO de la familia reflexión/amplificación (Portmap). No hay
+  evidencia de generalización a física de ataque nueva.</li>
+<li>La huella dominante es el TAMAÑO de paquete → evadible por un adversario que varíe tamaños.</li>
+</ul>
+<h2 id="7-decision-para-manana-arbol">7. Decisión para mañana (árbol)</h2>
+<ol>
+<li><strong>Verificar <code>ACK Flag Count</code></strong> como señal robusta y no artefacto: repetir el AUC
+   SYN-vs-benigno sobre <code>01-12/Syn.csv</code> (captura independiente). Si aguanta en ambos días,
+   es señal; si solo en uno, es atajo.</li>
+<li><strong>Si aguanta → probar cabeza SYN-aware:</strong> o (a) entrenar solo SYN-vs-benigno con
+   <code>ACK Flag Count</code> + tamaño para confirmar que una segunda vía caza el escapado, o
+   (b) reponderar/oversamplear SYN en el modelo conjunto y medir si sube el recall de SYN
+   sin cargarse Portmap ni el FPR. Diseño resultante probable: dos vías (backward/tamaño para
+   reflexión, ACK para SYN).</li>
+<li><strong>Cruce de servibilidad (gating de Path B):</strong> intersectar {23 transferibles + ACK} contra
+   la lista de 102+ base features servibles. Las presentes son Path B cableable; las
+   ausentes son deuda de extractor. <strong>Falta ese input (header/proto de las base).</strong></li>
+<li><strong>Grieta B:</strong> hilo aparte. Revisitar solo si se quiere detección volumétrica/tasa real más
+   allá de lo que da la cabeza por-flujo; el bug del cap sigue vivo pero fuera del crítico.</li>
+</ol>
+<h2 id="8-inventario-scripts-nuevos-untracked">8. Inventario (scripts nuevos, untracked)</h2>
+<p><code>offline_source_ip_dispersion.py</code> (análogo offline de la feature serve; midió la
+degeneración del cap) · <code>profile_cicddos.py</code> (censo + salud + AUC por feature) ·
+<code>cross_attack_auc.py</code> (matriz AUC feature×fichero; transferible vs atajo) ·
+<code>train_ddos_head.py</code> (RF cruzado por día, ablación Inbound) · <code>operating_point.py</code>
+(barrido de umbral + autopsia de falsos positivos) · <code>syn_rescue.py</code> (baseline vs +flags) ·
+<code>syn_diagnostic.py</code> (salud de flags + qué separa el SYN escapado).
+Artefactos de datos: <code>auc_matrix.csv</code> / <code>auc_matrix_summary.csv</code>, <code>portmap_disp.parquet</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

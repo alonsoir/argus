@@ -1,0 +1,1370 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/debt/backlog-additions-day200/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Backlog additions day200 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#entradas-day-200-reconciliacion-backlogmd-deudas-del-circuito-adr-058-6" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Backlog additions day200
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#entradas-day-200-reconciliacion-backlogmd-deudas-del-circuito-adr-058-6" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🆕 Entradas DAY 200 — Reconciliación BACKLOG.md ↔ deudas del circuito (ADR-058 §6)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🆕 Entradas DAY 200 — Reconciliación BACKLOG.md ↔ deudas del circuito (ADR-058 §6)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#debt-circuit-bronze-rotation-follow-001-rotacion-de-bronce-sin-follow-en-el-reader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001 — Rotación de bronce sin follow en el reader
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-config-bronze-hardcode-001-bronze_root-hardcodeado-en-zmq_handler" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CONFIG-BRONZE-HARDCODE-001 — bronze_root hardcodeado en zmq_handler
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-gold-node-dimension-001-node_idcommunity_idflow_start_window-como-columnas-de-primera-clase-del-oro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-GOLD-NODE-DIMENSION-001 — node_id/community_id/flow_start_window como columnas de primera clase del oro
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-gold-integrity-hmac-001-hmac-por-fila-heredado-firma-del-parquet-consolidado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-GOLD-INTEGRITY-HMAC-001 — HMAC por-fila heredado + firma del Parquet consolidado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-zmq-delivery-guarantee-001-handoff-adapterengine-debe-ser-pushpull-no-pubsub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-ZMQ-DELIVERY-GUARANTEE-001 — Handoff adapter→engine debe ser PUSH/PULL, no PUB/SUB
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-host-domain-contract-001-contrato-host_domain_v1-wazuh-separado-de-correlation_v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-HOST-DOMAIN-CONTRACT-001 — Contrato host_domain_v1 (Wazuh) separado de correlation_v1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-parquet-kuzu-connector-001-conector-parquetkuzu-flujo-b-no-existe" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-PARQUET-KUZU-CONNECTOR-001 — Conector PARQUET→Kuzu (Flujo B) no existe
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-circuit-fs-drop-001-handoff-por-fichero-ifstream-es-interino" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CIRCUIT-FS-DROP-001 — Handoff por fichero (ifstream) es interino
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-parse-verify-sentinel-001-centinela-1-en-campos-numericos-doc-vigilancia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-PARSE-VERIFY-SENTINEL-001 — Centinela -1 en campos numéricos: doc + vigilancia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-adapterspec-envelope-001-enmienda-adapterspec-v1-v11-envelope-transporte" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-ADAPTERSPEC-ENVELOPE-001 — Enmienda AdapterSpec v1 → v1.1 (envelope + transporte)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-docs-medallion-duality-001-dualidad-de-pipelines-parquet-rag-127-vs-correlacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-DOCS-MEDALLION-DUALITY-001 — Dualidad de pipelines PARQUET (RAG-127 vs correlación)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-join-confidence-001-ventana-de-join-adaptativa-vs-reconstruibilidad-del-ledger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-JOIN-CONFIDENCE-001 — Ventana de join adaptativa vs reconstruibilidad del ledger
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-neo4j-flow-key-composite-001-pk-compuesta-flow_uid-seq-no-implementada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-NEO4J-FLOW-KEY-COMPOSITE-001 — PK compuesta (flow_uid, seq) no implementada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-circuit-score-nontrivial-reval-001-igualdad-bit-exacta-de-scores-double-en-el-predicado-de-equivalencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001 — Igualdad bit-exacta de scores double en el predicado de equivalencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-circuit-parser-crosslang-001-paridad-de-parsing-cross-language-en-el-converter-flujo-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CIRCUIT-PARSER-CROSSLANG-001 — Paridad de parsing cross-language en el converter Flujo A
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-event-id-factory-001-origen-y-preservacion-de-event_id-en-el-predicado-de-equivalencia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-EVENT-ID-FACTORY-001 — Origen y preservación de event_id en el predicado de equivalencia
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#debt-circuit-temporal-anomaly-parity-001-paridad-del-flag-temporal_anomaly-entre-caminos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001 — Paridad del flag temporal_anomaly entre caminos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>Backlog additions day200</h1>
+
+<h2 id="entradas-day-200-reconciliacion-backlogmd-deudas-del-circuito-adr-058-6">🆕 Entradas DAY 200 — Reconciliación BACKLOG.md ↔ deudas del circuito (ADR-058 §6)</h2>
+<blockquote>
+<p>Origen: TAREA 1 bloqueante pre-Eslabón 0. Medido DAY 199 (grep -c contra el fichero):
+de las ~19 deudas que ADR-058 §6 cita como existentes, solo 2 tenían entrada formal
+en BACKLOG.md (<code>DEBT-FLOWUID-SEQ-COLLISION-001</code>, <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>).
+El resto existía como mención en ADR/plan/actas, no como entrada de backlog. Esta
+sección cierra esa brecha en una sola pasada, fuente canónica decidida antes de
+escribir (ADR-058 + PLAN — Circuito completo aguas abajo, DAY196→197).</p>
+</blockquote>
+<hr />
+<h3 id="debt-circuit-bronze-rotation-follow-001-rotacion-de-bronce-sin-follow-en-el-reader">DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001 — Rotación de bronce sin follow en el reader</h3>
+<p><strong>Severidad:</strong> 🔴 P0 — Eslabón 0
+<strong>Estado:</strong> ABIERTO — DAY 199 (medida V3, ADR-058 §4)
+<strong>Componente:</strong> <code>correlation-engine/src/main.cpp</code> + <code>ml-detector/src/correlation_writer.cpp</code>
+El writer rota el CSV de bronce por fecha (<code>correlation_writer.cpp:177</code>); el reader abre
+un handle fijo (<code>main.cpp:104</code>) y el modo <code>--follow</code> no sigue la rotación
+(<code>main.cpp:125-132</code>, tail-poll sobre el mismo <code>ifstream</code>). Cuando el writer rota a
+medianoche al fichero del día siguiente, el reader sigue tailando el de ayer y nunca ve
+el nuevo — el circuito verde muere a medianoche. Roja <strong>benigna</strong> (causa conocida, parche
+planificado): watcher <code>inotify</code>/<code>IN_CLOSE_WRITE</code> sobre el directorio (Eslabón 0), no sobre
+un handle fijo.
+<strong>Test de cierre:</strong> writer rota a las 00:00 (simulado) → el reader detecta el fichero
+nuevo sin reinicio → filas post-rotación se materializan en Kuzu sin pérdida ni gap.
+<strong>Estimación:</strong> incluida en Eslabón 0 (1 sesión).</p>
+<hr />
+<h3 id="debt-config-bronze-hardcode-001-bronze_root-hardcodeado-en-zmq_handler">DEBT-CONFIG-BRONZE-HARDCODE-001 — bronze_root hardcodeado en zmq_handler</h3>
+<p><strong>Severidad:</strong> 🔴 P0 — Eslabón 0
+<strong>Estado:</strong> ABIERTO — DAY 199 (medida V3, ADR-058 §4)
+<strong>Componente:</strong> <code>ml-detector/src/zmq_handler.cpp:154</code> (writer) + <code>correlation-engine</code> (reader)
+El <code>base_dir</code> del bronce está hardcodeado a <code>/vagrant/logs/correlation/argus</code> en el
+writer; el reader resuelve el path por <code>--bronze</code>/<code>ARGUS_BRONZE_CSV</code> (argv/env),
+sincronizados a mano. El hermano <code>csv_writer</code> ya lee <code>base_dir</code> de JSON
+(<code>config_loader.cpp:455</code>, patrón a calcar). Sin fuente única de verdad, el refactor a
+ZMQ (Eslabón 6) y cualquier despliegue fuera de Vagrant quedan bloqueados.
+<strong>Test de cierre:</strong> <code>bronze_root</code> + patrón de naming en JSON; writer y reader derivan el
+mismo path de la misma raíz sin literal duplicado; test que cambia <code>bronze_root</code> en JSON
+y verifica que ambos componentes lo siguen sin recompilar.
+<strong>Estimación:</strong> incluida en Eslabón 0 (1 sesión).</p>
+<hr />
+<h3 id="debt-gold-node-dimension-001-node_idcommunity_idflow_start_window-como-columnas-de-primera-clase-del-oro">DEBT-GOLD-NODE-DIMENSION-001 — node_id/community_id/flow_start_window como columnas de primera clase del oro</h3>
+<p><strong>Severidad:</strong> 🔴 P0 — precondición Via Appia (pre-Flujo A)
+<strong>Estado:</strong> ABIERTO — DAY 199 · <strong>AMPLIADA DAY 198</strong> (medida V1, ADR-058 §4) — incluye
+<code>flow_start_window</code> como 4º hash-input materializado, no solo <code>node_id</code>/<code>community_id</code>.
+<strong>Componente:</strong> converter Flujo A (bronce→AVRO→Parquet oro) — greenfield
+<code>node_id</code> (col 3) y <code>community_id</code> (col 4) ya son columnas de primera clase en bronce
+[medido]. <code>flow_start_window</code> es <strong>100% derivada</strong> hoy: el writer nunca la escribe
+(<code>correlation_writer.cpp:88-89</code> solo <code>flow_start_sec</code>/<code>flow_start_nano</code>); el reader la
+computa en read-time (<code>main.cpp:117</code>, <code>window_micros(...)</code>) y es input directo del hash
+<code>flow_uid</code> (<code>main.cpp:118</code>). Sin materializarla en el oro como columna, una fila del
+ledger no es re-verificable independientemente: si cambia el bucketing de
+<code>window_micros()</code>, el <code>flow_uid</code> re-derivado deja de coincidir con el que entró al hash
+original. Precondición de Via Appia (ledger inmutable auto-contenido), no preferencia.
+Sin las tres columnas, el dataset no puede estratificar por nodo — la hipótesis central
+del proyecto (¿contribuyen nodos distribuidos a mejores datasets?) queda inmedible.
+<strong>Test de cierre:</strong> el converter Flujo A arrastra <code>node_id</code>, <code>community_id</code> y
+<code>flow_start_window</code> como columnas Arrow tipadas (no solo como ingredientes internos del
+hash); <code>flow_uid</code> re-derivado desde las columnas del oro coincide bit a bit con el
+<code>flow_uid</code> grabado en el mismo registro.
+<strong>Estimación:</strong> 1 sesión (diseño esquema) + implementación con Eslabón 1.</p>
+<hr />
+<h3 id="debt-gold-integrity-hmac-001-hmac-por-fila-heredado-firma-del-parquet-consolidado">DEBT-GOLD-INTEGRITY-HMAC-001 — HMAC por-fila heredado + firma del Parquet consolidado</h3>
+<p><strong>Severidad:</strong> 🔴 P0 — Flujo A
+<strong>Estado:</strong> ABIERTO — DAY 199 (ADR-058 §2.6, decisión ratificada 9/9)
+<strong>Componente:</strong> converter Flujo A (bronce→AVRO→Parquet oro) — greenfield
+El HMAC-SHA256 por-fila de bronce (col 18) debe preservarse como <strong>columna</strong> del oro
+(no descartarse en el converter), y el Parquet consolidado debe firmarse como artefacto
+— <strong>greenfield HMAC-SHA256 coherente con bronce, NO reutiliza el firmador Ed25519</strong> del
+pipeline <code>scripts/parquet/</code> (capa RAG-127, contrato distinto — confundir ambos firmadores
+es exactamente <code>DEBT-DOCS-MEDALLION-DUALITY-001</code>). Razón: el replay del grafo es
+coherente en el tiempo si y solo si las filas conservan su HMAC original verificable
+contra clave.
+<strong>Test de cierre:</strong> cada fila del oro conserva su HMAC de bronce, verificable contra la
+clave de producción; el Parquet consolidado tiene firma de artefacto verificable
+independiente del firmador RAG-127.
+<strong>Estimación:</strong> 1 sesión, junto a Eslabón 1.</p>
+<hr />
+<h3 id="debt-zmq-delivery-guarantee-001-handoff-adapterengine-debe-ser-pushpull-no-pubsub">DEBT-ZMQ-DELIVERY-GUARANTEE-001 — Handoff adapter→engine debe ser PUSH/PULL, no PUB/SUB</h3>
+<p><strong>Severidad:</strong> 🔴 P0 — Eslabón 6 (post-circuito verde)
+<strong>Estado:</strong> ABIERTO — DAY 199 (ADR-058 §2.5, AdapterSpec v1 §7.1 enmendado)
+<strong>Componente:</strong> futuros adapters (Suricata/Zeek/Wazuh) + correlation-engine — greenfield
+PUB/SUB es fire-and-forget por diseño (la regla slow-joiner resuelve el arranque, no la
+garantía de entrega). AdapterSpec v1 §2 exige at-least-once — incompatible con PUB/SUB
+puro para el handoff con garantía. El handoff adapter→engine debe usar <strong>PUSH/PULL</strong>
+(encola en el sender hasta HWM); PUB/SUB se reserva para fan-out tolerante a pérdida
+(p.ej. firewall-acl-agent en detección tiempo-real, que sí puede perder mensajes).
+<strong>Test de cierre:</strong> adapter sintético + engine sobre PUSH/PULL — matar el PULL receptor
+durante ráfaga no pierde eventos silenciosamente (se re-entregan al reconectar, dentro
+del HWM configurado).
+<strong>Estimación:</strong> 1-2 sesiones, con Eslabón 6.</p>
+<hr />
+<h3 id="debt-host-domain-contract-001-contrato-host_domain_v1-wazuh-separado-de-correlation_v1">DEBT-HOST-DOMAIN-CONTRACT-001 — Contrato host_domain_v1 (Wazuh) separado de correlation_v1</h3>
+<p><strong>Severidad:</strong> 🟡 P1 — pre-Eslabón 1 (bloquea el esquema del medallón)
+<strong>Estado:</strong> ABIERTO — DAY 199 (ADR-058 §2.3, decisión ratificada: 6/8 separado)
+<strong>Componente:</strong> adapter-wazuh (greenfield) + sink <code>:Host</code> en Kuzu
+Wazuh no tiene flujo (<code>community_id</code> ausente estructuralmente) — extender
+<code>correlation_v1</code> con una col <code>host_key</code> crearía un schema con dos columnas de identidad
+mutuamente excluyentes (antipatrón). Contrato <code>host_domain_v1</code> separado, con su propia
+zona bronce/LZ y sink <code>:Host</code>, unido al grafo <code>:NetworkFlow</code> por arista
+<code>(:Host)-[:INVOLVES_IP]-&gt;(:NetworkFlow)</code> vía IP + ventana temporal (no fusionado en
+<code>correlation_v1</code>). Nota DAY198: el nombre <code>host_domain_v1</code> reemplaza cualquier mención
+histórica de "host_domain_v1" suelta en prompts de continuidad; el nombre del contrato
+formal se fija al abrir esta deuda. La deuda de integración Wazuh en sí (agente + manager)
+es canónicamente <code>DEBT-ARGUSPP-WAZUH-001</code> (F4, ya abierta) — esta deuda es el <strong>contrato
+de dominio</strong>, no el despliegue del agente.
+<strong>Test de cierre:</strong> <code>host_domain_v1</code> documentado (columnas, centinelas, join); sink <code>:Host</code>
++ arista <code>INVOLVES_IP</code> con método+confianza anotados; un solo grafo con múltiples sinks
+  de parquet verificado en Kuzu.
+  <strong>Estimación:</strong> 1-2 sesiones, antes del Eslabón 1.</p>
+<hr />
+<h3 id="debt-parquet-kuzu-connector-001-conector-parquetkuzu-flujo-b-no-existe">DEBT-PARQUET-KUZU-CONNECTOR-001 — Conector PARQUET→Kuzu (Flujo B) no existe</h3>
+<p><strong>Severidad:</strong> 🟡 P1 — Eslabón 2
+<strong>Estado:</strong> ABIERTO — DAY 199 · <strong>AMPLIADA DAY 198</strong> con orden de escritura del Flujo B
+(medido §8.4/DAY197: no existe ni prototipo)
+<strong>Componente:</strong> conector nuevo Parquet oro → Kuzu — greenfield
+No es "re-apuntar" <code>kuzu_graph_sink</code> (que hoy lee bronce-CSV directo, Camino 0): es un
+componente nuevo. <strong>Orden de escritura del Flujo B (ampliación DAY198):</strong> el conector
+debe respetar el mismo orden causal que Camino 0 al aplicar <code>MERGE</code> — leer el Parquet
+oro en orden de <code>ingested_at</code> creciente (no en orden arbitrario de partición/fichero),
+para que la semántica <code>ON CREATE SET</code> sin <code>ON MATCH SET</code> (§ADR-058 V7) produzca el mismo
+grafo que Camino 0 ante colisiones de <code>flow_uid</code>. Un orden de lectura distinto al orden
+de escritura original invalidaría el test de equivalencia §3.1 aunque el contenido de las
+filas sea idéntico.
+<strong>Test de cierre:</strong> test de equivalencia Camino-0 ≡ Flujo-A+B (predicado ADR-058 §3.1)
+sobre un evento sintético — grafo idéntico en ambos caminos, incluyendo el caso de
+colisión de <code>flow_uid</code> con orden de llegada invertido; benchmark de ingesta (1M filas)
+como gate de salida production-ready (no bloquea el circuito verde de un motor).
+<strong>Estimación:</strong> 2-3 sesiones, Eslabón 2.</p>
+<hr />
+<h3 id="debt-circuit-fs-drop-001-handoff-por-fichero-ifstream-es-interino">DEBT-CIRCUIT-FS-DROP-001 — Handoff por fichero (ifstream) es interino</h3>
+<p><strong>Severidad:</strong> 🟡 P1 — post-circuito verde
+<strong>Estado:</strong> ABIERTO — DAY 199 (ADR-058 §2.5)
+<strong>Componente:</strong> <code>correlation-engine/src/main.cpp</code> (Camino 0)
+El Camino 0 lee bronce vía <code>ifstream</code> directo sobre fichero — válido para cerrar el
+circuito verde de un motor (medible, simple), pero es un patrón de transporte interino.
+Producción migra a ZMQ (Eslabón 6, <code>DEBT-ZMQ-DELIVERY-GUARANTEE-001</code>). Esta deuda marca
+el compromiso explícito de no dejar el FS-drop como transporte permanente aunque
+"funcione" — coherente con la regla de rama del plan (el ADR es commit de apertura del
+mismo PR que la implementación).
+<strong>Test de cierre:</strong> documentado el criterio de migración (cuándo el FS-drop deja de ser
+aceptable — volumen, multi-nodo); Eslabón 6 lo sustituye sin romper el test de
+equivalencia §3.1.
+<strong>Estimación:</strong> 0.5 sesión (doc) + Eslabón 6 para el cierre real.</p>
+<hr />
+<h3 id="debt-parse-verify-sentinel-001-centinela-1-en-campos-numericos-doc-vigilancia">DEBT-PARSE-VERIFY-SENTINEL-001 — Centinela -1 en campos numéricos: doc + vigilancia</h3>
+<p><strong>Severidad:</strong> 🟢 P2 — <strong>degradada de P0</strong> (medida V2, ADR-058 §4, DAY 198)
+<strong>Estado:</strong> ABIERTO — DAY 199
+<strong>Componente:</strong> <code>correlation-engine/src/correlation_reader.cpp</code> (<code>parse_and_verify</code>)
+Medido extremo a extremo: el proto no puede transportar <code>-1</code> en puertos (<code>uint32</code>,
+<code>network_security.proto:105-106</code>); ICMP usa <code>0</code> (<code>test_community_id.cpp:62</code>), no <code>-1</code>;
+el writer copia el puerto directo sin remapeo (<code>correlation_writer.cpp:91-92</code>); el
+reader acepta <code>"0"</code> con <code>from_chars</code>. <strong>No hay descarte silencioso de filas ICMP</strong> — el
+centinela <code>-1</code> temido no existe en <code>src_port</code>/<code>dst_port</code>. Se degrada de P0 a P2 porque el
+riesgo real es residual: <code>flow_start_sec</code>/<code>flow_start_nano</code> <strong>sí</strong> son signed
+(<code>int64_t</code>/<code>int32_t</code>) y un <code>-1</code> ahí sobrevive como valor sin marca de centinela,
+propagándose al hash vía <code>window_micros(-1,-1)</code> — riesgo semántico, no de pérdida de fila.
+El comentario de <code>correlation_reader.hpp:12</code> colapsa "campo numérico ilegible" sin
+distinguir corrupto de centinela — trampa documental para un campo unsigned futuro con
+centinela <code>-1</code>.
+<strong>Test de cierre:</strong> documentar que el contrato usa <code>0</code> para puerto-ausente y la asimetría
+signed(sec/nano)/unsigned(puertos); vigilancia explícita si se añade un campo unsigned
+futuro con semántica de centinela negativo.
+<strong>Estimación:</strong> 0.5 sesión (doc).</p>
+<hr />
+<h3 id="debt-adapterspec-envelope-001-enmienda-adapterspec-v1-v11-envelope-transporte">DEBT-ADAPTERSPEC-ENVELOPE-001 — Enmienda AdapterSpec v1 → v1.1 (envelope + transporte)</h3>
+<p><strong>Severidad:</strong> 🟢 P2 — doc, pasa por Consejo
+<strong>Estado:</strong> ABIERTO — DAY 199 (ADR-058 §2.5, PLAN §3.1)
+<strong>Componente:</strong> <code>docs/engineering_decisions/</code> — AdapterSpec v1
+Dos correcciones documentales sobre el AdapterSpec v1 (DAY 169, ADR-046 v4 §3.10): (1)
+el envelope protobuf <code>SecurityEvent</code> referenciado en §3 <strong>no existe</strong>
+(<code>network_security.proto</code> solo tiene <code>NetworkSecurityEvent</code>) — el adapter emite filas
+<code>correlation_v1</code> (CSV+HMAC), nunca protobuf; (2) el transporte interno NO es siempre
+PUB/SUB — §7.1 se enmienda para el handoff adapter→engine (ver
+<code>DEBT-ZMQ-DELIVERY-GUARANTEE-001</code>). El frame ZMQ, cuando llegue el Eslabón 6, transporta
+los bytes del CSV firmado, no un protobuf reensamblado.
+<strong>Test de cierre:</strong> documento AdapterSpec v1.1 redactado y subido al Consejo para
+ratificación; §§2/4/6 conservados sin cambio.
+<strong>Estimación:</strong> 0.5 sesión (doc) + ratificación Consejo.</p>
+<hr />
+<h3 id="debt-docs-medallion-duality-001-dualidad-de-pipelines-parquet-rag-127-vs-correlacion">DEBT-DOCS-MEDALLION-DUALITY-001 — Dualidad de pipelines PARQUET (RAG-127 vs correlación)</h3>
+<p><strong>Severidad:</strong> 🟢 P2 — doc
+<strong>Estado:</strong> ABIERTO — DAY 199 (medida §8.1, ADR-058 §2.6)
+<strong>Componente:</strong> <code>scripts/parquet/</code> (RAG-127, Ed25519) vs converter Flujo A (correlación-19, HMAC) — documentación
+El único pipeline Parquet real hoy es <code>scripts/parquet/</code> — lee el CSV de 127 columnas
+del RAG, firma Ed25519, <strong>no</strong> lee <code>correlation_v1</code>. Es una capa distinta (RAG-127,
+análisis) del medallón de correlación (grafo, greenfield). Riesgo: confundir ambos
+firmadores (Ed25519 vs HMAC-SHA256 del oro del circuito) o asumir que uno sustituye al
+otro. Documentar la dualidad con warnings explícitos evita que un futuro cambio en uno
+rompa el otro por asunción errónea de equivalencia.
+<strong>Test de cierre:</strong> nota en <code>docs/</code> que distingue explícitamente ambos pipelines Parquet,
+sus firmadores y sus contratos de entrada; referenciada desde ADR-058 y desde
+<code>scripts/parquet/README</code> si existe.
+<strong>Estimación:</strong> 0.5 sesión (doc).</p>
+<hr />
+<h3 id="debt-join-confidence-001-ventana-de-join-adaptativa-vs-reconstruibilidad-del-ledger">DEBT-JOIN-CONFIDENCE-001 — Ventana de join adaptativa vs reconstruibilidad del ledger</h3>
+<p><strong>Severidad:</strong> 🟢 P2 — pre-join adaptativo (gobierna la cláusula de caducidad ADR-058 §3.2)
+<strong>Estado:</strong> ABIERTO — DAY 199 (PLAN §10.8, ADR-058 §3.2)
+<strong>Componente:</strong> correlation-engine (parámetros de ventana de join) — diseño diferido
+Hoy los parámetros de ventana de join son deterministas y configurables en JSON — la
+propiedad "Kuzu reconstruible desde el ledger" se mantiene. Si la ventana se vuelve
+<strong>adaptativa</strong> (join no-determinista), dos caminos pueden tomar decisiones de join
+distintas y el predicado de equivalencia ADR-058 §3.1 rompe <strong>por diseño, no por bug</strong>.
+Este es exactamente el gatillo de la cláusula de caducidad del ADR-058: el predicado es
+válido mientras el join sea determinista. Decisión diferida para el DDL: grabar el
+contexto-de-decisión-de-join por época en el schema del ledger, o diferir hasta que el
+join adaptativo exista realmente.
+<strong>Test de cierre:</strong> ningún test de cierre hasta que se active un join adaptativo real;
+la deuda existe para que esa activación no ocurra sin revisar primero el predicado de
+equivalencia y el schema del ledger.
+<strong>Estimación:</strong> diferida — sin sesión asignada hasta activación de join adaptativo.</p>
+<hr />
+<h3 id="debt-neo4j-flow-key-composite-001-pk-compuesta-flow_uid-seq-no-implementada">DEBT-NEO4J-FLOW-KEY-COMPOSITE-001 — PK compuesta (flow_uid, seq) no implementada</h3>
+<p><strong>Severidad:</strong> 🟢 P2 — fidelidad, no bloqueante de equivalencia
+<strong>Estado:</strong> ABIERTO — DAY 199 (medida V7, ADR-058 §6) · <strong>resuelve drift de ID con
+<code>DEBT-NEO4J-FLOW-KEY-001</code></strong> (ver nota de canonicidad abajo)
+<strong>Componente:</strong> <code>correlation-engine/schema/schema.cypher</code> (PK simple <code>flow_uid</code>)
+El schema actual usa <code>flow_uid</code> como PK simple. Ante colisión de <code>flow_uid</code> (por
+<code>seq_in_window=0</code> fijo, <code>DEBT-FLOWUID-SEQ-COLLISION-001</code>), el <code>MERGE</code> con solo
+<code>ON CREATE SET</code> (sin <code>ON MATCH SET</code>) descarta el segundo flujo colisionado de forma
+<strong>idéntica en Camino 0 y Flujo A+B</strong> — la equivalencia §3.1 se sostiene ante la colisión.
+Es deuda de <strong>fidelidad</strong> (se pierde un flujo real), NO de equivalencia (ambos caminos
+pierden el mismo). Una PK compuesta <code>(flow_uid, seq)</code> resolvería la colisión pero no es
+prerequisito del cierre del medallón.
+<strong>Nota de canonicidad (drift de ID, DAY199):</strong> <code>ADR-058</code> §6 cita
+<code>DEBT-NEO4J-FLOW-KEY-COMPOSITE-001</code> como la deuda viva de PK compuesta. El backlog tenía
+únicamente <code>DEBT-NEO4J-FLOW-KEY-001</code> (DAY170), que es un objeto <strong>distinto</strong>: la decisión
+de diseño original de usar <code>flow_uid = hash(node_id‖community_id‖flow_start_window)</code>
+como identidad del nodo-flujo, ratificada y cerrada por ADR-052 v3.2 (DAY173) e
+implementada en <code>schema.cypher</code> (PK simple <code>flow_uid</code>). <strong>Decisión: dos IDs distintos,
+ambos canónicos.</strong> <code>DEBT-NEO4J-FLOW-KEY-001</code> se marca CLOSED (superseded by ADR-052 v3.2,
+implementada); <code>DEBT-NEO4J-FLOW-KEY-COMPOSITE-001</code> es la entrada nueva y correcta para el
+trabajo de PK compuesta pendiente, exactamente como la cita ADR-058.
+<strong>Test de cierre:</strong> dos flujos con <code>flow_uid</code> colisionado y <code>seq</code> distinto →
+distinguibles en Kuzu vía PK compuesta; sin regresión del test de equivalencia §3.1.
+<strong>Estimación:</strong> 1 sesión, post-medallón (no bloqueante).</p>
+<hr />
+<h3 id="debt-circuit-score-nontrivial-reval-001-igualdad-bit-exacta-de-scores-double-en-el-predicado-de-equivalencia">DEBT-CIRCUIT-SCORE-NONTRIVIAL-REVAL-001 — Igualdad bit-exacta de scores double en el predicado de equivalencia</h3>
+<p><strong>Severidad:</strong> 🟡 P1 — nueva V3 (medición DAY 199, ADR-058 §3.1/§8)
+<strong>Estado:</strong> ABIERTO — DAY 199
+<strong>Componente:</strong> converter Flujo A (bronce→AVRO→Parquet oro) — cols 14-16 (scores double)
+El predicado de equivalencia ADR-058 §3.1 compara los 3 scores double (fast/ml/overall)
+<strong>bit a bit por defecto</strong>, no con tolerancia ε. Justificación medida: ambos caminos
+parten del mismo <code>double</code> producido por <code>parse_double</code> sobre el mismo bronce CSV; AVRO
+<code>double</code> y Parquet <code>DOUBLE</code> son ambos IEEE 754 binary64 — un round-trip
+double→AVRO→Parquet→double preserva los bits salvo que el converter (a) trunque a
+<code>float32</code>, (b) <strong>recompute el score en oro en vez de copiarlo</strong>, o (c) reformatee vía
+texto intermedio. Esta deuda formaliza la guarda explícita: el converter Flujo A debe
+<strong>copiar</strong> los bytes del score, nunca re-evaluar/normalizar/recalcular el valor — un
+converter que "limpia" o "normaliza" el score en la capa oro rompería la equivalencia
+de forma silenciosa e indetectable sin este test. Incluye la guarda NaN (patrón de bits,
+no <code>==</code>, porque <code>NaN != NaN</code> bajo IEEE 754) — relevante mientras
+<code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code> deja scores ML sin inicializar/inertes.
+<strong>Test de cierre:</strong> test de equivalencia sobre vector con scores conocidos (incluyendo
+NaN sintético) → Camino 0 y Flujo A+B producen bytes idénticos en cols 14-16;
+test negativo — un converter que recomputa/trunca el score falla el test.
+<strong>Estimación:</strong> 1 sesión, con Eslabón 1/2.</p>
+<hr />
+<h3 id="debt-circuit-parser-crosslang-001-paridad-de-parsing-cross-language-en-el-converter-flujo-a">DEBT-CIRCUIT-PARSER-CROSSLANG-001 — Paridad de parsing cross-language en el converter Flujo A</h3>
+<p><strong>Severidad:</strong> 🟡 P1 — nueva V3 (medición DAY 199, ADR-058 §3.1/§9)
+<strong>Estado:</strong> ABIERTO — DAY 199
+<strong>Componente:</strong> converter Flujo A (probable Python/pyarrow) vs <code>correlation_reader.cpp</code> (<code>parse_and_verify</code>)
+El encoding canónico de <code>flow_uid</code> (<code>flow_uid.hpp</code>, <code>encode_flow_input</code>) ya tiene paridad
+cross-language congelada y verificada byte a byte contra <code>hashlib.blake2b</code> — pero eso
+cubre solo el <strong>hash</strong>, no el <strong>parseo</strong> del CSV bronce que lo alimenta. Si el converter
+Flujo A reimplementa el parseo de <code>correlation_v1</code> (19 columnas, centinela <code>-1</code>,
+verificación HMAC) en vez de reusar/replicar exactamente la lógica de
+<code>parse_and_verify</code>, dos filas pueden divergir en qué se considera "descartable" —
+p.ej. un campo numérico "ilegible" para un parser Python (<code>ValueError</code> en distinto punto
+que <code>std::from_chars</code>) puede aceptar o rechazar una fila que el reader C++ trataría
+distinto. Esta deuda exige que el converter <strong>reuse</strong> el encoding (<code>flow_uid.hpp</code> o los
+vectores golden congelados) y <strong>replique exactamente</strong> las reglas de descarte de
+<code>parse_and_verify</code> (nº columnas ≠19, HMAC inválido, centinela <code>-1</code>/<code>UNKNOWN</code>), no las
+reimplemente de memoria.
+<strong>Test de cierre:</strong> batería de vectores de bronce (válidos, HMAC inválido, columnas de
+menos, centinela en cada posición numérica) parseados por ambos lados → mismo veredicto
+(aceptar/descartar) en C++ y en el converter Flujo A, byte a byte donde aplique.
+<strong>Estimación:</strong> 1 sesión, con Eslabón 1.</p>
+<hr />
+<h3 id="debt-event-id-factory-001-origen-y-preservacion-de-event_id-en-el-predicado-de-equivalencia">DEBT-EVENT-ID-FACTORY-001 — Origen y preservación de event_id en el predicado de equivalencia</h3>
+<p><strong>Severidad:</strong> 🟡 P1 — nueva V3 (medición DAY 199, ADR-058 §3.1)
+<strong>Estado:</strong> ABIERTO — DAY 199
+<strong>Componente:</strong> <code>ml-detector/src/correlation_writer.cpp</code> (col 2, event_id) + converter Flujo A
+El predicado ADR-058 §3.1 exige <code>set(event_id)_C0 == set(event_id)_AB</code> para
+<code>Alert ∪ TelemetryEvent</code>. No hay evidencia medida de que <code>event_id</code> (col 2 del contrato
+bronce) sea tratado hoy como valor <strong>opaco a preservar</strong> por el converter Flujo A, ni de
+cuál es su regla de generación en origen (¿UUID del writer? ¿derivado?). Si el converter
+Flujo A regenera o reasigna <code>event_id</code> (en vez de propagar verbatim el de bronce), el
+predicado de equivalencia falla estructuralmente sin que sea un bug de datos — sería un
+bug de contrato no detectado hasta el test E2E. Esta deuda formaliza: (1) documentar el
+origen/generación real de <code>event_id</code> en el writer; (2) garantizar que el converter Flujo A
+lo copia verbatim, nunca lo deriva de nuevo.
+<strong>Test de cierre:</strong> origen de <code>event_id</code> documentado; test de equivalencia con múltiples
+<code>Alert</code>/<code>TelemetryEvent</code> → mismo conjunto de <code>event_id</code> en Camino 0 y Flujo A+B, sin
+colisiones ni reasignación.
+<strong>Estimación:</strong> 0.5 sesión (investigación) + 0.5 sesión (test), con Eslabón 1/2.</p>
+<hr />
+<h3 id="debt-circuit-temporal-anomaly-parity-001-paridad-del-flag-temporal_anomaly-entre-caminos">DEBT-CIRCUIT-TEMPORAL-ANOMALY-PARITY-001 — Paridad del flag temporal_anomaly entre caminos</h3>
+<p><strong>Severidad:</strong> 🟡 P1 — <strong>reclasificada de P2</strong> + alcance ampliado (medición DAY 199, ADR-057 §Fase0/DAY181)
+<strong>Estado:</strong> ABIERTO — DAY 199
+<strong>Componente:</strong> <code>graph-engine</code> (Camino 0, <code>ingested_at</code>/<code>temporal_anomaly</code>) + converter Flujo A
+El flag <code>temporal_anomaly</code> (Fase 0 del grafo, DAY 182 — <code>ingested_at &gt; flow_start_window
++ margen</code> → futuro-datación, señal de clock-injection, enmienda del Consejo DAY 181)
+se calcula hoy en el path de escritura de Camino 0 (<code>build_cypher(ingested_at_ns)</code>). El
+Flujo A/B no tiene definido cómo preserva o recalcula <code>ingested_at</code> a través de
+AVRO→Parquet: si el converter usa el timestamp de <strong>procesamiento del batch</strong> en vez del
+<code>ingested_at</code> original de bronce, el flag <code>temporal_anomaly</code> puede divergir entre caminos
+para el mismo evento — rompiendo silenciosamente la sub-cláusula <code>props_veredicto</code> del
+predicado §3.1 (el flag es parte del veredicto, cols 12-17 conceptualmente extendidas).
+<strong>Reclasificación:</strong> pasa de P2 (guarda de Fase 0, aislada) a <strong>P1</strong> porque afecta
+directamente la equivalencia formal del medallón, no solo la calidad del dato en Camino 0.
+<strong>Alcance ampliado:</strong> cubre también el caso de replay (el Consejo DAY181 ya señaló que
+<code>ingested_at</code> "reflejaría el tiempo del replay" si no se preserva la jerarquía de fuentes
+— WAL prevalece en replay, campo Kuzu es vista del estado actual).
+<strong>Test de cierre:</strong> evento sintético con <code>flow_start_window</code> futuro-datado → mismo valor
+de <code>temporal_anomaly</code> en Camino 0 y Flujo A+B; test de replay → <code>ingested_at</code> preservado
+desde bronce, no reescrito con el tiempo de reproceso.
+<strong>Estimación:</strong> 1 sesión, con Eslabón 1/2 — depende de decisión de jerarquía de fuentes
+(WAL vs Kuzu, aún abierta bajo <code>DEBT-LABEL-WAL-001</code>).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

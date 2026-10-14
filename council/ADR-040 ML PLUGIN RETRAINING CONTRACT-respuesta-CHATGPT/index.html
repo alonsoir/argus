@@ -1,0 +1,1790 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-040%20ML%20PLUGIN%20RETRAINING%20CONTRACT-respuesta-CHATGPT/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 040 ML PLUGIN RETRAINING CONTRACT respuesta CHATGPT - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-adr-040-ml-plugin-retraining-contract" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 040 ML PLUGIN RETRAINING CONTRACT respuesta CHATGPT
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#consejo-de-sabios-adr-040-ml-plugin-retraining-contract" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consejo de Sabios — ADR-040 (ML Plugin Retraining Contract)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto general
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-la-pregunta-clave" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a la pregunta clave
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuesta a la pregunta clave">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#pipeline-de-evaluacion-interno-o-cicd-externo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Pipeline de evaluación interno o CI/CD externo?
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="¿Pipeline de evaluación interno o CI/CD externo?">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-del-consejo-opcion-hibrida-obligatoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto del Consejo: Opción híbrida obligatoria
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#arquitectura-recomendada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Arquitectura recomendada
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Arquitectura recomendada">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-nucleo-reproducible-interno-a-argus" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Núcleo reproducible (interno a aRGus)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-orquestacion-externa-cicd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Orquestación (externa, CI/CD)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#justificacion-cientifica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Justificación científica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgo-si-eliges-solo-una-opcion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo si eliges solo una opción
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Riesgo si eliges solo una opción">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#solo-a-interno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solo A (interno)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#solo-b-ci" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Solo B (CI)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-minimo-reproducible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test mínimo reproducible
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluacion-de-las-reglas-del-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluación de las reglas del ADR
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Evaluación de las reglas del ADR">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#regla-1-walk-forward" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 1 — Walk-forward
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Regla 1 — Walk-forward">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-correcta-y-critica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto: 🟢 Correcta y crítica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mejora-recomendada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejora recomendada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgo-actual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo actual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-reproducible" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test reproducible
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-2-golden-set" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 2 — Golden Set
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Regla 2 — Golden Set">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-excelente-pero-incompleta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto: 🟢 Excelente, pero incompleta
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mejora-critica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejora crítica
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgo-actual_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo actual
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-3-guardrail-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 3 — Guardrail −2%
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Regla 3 — Guardrail −2%">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-correcto-pero-incompleto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto: 🟢 Correcto, pero incompleto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mejora-obligatoria" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejora obligatoria
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#metrica-adicional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ➤ Métrica adicional:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-critica-nueva" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ➤ Regla crítica nueva:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgo-actual_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo actual
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-4-ipw-exploracion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 4 — IPW + exploración
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Regla 4 — IPW + exploración">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-muy-solido-nivel-produccion-real" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto: 🟢 Muy sólido (nivel producción real)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mejora" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejora
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#anadir-metrica-nueva" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Añadir métrica nueva
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-5-competicion-de-algoritmos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 5 — Competición de algoritmos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Regla 5 — Competición de algoritmos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-correcto-y-cientificamente-obligatorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto: 🟢 Correcto y científicamente obligatorio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#mejora_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejora
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#riesgo_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mejora-critica-faltante-no-incluida-en-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejora crítica faltante (no incluida en ADR)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mejora crítica faltante (no incluida en ADR)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#regla-6-dataset-lineage-obligatorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 Regla 6 — Dataset lineage obligatorio
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔴 Regla 6 — Dataset lineage obligatorio">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#justificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Justificación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#mejora-critica-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Mejora crítica 2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Mejora crítica 2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#regla-7-canary-deployment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔴 Regla 7 — Canary deployment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔴 Regla 7 — Canary deployment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#riesgo-actual_3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Riesgo actual
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#evaluacion-global-adr-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Evaluación global ADR-040
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#recomendacion-final-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Recomendación final del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h2 id="consejo-de-sabios-adr-040-ml-plugin-retraining-contract">Consejo de Sabios — ADR-040 (ML Plugin Retraining Contract)</h2>
+<p>Evaluación bajo criterios de: <strong>validez científica, reproducibilidad, robustez frente a deriva y adversarios</strong>.</p>
+<hr />
+<h1 id="veredicto-general">Veredicto general</h1>
+<ul>
+<li>El ADR está <strong>bien fundamentado</strong> y alineado con buenas prácticas reales de ML en producción.</li>
+<li>No hay errores conceptuales graves.</li>
+<li>
+<p>Sí hay <strong>dos mejoras estructurales necesarias</strong>:</p>
+<ol>
+<li>Separación estricta entre evaluación y runtime</li>
+<li>Formalización experimental (no solo reglas, también métricas longitudinales)</li>
+</ol>
+</li>
+</ul>
+<hr />
+<h1 id="respuesta-a-la-pregunta-clave">Respuesta a la pregunta clave</h1>
+<h2 id="pipeline-de-evaluacion-interno-o-cicd-externo">¿Pipeline de evaluación interno o CI/CD externo?</h2>
+<h3 id="veredicto-del-consejo-opcion-hibrida-obligatoria">Veredicto del Consejo: <strong>Opción híbrida obligatoria</strong></h3>
+<p>Ni A ni B por sí solas son suficientes.</p>
+<hr />
+<h2 id="arquitectura-recomendada">Arquitectura recomendada</h2>
+<h3 id="1-nucleo-reproducible-interno-a-argus">1. Núcleo reproducible (interno a aRGus)</h3>
+<p>✔ Debe existir <strong>dentro del repositorio</strong></p>
+<p>Incluye:</p>
+<ul>
+<li>script walk-forward</li>
+<li>evaluación golden set</li>
+<li>cálculo métricas</li>
+<li>guardrail logic</li>
+</ul>
+<p>Ejemplo:</p>
+<pre><code class="language-bash">make eval-plugin MODEL=xgboost_v3
+</code></pre>
+<hr />
+<h3 id="2-orquestacion-externa-cicd">2. Orquestación (externa, CI/CD)</h3>
+<p>✔ Debe ejecutarse en:</p>
+<ul>
+<li>GitHub Actions o equivalente</li>
+</ul>
+<p>Responsabilidades:</p>
+<ul>
+<li>ejecutar evaluación</li>
+<li>registrar resultados</li>
+<li>
+<p>decidir:</p>
+<ul>
+<li>PROMOTE / HOLD / REJECT</li>
+<li>bloquear firma si falla</li>
+</ul>
+</li>
+</ul>
+<hr />
+<h2 id="justificacion-cientifica">Justificación científica</h2>
+<p>Separar:</p>
+<table>
+<thead>
+<tr>
+<th>Nivel</th>
+<th>Función</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Interno</td>
+<td>reproducibilidad experimental</td>
+</tr>
+<tr>
+<td>Externo</td>
+<td>gobernanza y trazabilidad</td>
+</tr>
+</tbody>
+</table>
+<p>Si no separas:</p>
+<ul>
+<li>pierdes auditabilidad</li>
+<li>introduces sesgos manuales</li>
+</ul>
+<hr />
+<h2 id="riesgo-si-eliges-solo-una-opcion">Riesgo si eliges solo una opción</h2>
+<h3 id="solo-a-interno">Solo A (interno)</h3>
+<ul>
+<li>❌ sin histórico verificable</li>
+<li>❌ fácil bypass manual</li>
+</ul>
+<h3 id="solo-b-ci">Solo B (CI)</h3>
+<ul>
+<li>❌ pérdida de reproducibilidad local</li>
+<li>❌ dependencia de infraestructura externa</li>
+</ul>
+<hr />
+<h2 id="test-minimo-reproducible">Test mínimo reproducible</h2>
+<pre><code class="language-bash"># local
+make eval-plugin MODEL=candidate
+
+# CI (automático)
+on push:
+  run eval
+  if fail → block signing
+</code></pre>
+<hr />
+<h1 id="evaluacion-de-las-reglas-del-adr">Evaluación de las reglas del ADR</h1>
+<hr />
+<h2 id="regla-1-walk-forward">Regla 1 — Walk-forward</h2>
+<h3 id="veredicto-correcta-y-critica">Veredicto: 🟢 Correcta y crítica</h3>
+<h3 id="mejora-recomendada">Mejora recomendada</h3>
+<p>Añadir:</p>
+<ul>
+<li><strong>múltiples cortes temporales</strong>, no solo uno</li>
+</ul>
+<pre><code class="language-text">T1, T2, T3...
+</code></pre>
+<hr />
+<h3 id="riesgo-actual">Riesgo actual</h3>
+<ul>
+<li>un único split → varianza alta</li>
+</ul>
+<hr />
+<h3 id="test-reproducible">Test reproducible</h3>
+<pre><code class="language-bash">--split-date 2024-01-01
+--split-date 2024-03-01
+--split-date 2024-06-01
+</code></pre>
+<p>Promediar métricas.</p>
+<hr />
+<h2 id="regla-2-golden-set">Regla 2 — Golden Set</h2>
+<h3 id="veredicto-excelente-pero-incompleta">Veredicto: 🟢 Excelente, pero incompleta</h3>
+<hr />
+<h3 id="mejora-critica">Mejora crítica</h3>
+<p>Dividir en dos:</p>
+<table>
+<thead>
+<tr>
+<th>Tipo</th>
+<th>Uso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Golden set (fijo)</td>
+<td>regresión</td>
+</tr>
+<tr>
+<td>Evaluation set (evolutivo)</td>
+<td>generalización</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="riesgo-actual_1">Riesgo actual</h3>
+<ul>
+<li>overfitting al golden set</li>
+</ul>
+<hr />
+<h3 id="test">Test</h3>
+<ul>
+<li>evaluar ambos sets</li>
+<li>comparar drift</li>
+</ul>
+<hr />
+<h2 id="regla-3-guardrail-2">Regla 3 — Guardrail −2%</h2>
+<h3 id="veredicto-correcto-pero-incompleto">Veredicto: 🟢 Correcto, pero incompleto</h3>
+<hr />
+<h3 id="mejora-obligatoria">Mejora obligatoria</h3>
+<p>Añadir:</p>
+<h3 id="metrica-adicional">➤ Métrica adicional:</h3>
+<pre><code class="language-text">Precision ≥ −2 pp
+</code></pre>
+<hr />
+<h3 id="regla-critica-nueva">➤ Regla crítica nueva:</h3>
+<p><strong>“No regression on rare classes”</strong></p>
+<p>Ejemplo:</p>
+<ul>
+<li>ataques poco frecuentes</li>
+<li>no deben degradarse aunque F1 global suba</li>
+</ul>
+<hr />
+<h3 id="riesgo-actual_2">Riesgo actual</h3>
+<ul>
+<li>modelo mejora global → empeora casos raros</li>
+</ul>
+<hr />
+<h2 id="regla-4-ipw-exploracion">Regla 4 — IPW + exploración</h2>
+<h3 id="veredicto-muy-solido-nivel-produccion-real">Veredicto: 🟢 Muy sólido (nivel producción real)</h3>
+<hr />
+<h3 id="mejora">Mejora</h3>
+<p>Formalizar:</p>
+<pre><code class="language-text">Exploration ratio ∈ [3%, 10%]
+</code></pre>
+<p>Adaptativo según:</p>
+<ul>
+<li>drift detectado</li>
+</ul>
+<hr />
+<h3 id="anadir-metrica-nueva">Añadir métrica nueva</h3>
+<pre><code class="language-text">Data diversity index (Shannon entropy o similar)
+</code></pre>
+<hr />
+<h3 id="riesgo">Riesgo</h3>
+<ul>
+<li>etiquetado manual insuficiente</li>
+<li>sesgo humano</li>
+</ul>
+<hr />
+<h2 id="regla-5-competicion-de-algoritmos">Regla 5 — Competición de algoritmos</h2>
+<h3 id="veredicto-correcto-y-cientificamente-obligatorio">Veredicto: 🟢 Correcto y científicamente obligatorio</h3>
+<hr />
+<h3 id="mejora_1">Mejora</h3>
+<p>Añadir criterio explícito:</p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Peso</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Recall</td>
+<td>40%</td>
+</tr>
+<tr>
+<td>F1</td>
+<td>30%</td>
+</tr>
+<tr>
+<td>Latencia</td>
+<td>20%</td>
+</tr>
+<tr>
+<td>RAM</td>
+<td>10%</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="riesgo_1">Riesgo</h3>
+<ul>
+<li>elegir modelo por F1 → ignorar latencia</li>
+</ul>
+<hr />
+<h1 id="mejora-critica-faltante-no-incluida-en-adr">Mejora crítica faltante (no incluida en ADR)</h1>
+<h2 id="regla-6-dataset-lineage-obligatorio">🔴 Regla 6 — Dataset lineage obligatorio</h2>
+<p>Todo modelo debe registrar:</p>
+<pre><code class="language-text">- dataset hash
+- features version
+- preprocessing version
+- training code commit
+</code></pre>
+<hr />
+<h3 id="justificacion">Justificación</h3>
+<p>Sin esto:</p>
+<ul>
+<li>no hay reproducibilidad científica real</li>
+</ul>
+<hr />
+<h1 id="mejora-critica-2">Mejora crítica 2</h1>
+<h2 id="regla-7-canary-deployment">🔴 Regla 7 — Canary deployment</h2>
+<p>Antes de producción:</p>
+<ul>
+<li>
+<p>desplegar modelo en:</p>
+<ul>
+<li>5–10% del tráfico</li>
+</ul>
+</li>
+</ul>
+<p>Comparar:</p>
+<ul>
+<li>decisiones vs modelo anterior</li>
+</ul>
+<hr />
+<h3 id="riesgo-actual_3">Riesgo actual</h3>
+<ul>
+<li>salto directo a producción</li>
+</ul>
+<hr />
+<h1 id="evaluacion-global-adr-040">Evaluación global ADR-040</h1>
+<table>
+<thead>
+<tr>
+<th>Área</th>
+<th>Estado</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Fundamento científico</td>
+<td>✔ sólido</td>
+</tr>
+<tr>
+<td>Reproducibilidad</td>
+<td>✔ alta</td>
+</tr>
+<tr>
+<td>Robustez ML</td>
+<td>✔ alta</td>
+</tr>
+<tr>
+<td>Seguridad operativa</td>
+<td>⚠ mejorable</td>
+</tr>
+<tr>
+<td>Preparación para paper</td>
+<td>✔ publicable</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="recomendacion-final-del-consejo">Recomendación final del Consejo</h1>
+<p>Adoptar ADR-040 con estas modificaciones:</p>
+<ol>
+<li>Arquitectura híbrida (interno + CI)</li>
+<li>Multi-split walk-forward</li>
+<li>Golden set + evaluation set</li>
+<li>Guardrail ampliado (precision + rare classes)</li>
+<li>Dataset lineage obligatorio</li>
+<li>Canary deployment antes de producción</li>
+</ol>
+<hr />
+<h1 id="veredicto">Veredicto</h1>
+<p>El ADR está en el <strong>nivel correcto para sistemas críticos reales</strong>.</p>
+<p>Con los ajustes propuestos:</p>
+<ul>
+<li>pasa de “buen diseño”
+  a</li>
+<li><strong>sistema científicamente defendible y auditable</strong></li>
+</ul>
+<hr />
+<p>Esto no es solo ML en producción.
+Es ML tratado como infraestructura crítica, que es exactamente lo que necesitas.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
