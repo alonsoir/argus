@@ -37,6 +37,8 @@ case "${1:-}" in
     mkdir -p "$D/$N"
     sudo cp "/tmp/$N.pcap" "/tmp/$N.tcpdump.txt" "$D/$N/"
     cp /vagrant/logs/lab/firewall-agent.log "$D/$N/firewall-agent.log"
+    cp /vagrant/logs/lab/ml-detector.log "$D/$N/ml-detector.log"  # [DAY298-LOGS]
+    cp /vagrant/logs/lab/sniffer.log "$D/$N/sniffer.log"
     sudo bash /vagrant/scripts/timebase/a1_contabilidad.sh "/tmp/$N.pcap" > "$D/$N/contabilidad.txt" 2>&1
     cat "$D/$N/tcpdump.txt" 2>/dev/null || cat "$D/$N/$N.tcpdump.txt"
     cat "$D/$N/contabilidad.txt"
