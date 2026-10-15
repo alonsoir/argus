@@ -51,6 +51,7 @@ public:
         uint64_t detections_internal = 0;    // [SUMMARY-D285]
         uint64_t ddos_v2_presion = 0;        // [DDOS-V2-D293] eventos que pasan la etapa 1
         uint64_t ddos_v2_ataque = 0;         // [DDOS-V2-D293] eventos que la cabeza v2 marca DDoS
+        uint64_t ddos_v2_sin_estado = 0;     // [DDOS-ETAPA1-D298] eventos sin victim_state (etapa 1 antigua)
         uint64_t deserialization_errors = 0;
         uint64_t feature_extraction_errors = 0;
         uint64_t inference_errors = 0;
