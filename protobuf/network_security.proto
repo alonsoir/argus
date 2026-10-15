@@ -23,6 +23,16 @@ import "google/protobuf/duration.proto";
 // 🎯 PHASE 1 - DETECTORES EMBEBIDOS C++20
 // =====================================================================
 
+// [DAY298-VICTIM-STATE] Estado de la victima (dst_ip, proto) en la ventana del agregador del kernel, segun la
+// histeresis del sniffer. 0 = UNKNOWN a proposito (campo ausente en proto3): evento sin estado (sniffer antiguo
+// o sin snapshot del lector) -> el ml-detector aplica la etapa 1 antigua (ratio >= k_ratio) con aviso.
+enum VictimState {
+  VICTIM_STATE_UNKNOWN        = 0;  // sin estado (campo ausente o sin snapshot)
+  VICTIM_STATE_COLD           = 1;  // clave sin historia suficiente (seen < warm_windows); el ratio no significa nada
+  VICTIM_STATE_NORMAL         = 2;  // caliente, sin presion: la etapa 1 usa ratio >= k_ratio
+  VICTIM_STATE_UNDER_PRESSURE = 3;  // bajo_presion (entrada por k_in en caliente o por P_abs en frio); EWMA congelada
+}
+
 // 🛡️ LEVEL 2 - DDoS Detection Features (10 features)
 message DDoSFeatures {
     float syn_ack_ratio = 1;
@@ -41,6 +51,7 @@ message DDoSFeatures {
     float flow_packet_count = 13;  // paquetes del flujo (contexto de packet_size_entropy)
     float victim_rate_ratio = 14;  // pps victima / max(EWMA previa, suelo). Sustituye a 9
     float victim_pps = 15;  // d_pkts/window_ms de la ventana del kernel (dst_ip, proto). Sustituye a 10
+    VictimState victim_state = 16;  // [DAY298-VICTIM-STATE] estado de la victima en esta ventana (ver enum)
 }
 
 // 🔐 LEVEL 2 - Ransomware Detection Features (10 features)
