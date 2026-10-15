@@ -2,9 +2,11 @@
 # DAY297 Ayudante en el DEFENDER de scripts/timebase/lab_corrida.sh (se invoca por vagrant ssh desde el Mac).
 # Subcomandos: vivos | truncar | cap_start NOMBRE | cap_stop NOMBRE | contar NOMBRE
 set -u
-D=/vagrant/logs/lab/day297
+DIA=${DIA:-day297}  # [DAY298-DIA]
+[[ "$DIA" =~ ^day[0-9]{3}$ ]] || { echo "DIA invalido: '$DIA' (formato dayNNN, p. ej. day298)"; exit 2; }
+D=/vagrant/logs/lab/$DIA
 PAT='/(sniffer|ml-detector|firewall-acl-agent)( |$)'
-FILTRO='src host 192.168.100.50 or src host 192.168.100.51 or src host 192.168.100.61'
+FILTRO=${FILTRO:-src host 192.168.100.50 or src host 192.168.100.51 or src host 192.168.100.61}  # [DAY298-FILTRO] cambiable desde el entorno
 case "${1:-}" in
   vivos)
     n=$(pgrep -c -f "$PAT" || true)
