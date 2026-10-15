@@ -1,3 +1,5 @@
+// [DDOS-ETAPA1-D298] REGISTRO DEL ANTES: compila contra el contrato de 2866f4cc (alpha_slow/tau_s se retiraron
+// en DAY298). El despues offline es test_ddos_victim_board, bloque 13a.
 // DAY297 D15 A5 (offline): ataque sostenido largo contra la funcion REAL del sniffer, victim_ewma_step
 // (sniffer/include/ddos_contract_v2.hpp), con sus parametros por defecto (= defectos del JSON).
 // Etapa 1 del ml-detector: ratio >= K (3, ddos_v2_head.hpp). Sombra: FIN = ultima ventana positiva + hold (30).

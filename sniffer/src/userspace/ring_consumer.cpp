@@ -1390,6 +1390,12 @@ void RingBufferConsumer::stamp_time_context(protobuf::NetworkSecurityEvent& ev, 
         std::chrono::steady_clock::now().time_since_epoch()).count()));
 }
 
+// [DDOS-ETAPA1-D298] el estado del sniffer se sella con static_cast: los valores deben coincidir con el proto.
+static_assert(static_cast<int>(::argus::ddos::VictimEwmaEstado::Frio) == protobuf::VICTIM_STATE_COLD &&
+              static_cast<int>(::argus::ddos::VictimEwmaEstado::Normal) == protobuf::VICTIM_STATE_NORMAL &&
+              static_cast<int>(::argus::ddos::VictimEwmaEstado::BajoPresion) == protobuf::VICTIM_STATE_UNDER_PRESSURE,
+              "VictimEwmaEstado desalineado con protobuf::VictimState");
+
 void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
                                              const SimpleEvent& e) const {
     if (!victim_board_) return;
@@ -1417,6 +1423,8 @@ void RingBufferConsumer::stamp_victim_window_from(protobuf::NetworkSecurityEvent
         ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_pps(
             ::argus::ddos::victim_pps(r.d_pkts, r.window_ms));
         ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_rate_ratio(r.rate_ratio);  // [DDOS-H2-D286]
+        ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_state(
+            static_cast<protobuf::VictimState>(r.estado));  // [DDOS-ETAPA1-D298]
     }
 }
 

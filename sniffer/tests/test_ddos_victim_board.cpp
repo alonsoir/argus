@@ -150,7 +150,7 @@ int main() {
         // 11b. victima ausente en la ventana -> 0
         CHECK(h.lookup(DNS, UDP).rate_ratio == 0.0f);
         // 11c. 40 ventanas a 20 pps (EWMA 19,70, caliente) y ataque a 100 pps -> 5,075;
-        //      la ventana siguiente sigue > 5 porque entra en bajo_presion (alfa lento) [DDOS-HYST-D291]
+        //      la ventana siguiente sigue > 5 porque entra en bajo_presion (EWMA congelada) [DDOS-ETAPA1-D298]
         DdosVictimBoard k;
         for (uint64_t i = 1; i <= 40; ++i) k.publish_window(i, win1s(i, 20, GW));
         k.publish_window(41, win1s(41, 100, GW));
@@ -165,7 +165,7 @@ int main() {
         std::printf("H2: 11c r1=%.4f r2=%.4f\n", static_cast<double>(r1), static_cast<double>(r2));
     }
 
-    // 12. [DDOS-HYST-D291] histeresis de la EWMA por victima (defectos: k_in 3, k_out 1,5, tau 3600 s)
+    // 12. [DDOS-HYST-D291] histeresis de la EWMA por victima (defectos: k_in 3, k_out 1,5, abs_pps 200)
     {
         auto win1s = [](uint64_t i, uint64_t pkts, uint32_t ip) {
             DdosWindow w = make_window(i * 1'000'000'000ULL, (i + 1) * 1'000'000'000ULL);
@@ -195,7 +195,7 @@ int main() {
         const float r_2x = e.lookup(GW, UDP).rate_ratio;
         CHECK(r_sal < 1.5f);
         CHECK(r_2x < 1.1f);
-        // 12c. clave fria (< 30 ventanas vistas) NO entra: 60 pps se absorben como antes
+        // 12c. clave fria (< 30 ventanas vistas) NO entra: 60 pps se absorben como antes (60 < abs_pps 200: precio documentado de abs_pps)
         DdosVictimBoard c;
         for (uint64_t i = 1; i <= 10; ++i) c.publish_window(i, win1s(i, 10, DNS));
         for (uint64_t i = 11; i <= 30; ++i) c.publish_window(i, win1s(i, 60, DNS));
@@ -207,11 +207,10 @@ int main() {
         p.k_out = 3.0;
         CHECK(!::argus::ddos::victim_ewma_params_ok(p));
         p = {};
-        p.tau_s = 30.0;
+        p.abs_pps = 0.5;  // [DDOS-ETAPA1-D298] fuera de rango [1, 1e6]
         CHECK(!::argus::ddos::victim_ewma_params_ok(p));
         p = {};
-        p.alpha = 0.01;
-        p.tau_s = 60.0;
+        p.abs_pps = 2.0e6;
         CHECK(!::argus::ddos::victim_ewma_params_ok(p));
         p = {};
         p.alpha = 0.0;
@@ -219,6 +218,88 @@ int main() {
         std::printf("HYST: 12a r_ent=%.4f r_min=%.4f 12b r_sal=%.4f r_2x=%.4f 12c r_fria=%.4f\n",
                     static_cast<double>(r_ent), static_cast<double>(r_min), static_cast<double>(r_sal),
                     static_cast<double>(r_2x), static_cast<double>(r_fria));
+    }
+
+    // 13. [DDOS-ETAPA1-D298] EWMA congelada en bajo_presion, entrada fria por abs_pps (defecto 200),
+    //     ventana sin trafico = pps 0, estado de la victima en el tablero
+    {
+        namespace dd = ::argus::ddos;
+        auto win1s = [](uint64_t i, uint64_t pkts, uint32_t ip) {
+            DdosWindow w = make_window(i * 1'000'000'000ULL, (i + 1) * 1'000'000'000ULL);
+            if (pkts) w.victims.push_back({ip, 17u, pkts, pkts * 482});
+            return w;
+        };
+        // 13a. A5 (antes: la etapa 1 dejaba de pasar a ~889 s): base 10 pps 600 ventanas y ataque de 60 pps
+        //      (70 en la victima) 2 h: el ratio se SOSTIENE y la victima sigue en presion; vuelve a la base y sale
+        DdosVictimBoard a;
+        for (uint64_t i = 1; i <= 600; ++i) a.publish_window(i, win1s(i, 10, GW));
+        float a_min = 1e9f;
+        bool a_presion = true;
+        for (uint64_t i = 601; i <= 7800; ++i) {
+            a.publish_window(i, win1s(i, 70, GW));
+            const auto r = a.lookup(GW, UDP);
+            if (r.rate_ratio < a_min) a_min = r.rate_ratio;
+            if (r.estado != dd::VictimEwmaEstado::BajoPresion) a_presion = false;
+        }
+        a.publish_window(7801, win1s(7801, 10, GW));
+        const auto a_fin = a.lookup(GW, UDP);
+        CHECK(a_min > 6.9f);
+        CHECK(a_presion);
+        CHECK(a_fin.estado == dd::VictimEwmaEstado::Normal);
+        // 13b. clave fria con pps >= abs_pps (ataque presente al arrancar): presion desde la primera ventana,
+        //      EWMA congelada (ratio sostenido); al caer el trafico sale
+        DdosVictimBoard f;
+        f.publish_window(1, win1s(1, 300, GW));
+        const auto f_1 = f.lookup(GW, UDP);
+        float f_min = 1e9f;
+        bool f_presion = true;
+        for (uint64_t i = 2; i <= 300; ++i) {
+            f.publish_window(i, win1s(i, 300, GW));
+            const auto r = f.lookup(GW, UDP);
+            if (r.rate_ratio < f_min) f_min = r.rate_ratio;
+            if (r.estado != dd::VictimEwmaEstado::BajoPresion) f_presion = false;
+        }
+        f.publish_window(301, win1s(301, 5, GW));
+        const auto f_fin = f.lookup(GW, UDP);
+        CHECK(f_1.estado == dd::VictimEwmaEstado::BajoPresion);
+        CHECK(f_presion);
+        CHECK(f_min > 29.9f);
+        CHECK(f_fin.estado == dd::VictimEwmaEstado::Normal);
+        // 13c. clave fria por debajo de abs_pps (frio benigno DAY298, 50 pps): FRIA mientras seen < 30, nunca
+        //      entra en presion, luego NORMAL con la base aprendida
+        DdosVictimBoard b;
+        bool b_nunca = true;
+        dd::VictimEwmaEstado b_1{}, b_29{}, b_30{};
+        for (uint64_t i = 1; i <= 40; ++i) {
+            b.publish_window(i, win1s(i, 50, GW));
+            const auto r = b.lookup(GW, UDP);
+            if (r.estado == dd::VictimEwmaEstado::BajoPresion) b_nunca = false;
+            if (i == 1) b_1 = r.estado;
+            if (i == 29) b_29 = r.estado;
+            if (i == 30) b_30 = r.estado;
+        }
+        const float b_40 = b.lookup(GW, UDP).rate_ratio;
+        CHECK(b_nunca);
+        CHECK(b_1 == dd::VictimEwmaEstado::Frio);
+        CHECK(b_29 == dd::VictimEwmaEstado::Frio);
+        CHECK(b_30 == dd::VictimEwmaEstado::Normal);
+        CHECK(b_40 < 1.1f);
+        // 13d. victima ausente de la instantanea: estado NORMAL (sin trafico no hay presion)
+        CHECK(b.lookup(DNS, UDP).estado == dd::VictimEwmaEstado::Normal);
+        // 13e. un hueco sin trafico termina el episodio: 40 ventanas a 20, entra con 100, 5 ventanas
+        //      sin trafico y vuelve a 20 -> ratio 20 / (19,70 * 0,9^5) = 1,72 < k_in: NORMAL
+        DdosVictimBoard g;
+        for (uint64_t i = 1; i <= 40; ++i) g.publish_window(i, win1s(i, 20, GW));
+        g.publish_window(41, win1s(41, 100, GW));
+        const auto g_41 = g.lookup(GW, UDP);
+        g.publish_window(47, win1s(47, 20, GW));
+        const auto g_47 = g.lookup(GW, UDP);
+        CHECK(g_41.estado == dd::VictimEwmaEstado::BajoPresion);
+        CHECK(g_47.estado == dd::VictimEwmaEstado::Normal);
+        CHECK(std::fabs(g_47.rate_ratio - 1.72f) < 0.01f);
+        std::printf("ETAPA1: 13a a_min=%.4f 13b f_min=%.4f 13c b_40=%.4f 13e g_47=%.4f\n",
+                    static_cast<double>(a_min), static_cast<double>(f_min), static_cast<double>(b_40),
+                    static_cast<double>(g_47.rate_ratio));
     }
 
     if (g_fail) {

@@ -266,8 +266,13 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
     double x = 0.0;
     n += ddos_ewma_num(k, "ddos_victim_ewma_alpha", d.alpha, dd::kVictimEwmaAlphaMin, dd::kVictimEwmaAlphaMax, false, x);
     p.alpha = x;
-    n += ddos_ewma_num(k, "ddos_victim_ewma_tau_s", d.tau_s, dd::kVictimEwmaTauMin, dd::kVictimEwmaTauMax, false, x);
-    p.tau_s = x;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_abs_pps", d.abs_pps, dd::kVictimEwmaAbsPpsMin, dd::kVictimEwmaAbsPpsMax, false, x);
+    p.abs_pps = x;  // [DDOS-ETAPA1-D298]
+    if (k.isMember("ddos_victim_ewma_tau_s")) {
+        std::cerr << "[CONFIG-OBSOLETO] sniffer.json: ddos_victim_ewma_tau_s ya no se usa desde DAY298 (bajo_presion "
+                     "congela la EWMA; antes aprendia con alfa lento y absorbia los ataques sostenidos). Se ignora."
+                  << std::endl;
+    }
     n += ddos_ewma_num(k, "ddos_victim_ewma_k_in", d.k_in, dd::kVictimEwmaKInMin, dd::kVictimEwmaKInMax, false, x);
     p.k_in = x;
     n += ddos_ewma_num(k, "ddos_victim_ewma_k_out", d.k_out, dd::kVictimEwmaKOutMin, dd::kVictimEwmaKOutMax, false, x);
@@ -294,13 +299,6 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
         p.k_out = d.k_out;
         ++n;
     }
-    if (!(p.alpha_slow() < p.alpha)) {
-        std::cerr << "[CONFIG-DEFAULT] regla alfa_lento < alfa rota (alfa=" << p.alpha << ", alfa_lento="
-                  << p.alpha_slow() << ") -> defectos alfa=" << d.alpha << " tau_s=" << d.tau_s << std::endl;
-        p.alpha = d.alpha;
-        p.tau_s = d.tau_s;
-        ++n;
-    }
     if (!dd::victim_ewma_params_ok(p)) {
         std::cerr << "[CONFIG-DEFAULT] combinacion de parametros de la EWMA invalida -> todos los defectos" << std::endl;
         const double iv = p.interval_ms;
@@ -312,7 +310,7 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
         std::cerr << "[CONFIG-DEFAULT] " << n
                   << " ajustes con valor por defecto en la EWMA por victima: revisar sniffer.json" << std::endl;
     }
-    std::cout << "[DDOS-HYST] ewma alpha=" << p.alpha << " tau_s=" << p.tau_s << " alpha_lento=" << p.alpha_slow()
+    std::cout << "[DDOS-HYST] ewma alpha=" << p.alpha << " bajo_presion=congelada abs_pps=" << p.abs_pps
               << " k_in=" << p.k_in << " k_out=" << p.k_out << " warm=" << p.warm_windows
               << " floor_pps=" << p.floor_pps << " evict=" << p.evict_windows
               << " interval_ms=" << p.interval_ms << std::endl;

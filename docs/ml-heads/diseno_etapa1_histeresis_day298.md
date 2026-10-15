@@ -48,6 +48,9 @@ sitio: el sniffer. k_ratio queda en el JSON del ml-detector como hasta ahora.
 - Dentro de BAJO_PRESION la EWMA se CONGELA (no aprende del tráfico clasificado como presión). Se
   sustituye alpha_slow/tau_s por la congelación; tau_s queda sin uso (se retira del JSON con aviso).
 - Salida: ratio contra la EWMA congelada < k_out, es decir, cuando el tráfico vuelve a la base.
+- Una ventana sin tráfico de la víctima cuenta como pps 0: ratio 0 < k_out, el episodio termina y el resto
+  del hueco decae con alpha (como fuera de presión). Por eso no hace falta publicar víctimas en presión
+  ausentes: ausente = sin tráfico = sin presión = NORMAL al sellar. [DDOS-ETAPA1-D298, paso 2]
 - Aviso periódico al administrador ([DDOS-HYST] WARN, cada aviso_s) si un episodio dura más de
   episodio_max_horas (sniffer.json). No cambia el estado: lo decide un humano. Cubre el caso legítimo
   de una base que crece de verdad durante un episodio, o una víctima nueva con tráfico legítimo alto.

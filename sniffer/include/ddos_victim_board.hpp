@@ -30,6 +30,7 @@ struct DdosVictimCounts {
     uint64_t d_pkts = 0;
     uint64_t d_bytes = 0;
     float rate_ratio = 0.0f;  // [DDOS-H2-D286] escalada; 0 si ventana degenerada
+    ::argus::ddos::VictimEwmaEstado estado = ::argus::ddos::VictimEwmaEstado::Normal;  // [DDOS-ETAPA1-D298]
 };
 
 struct DdosVictimSnapshot {
@@ -47,6 +48,8 @@ struct DdosVictimLookup {
     uint64_t d_bytes = 0;
     uint64_t age_ms = 0;  // edad del snapshot al consultar
     float rate_ratio = 0.0f;  // [DDOS-H2-D286]
+    // [DDOS-ETAPA1-D298] victima ausente de la instantanea (sin trafico en la ventana) = NORMAL: sin presion
+    ::argus::ddos::VictimEwmaEstado estado = ::argus::ddos::VictimEwmaEstado::Normal;
 };
 
 // Misma clave que el kernel: dst_ip NUMERICO (a<<24|b<<16|c<<8|d) + proto IANA.
@@ -77,11 +80,14 @@ public:
         for (const auto& v : w.victims) {
             const uint64_t key = ddos_victim_key(v.dst_ip, v.proto);
             float ratio = 0.0f;  // [DDOS-H2-D286] solo con ventana de duracion > 0
+            auto estado = ::argus::ddos::VictimEwmaEstado::Normal;  // [DDOS-ETAPA1-D298]
             if (s->window_ms > 0) {
                 const double pps = static_cast<double>(v.d_pkts) * 1000.0 / static_cast<double>(s->window_ms);
-                ratio = static_cast<float>(::argus::ddos::victim_ewma_step(ewma_[key], seq, pps, ewma_params_));
+                auto& st = ewma_[key];
+                ratio = static_cast<float>(::argus::ddos::victim_ewma_step(st, seq, pps, ewma_params_));
+                estado = ::argus::ddos::victim_ewma_estado(st, ewma_params_);
             }
-            s->by_key[key] = DdosVictimCounts{v.d_pkts, v.d_bytes, ratio};
+            s->by_key[key] = DdosVictimCounts{v.d_pkts, v.d_bytes, ratio, estado};
         }
         if (seq % 60 == 0) evict_stale_ewma(seq);  // [DDOS-H2-D286] memoria acotada
         publish(std::move(s));
@@ -106,6 +112,7 @@ public:
             r.d_pkts = it->second.d_pkts;
             r.d_bytes = it->second.d_bytes;
             r.rate_ratio = it->second.rate_ratio;  // [DDOS-H2-D286]
+            r.estado = it->second.estado;          // [DDOS-ETAPA1-D298]
         }
         return r;
     }
