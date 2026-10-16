@@ -2,6 +2,7 @@
 // [DDOS-V2-D286] Contrato DDoS v2: funciones puras, sin dependencias.
 // Rasgos que dependen del paquete o de la ventana del kernel (no de FlowStatistics).
 #pragma once
+#include <string>  // [DDOS-ESTADO-PERSIST-D299]
 #include <cstdint>
 
 namespace argus::ddos {
@@ -57,6 +58,9 @@ struct VictimEwmaParams {
     uint64_t evict_windows = 3600;  // ventanas sin aparecer -> la clave se olvida
     double interval_ms = 1000.0;    // ventana nominal del lector (ddos_kernel_agg_interval_ms)
     uint64_t arranque_ventanas = 5; // [DDOS-ESTADO-ARRANQUE-D299] plazo sin foto del agregador aceptado como arranque
+    std::string estado_ruta = "/var/lib/argus/sniffer/ddos_victim_estado.csv";  // [DDOS-ESTADO-PERSIST-D299]
+    uint64_t estado_volcado_ventanas = 60;      // [DDOS-ESTADO-PERSIST-D299] volcado periodico del estado
+    uint64_t estado_max_edad_ventanas = 86400;  // [DDOS-ESTADO-PERSIST-D299] caducidad al restaurar
 };
 
 // Rangos aceptados (inclusive). Documentados tambien en sniffer.json.
@@ -68,8 +72,15 @@ inline constexpr double kVictimEwmaWarmMin = 0.0, kVictimEwmaWarmMax = 3600.0;
 inline constexpr double kVictimEwmaFloorMin = 0.1, kVictimEwmaFloorMax = 1.0e6;
 inline constexpr double kVictimEwmaEvictMin = 60.0, kVictimEwmaEvictMax = 86400.0;
 inline constexpr double kVictimArranqueVentanasMin = 2.0, kVictimArranqueVentanasMax = 60.0;  // [DDOS-ESTADO-ARRANQUE-D299]
+inline constexpr double kVictimEstadoVolcadoMin = 5.0, kVictimEstadoVolcadoMax = 3600.0;   // [DDOS-ESTADO-PERSIST-D299]
+inline constexpr double kVictimEstadoEdadMin = 60.0, kVictimEstadoEdadMax = 604800.0;      // [DDOS-ESTADO-PERSIST-D299]
 
 inline bool victim_ewma_in_range(double x, double lo, double hi) noexcept { return x >= lo && x <= hi; }
+
+// [DDOS-ESTADO-PERSIST-D299] ruta absoluta de fichero: empieza por '/', no acaba en '/', sin saltos de linea.
+inline bool victim_estado_ruta_ok(const std::string& r) noexcept {
+    return r.size() > 1 && r.front() == '/' && r.back() != '/' && r.find('\n') == std::string::npos;
+}
 
 // Validacion completa: rangos + regla cruzada (k_out < k_in).
 inline bool victim_ewma_params_ok(const VictimEwmaParams& p) noexcept {
@@ -82,6 +93,11 @@ inline bool victim_ewma_params_ok(const VictimEwmaParams& p) noexcept {
            victim_ewma_in_range(static_cast<double>(p.evict_windows), kVictimEwmaEvictMin, kVictimEwmaEvictMax) &&
            victim_ewma_in_range(static_cast<double>(p.arranque_ventanas), kVictimArranqueVentanasMin,
                                 kVictimArranqueVentanasMax) &&  // [DDOS-ESTADO-ARRANQUE-D299]
+           victim_ewma_in_range(static_cast<double>(p.estado_volcado_ventanas), kVictimEstadoVolcadoMin,
+                                kVictimEstadoVolcadoMax) &&  // [DDOS-ESTADO-PERSIST-D299]
+           victim_ewma_in_range(static_cast<double>(p.estado_max_edad_ventanas), kVictimEstadoEdadMin,
+                                kVictimEstadoEdadMax) &&
+           victim_estado_ruta_ok(p.estado_ruta) &&
            p.interval_ms > 0.0 && p.k_out < p.k_in;
 }
 

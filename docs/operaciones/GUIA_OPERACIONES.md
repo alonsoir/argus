@@ -93,3 +93,37 @@ Líneas de `sniffer.log` sobre el arranque de la cabeza DDoS.
 - `[DDOS-ARRANQUE] AVISO agregador del kernel desactivado ...`. La configuración apaga el agregador: ver
   DDOS-V2-ANOMALIA, punto 1.
 - `[DDOS-ARRANQUE] ERROR sin foto del agregador tras el plazo de arranque ...`. Ver DDOS-V2-ANOMALIA, punto 4.
+
+---
+
+## DDOS-ESTADO
+
+El sniffer guarda el estado de cada víctima de la cabeza DDoS (su tráfico de base, cuántas ventanas lleva
+vista y si está bajo presión) en `ddos_victim_estado_ruta` (por defecto
+`/var/lib/argus/sniffer/ddos_victim_estado.csv`): cada `ddos_victim_estado_volcado_ventanas` ventanas y
+al parar. Al arrancar lo restaura, para que un reinicio en mitad de un ataque no lo olvide. Sin ese
+estado, todas las víctimas arrancan en frío y un ataque por debajo de `ddos_victim_ewma_abs_pps` se
+aprendería como tráfico normal.
+
+Líneas de `sniffer.log`:
+
+- `[DDOS-ESTADO] restauradas N víctimas (M bajo presión) ..., volcado de hace X s`: normal.
+- `[DDOS-ESTADO] sin estado previo ...`: normal en la primera ejecución. Si aparece en un reinicio
+  normal, el volcado no está funcionando: buscar el AVISO de volcado.
+- `[DDOS-ESTADO] primer volcado: ...` y `volcado de parada: ...`: normales.
+- `[DDOS-ESTADO] AVISO no se pudo volcar ...`: se repite en cada intento fallido. Causas: permisos o disco
+  lleno en el directorio de `ddos_victim_estado_ruta`. Corregirlo; el sniffer sigue protegiendo, pero un
+  reinicio dejaría las víctimas en frío.
+- `[DDOS-ESTADO] AVISO estado previo descartado (motivo)`: el sniffer arranca en frío. Según el motivo:
+  - `caducado`: el sniffer estuvo parado más de `ddos_victim_estado_max_edad_ventanas`. Normal tras una
+    parada larga.
+  - `fecha del volcado en el futuro`: el reloj de la máquina va atrasado. Revisar la sincronización
+    horaria (chrony; en el laboratorio, `make lab-clock-step`).
+  - `interval_ms del volcado distinto del actual`: se cambió `ddos_kernel_agg_interval_ms`. Esperado una
+    vez tras el cambio.
+  - `cabecera desconocida`, `columnas desconocidas`, `fila N mal formada`, `filas leídas distintas`: el
+    fichero está dañado o lo ha modificado alguien. **Guardar una copia para investigarlo** y abrir
+    incidencia: un fichero manipulado podría intentar cegar la detección (la firma del fichero está
+    pendiente, DEBT-DDOS-STATE-HMAC-001). El sniffer ya lo ha descartado y sigue en frío.
+
+El fichero queda con permisos 600 (solo su dueño lo lee y escribe).

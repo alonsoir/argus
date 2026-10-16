@@ -73,6 +73,86 @@ int main() {
         std::printf("ESTADO-ARRANQUE: 14a-14f frio_arranque=%llu\n",
                     static_cast<unsigned long long>(b.frio_arranque()));
     }
+    {   // 15. [DDOS-ESTADO-PERSIST-D299] persistencia del estado por victima
+        namespace dd = ::argus::ddos;
+        const std::string dir = "/tmp/argus_d299_estado_test";
+        std::filesystem::remove_all(dir);
+        const std::string f1 = dir + "/a/estado.csv", f2 = dir + "/b/estado.csv", f3 = dir + "/c/estado.csv";
+        const uint64_t W = 1700000000000000000ULL;   // pared del volcado
+        const uint64_t H = 3600000000000ULL;         // 1 h en ns
+        dd::VictimEwmaParams p;                      // warm 30, interval 1000
+        auto escribe = [](const std::string& ruta, const std::string& txt) {
+            std::filesystem::create_directories(std::filesystem::path(ruta).parent_path());
+            std::ofstream o(ruta, std::ios::trunc);
+            o << txt;
+        };
+        const std::string cab = "argus-ddos-victim-estado v1\n";
+        const std::string col = "dst_ip,proto,ewma,seen,bajo_presion\n";
+        auto meta = [&](uint64_t wall, const char* iv, int filas) {
+            return "volcado_wall_ns=" + std::to_string(wall) + " interval_ms=" + iv + " filas=" +
+                   std::to_string(filas) + "\n";
+        };
+        const std::string filas2 = "3232261121,17,10.5,5,1\n3232261132,6,30.25,100,0\n";  // .1 UDP, .12 TCP
+        const uint64_t k1 = ::sniffer::ddos_victim_key(0xC0A86401u, 17u);
+        const uint64_t k2 = ::sniffer::ddos_victim_key(0xC0A8640Cu, 6u);
+        // 15a ida y vuelta: seen promovido a warm, bajo_presion y ewma conservados, last_seq a 0
+        escribe(f1, cab + meta(W, "1000", 2) + col + filas2);
+        ::sniffer::DdosVictimBoard b1;
+        b1.set_ewma_params(p);
+        auto r = b1.restaurar_estado(f1, W + H, 24 * H);
+        CHECK(r.existe && r.ok && r.victimas == 2 && r.bajo_presion == 1 && r.edad_ns == H);
+        auto e1 = b1.estado_ewma(k1);
+        CHECK(e1 && e1->ewma == 10.5 && e1->seen == 30 && e1->bajo_presion && e1->last_seq == 0);
+        auto e2 = b1.estado_ewma(k2);
+        CHECK(e2 && e2->ewma == 30.25 && e2->seen == 100 && !e2->bajo_presion);
+        std::string err;
+        CHECK(b1.volcar_estado(f2, W + H, err));
+        ::sniffer::DdosVictimBoard b2;
+        b2.set_ewma_params(p);
+        r = b2.restaurar_estado(f2, W + 2 * H, 24 * H);
+        CHECK(r.ok && r.victimas == 2 && r.bajo_presion == 1);
+        auto e1b = b2.estado_ewma(k1);
+        CHECK(e1b && e1b->ewma == 10.5 && e1b->seen == 30 && e1b->bajo_presion);
+        // 15b [DDOS-ESTADO-PERSIST-D299-15B] rebase en la banda de histeresis (k_out <= ratio < k_in): 20 pps sobre base 10,5.
+        // Sin rebase el gap 2 la saca y no vuelve a entrar (ratio 2 < k_in); con rebase sigue bajo presion
+        // con la EWMA congelada. Con un ataque fuerte (300 pps, ratio 30) reentra solo: el rebase protege
+        // los ataques moderados.
+        auto sin_rebase = *b2.estado_ewma(k1);
+        dd::victim_ewma_step(sin_rebase, 2, 20.0, p);
+        CHECK(!sin_rebase.bajo_presion);
+        b1.aplicar_rebase_si_pendiente(2);
+        auto st = *b1.estado_ewma(k1);
+        CHECK(st.last_seq == 1);
+        const double rat = dd::victim_ewma_step(st, 2, 20.0, p);
+        CHECK(st.bajo_presion && rat >= p.k_out && st.ewma == 10.5);
+        // 15c caducado y 15d fecha futura: se descarta entero
+        ::sniffer::DdosVictimBoard b3;
+        b3.set_ewma_params(p);
+        r = b3.restaurar_estado(f1, W + 25 * H, 24 * H);
+        CHECK(r.existe && !r.ok && r.motivo == "caducado" && !b3.estado_ewma(k1));
+        r = b3.restaurar_estado(f1, W - 1, 24 * H);
+        CHECK(!r.ok && r.motivo.find("futuro") != std::string::npos && !b3.estado_ewma(k1));
+        // 15e corrupto: cabecera, numero de filas, NaN, basura al final, interval_ms distinto
+        escribe(f3, "otra cosa\n" + meta(W, "1000", 2) + col + filas2);
+        CHECK(!b3.restaurar_estado(f3, W + H, 24 * H).ok);
+        escribe(f3, cab + meta(W, "1000", 3) + col + filas2);
+        CHECK(!b3.restaurar_estado(f3, W + H, 24 * H).ok);
+        escribe(f3, cab + meta(W, "1000", 1) + col + "3232261121,17,nan,5,1\n");
+        CHECK(!b3.restaurar_estado(f3, W + H, 24 * H).ok);
+        escribe(f3, cab + meta(W, "1000", 1) + col + "3232261121,17,10.5,5,1 x\n");
+        CHECK(!b3.restaurar_estado(f3, W + H, 24 * H).ok);
+        escribe(f3, cab + meta(W, "500", 2) + col + filas2);
+        r = b3.restaurar_estado(f3, W + H, 24 * H);
+        CHECK(!r.ok && r.motivo.find("interval_ms") != std::string::npos);
+        CHECK(!b3.estado_ewma(k1) && !b3.estado_ewma(k2));
+        // 15f inexistente y ruta no escribible: sin excepcion
+        r = b3.restaurar_estado(dir + "/no/existe.csv", W, 24 * H);
+        CHECK(!r.existe && !r.ok);
+        err.clear();
+        CHECK(!b1.volcar_estado("/proc/argus_d299_no/estado.csv", W, err) && !err.empty());
+        std::filesystem::remove_all(dir);
+        std::printf("ESTADO-PERSIST: 15a-15f\n");
+    }
     constexpr uint32_t GW = 0xC0A86401u;   // 192.168.100.1 (victima del flood cic2)
     constexpr uint32_t DNS = 0x08080808u;  // 8.8.8.8
     constexpr uint32_t UDP = 17;

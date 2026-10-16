@@ -775,6 +775,12 @@ if (encryption_seed.empty()) {
 
         // [DDOS-HYST-D291] parametros de la EWMA por victima, antes de arrancar el lector
         g_ddos_victim_board->set_ewma_params(g_config.kernel_space.ddos_victim_ewma);
+        // [DDOS-ESTADO-PERSIST-D299] estado por victima del arranque anterior, ANTES de arrancar el lector
+        // (escritor unico de la EWMA). Fallo o caducidad = aviso y arranque en frio; nunca tumba el sniffer.
+        if (g_config.kernel_space.ddos_kernel_agg_enabled) {
+            g_ddos_victim_board->activar_persistencia();
+            g_ddos_victim_board->restaurar_al_arrancar();
+        }
 
         // [DDOS-KREAD-D274:MAIN-START] Lector del agregador DDoS en-kernel (opcional, DAY274).
         // Es una capa de MEDICION: un fallo aqui nunca tumba el sniffer.
@@ -817,6 +823,7 @@ if (encryption_seed.empty()) {
             delete ddos_reader_ptr;
             ddos_reader_ptr = nullptr;
         }
+        g_ddos_victim_board->volcar_parada();  // [DDOS-ESTADO-PERSIST-D299] el lector ya no toca la EWMA
 
         // Stop RingBufferConsumer first
         if (ring_consumer_ptr) {

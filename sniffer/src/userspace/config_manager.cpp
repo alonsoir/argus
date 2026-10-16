@@ -288,6 +288,20 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
     n += ddos_ewma_num(k, "ddos_victim_arranque_ventanas", static_cast<double>(d.arranque_ventanas),
                        dd::kVictimArranqueVentanasMin, dd::kVictimArranqueVentanasMax, true, x);
     p.arranque_ventanas = static_cast<uint64_t>(x);  // [DDOS-ESTADO-ARRANQUE-D299]
+    n += ddos_ewma_num(k, "ddos_victim_estado_volcado_ventanas", static_cast<double>(d.estado_volcado_ventanas),
+                       dd::kVictimEstadoVolcadoMin, dd::kVictimEstadoVolcadoMax, true, x);
+    p.estado_volcado_ventanas = static_cast<uint64_t>(x);  // [DDOS-ESTADO-PERSIST-D299]
+    n += ddos_ewma_num(k, "ddos_victim_estado_max_edad_ventanas", static_cast<double>(d.estado_max_edad_ventanas),
+                       dd::kVictimEstadoEdadMin, dd::kVictimEstadoEdadMax, true, x);
+    p.estado_max_edad_ventanas = static_cast<uint64_t>(x);
+    if (k.isMember("ddos_victim_estado_ruta") && k["ddos_victim_estado_ruta"].isString() &&
+        dd::victim_estado_ruta_ok(k["ddos_victim_estado_ruta"].asString())) {
+        p.estado_ruta = k["ddos_victim_estado_ruta"].asString();
+    } else {
+        std::cerr << "[CONFIG-DEFAULT] kernel_space.ddos_victim_estado_ruta: falta, no es texto o no es una ruta "
+                     "absoluta de fichero (formato /dir/fichero) -> " << d.estado_ruta << std::endl;
+        ++n;
+    }
     if (interval_ms > 0) {
         p.interval_ms = static_cast<double>(interval_ms);
     } else {
@@ -317,7 +331,9 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
               << " k_in=" << p.k_in << " k_out=" << p.k_out << " warm=" << p.warm_windows
               << " floor_pps=" << p.floor_pps << " evict=" << p.evict_windows
               << " interval_ms=" << p.interval_ms << " arranque_ventanas=" << p.arranque_ventanas
-              << std::endl;  // [DDOS-ESTADO-ARRANQUE-D299]
+              << " estado_ruta=" << p.estado_ruta << " volcado_ventanas=" << p.estado_volcado_ventanas
+              << " max_edad_ventanas=" << p.estado_max_edad_ventanas
+              << std::endl;  // [DDOS-ESTADO-ARRANQUE-D299] [DDOS-ESTADO-PERSIST-D299]
     return p;
 }
 }  // namespace
