@@ -56,6 +56,7 @@ struct VictimEwmaParams {
     double floor_pps = 10.0;        // suelo del denominador
     uint64_t evict_windows = 3600;  // ventanas sin aparecer -> la clave se olvida
     double interval_ms = 1000.0;    // ventana nominal del lector (ddos_kernel_agg_interval_ms)
+    uint64_t arranque_ventanas = 5; // [DDOS-ESTADO-ARRANQUE-D299] plazo sin foto del agregador aceptado como arranque
 };
 
 // Rangos aceptados (inclusive). Documentados tambien en sniffer.json.
@@ -66,6 +67,7 @@ inline constexpr double kVictimEwmaKOutMin = 1.0, kVictimEwmaKOutMax = 99.0;
 inline constexpr double kVictimEwmaWarmMin = 0.0, kVictimEwmaWarmMax = 3600.0;
 inline constexpr double kVictimEwmaFloorMin = 0.1, kVictimEwmaFloorMax = 1.0e6;
 inline constexpr double kVictimEwmaEvictMin = 60.0, kVictimEwmaEvictMax = 86400.0;
+inline constexpr double kVictimArranqueVentanasMin = 2.0, kVictimArranqueVentanasMax = 60.0;  // [DDOS-ESTADO-ARRANQUE-D299]
 
 inline bool victim_ewma_in_range(double x, double lo, double hi) noexcept { return x >= lo && x <= hi; }
 
@@ -78,6 +80,8 @@ inline bool victim_ewma_params_ok(const VictimEwmaParams& p) noexcept {
            victim_ewma_in_range(static_cast<double>(p.warm_windows), kVictimEwmaWarmMin, kVictimEwmaWarmMax) &&
            victim_ewma_in_range(p.floor_pps, kVictimEwmaFloorMin, kVictimEwmaFloorMax) &&
            victim_ewma_in_range(static_cast<double>(p.evict_windows), kVictimEwmaEvictMin, kVictimEwmaEvictMax) &&
+           victim_ewma_in_range(static_cast<double>(p.arranque_ventanas), kVictimArranqueVentanasMin,
+                                kVictimArranqueVentanasMax) &&  // [DDOS-ESTADO-ARRANQUE-D299]
            p.interval_ms > 0.0 && p.k_out < p.k_in;
 }
 

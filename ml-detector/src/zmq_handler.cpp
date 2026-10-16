@@ -361,9 +361,11 @@ void ZMQHandler::run() {
                                   d_v2p, d_v2a, secs, config_.ml.ddos_v2.k_ratio);
                 }
                 if (d_v2s > 0) {  // [DDOS-ETAPA1-D298]
-                    logger_->warn("[DDOS-V2] sin_estado={} en los últimos {} s: eventos sin victim_state (sniffer "
-                                  "antiguo o sin snapshot del lector); se aplica la etapa 1 antigua (ratio >= k_ratio)",
-                                  d_v2s, secs);
+                    logger_->warn("[DDOS-V2-ANOMALIA] estado_victima_ausente={} en los últimos {} s: eventos sin "
+                                  "victim_state (campo 16); la cabeza DDoS no puede marcar ataques en ellos. Causas: "
+                                  "agregador del kernel apagado o sin foto, o sniffer sin el campo 16. Qué hacer: "
+                                  "docs/operaciones/GUIA_OPERACIONES.md §DDOS-V2-ANOMALIA",
+                                  d_v2s, secs);  // [DDOS-ESTADO-ARRANQUE-D299]
                 }
                 summary_prev = s;
                 summary_last = now;

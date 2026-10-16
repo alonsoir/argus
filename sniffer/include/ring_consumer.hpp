@@ -209,6 +209,7 @@ private:
     SnifferConfig config_;
     FastDetectorConfig fast_detector_config_;
     std::shared_ptr<::sniffer::DdosVictimBoard> victim_board_;  // [DDOS-VWIN-D279:RC-MEMBER]
+    mutable std::atomic<bool> aviso_arranque_vencido_{false};  // [DDOS-ESTADO-ARRANQUE-D299] el ERROR se escribe una vez
 #ifdef PLUGIN_LOADER_ENABLED
 #endif
 #ifdef PLUGIN_LOADER_ENABLED

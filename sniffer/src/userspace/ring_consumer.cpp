@@ -1410,7 +1410,18 @@ void RingBufferConsumer::stamp_victim_window_from(protobuf::NetworkSecurityEvent
                                                   const ::sniffer::DdosVictimLookup& r) const {
     const uint32_t dst = static_cast<uint32_t>(e.dst_ip);
     const uint32_t proto = static_cast<uint32_t>(e.protocol);
-    if (!r.have_snapshot) return;
+    if (!r.have_snapshot) {  // [DDOS-ESTADO-ARRANQUE-D299]
+        const auto sello = ::sniffer::sello_estado_victima(r);
+        if (sello) {
+            ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_state(
+                static_cast<protobuf::VictimState>(*sello));
+        } else if (r.arranque_vencido && !aviso_arranque_vencido_.exchange(true)) {
+            std::cerr << "[DDOS-ARRANQUE] ERROR sin foto del agregador tras el plazo de arranque "
+                         "(ddos_victim_arranque_ventanas): la cabeza DDoS no ve el estado de las victimas. "
+                         "Guia: docs/operaciones/GUIA_OPERACIONES.md seccion DDOS-V2-ANOMALIA" << std::endl;
+        }
+        return;
+    }
     auto* vw = ev.mutable_victim_window();
     vw->set_victim_ip(::sniffer::DdosKernelAggregator::ip_to_string(dst));
     vw->set_protocol(proto);

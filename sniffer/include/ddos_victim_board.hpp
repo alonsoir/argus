@@ -22,6 +22,7 @@
 #include <cstdint>
 #include <memory>
 #include <mutex>
+#include <optional>  // [DDOS-ESTADO-ARRANQUE-D299]
 #include <unordered_map>
 
 namespace sniffer {
@@ -47,6 +48,8 @@ struct DdosVictimLookup {
     uint64_t d_pkts = 0;
     uint64_t d_bytes = 0;
     uint64_t age_ms = 0;  // edad del snapshot al consultar
+    bool en_arranque = false;       // [DDOS-ESTADO-ARRANQUE-D299] sin foto y dentro del plazo de arranque
+    bool arranque_vencido = false;  // [DDOS-ESTADO-ARRANQUE-D299] sin foto, plazo marcado y ya vencido
     float rate_ratio = 0.0f;  // [DDOS-H2-D286]
     // [DDOS-ETAPA1-D298] victima ausente de la instantanea (sin trafico en la ventana) = NORMAL: sin presion
     ::argus::ddos::VictimEwmaEstado estado = ::argus::ddos::VictimEwmaEstado::Normal;
@@ -61,6 +64,16 @@ inline uint64_t ddos_steady_now_ns() {
     return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::nanoseconds>(
                                      std::chrono::steady_clock::now().time_since_epoch())
                                      .count());
+}
+
+// [DDOS-ESTADO-ARRANQUE-D299] Estado que se sella en el evento. Con foto: el del tablero (victima ausente = NORMAL).
+// Sin foto y dentro del plazo de arranque: FRIO (la victima aun no tiene historia). Sin foto fuera
+// del plazo, o sin plazo marcado (agregador apagado o lector sin arrancar): nada; el evento llega con
+// victim_state UNKNOWN y el ml-detector avisa [DDOS-V2-ANOMALIA] estado_victima_ausente.
+inline std::optional<::argus::ddos::VictimEwmaEstado> sello_estado_victima(const DdosVictimLookup& r) noexcept {
+    if (r.have_snapshot) return r.estado;
+    if (r.en_arranque) return ::argus::ddos::VictimEwmaEstado::Frio;
+    return std::nullopt;
 }
 
 class DdosVictimBoard {
@@ -102,7 +115,19 @@ public:
                             uint64_t now_ns = ddos_steady_now_ns()) const {
         DdosVictimLookup r;
         const std::shared_ptr<const DdosVictimSnapshot> s = load();
-        if (!s) return r;
+        if (!s) {  // [DDOS-ESTADO-ARRANQUE-D299]
+            const uint64_t ini = arranque_ns_.load(std::memory_order_acquire);
+            if (ini != 0) {
+                const uint64_t plazo = arranque_plazo_ns_.load(std::memory_order_relaxed);
+                if (now_ns < ini || now_ns - ini < plazo) {
+                    r.en_arranque = true;
+                    frio_arranque_.fetch_add(1, std::memory_order_relaxed);
+                } else {
+                    r.arranque_vencido = true;
+                }
+            }
+            return r;
+        }
         r.have_snapshot = true;
         r.seq = s->seq;
         r.window_ms = s->window_ms;
@@ -119,6 +144,16 @@ public:
 
     uint64_t published() const { return published_.load(std::memory_order_relaxed); }
 
+    // [DDOS-ESTADO-ARRANQUE-D299] Plazo de arranque: main lo marca ANTES de arrancar el consumidor del anillo si el
+    // agregador esta activo, y lo borra si el lector no llega a arrancar.
+    void marcar_arranque(uint64_t inicio_ns, uint64_t plazo_ns) {
+        arranque_plazo_ns_.store(plazo_ns, std::memory_order_relaxed);
+        arranque_ns_.store(inicio_ns == 0 ? 1 : inicio_ns, std::memory_order_release);
+    }
+    void borrar_arranque() { arranque_ns_.store(0, std::memory_order_release); }
+    uint64_t arranque_ns() const { return arranque_ns_.load(std::memory_order_acquire); }
+    uint64_t frio_arranque() const { return frio_arranque_.load(std::memory_order_relaxed); }
+
     // [DDOS-HYST-D291] parametros de la EWMA por victima (de sniffer.json, ya validados).
     // Llamar ANTES de arrancar el lector: publish_window (escritor unico) es quien los lee.
     void set_ewma_params(const ::argus::ddos::VictimEwmaParams& p) { ewma_params_ = p; }
@@ -128,6 +163,9 @@ private:
     mutable std::mutex m_;
     std::shared_ptr<const DdosVictimSnapshot> snap_;
     std::atomic<uint64_t> published_{0};
+    std::atomic<uint64_t> arranque_ns_{0};            // [DDOS-ESTADO-ARRANQUE-D299] 0 = sin plazo marcado
+    std::atomic<uint64_t> arranque_plazo_ns_{0};      // [DDOS-ESTADO-ARRANQUE-D299]
+    mutable std::atomic<uint64_t> frio_arranque_{0};  // [DDOS-ESTADO-ARRANQUE-D299] eventos sellados FRIO sin foto
     // [DDOS-H2-D286] estado de la EWMA por victima. SOLO lo toca el hilo que llama a
     // publish_window (el lector del kernel, escritor unico): sin cerrojo propio.
     std::unordered_map<uint64_t, ::argus::ddos::VictimEwmaState> ewma_;

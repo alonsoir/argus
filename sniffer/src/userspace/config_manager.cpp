@@ -285,6 +285,9 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
     n += ddos_ewma_num(k, "ddos_victim_ewma_evict_windows", static_cast<double>(d.evict_windows),
                        dd::kVictimEwmaEvictMin, dd::kVictimEwmaEvictMax, true, x);
     p.evict_windows = static_cast<uint64_t>(x);
+    n += ddos_ewma_num(k, "ddos_victim_arranque_ventanas", static_cast<double>(d.arranque_ventanas),
+                       dd::kVictimArranqueVentanasMin, dd::kVictimArranqueVentanasMax, true, x);
+    p.arranque_ventanas = static_cast<uint64_t>(x);  // [DDOS-ESTADO-ARRANQUE-D299]
     if (interval_ms > 0) {
         p.interval_ms = static_cast<double>(interval_ms);
     } else {
@@ -313,7 +316,8 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
     std::cout << "[DDOS-HYST] ewma alpha=" << p.alpha << " bajo_presion=congelada abs_pps=" << p.abs_pps
               << " k_in=" << p.k_in << " k_out=" << p.k_out << " warm=" << p.warm_windows
               << " floor_pps=" << p.floor_pps << " evict=" << p.evict_windows
-              << " interval_ms=" << p.interval_ms << std::endl;
+              << " interval_ms=" << p.interval_ms << " arranque_ventanas=" << p.arranque_ventanas
+              << std::endl;  // [DDOS-ESTADO-ARRANQUE-D299]
     return p;
 }
 }  // namespace

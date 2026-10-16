@@ -247,6 +247,8 @@
     "ddos_victim_ewma_floor_pps": 10.0,
     "_doc_ddos_victim_ewma_evict_windows": "entero, rango [60, 86400], defecto 3600. Ventanas sin aparecer tras las que la clave se olvida.",
     "ddos_victim_ewma_evict_windows": 3600,
+    "_doc_ddos_victim_arranque_ventanas": "entero, rango [2, 60], defecto 5. [DDOS-ESTADO-ARRANQUE-D299] Plazo de arranque de la cabeza DDoS, en ventanas del lector (ddos_kernel_agg_interval_ms; con 1000 ms el defecto son 5 s). El agregador necesita una ventana de baseline y otra para dar la primera tasa: hasta la primera foto la cabeza DDoS no puede ver un ataque (ceguera fisica de unas 2 ventanas, que este campo no crea ni alarga). Mientras no hay foto y dura el plazo, las victimas se sellan FRIO; en cuanto llega la primera foto el sellado es el real. Si el plazo vence sin foto, los eventos salen sin victim_state, el sniffer escribe [DDOS-ARRANQUE] ERROR y el ml-detector avisa [DDOS-V2-ANOMALIA] estado_victima_ausente (docs/operaciones/GUIA_OPERACIONES.md). La linea [DDOS-ARRANQUE] primera foto de cada arranque mide el valor real para calibrarlo en cada instalacion. Si falta o esta fuera de rango: defecto con [CONFIG-DEFAULT].",
+    "ddos_victim_arranque_ventanas": 5,
     "xdp_mode": "skb",
     "ring_buffer_size": 1048576,
     "max_flows_in_kernel": 500000,

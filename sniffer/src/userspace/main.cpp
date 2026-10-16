@@ -743,6 +743,15 @@ if (encryption_seed.empty()) {
             return 1;
         }
 
+        // [DDOS-ESTADO-ARRANQUE-D299] plazo de arranque de la cabeza DDoS: se marca ANTES de arrancar el consumidor del
+        // anillo (los primeros eventos se sellan antes de que exista el lector) y se borra mas abajo si el
+        // lector no llega a arrancar. Agregador apagado = sin plazo = anomalia visible en el ml-detector.
+        if (g_config.kernel_space.ddos_kernel_agg_enabled) {
+            const auto& pe = g_config.kernel_space.ddos_victim_ewma;
+            g_ddos_victim_board->marcar_arranque(
+                sniffer::ddos_steady_now_ns(),
+                static_cast<uint64_t>(static_cast<double>(pe.arranque_ventanas) * pe.interval_ms * 1.0e6));
+        }
         if (!ring_consumer.start()) {
             std::cerr << "❌ Failed to start RingBufferConsumer" << std::endl;
             return 1;
@@ -784,6 +793,7 @@ if (encryption_seed.empty()) {
                 }
             }
         }
+        if (!ddos_reader_ptr) g_ddos_victim_board->borrar_arranque();  // [DDOS-ESTADO-ARRANQUE-D299] sin lector no hay foto: anomalia, no FRIO
 
         while (g_running) {
             std::this_thread::sleep_for(std::chrono::seconds(1));

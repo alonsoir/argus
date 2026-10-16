@@ -30,6 +30,49 @@ static DdosWindow make_window(uint64_t t0, uint64_t t1) {
 }
 
 int main() {
+    {   // 14. [DDOS-ESTADO-ARRANQUE-D299] sellado sin foto del agregador (plazo de arranque)
+        using ::sniffer::sello_estado_victima;
+        using E = ::argus::ddos::VictimEwmaEstado;
+        const uint64_t T0 = 1000000000ULL, PLAZO = 5000000000ULL;
+        ::sniffer::DdosVictimBoard b;
+        // 14a sin plazo marcado (agregador apagado o lector sin arrancar): no se sella
+        auto r = b.lookup(0x0A000001u, 17u, T0);
+        CHECK(!r.have_snapshot && !r.en_arranque && !r.arranque_vencido);
+        CHECK(!sello_estado_victima(r).has_value());
+        // 14b sin foto dentro del plazo: FRIO
+        b.marcar_arranque(T0, PLAZO);
+        r = b.lookup(0x0A000001u, 17u, T0 + PLAZO - 1);
+        CHECK(r.en_arranque && !r.arranque_vencido);
+        CHECK(sello_estado_victima(r) == std::optional<E>(E::Frio));
+        CHECK(b.frio_arranque() == 1);
+        // 14c plazo vencido sin foto: no se sella, vencido
+        r = b.lookup(0x0A000001u, 17u, T0 + PLAZO);
+        CHECK(!r.en_arranque && r.arranque_vencido);
+        CHECK(!sello_estado_victima(r).has_value());
+        // 14d plazo borrado (el lector no arranco): no se sella
+        b.borrar_arranque();
+        r = b.lookup(0x0A000001u, 17u, T0 + 1);
+        CHECK(!r.en_arranque && !r.arranque_vencido && !sello_estado_victima(r).has_value());
+        // 14e llega la foto dentro del plazo: manda la foto (victima ausente = NORMAL, contrato DAY298)
+        b.marcar_arranque(T0, PLAZO);
+        auto s = std::make_shared<::sniffer::DdosVictimSnapshot>();
+        s->seq = 1;
+        s->window_ms = 1000;
+        s->published_ns = T0;
+        b.publish(s);
+        r = b.lookup(0x0A000001u, 17u, T0 + 1000);
+        CHECK(r.have_snapshot && !r.en_arranque && !r.arranque_vencido);
+        CHECK(sello_estado_victima(r) == std::optional<E>(E::Normal));
+        CHECK(b.frio_arranque() == 1);
+        // 14f con foto, el estado del tablero pasa tal cual
+        ::sniffer::DdosVictimLookup f;
+        f.have_snapshot = true;
+        f.window_ms = 1000;
+        f.estado = E::BajoPresion;
+        CHECK(sello_estado_victima(f) == std::optional<E>(E::BajoPresion));
+        std::printf("ESTADO-ARRANQUE: 14a-14f frio_arranque=%llu\n",
+                    static_cast<unsigned long long>(b.frio_arranque()));
+    }
     constexpr uint32_t GW = 0xC0A86401u;   // 192.168.100.1 (victima del flood cic2)
     constexpr uint32_t DNS = 0x08080808u;  // 8.8.8.8
     constexpr uint32_t UDP = 17;

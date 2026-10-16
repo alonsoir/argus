@@ -11,5 +11,5 @@ echo "== sniffer: configuracion de la histeresis"
 grep -h -E '\[DDOS-HYST\]|\[CONFIG-DEFAULT\]|\[CONFIG-OBSOLETO\]' "$S" 2>/dev/null || echo "  (sin sniffer.log)"
 echo "== ml-detector: suma de los resumenes [DDOS-V2]"
 LC_ALL=C awk '/\[DDOS-V2\] bajo_presion=/ {for(i=1;i<=NF;i++){ if($i ~ /^bajo_presion=/){split($i,a,"=");p+=a[2]} if($i ~ /^ataque=/){split($i,b,"=");t+=b[2]} } n++}
-             /\[DDOS-V2\] sin_estado=/ {for(i=1;i<=NF;i++) if($i ~ /^sin_estado=/){split($i,c,"=");s+=c[2]}}
-             END{printf "  resumenes=%d pases_etapa1=%d marcados_ataque=%d sin_estado=%d\n", n, p, t, s}' "$M"
+             /\[DDOS-V2\] sin_estado=|\[DDOS-V2-ANOMALIA\] estado_victima_ausente=/ {for(i=1;i<=NF;i++) if($i ~ /^(sin_estado|estado_victima_ausente)=/){split($i,c,"=");s+=c[2]}}
+             END{printf "  resumenes=%d pases_etapa1=%d marcados_ataque=%d estado_victima_ausente=%d\n", n, p, t, s}' "$M"
