@@ -751,6 +751,11 @@ if (encryption_seed.empty()) {
             g_ddos_victim_board->marcar_arranque(
                 sniffer::ddos_steady_now_ns(),
                 static_cast<uint64_t>(static_cast<double>(pe.arranque_ventanas) * pe.interval_ms * 1.0e6));
+        } else {  // [DDOS-AGG-AVISO-D299] el admin lo ve en el arranque, no por ausencia de lineas
+            std::cerr << "[DDOS-ARRANQUE] AVISO agregador del kernel desactivado "
+                         "(kernel_space.ddos_kernel_agg_enabled=false): la cabeza DDoS no recibira el estado "
+                         "de las victimas y el ml-detector avisara [DDOS-V2-ANOMALIA]. Guia: "
+                         "docs/operaciones/GUIA_OPERACIONES.md seccion DDOS-V2-ANOMALIA" << std::endl;
         }
         if (!ring_consumer.start()) {
             std::cerr << "❌ Failed to start RingBufferConsumer" << std::endl;

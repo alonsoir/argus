@@ -7379,3 +7379,43 @@ Deudas nuevas o cambiadas:
   inmediatamente después del merge de esta (decisión de Alonso DAY298), antes de la vía rápida XDP.
 - Observación del laboratorio: el sniffer arranca ~145 s después del inicio de pipeline-start; la primera
   fila del dataset llega a +140 s.
+
+## 🆕 Entradas DAY299 [DDOS-AGG-AVISO-D299]
+
+### DEBT-DDOS-ESTADO-ARRANQUE-001 — ✅ RESUELTA DAY299 (código b05f880c, medida e586aa31)
+- Causa medida: sin foto del agregador (have_snapshot=false; la baseline no se publica) el evento salía sin
+  victim_state, y además el consumidor del anillo arranca ANTES que el lector (main.cpp). El diagnóstico de
+  DAY298 (window_ms==0) era incorrecto.
+- Arreglo: plazo de arranque ddos_victim_arranque_ventanas (sniffer.json, [2,60], defecto 5). Sin foto dentro
+  del plazo = FRIO; fuera del plazo o sin lector = sin estado + [DDOS-ARRANQUE] ERROR (sniffer) +
+  [DDOS-V2-ANOMALIA] estado_victima_ausente (ml-detector, antes [DDOS-V2] sin_estado). Agregador apagado =
+  [DDOS-ARRANQUE] AVISO. Línea [DDOS-ARRANQUE] primera foto por arranque.
+- Medido: frío con ataque de 300 pps presente en el arranque: estado_victima_ausente 298 -> 0; primera foto a
+  1015-1035 ms; 648 eventos FRIO (fast alerts incluidas); pases = marcados = 51655; DROP solo .50.
+  Agregador apagado: 12 avisos, ~3000 por 10 s durante el ataque (~17900 de 18000 paquetes), 0 DROP.
+- Nace docs/operaciones/GUIA_OPERACIONES.md: cada aviso al administrador tiene su sección.
+
+### DEBT-DDOS-SNAPSHOT-STALE-001 — ABIERTA
+Si el lector muere DESPUÉS de publicar, la foto se queda vieja y se sigue sellando su estado. snapshot_age_ms
+viaja en el evento, pero nadie lo vigila. Propuesta: edad máxima en ventanas en el JSON, aviso y estado
+desconocido al superarla.
+
+### DEBT-HEADS-VENTANA-BASE-ARRANQUE-001 — ABIERTA (decisión de Alonso DAY299)
+Todas las cabezas comparten la unidad de tiempo: una ventana base del pipeline en el JSON, y cada cabeza
+expresa sus ventanas y su plazo de arranque como múltiplos. Hoy DDoS = 1 s (lector del kernel) y el
+agregador de ransomware = 30 s. El plazo de arranque se generaliza a cada cabeza al certificarla, configurable
+y medido.
+
+### DEBT-LAB-FRIO-SOLAPE-001 — ABIERTA (herramienta del laboratorio)
+El sniffer arranca entre ~140 y >215 s tras el inicio de pipeline-start (pipeline-start entero: 226-262 s).
+Un pcap disjunto de un solo origen tiene un techo de ~64k tuplas (~210 s a 300 pps), así que una corrida fría
+sin RETRASO_S puede no solapar (frio_atq300_d299: 0 paquetes del ataque vistos). Mitigado con RETRASO_S en
+lab_frio.sh. De fondo: caducidad de flujos (DEBT-SNIFFER-FLOW-EXPIRY-001) o pcaps multiorigen; medir por qué
+varía pipeline-start.
+
+### DEBT-CONFIG-KERNEL-STRUCT-DUP-001 — ABIERTA
+ddos_kernel_agg_interval_ms está en dos structs (sniffer/include/config_manager.hpp:96 y config_types.h:157).
+Medir cuál se usa y unificar.
+
+### Nota DAY299 a DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001
+seq_desorden 6232 / 106867 = 5,8 % a 300 pps (frio_atq300_d299b), en línea con el 5,1 % de DAY298.

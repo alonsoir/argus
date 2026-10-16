@@ -42,7 +42,7 @@ Primero, buscar en `sniffer.log` las líneas `[DDOS-ARRANQUE]`, `[DDOS-HYST]` y 
 último arranque.
 
 1. **Agregador apagado en la configuración.**
-   - Síntoma: no hay ninguna línea `[DDOS-ARRANQUE]`.
+   - Síntoma: `sniffer.log` dice `[DDOS-ARRANQUE] AVISO agregador del kernel desactivado`.
    - Comprobar: `kernel_space.ddos_kernel_agg_enabled` en `sniffer.json`.
    - Acción: ponerlo a `true` y reiniciar el sniffer.
 2. **Objeto eBPF sin el mapa del agregador.**
@@ -77,3 +77,19 @@ punto 4 con calma.
 ### Referencias
 
 DEBT-DDOS-ESTADO-ARRANQUE-001 (docs/BACKLOG.md); docs/ml-heads/day298_etapa1_resultados.md.
+
+---
+
+## DDOS-ARRANQUE
+
+Líneas de `sniffer.log` sobre el arranque de la cabeza DDoS.
+
+- `[DDOS-ARRANQUE] primera foto del agregador a X ms del arranque (Y ventanas ...); eventos sellados FRIO sin foto: N`.
+  Informativa, una por arranque. X es lo que tarda el agregador del kernel en dar su primera tasa (en el
+  laboratorio, ~1,0 s). Durante ese tiempo la cabeza DDoS no puede ver un ataque: es la ceguera física de
+  arranque, que ninguna configuración elimina. N cuenta los eventos del sniffer de ese intervalo, fast alerts
+  incluidas (a 300 pps, unos 2 por paquete). Si X se acerca a `ddos_victim_arranque_ventanas` ×
+  `ddos_kernel_agg_interval_ms`, subir `ddos_victim_arranque_ventanas`.
+- `[DDOS-ARRANQUE] AVISO agregador del kernel desactivado ...`. La configuración apaga el agregador: ver
+  DDOS-V2-ANOMALIA, punto 1.
+- `[DDOS-ARRANQUE] ERROR sin foto del agregador tras el plazo de arranque ...`. Ver DDOS-V2-ANOMALIA, punto 4.

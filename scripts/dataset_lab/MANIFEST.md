@@ -86,3 +86,10 @@ establecido DAY298 regenerándolo: sha256 idéntico al fichero usado en A2.
 | ntp_reflex_10k_lab_src61.pcap | 10000 | 192.168.100.61 | a9b49ceeba95b3955bc1aca7e8bfe9e5ffaf231ca29fd341e7878b1e53261d36 |
 
 Requiere el alias `sudo ip addr add 192.168.100.61/24 dev eth1` en el client (no persiste al reiniciar la VM).
+
+## Techo de los pcaps disjuntos de un solo origen (DAY299) [DDOS-AGG-AVISO-D299]
+
+`gen_disjunto.py` solo varía el puerto de destino dentro de cada clase {origen, puerto de origen, destino}:
+unas 64 000 tuplas por clase. Con `ntp_reflex_10k_lab.pcap` caben 6 vueltas (63 000 paquetes, ~210 s a
+300 pps); con 180 000 aborta en la vuelta 6 ("sin puertos libres"). Para que una corrida fría solape con el
+arranque del sniffer se usa `RETRASO_S` en `lab_frio.sh`, no un pcap más largo.
