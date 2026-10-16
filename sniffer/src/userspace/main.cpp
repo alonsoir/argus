@@ -207,8 +207,9 @@ void setup_signal_handlers() {
 
     sigaction(SIGINT, &sa, nullptr);
     sigaction(SIGTERM, &sa, nullptr);
+    sigaction(SIGHUP, &sa, nullptr);  // [SNIFFER-STOP-D299] tmux kill-session (SIGHUP) = parada ordenada
 
-    std::cout << "✅ Signal handlers configured (SIGINT, SIGTERM)" << std::endl;
+    std::cout << "✅ Signal handlers configured (SIGINT, SIGTERM, SIGHUP)" << std::endl;
 }
 
 // ============================================================================

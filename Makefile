@@ -641,6 +641,21 @@ sniffer-start:
 	   >> $(SNIFFER_LOG) 2>&1'"
 	@sleep 4
 
+# ── sniffer-stop — parada ORDENADA [SNIFFER-STOP-D299] ──────────────────────────────────
+# SIGTERM y espera; SIGKILL solo como ultimo recurso. tmux kill-session (SIGHUP) mataba el sniffer
+# sin limpieza ni volcado del estado por victima (medido DAY299: 0 lineas [Cleanup]).
+SNIFFER_STOP_GRACE_S ?= 15
+sniffer-stop:
+	@vagrant ssh defender -c "if pgrep -x sniffer >/dev/null; then \
+	    sudo pkill -TERM -x sniffer; \
+	    for i in \$$(seq 1 $(SNIFFER_STOP_GRACE_S)); do pgrep -x sniffer >/dev/null || break; sleep 1; done; \
+	    if pgrep -x sniffer >/dev/null; then \
+	      echo '⚠️  sniffer no paró en $(SNIFFER_STOP_GRACE_S) s: SIGKILL (sin volcado de parada)'; \
+	      sudo pkill -KILL -x sniffer; \
+	    else echo '✅ sniffer parado de forma ordenada'; fi; \
+	  else echo '➖ sniffer no estaba en marcha'; fi; \
+	  tmux kill-session -t sniffer 2>/dev/null || true"
+
 # ── sniffer-libpcap-start — Variant B (libpcap) ──────────────────────────────
 sniffer-libpcap-start:
 	@echo "🚀 Starting Sniffer Variant B (libpcap) [$(PROFILE)]..."
@@ -936,6 +951,7 @@ pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
 
 pipeline-stop:
 	@echo "🛑 Stopping all pipeline components..."
+	@$(MAKE) --no-print-directory sniffer-stop  # [SNIFFER-STOP-D299] parada ordenada antes del resto
 	@vagrant ssh -c "for s in sniffer ml-detector firewall rag-ingester rag-security etcd-server; do tmux kill-session -t $$s 2>/dev/null || true; done"
 	@echo "✅ Pipeline stopped"
 
