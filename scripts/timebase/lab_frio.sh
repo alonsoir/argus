@@ -32,7 +32,14 @@ vagrant ssh defender -c "DIA=$DIA FILTRO='$FIL' bash $H cap_start $N" || falla "
 if [ -n "$CLI" ]; then
   paso "6 client en segundo plano ANTES del arranque: $CLI"
   # [DAY298-SETSID] setsid: sesion propia, sin la terminal de vagrant ssh (si no, SIGHUP al cerrar la sesion).
-  vagrant ssh client -c "setsid nohup bash -c '$CLI' > /tmp/$N.client.txt 2>&1 < /dev/null & sleep 2; pgrep -af '^(sudo )?tcpreplay'" || falla "el trafico del client no esta en marcha (no hay tcpreplay vivo)"
+  # [DAY299-RETRASO] RETRASO_S opcional: sleep antes del trafico; la comprobacion acepta ese sleep vivo
+  CLI_EF="$CLI"; PAT='^(sudo )?tcpreplay'
+  if [ -n "${RETRASO_S:-}" ]; then
+    case "$RETRASO_S" in ''|*[!0-9]*) falla "RETRASO_S debe ser un entero de segundos (es '$RETRASO_S')";; esac
+    CLI_EF="sleep $RETRASO_S; $CLI"; PAT="^(sudo )?tcpreplay|^sleep $RETRASO_S\$"
+    echo "RETRASO_S=$RETRASO_S: el trafico del client empieza $RETRASO_S s despues de este paso"
+  fi
+  vagrant ssh client -c "setsid nohup bash -c '$CLI_EF' > /tmp/$N.client.txt 2>&1 < /dev/null & sleep 2; pgrep -af '$PAT'" || falla "el trafico del client no esta en marcha (no hay tcpreplay ni sleep de RETRASO_S vivo)"
   sleep 5
 fi
 paso "7 pipeline-start PROFILE=production"
