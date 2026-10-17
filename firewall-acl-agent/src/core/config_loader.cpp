@@ -191,6 +191,40 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
         }
         config.ddos_shadow = d;
     }
+    {   // [PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001: rangos protegidos de la cabeza DDoS
+        const Json::Value p = root.isMember("ddos_protegidos") ? root["ddos_protegidos"] : Json::Value(Json::nullValue);
+        std::vector<std::string> dmz, intranet, externos;
+        if (!p.isObject()) {
+            std::cerr << "[CONFIG-DEFAULT] ddos_protegidos ausente o no es un objeto (formato: {\"dmz\": [CIDR, ...], "
+                         "\"intranet\": [...], \"externos_criticos\": [...]})" << std::endl;
+        } else {
+            auto lista = [&p](const char* nombre, std::vector<std::string>& out) {
+                if (!p.isMember(nombre)) {
+                    std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre << " ausente: lista vacia" << std::endl;
+                    return;
+                }
+                if (!p[nombre].isArray()) {
+                    std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre
+                              << " no es una lista de cadenas CIDR: se ignora" << std::endl;
+                    return;
+                }
+                for (const auto& it : p[nombre]) {
+                    if (it.isString()) {
+                        out.push_back(it.asString());
+                    } else {
+                        std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre
+                                  << ": entrada que no es una cadena, descartada" << std::endl;
+                    }
+                }
+            };
+            lista("dmz", dmz);
+            lista("intranet", intranet);
+            lista("externos_criticos", externos);
+        }
+        std::ostringstream plog;
+        config.ddos_protegidos = ::mldefender::firewall::construir_rangos_protegidos(dmz, intranet, externos, plog);
+        std::cout << plog.str() << std::flush;
+    }
     
     if (root.isMember("validation")) {
         config.validation = parse_validation(root["validation"]);

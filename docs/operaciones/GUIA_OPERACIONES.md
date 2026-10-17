@@ -127,3 +127,21 @@ Líneas de `sniffer.log`:
     pendiente, DEBT-DDOS-STATE-HMAC-001). El sniffer ya lo ha descartado y sigue en frío.
 
 El fichero queda con permisos 600 (solo su dueño lo lee y escribe).
+
+
+## DDOS-PROTEGIDOS [PROTEGIDOS-D300]
+
+Rangos protegidos de la cabeza DDoS (`firewall.json`, bloque `ddos_protegidos`: `dmz`, `intranet`,
+`externos_criticos`). Un DROP de la cabeza DDoS cuyo ORIGEN cae en uno de ellos nunca se convierte en bloqueo
+automatico.
+
+| Linea en el log del firewall | Que significa | Que hacer |
+|---|---|---|
+| `[SOMBRA-DDOS] rangos protegidos (JSON): ...` | Rangos efectivos al arrancar | Comprobar que son los de esta instalacion |
+| `[SOMBRA-DDOS] rangos protegidos (DEFECTO RFC 1918 + fc00::/7)` y `[CONFIG-DEFAULT] ddos_protegidos: rigen los rangos privados por defecto` en cada resumen | El JSON no tiene ningun rango valido; se protege todo el espacio privado | Configurar `dmz`, `intranet` y `externos_criticos` reales y reiniciar el firewall-acl-agent. Mientras tanto ningun origen privado se bloquea |
+| `[CONFIG-DEFAULT] ddos_protegidos.<lista>: entrada '...' descartada` | Entrada mal formada; el resto sigue protegiendo | Corregir el formato (CIDR IPv4 o IPv6, p. ej. `10.20.0.0/16`) |
+| `[SOMBRA-DDOS] ALERTA_PROTEGIDO origen=... categoria=...` | Un host protegido se comporta como origen de un ataque segun la cabeza DDoS. No se bloquea | Investigar ese host con el evento y la victima: comprometido (bot interno, posible movimiento lateral), reflector legitimo mal configurado (DNS/NTP propio o de un proveedor critico) o error del modelo. Si es un externo critico, avisar al proveedor |
+| `[SOMBRA-DDOS] protegidos: alertas=N dmz=.. intranet=.. externos_criticos=.. por_defecto=0/1` | Contadores acumulados en cada resumen | Una cifra que crece de forma sostenida merece investigacion aunque no haya bloqueo |
+
+El detalle `ALERTA_PROTEGIDO` se limita a `ddos_shadow.anomalias_detalle_max` lineas por periodo de resumen; el
+resto se cuenta en la linea `protegidos:`.

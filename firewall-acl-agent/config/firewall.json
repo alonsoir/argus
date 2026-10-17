@@ -29,6 +29,13 @@
     "lag_max_valid_s": 600,
     "anomalias_detalle_max": 10
   },
+  "ddos_protegidos": {
+    "_doc": "[PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001. Rangos cuyo trafico NUNCA bloquea automaticamente la cabeza DDoS: un DROP cuyo ORIGEN cae aqui se registra como [SOMBRA-DDOS] ALERTA_PROTEGIDO (categoria, victima, evento) y no cuenta para el episodio de la victima. Tres listas de cadenas CIDR, IPv4 o IPv6 con prefijo opcional (/0-32 o /0-128; sin prefijo = un solo host): dmz (servidores publicados), intranet (redes internas), externos_criticos (resolvedores DNS, servidores NTP, operador, socios). Se comprueban en ese orden y gana la primera coincidencia. Una entrada mal formada se descarta con [CONFIG-DEFAULT] y el resto sigue protegiendo. Si NO queda ningun rango valido (bloque ausente, listas vacias o todas las entradas invalidas) se protegen por defecto los rangos privados RFC 1918 (10.0.0.0/8, 172.16.0.0/12, 192.168.0.0/16) y fc00::/7 como intranet, avisando con [CONFIG-DEFAULT] en el arranque y en cada resumen: un olvido nunca deja la intranet expuesta a un bloqueo automatico. Cada valor valido se registra con [CONFIG] en el arranque. Guia: docs/operaciones/GUIA_OPERACIONES.md, seccion DDOS-PROTEGIDOS.",
+    "_doc_laboratorio": "VALORES DE LABORATORIO, NO DE PRODUCCION. En el lab Vagrant toda la red es privada (192.168.100.0/24) y la VM client simula INTERNET: 192.168.100.50 (atacante) y 192.168.100.51 (origen benigno) NO deben estar protegidos, porque entonces no se podria medir la cabeza DDoS. 192.168.100.61 simula un host INTERNO y se protege para probar ALERTA_PROTEGIDO. En un despliegue real estos valores los calcula o los pide el script de despliegue de cada instalacion (plantillas por instalacion: BACKLOG DEBT-DEPLOY-TEMPLATES-001). Nunca copiar estos valores a produccion.",
+    "dmz": [],
+    "intranet": ["192.168.100.61/32"],
+    "externos_criticos": []
+  },
   "_comment_transport": "NEW FOR DAY 23: Decryption + Decompression of incoming data from ml-detector",
   "transport": {
     "compression": {

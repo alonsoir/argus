@@ -40,6 +40,7 @@
 
 #include <chrono>  // [DDOS-SHADOW-OBS-D293]
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
+#include "firewall/ddos_protegidos.hpp"  // [PROTEGIDOS-D300]
 #include "firewall/timebase_lite.hpp"  // [TIMEBASE-D295]
 #include "firewall/seq_tracker.hpp"  // [TIMEBASE-SEQ-D297]
 #include "firewall/batch_processor.hpp"
@@ -121,6 +122,7 @@ public:
         bool encryption_enabled;         ///< Enable ChaCha20 decryption
         std::string crypto_token;        ///< Decryption key (hex)
         ::mldefender::firewall::DdosShadowParams ddos_shadow;  ///< [DDOS-SHADOW-D293] política por víctima en sombra
+        ::mldefender::firewall::RangosProtegidos ddos_protegidos;  ///< [PROTEGIDOS-D300] rangos protegidos
 
         /**
          * @brief Default configuration
@@ -359,6 +361,8 @@ private:
     int64_t sombra_ts_min_ = 0;
     int64_t sombra_ts_max_ = 0;
     bool sombra_primer_drop_ = false;
+    uint64_t prot_alertas_[4] = {};  // [PROTEGIDOS-D300] ALERTA_PROTEGIDO acumuladas por CategoriaProtegida
+    uint64_t prot_detalle_ = 0;      // [PROTEGIDOS-D300] lineas de detalle del periodo (tope anomalias_detalle_max)
     // [TIMEBASE-D295] validacion de time_context y retraso sniffer->firewall (contrato temporal v1).
     // Todo evento anomalo queda FUERA de las ventanas: puede ser un fallo nuestro, un productor sin contrato o un
     // componente comprometido; se registra para estudiarlo, nunca se castiga a la IP del paquete.

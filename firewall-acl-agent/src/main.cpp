@@ -735,6 +735,15 @@ int main(int argc, char** argv) {
 
         // [DDOS-SHADOW-D293] política por víctima en sombra (solo registra)
         zmq_config.ddos_shadow = config.ddos_shadow;
+        zmq_config.ddos_protegidos = config.ddos_protegidos;  // [PROTEGIDOS-D300]
+        {
+            std::cout << "[SOMBRA-DDOS] rangos protegidos ("
+                      << (config.ddos_protegidos.por_defecto ? "DEFECTO RFC 1918 + fc00::/7" : "JSON") << "):";
+            for (const auto& r : config.ddos_protegidos.rangos) {
+                std::cout << " " << ::mldefender::firewall::nombre_categoria(r.cat) << "=" << r.texto;
+            }
+            std::cout << " (DROP de la cabeza DDoS con origen protegido = ALERTA_PROTEGIDO, nunca bloqueo)" << std::endl;
+        }
         std::cout << "[SOMBRA-DDOS] política por víctima " << (config.ddos_shadow.enabled ? "ACTIVA" : "DESACTIVADA")
                   << ": m=" << config.ddos_shadow.m << " k=" << config.ddos_shadow.k << " n=" << config.ddos_shadow.n
                   << " hold_windows=" << config.ddos_shadow.hold_windows << " resumen_s=" << config.ddos_shadow.resumen_s

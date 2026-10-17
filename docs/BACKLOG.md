@@ -7529,3 +7529,20 @@ de una vez (buffer local + una sola escritura, o logger con cerrojo).
 antes2 (DAY300): los resumenes [SOMBRA-DDOS] suman 8980 DROP y el FIN cuenta 8976; los 4 de la diferencia son
 de ts=17472 (el "primer DROP", ratio 3,3), anteriores al inicio del episodio (17473). Hipotesis NO verificada:
 la ventana tuvo menos de m=5 DROP, no fue positiva y el FIN no la incluye. Comprobar en DdosShadowPolicy.
+
+
+### DEBT-DEPLOY-TEMPLATES-001 — ABIERTA (vision de Alonso DAY300) [PROTEGIDOS-D300]
+Plantillas de despliegue por instalacion: cada instalacion tendra su propia tarea de despliegue (Jenkinsfile)
+escrita a partir de plantillas que aRGus provee (hoy solo existe una muy generica: todo on premise en la misma VM
+Vagrant). El script de despliegue debe calcular o pedir al admin los rangos protegidos (dmz, intranet, externos
+criticos) en lugar de dejar los valores del laboratorio. Objetivo: plantillas para despliegue distribuido real en
+maquinas fisicas, con un motor mas avanzado que Vagrant e imagen segura minima Debian por maquina; por ejemplo,
+sniffers en maquinas propias, una maquina mayor con dos o tres ml-detector dando servicio a varios sniffers, el
+firewall-acl-agent en la maquina a proteger de la DMZ, y la parte de grafo (Suricata, Zeek, Wazuh, Falco y Kuzu)
+en otras maquinas. Requiere hardware de pruebas. Poner especial atencion a los rangos protegidos en las plantillas.
+
+### DEBT-FW-PROTECTED-RANGES-001 — tandas 2a y 2b DAY300 [PROTEGIDOS-D300]
+2a (3c273162): ddos_protegidos.hpp y test_ddos_protegidos. Correccion: el test tiene 38 comprobaciones (medido),
+no 36 como dice el mensaje del commit. 2b: cableado en config y sombra (ALERTA_PROTEGIDO, el origen protegido no
+entra en el episodio), JSON con valores de laboratorio documentados y guia. Pendiente 2c (con el paso 3b): ipset de
+whitelist en hash:net cargado con los rangos protegidos y barrera en batch_processor (camino real).

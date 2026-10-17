@@ -9,6 +9,7 @@
 #include <chrono>
 #include <json/json.h>
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
+#include "firewall/ddos_protegidos.hpp"  // [PROTEGIDOS-D300]
 
 namespace mldefender::firewall {
 
@@ -209,6 +210,7 @@ struct FirewallAgentConfig {
     IrpConfig irp;                           // ADR-042 auto-isolate
     AutonomyConfig autonomy;   // DAY 155 — DEBT-FIREWALL-DENY-SELECTIVE-001
     DdosShadowParams ddos_shadow;  // [DDOS-SHADOW-D293] política por víctima en sombra
+    ::mldefender::firewall::RangosProtegidos ddos_protegidos;  // [PROTEGIDOS-D300] rangos protegidos de la cabeza DDoS
 
 
     bool is_valid() const { return true; }

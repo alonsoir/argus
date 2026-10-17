@@ -13,6 +13,7 @@
 #include <cstdint>
 #include <cstring>
 #include <ostream>
+#include <sstream>  // [PROTEGIDOS-D300]
 #include <string>
 #include <vector>
 

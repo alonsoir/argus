@@ -614,6 +614,18 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                           << " ALLOW=" << sombra_allow_ << " otro_o_vacio=" << sombra_otro_
                           << " ts_evento_min=" << sombra_ts_min_ << " ts_evento_max=" << sombra_ts_max_
                           << " victimas_activas=" << ddos_shadow_.victims() << std::endl;
+                {   // [PROTEGIDOS-D300] linea propia (no altera [SOMBRA-DDOS] resumen); alertas acumuladas
+                    const uint64_t* pa = prot_alertas_;
+                    std::cout << "[SOMBRA-DDOS] protegidos: alertas=" << (pa[1] + pa[2] + pa[3]) << " dmz=" << pa[1]
+                              << " intranet=" << pa[2] << " externos_criticos=" << pa[3]
+                              << " por_defecto=" << (config_.ddos_protegidos.por_defecto ? 1 : 0) << std::endl;
+                    if (config_.ddos_protegidos.por_defecto) {
+                        std::cerr << "[CONFIG-DEFAULT] ddos_protegidos: rigen los rangos privados por defecto (RFC 1918 + "
+                                     "fc00::/7 como intranet); configure los de ESTE despliegue (GUIA_OPERACIONES, "
+                                     "seccion DDOS-PROTEGIDOS)" << std::endl;
+                    }
+                    prot_detalle_ = 0;
+                }
                 {  // [TIMEBASE-D295] retraso sniffer->firewall y anomalias de tiempo del periodo
                     uint64_t total = 0;
                     std::ostringstream o;
@@ -684,6 +696,21 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
             }
         }
         const double ratio = nf2.has_ddos_embedded() ? static_cast<double>(nf2.ddos_embedded().victim_rate_ratio()) : 0.0;
+        {   // [PROTEGIDOS-D300] origen protegido: ALERTA_PROTEGIDO; no entra en el episodio ni se bloquea nunca
+            const auto cat = config_.ddos_protegidos.categoria_de(nf2.source_ip());
+            if (cat != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+                ++prot_alertas_[static_cast<std::size_t>(cat)];
+                if (prot_detalle_ < static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) {
+                    ++prot_detalle_;
+                    std::cout << "[SOMBRA-DDOS] ALERTA_PROTEGIDO origen=" << nf2.source_ip()
+                              << " categoria=" << ::mldefender::firewall::nombre_categoria(cat)
+                              << " victima=" << nf2.destination_ip() << " proto=" << nf2.protocol_number()
+                              << " ts_s=" << ts_s << " ratio=" << ratio << " p1=" << p1 << " modelo=" << modelo
+                              << " evento=" << event.event_id() << " (no se bloquea)" << std::endl;
+                }
+                return;
+            }
+        }
         ddos_shadow_.add_drop(nf2.destination_ip(), static_cast<uint32_t>(nf2.protocol_number()), ts_s, nf2.source_ip(),
                               p1, ratio, event.event_id(), modelo);
         if (!sombra_primer_drop_) {  // [DDOS-SHADOW-OBS-D293]
