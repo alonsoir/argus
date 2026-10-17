@@ -39,6 +39,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <csignal>
+#include <pthread.h>  // [SIGWAIT-D300]
+#include <cstring>    // [SIGWAIT-D300] strsignal, strerror
 #include <getopt.h>
 #include <iomanip>
 #include <random>
@@ -191,25 +193,25 @@ std::shared_ptr<sniffer::ThreadManager> thread_manager = nullptr;
 // SIGNAL HANDLERS
 // ============================================================================
 
-void signal_handler(int signum) {
-    // async-signal-safe: write() only (DEBT-SIGNAL-001)
-    static const char msg[] = "\n[Signal] Shutdown signal received\n";
-    write(STDERR_FILENO, msg, sizeof(msg) - 1);
-    (void)signum;
-    g_running = false;
-}
+// [SIGWAIT-D300] Senales de parada: se BLOQUEAN en el hilo principal antes de crear ningun hilo (la mascara
+// se hereda, asi que ningun hilo las recibe) y el hilo principal las espera con sigwait() en lugar de
+// sondear g_running. Sin manejador asincrono: el mensaje se escribe desde el hilo principal.
+// SIGHUP = parada ordenada [SNIFFER-STOP-D299] (tmux kill-session).
+sigset_t g_senales_parada;
 
 void setup_signal_handlers() {
-    struct sigaction sa;
-    sa.sa_handler = signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-
-    sigaction(SIGINT, &sa, nullptr);
-    sigaction(SIGTERM, &sa, nullptr);
-    sigaction(SIGHUP, &sa, nullptr);  // [SNIFFER-STOP-D299] tmux kill-session (SIGHUP) = parada ordenada
-
-    std::cout << "✅ Signal handlers configured (SIGINT, SIGTERM, SIGHUP)" << std::endl;
+    sigemptyset(&g_senales_parada);
+    sigaddset(&g_senales_parada, SIGINT);
+    sigaddset(&g_senales_parada, SIGTERM);
+    sigaddset(&g_senales_parada, SIGHUP);
+    const int rc = pthread_sigmask(SIG_BLOCK, &g_senales_parada, nullptr);
+    if (rc != 0) {
+        std::cerr << "[SIGWAIT] ERROR pthread_sigmask=" << rc << " (" << std::strerror(rc)
+                  << "): las senales de parada no quedan bloqueadas" << std::endl;
+        return;
+    }
+    std::cout << "✅ Senales de parada (SIGINT, SIGTERM, SIGHUP) bloqueadas en todos los hilos; "
+                 "el hilo principal las espera con sigwait" << std::endl;
 }
 
 // ============================================================================
@@ -807,8 +809,17 @@ if (encryption_seed.empty()) {
         }
         if (!ddos_reader_ptr) g_ddos_victim_board->borrar_arranque();  // [DDOS-ESTADO-ARRANQUE-D299] sin lector no hay foto: anomalia, no FRIO
 
-        while (g_running) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+        {   // [SIGWAIT-D300] espera la senal de parada sin sondeo
+            int sig = 0;
+            const int rc = sigwait(&g_senales_parada, &sig);
+            if (rc == 0) {
+                std::cout << "\n[Signal] " << strsignal(sig) << " (" << sig
+                          << ") recibida: parada ordenada" << std::endl;
+            } else {
+                std::cerr << "\n[Signal] sigwait fallo (" << rc << ", " << std::strerror(rc)
+                          << "): parada ordenada" << std::endl;
+            }
+            g_running = false;
         }
 
         // ============================================================================
