@@ -405,6 +405,16 @@ if(BUILD_TESTS)
     )
     add_test(NAME test_ip_cidr_validator COMMAND test_ip_cidr_validator)
 
+    # test_ddos_protegidos — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
+    add_executable(test_ddos_protegidos
+            tests/unit/test_ddos_protegidos.cpp
+    )
+    target_include_directories(test_ddos_protegidos
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_ddos_protegidos COMMAND test_ddos_protegidos)
+
     # test_ddos_shadow_policy — DAY293, política por víctima en sombra (header-only, propio CHECK) [DDOS-SHADOW-D293]
     add_executable(test_ddos_shadow_policy
             tests/unit/test_ddos_shadow_policy.cpp
