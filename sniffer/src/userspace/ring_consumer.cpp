@@ -320,6 +320,8 @@ bool RingBufferConsumer::start() {
 
     std::cout << "[INFO] Stopping Enhanced RingBufferConsumer..." << std::endl;
     should_stop_ = true;
+    { std::lock_guard<std::mutex> lk(parada_mtx_); }  // [PARADA-INMEDIATA-D300] sin despertar perdido
+    parada_cv_.notify_all();
 
     // ORDEN CORRECTO DE PARADA:
 
@@ -566,7 +568,7 @@ void RingBufferConsumer::stats_display_loop() {
               << stats_interval_seconds_ << "s)" << std::endl;
 
     while (!should_stop_) {
-        std::this_thread::sleep_for(std::chrono::seconds(stats_interval_seconds_));
+        if (espera_o_parada(std::chrono::seconds(stats_interval_seconds_))) break;  // [PARADA-INMEDIATA-D300]
 
         if (should_stop_) break;
 
@@ -1351,8 +1353,7 @@ void RingBufferConsumer::ransomware_processor_loop() {
               << RANSOMWARE_EXTRACTION_INTERVAL_SEC << "s extraction)" << std::endl;
 
     while (!should_stop_) {
-        std::this_thread::sleep_for(
-            std::chrono::seconds(RANSOMWARE_EXTRACTION_INTERVAL_SEC));
+        if (espera_o_parada(std::chrono::seconds(RANSOMWARE_EXTRACTION_INTERVAL_SEC))) break;  // [PARADA-INMEDIATA-D300]
 
         if (should_stop_) break;
 

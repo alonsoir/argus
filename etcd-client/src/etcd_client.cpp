@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <mutex>
+#include <condition_variable>  // [PARADA-INMEDIATA-D300]
 #include <stdexcept>
 #include <thread>
 #include <openssl/hmac.h>
@@ -52,6 +53,8 @@ struct EtcdClient::Impl {
     // Heartbeat thread
     std::thread heartbeat_thread_;
     std::atomic<bool> heartbeat_running_{false};
+    std::mutex hb_mtx_;               // [PARADA-INMEDIATA-D300] espera interrumpible del heartbeat
+    std::condition_variable hb_cv_;   // [PARADA-INMEDIATA-D300]
 
     // Constructor — ADR-013 PHASE 2 (DAY 98)
     explicit Impl(const Config& config)
@@ -99,9 +102,11 @@ struct EtcdClient::Impl {
                       << config_.heartbeat_interval_seconds << "s)" << std::endl;
 
             while (heartbeat_running_) {
-                std::this_thread::sleep_for(
-                    std::chrono::seconds(config_.heartbeat_interval_seconds)
-                );
+                {   // [PARADA-INMEDIATA-D300] espera interrumpible: la parada no espera al intervalo
+                    std::unique_lock<std::mutex> lk(hb_mtx_);
+                    if (hb_cv_.wait_for(lk, std::chrono::seconds(config_.heartbeat_interval_seconds),
+                                        [this] { return !heartbeat_running_.load(); })) break;
+                }
 
                 if (!heartbeat_running_) break;
 
@@ -119,6 +124,8 @@ struct EtcdClient::Impl {
     // Stop heartbeat thread
     void stop_heartbeat_thread() {
         if (heartbeat_running_.exchange(false)) {
+            { std::lock_guard<std::mutex> lk(hb_mtx_); }  // [PARADA-INMEDIATA-D300] sin despertar perdido
+            hb_cv_.notify_all();
             if (heartbeat_thread_.joinable()) {
                 heartbeat_thread_.join();
             }

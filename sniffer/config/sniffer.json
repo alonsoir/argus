@@ -447,6 +447,7 @@
     "feature_placement_strategy": "cost_benefit_optimization"
   },
   "monitoring": {
+    "_doc_stats_interval_seconds": "entero, rango [1, 3600], defecto 30. [PARADA-INMEDIATA-D300] Cada cuantos segundos escribe el sniffer el bloque ESTADISTICAS en su log. No afecta a la deteccion ni a la parada (la espera es interrumpible). Si falta, no es entero o esta fuera de rango: defecto con [CONFIG-DEFAULT].",
     "stats_interval_seconds": 30,
     "performance_tracking": true,
     "kernel_metrics": {

@@ -61,6 +61,8 @@ void RansomwareFeatureProcessor::stop() {
 
     std::cout << "[Ransomware] Stopping..." << std::endl;
     running_ = false;
+    { std::lock_guard<std::mutex> lk(parada_mtx_); }  // [PARADA-INMEDIATA-D300] sin despertar perdido
+    parada_cv_.notify_all();
 
     if (extraction_thread_.joinable()) {
         extraction_thread_.join();
@@ -144,7 +146,11 @@ void RansomwareFeatureProcessor::extraction_loop() {
     std::cout << "[Ransomware] Extraction thread started" << std::endl;
 
     while (running_) {
-        std::this_thread::sleep_for(std::chrono::seconds(extraction_interval_seconds_));
+        {   // [PARADA-INMEDIATA-D300] espera interrumpible: stop() no espera al intervalo
+            std::unique_lock<std::mutex> lk(parada_mtx_);
+            if (parada_cv_.wait_for(lk, std::chrono::seconds(extraction_interval_seconds_),
+                                    [this] { return !running_.load(); })) break;
+        }
 
         if (!running_) break;
 

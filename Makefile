@@ -650,7 +650,7 @@ sniffer-stop:
 	    sudo pkill -TERM -x sniffer; \
 	    for i in \$$(seq 1 $(SNIFFER_STOP_GRACE_S)); do pgrep -x sniffer >/dev/null || break; sleep 1; done; \
 	    if pgrep -x sniffer >/dev/null; then \
-	      echo '⚠️  sniffer no paró en $(SNIFFER_STOP_GRACE_S) s: SIGKILL (sin volcado de parada)'; \
+	      echo '⚠️  sniffer no paró en $(SNIFFER_STOP_GRACE_S) s: SIGKILL. Si en sniffer.log no consta el volcado de parada se restaurara el ultimo periodico'; \
 	      sudo pkill -KILL -x sniffer; \
 	    else echo '✅ sniffer parado de forma ordenada'; fi; \
 	  else echo '➖ sniffer no estaba en marcha'; fi; \

@@ -7452,3 +7452,41 @@ timeout de RECIDIVISM-D276); (3) conmutador del JSON del firewall que se restaur
 Decisión de Alonso: los defectos de la persistencia, el plazo de arranque y abs_pps son seguros, no
 óptimos. Más adelante se diseñarán experimentos para hallar los óptimos de cada instalación (dependen de su
 topología); los lanzarán los administradores, y aRGus dará el método y una guía.
+
+### DEBT-SNIFFER-SHUTDOWN-HANG-001 — RESUELTA DAY300 [BACKLOG-PARADA-D300]
+Causa medida: cuatro hilos dormian con sleep_for(30 s) no interrumpible y su parada hacia join():
+estadisticas y procesador ransomware (ring_consumer), extraccion ransomware (RansomwareFeatureProcessor) y
+heartbeat (etcd-client, este retenia el final de main). La parada tardaba 0-30 s y sniffer-stop (15 s)
+acababa en SIGKILL (2/2 en DAY299). Arreglo [PARADA-INMEDIATA-D300]: condition_variable::wait_for con
+predicado y notify_all tras poner la bandera (sin despertar perdido); intervalos sin cambios. Medido DAY300:
+3/3 paradas ordenadas (337, 1086, 448 ms), con [Cleanup], volcado de parada, All components stopped,
+Heartbeat thread stopped y Sniffer stopped correctly. Edad de restauracion exacta: -0,64 s frente a
+volcado_wall_ns del CSV y el arranque del proceso; el "volcado de hace 60 s" de DAY299 era el hueco real.
+Criterio aceptado: parada ordenada, sin SIGKILL, < 2 s. stats_interval_seconds validado con
+[CONFIG-DEFAULT]; aviso de sniffer-stop corregido (el volcado pudo hacerse antes del SIGKILL).
+
+### DEBT-SNIFFER-MAIN-LOOP-POLL-001 — ABIERTA [BACKLOG-PARADA-D300]
+El bucle principal (main.cpp, while g_running) sondea con sleep_for(1 s) fijo: la parada ve la senal con
+hasta 1 s de retraso (explica la dispersion 337-1086 ms). Arreglo propuesto: esperar la senal en lugar de
+sondear (sigwait/signalfd), que elimina el numero fijo en vez de llevarlo al JSON.
+
+### DEBT-SNIFFER-CONFIG-SILENT-DEFAULTS-001 — ABIERTA [BACKLOG-PARADA-D300]
+config_manager.cpp lee muchos campos con get(campo, defecto) sin aviso (p. ej.
+zmq.queue_management.queue_timeout_ms, processing.user_processing.queue_timeout_seconds,
+monitoring.performance_tracking). Incumple la regla del JSON (defecto validado + [CONFIG-DEFAULT] con
+campo, formato y limites). Migrar campo a campo al patron de timebase/kernel_space.
+
+### DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001 — ABIERTA (va con el interruptor de cabezas) [BACKLOG-PARADA-D300]
+RingBufferConsumer::stop() libera ransomware_processor_ (shutdown_ransomware_detection) ANTES de
+shutdown_consumers(): un consumidor aun vivo puede usar el procesador liberado. Ademas las estadisticas
+finales dicen "Ransomware Detection: DISABLED" porque shutdown pone ransomware_enabled_=false antes de
+print_stats (falso: estuvo activo toda la corrida). Ransomware se inicializa siempre, sin interruptor JSON.
+
+### DEBT-ETCD-CLIENT-DEAD-VARIANTS-001 — ABIERTA (higiene) [BACKLOG-PARADA-D300]
+etcd-client/src/etcd_client_base.cpp y etcd_client_manual.cpp estan trackeados pero no se compilan
+(CMakeLists solo usa etcd_client.cpp) y conservan el sleep_for del heartbeat; tambien
+etcd-client/include/etcd_client/etcd_client.hpp.day54_hmac_only. Borrar o documentar.
+
+### DEBT-LAB-GDB-PROVISION-001 — ABIERTA [BACKLOG-PARADA-D300]
+gdb no esta en el aprovisionamiento del defender (instalado a mano DAY300 para el volcado de pilas de
+d300_parada.sh). Anadir al Vagrantfile si se quiere tener siempre a mano para diagnostico.

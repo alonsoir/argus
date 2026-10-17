@@ -529,7 +529,25 @@ ProcessingConfig ConfigManager::parse_processing(const Json::Value& processing_j
 
 MonitoringConfig ConfigManager::parse_monitoring(const Json::Value& monitoring_json) {
     MonitoringConfig monitoring;
-    monitoring.stats_interval_seconds = monitoring_json.get("stats_interval_seconds", 30).asInt();
+    {   // [PARADA-INMEDIATA-D300] el JSON manda: entero [1, 3600] s, defecto 30; si falta o es invalido, defecto
+        // con [CONFIG-DEFAULT] y el sniffer arranca igual.
+        constexpr int kDef = 30, kMin = 1, kMax = 3600;
+        const Json::Value& v = monitoring_json["stats_interval_seconds"];
+        int x = kDef;
+        if (v.isNull()) {
+            std::cerr << "[CONFIG-DEFAULT] monitoring.stats_interval_seconds ausente -> defecto=" << kDef
+                      << " (entero, rango [" << kMin << ", " << kMax << "] s)" << std::endl;
+        } else if (!v.isInt()) {
+            std::cerr << "[CONFIG-DEFAULT] monitoring.stats_interval_seconds no es entero -> defecto=" << kDef
+                      << " (entero, rango [" << kMin << ", " << kMax << "] s)" << std::endl;
+        } else if (v.asInt() < kMin || v.asInt() > kMax) {
+            std::cerr << "[CONFIG-DEFAULT] monitoring.stats_interval_seconds=" << v.asInt()
+                      << " fuera de rango [" << kMin << ", " << kMax << "] -> defecto=" << kDef << std::endl;
+        } else {
+            x = v.asInt();
+        }
+        monitoring.stats_interval_seconds = x;
+    }
     monitoring.performance_tracking = monitoring_json.get("performance_tracking", true).asBool();
 
     // Parse kernel metrics
