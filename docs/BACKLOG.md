@@ -7546,3 +7546,27 @@ en otras maquinas. Requiere hardware de pruebas. Poner especial atencion a los r
 no 36 como dice el mensaje del commit. 2b: cableado en config y sombra (ALERTA_PROTEGIDO, el origen protegido no
 entra en el episodio), JSON con valores de laboratorio documentados y guia. Pendiente 2c (con el paso 3b): ipset de
 whitelist en hash:net cargado con los rangos protegidos y barrera en batch_processor (camino real).
+
+## Cierre DAY300 [BACKLOG-CIERRE-D300]
+
+### DEBT-FW-PROTECTED-RANGES-001 — SOMBRA HECHA DAY300
+E2E (.50 a 60 pps + .61 protegido a 30 pps, misma victima, 180 s): FIN solo .50 (10742 de 10800), 5371
+ALERTA_PROTEGIDO intranet, .61 y .51 0 DROP, identidad 16113 = 10742 + 5371 (diferencia 0). Pendiente 2c con el
+paso 3b: ipset de whitelist en hash:net (hoy hash:ip y whitelist.json vacio) cargado con los rangos protegidos y
+barrera en batch_processor.
+
+### DEBT-HEADS-SWITCH-001 — ABIERTA, rama propia tras el merge (decisiones de Alonso DAY300)
+Interruptor por JSON/etcd de cada cabeza (ddos, ransomware, fast-path y las demas), todas o ninguna, con aviso
+del estado en el log. Configuracion en etcd (un solo sitio) y activable en RUNTIME. Con todas apagadas: ningun
+calculo (tampoco fast-path), ninguna recomendacion del ml-detector y el firewall no actua sobre el ipset aunque
+dry_run este apagado. El sniffer sigue capturando y enviando su senal al grafo (solo se apaga la clasificacion de
+aRGus). El fast-path es una cabeza propia en el sniffer. Medido DAY300: ransomware se inicializa siempre sin
+interruptor; [ML-PHASE] muestra ransomware/traffic/internal calculando por evento; los intervalos de ransomware
+(RANSOMWARE_EXTRACTION_INTERVAL_SEC y extraction_interval_seconds_, 30 s fijos) pasan al JSON del bloque de la
+cabeza con la constante como respaldo; arreglar a la vez DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001 y el
+"Ransomware Detection: DISABLED" falso. Riesgo a medir antes de apagar ransomware: el TimeWindowAggregator de las
+features DDoS embebidas es el de la ruta ransomware (grieta B, DAY263).
+
+### Paso 3b — NOTA DE DISENO DAY300
+Medido: la sombra de ddos_v2 hace return antes de cualquier bloqueo (zmq_subscriber.cpp, [DDOS-SHADOW-D293]);
+hoy no existe el camino ddos_v2 -> ipset. El 3b empieza por el diseno con Alonso.
