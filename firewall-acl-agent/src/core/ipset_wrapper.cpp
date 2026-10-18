@@ -126,7 +126,8 @@ IPSetResult<void> IPSetWrapper::create_set(const IPSetConfig& config) {
     if (config.comment) {
         args.push_back("comment");
     }
-    if (config.type == IPSetType::HASH_NET) {
+    // [ARGUS-CADENA-D301] medido DAY301: ipset 7.17 rechaza 'netmask' en hash:net (rc 2). Solo hash:ip, y solo si < 32.
+    if (config.type == IPSetType::HASH_IP && config.netmask < 32) {
         args.push_back("netmask");
         args.push_back(std::to_string(config.netmask));
     }

@@ -13,6 +13,7 @@
 // Performance: iptables-restore is THE optimal way for batch operations
 //===----------------------------------------------------------------------===//
 
+#include <sstream>  // [ARGUS-CADENA-D301]
 #include "firewall/iptables_wrapper.hpp"
 #include "safe_exec.hpp"   // CWE-78: execv() sin shell (Consejo 8/8 DAY 128)
 
@@ -445,148 +446,109 @@ std::vector<std::string> IPTablesWrapper::list_rules(
 // High-Level Setup
 //===----------------------------------------------------------------------===//
 
+// [ARGUS-CADENA-D301] Reglas base: UNA cadena propia de aRGus con un unico salto desde INPUT (posicion 1).
+//   INPUT -I 1 -j <cadena>                                  (unico salto; los anteriores se retiran)
+//   <cadena> -m set --match-set <whitelist> src -j RETURN   ("protegido" = aRGus nunca lo bloquea: vuelve a INPUT y
+//                                                            siguen las reglas del admin; NUNCA ACCEPT)
+//   <cadena> -m set --match-set <blacklist> src -j DROP
+// La cadena es config.blacklist_chain (iptables.chain_name del JSON). Idempotente: crea o vacia la cadena y deja un
+// solo salto. Rate limiting: NO se crea (la version anterior aceptaba toda conexion TCP nueva y se creaba aunque
+// enable_rate_limiting fuera false); con enable_rate_limiting=true solo se avisa (DEBT-FW-RATELIMIT-ACCEPT-ALL-001).
+// Reglas heredadas en INPUT que usen los sets de aRGus: no se borran a ciegas; se avisa con la orden para retirarlas.
+// En dry_run se imprimen TODAS las ordenes (antes salia en la primera cadena).
 IPTablesResult<void> IPTablesWrapper::setup_base_rules(const FirewallConfig& config) {
     std::lock_guard<std::mutex> lock(mutex_);
-
-    // Create custom chains for ML Defender
-    std::vector<std::string> custom_chains = {
-        config.blacklist_chain,
-        config.whitelist_chain,
-        config.ratelimit_chain
+    const std::string& ch = config.blacklist_chain;
+    if (ch.empty() || !validate_chain_name(ch)) {
+        return IPTablesResult<void>(IPTablesError{
+            IPTablesErrorCode::INVALID_RULE, "Invalid aRGus chain name: '" + ch + "'"});
+    }
+    const std::string ipt = "/usr/sbin/iptables";
+    auto orden = [&ipt](const std::vector<std::string>& a) {
+        std::vector<std::string> v{ipt};
+        v.insert(v.end(), a.begin(), a.end());
+        return v;
+    };
+    auto texto = [&ipt](const std::vector<std::string>& a) {
+        std::string s = ipt;
+        for (const auto& x : a) {
+            s += " " + x;
+        }
+        return s;
+    };
+    auto run = [&](const std::vector<std::string>& a) -> bool {
+        if (m_dry_run) {
+            std::cout << "[DRY-RUN] " << texto(a) << std::endl;
+            return true;
+        }
+        auto [ret, output] = safe_exec_with_output(orden(a));
+        if (ret != 0) {
+            std::cerr << "[ARGUS-CADENA] ERROR rc=" << ret << " en: " << texto(a) << " :: " << output << std::endl;
+            return false;
+        }
+        return true;
+    };
+    auto fallo = [&ch](const std::string& que) {
+        return IPTablesResult<void>(IPTablesError{
+            IPTablesErrorCode::KERNEL_ERROR, "aRGus chain " + ch + ": " + que});
     };
 
-    for (const auto& chain : custom_chains) {
-        if (!chain.empty() && !chain_exists_unlocked(chain, IPTablesTable::FILTER)) {
-            // CWE-78 fix: setup_base_rules
-            if (!validate_chain_name(chain)) {
-                return IPTablesResult<void>(IPTablesError{
-                    IPTablesErrorCode::INVALID_RULE,
-                    "Invalid chain name: " + chain});
+    // 1. cadena: crear o vaciar
+    if (!m_dry_run && chain_exists_unlocked(ch, IPTablesTable::FILTER)) {
+        if (!run({"-t", "filter", "-F", ch})) return fallo("flush");
+    } else {
+        if (!run({"-t", "filter", "-N", ch})) return fallo("create");
+    }
+    // 2. reglas dentro de la cadena: whitelist RETURN, blacklist DROP
+    if (!config.whitelist_ipset.empty()) {
+        if (!run({"-t", "filter", "-A", ch, "-m", "set", "--match-set", config.whitelist_ipset, "src",
+                  "-m", "comment", "--comment", "argus-protegidos", "-j", "RETURN"})) return fallo("whitelist RETURN");
+    }
+    if (!config.blacklist_ipset.empty()) {
+        if (!run({"-t", "filter", "-A", ch, "-m", "set", "--match-set", config.blacklist_ipset, "src",
+                  "-m", "comment", "--comment", "argus-blacklist", "-j", "DROP"})) return fallo("blacklist DROP");
+    }
+    // 3. un unico salto desde INPUT
+    int retirados = 0;
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] " << texto({"-t", "filter", "-D", "INPUT", "-j", ch})
+                  << " (repetido hasta que no quede ninguno)" << std::endl;
+    } else {
+        for (int i = 0; i < 16; ++i) {
+            auto [r, o] = safe_exec_with_output(orden({"-t", "filter", "-D", "INPUT", "-j", ch}));
+            (void)o;
+            if (r != 0) break;
+            ++retirados;
+        }
+    }
+    if (!run({"-t", "filter", "-I", "INPUT", "1", "-j", ch})) return fallo("jump from INPUT");
+    // 4. reglas heredadas en INPUT que usen los sets de aRGus: aviso, no borrado a ciegas
+    if (!m_dry_run) {
+        auto [r, out] = safe_exec_with_output(orden({"-t", "filter", "-S", "INPUT"}));
+        if (r == 0) {
+            std::istringstream is(out);
+            std::string l;
+            while (std::getline(is, l)) {
+                const bool wl = !config.whitelist_ipset.empty() &&
+                                l.find("--match-set " + config.whitelist_ipset + " ") != std::string::npos;
+                const bool bl = !config.blacklist_ipset.empty() &&
+                                l.find("--match-set " + config.blacklist_ipset + " ") != std::string::npos;
+                if (wl || bl) {
+                    std::cerr << "[ARGUS-CADENA] AVISO: regla heredada en INPUT que usa un set de aRGus; retirela a mano "
+                                 "(cambie -A por -D): iptables " << l << std::endl;
+                }
             }
-            if (m_dry_run) {
-                std::cout << "[DRY-RUN] iptables -t filter -N " << chain << std::endl;
-                return IPTablesResult<void>();
-            }
-            auto [ret, output] = safe_exec_with_output(
-                {"/usr/sbin/iptables", "-t", "filter", "-N", chain});
-            if (ret != 0) {
-                return IPTablesResult<void>(IPTablesError{
-                    IPTablesErrorCode::KERNEL_ERROR,
-                    "Failed to create chain " + chain + ": " + output
-                });
-            }
         }
     }
-
-    // Setup whitelist rule (first - highest priority)
-    if (!config.whitelist_chain.empty() && !config.whitelist_ipset.empty()) {
-        IPTablesRule whitelist_rule;
-        whitelist_rule.table = IPTablesTable::FILTER;
-        whitelist_rule.chain = IPTablesChain::INPUT;
-        whitelist_rule.match_set = config.whitelist_ipset;
-        whitelist_rule.target = IPTablesTarget::ACCEPT;
-        whitelist_rule.comment = "ML Defender: Whitelist";
-        whitelist_rule.position = 1;  // Insert at top
-
-        // Unlock before calling add_rule (which will lock again)
-        mutex_.unlock();
-        auto result = add_rule(whitelist_rule);
-        mutex_.lock();
-
-        if (!result) {
-            return result;
-        }
+    // 5. rate limiting: no se crea
+    if (config.enable_rate_limiting) {
+        std::cerr << "[CONFIG-AVISO] iptables.enable_rate_limiting=true: NO se crea (la implementacion anterior aceptaba "
+                     "toda conexion TCP nueva); DEBT-FW-RATELIMIT-ACCEPT-ALL-001" << std::endl;
     }
-
-    // Setup blacklist rule (second - block malicious IPs)
-    if (!config.blacklist_chain.empty() && !config.blacklist_ipset.empty()) {
-        IPTablesRule blacklist_rule;
-        blacklist_rule.table = IPTablesTable::FILTER;
-        blacklist_rule.chain = IPTablesChain::INPUT;
-        blacklist_rule.match_set = config.blacklist_ipset;
-        blacklist_rule.target = IPTablesTarget::DROP;
-        blacklist_rule.comment = "ML Defender: Blacklist";
-        blacklist_rule.position = 2;  // After whitelist
-
-        mutex_.unlock();
-        auto result = add_rule(blacklist_rule);
-        mutex_.lock();
-
-        if (!result) {
-            return result;
-        }
-    }
-
-    // Setup rate limiting if configured
-    if (!config.ratelimit_chain.empty()) {
-        // Jump to rate limit chain
-        IPTablesRule jump_rule;
-        jump_rule.table = IPTablesTable::FILTER;
-        jump_rule.chain = IPTablesChain::INPUT;
-        jump_rule.target = IPTablesTarget::JUMP;
-        jump_rule.jump_target = config.ratelimit_chain;
-        jump_rule.comment = "ML Defender: Rate Limiting";
-        jump_rule.position = 3;  // After whitelist and blacklist
-
-        mutex_.unlock();
-        auto result = add_rule(jump_rule);
-        mutex_.lock();
-
-        if (!result) {
-            return result;
-        }
-
-        // Inside rate limit chain: limit new connections
-        IPTablesRule limit_rule;
-        limit_rule.table = IPTablesTable::FILTER;
-        limit_rule.custom_chain_name = config.ratelimit_chain;
-        limit_rule.protocol = IPTablesProtocol::TCP;
-        limit_rule.match_extensions = "-m conntrack --ctstate NEW -m recent --set";
-        limit_rule.target = IPTablesTarget::ACCEPT;
-        limit_rule.comment = "Mark new connections";
-
-        mutex_.unlock();
-        result = add_rule(limit_rule);
-        mutex_.lock();
-
-        if (!result) {
-            return result;
-        }
-
-        // Drop if too many connections from same IP
-        IPTablesRule drop_rule;
-        drop_rule.table = IPTablesTable::FILTER;
-        drop_rule.custom_chain_name = config.ratelimit_chain;
-        drop_rule.protocol = IPTablesProtocol::TCP;
-        drop_rule.match_extensions = "-m conntrack --ctstate NEW -m recent --update "
-                                    "--seconds 60 --hitcount 100";
-        drop_rule.target = IPTablesTarget::DROP;
-        drop_rule.comment = "Rate limit: Drop excessive connections";
-
-        mutex_.unlock();
-        result = add_rule(drop_rule);
-        mutex_.lock();
-
-        if (!result) {
-            return result;
-        }
-
-        // Return to main chain for other traffic
-        IPTablesRule return_rule;
-        return_rule.table = IPTablesTable::FILTER;
-        return_rule.custom_chain_name = config.ratelimit_chain;
-        return_rule.target = IPTablesTarget::RETURN;
-        return_rule.comment = "Return to INPUT";
-
-        mutex_.unlock();
-        result = add_rule(return_rule);
-        mutex_.lock();
-
-        if (!result) {
-            return result;
-        }
-    }
-
+    std::cout << "[ARGUS-CADENA] INPUT -j " << ch << " en posicion 1 (saltos previos retirados=" << retirados
+              << "); dentro: " << (config.whitelist_ipset.empty() ? "sin whitelist" : config.whitelist_ipset + " RETURN")
+              << ", " << (config.blacklist_ipset.empty() ? "sin blacklist" : config.blacklist_ipset + " DROP")
+              << (m_dry_run ? " (DRY-RUN: nada aplicado)" : "") << std::endl;
     return IPTablesResult<void>();
 }
 

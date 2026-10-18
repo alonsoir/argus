@@ -41,7 +41,7 @@ done
 paso "    visto=$visto tras $(( $(date +%s) - t0 )) s"
 
 paso "5/6 extrayendo lineas [CONFIG*], CRASH y FATAL"
-vagrant ssh -c "tail -n +$((N0 + 1)) $LOG" 2>/dev/null | grep -E "\[CONFIG(-DEFAULT|-AVISO)?\]|CRASH|FATAL" >> "$OUT"
+vagrant ssh -c "tail -n +$((N0 + 1)) $LOG" 2>/dev/null | grep -E "\[CONFIG(-DEFAULT|-AVISO)?\]|CRASH|FATAL|ARGUS-CADENA|DRY-RUN\] /usr/sbin/iptables" >> "$OUT"
 
 paso "6/6 make pipeline-stop"
 make pipeline-stop > logs/lab/$DIA/arranque_b1_pipeline_stop.txt 2>&1
