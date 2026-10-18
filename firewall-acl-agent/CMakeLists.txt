@@ -414,6 +414,16 @@ if(BUILD_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
     add_test(NAME test_ddos_protegidos COMMAND test_ddos_protegidos)
+# [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_ddos_protegidos)
+    # test_ddos_mitigacion — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
+    add_executable(test_ddos_mitigacion
+            tests/unit/test_ddos_mitigacion.cpp
+    )
+    target_include_directories(test_ddos_mitigacion
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_ddos_mitigacion COMMAND test_ddos_mitigacion)
 
     # test_ddos_shadow_policy — DAY293, política por víctima en sombra (header-only, propio CHECK) [DDOS-SHADOW-D293]
     add_executable(test_ddos_shadow_policy
