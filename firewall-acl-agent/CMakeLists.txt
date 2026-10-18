@@ -478,6 +478,20 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     add_test(NAME test_ipset_injection_integration COMMAND test_ipset_injection_integration)
     set_tests_properties(test_ipset_injection_integration PROPERTIES LABELS "e2e;root")
 
+    # [ARGUS-WHITELIST-D301] [ARGUS-CADENA-D301] reglas base de aRGus contra el kernel (requiere root; sin root sale 77 = Skipped)
+    add_executable(test_argus_cadena_root
+        tests/unit/test_argus_cadena_root.cpp
+    )
+    target_include_directories(test_argus_cadena_root PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_argus_cadena_root PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_argus_cadena_root COMMAND test_argus_cadena_root)
+    set_tests_properties(test_argus_cadena_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
+
     # test_recidivism_e2e — RECIDIVISM-D276 (INTEGRACION, requiere root+ipset -> VM, no make test normal)
     add_executable(test_recidivism_e2e
         tests/test_recidivism_e2e.cpp

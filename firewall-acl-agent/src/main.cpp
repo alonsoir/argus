@@ -612,6 +612,44 @@ int main(int argc, char** argv) {
         // IPTables Configuration (Day 52: uses ipsets.at("blacklist"))
         // ───────────────────────────────────────────────────────────────────
 
+        {   // [ARGUS-WHITELIST-D301] la whitelist refleja EXACTAMENTE los rangos protegidos (decision de Alonso DAY300)
+            if (config.ipsets.count("whitelist") > 0) {
+                const std::string wl = config.ipsets.at("whitelist").set_name;
+                std::vector<IPSetEntry> entradas;
+                size_t v6 = 0;
+                for (const auto& r : config.ddos_protegidos.rangos) {
+                    if (r.texto.find(':') != std::string::npos) {
+                        ++v6;
+                        std::cerr << "[CONFIG-AVISO] ddos_protegidos " << r.texto << ": IPv6 no cabe en la whitelist (family "
+                                     "inet; DEBT-FW-IPV6-SETS-001); la barrera del suscriptor si lo protege" << std::endl;
+                        continue;
+                    }
+                    entradas.push_back(IPSetEntry{r.texto});
+                }
+                if (config.operation.dry_run) {
+                    std::cout << "[DRY-RUN] ipset flush " << wl << std::endl;
+                    for (const auto& en : entradas) {
+                        std::cout << "[DRY-RUN] ipset add " << wl << " " << en.ip << std::endl;
+                    }
+                    std::cout << "[ARGUS-WHITELIST] " << wl << ": se vaciaria y cargaria con " << entradas.size()
+                              << " rangos protegidos IPv4 (IPv6 omitidos=" << v6 << ") (DRY-RUN: nada aplicado)" << std::endl;
+                } else {
+                    const bool vaciada = static_cast<bool>(ipset.flush_set(wl));
+                    const bool cargada = entradas.empty() || static_cast<bool>(ipset.add_batch(wl, entradas));
+                    if (vaciada && cargada) {
+                        std::cout << "[ARGUS-WHITELIST] " << wl << ": vaciada y cargada con " << entradas.size()
+                                  << " rangos protegidos IPv4 (IPv6 omitidos=" << v6 << ")" << std::endl;
+                    } else {
+                        std::cerr << "[ARGUS-WHITELIST] ERROR " << wl << ": flush=" << (vaciada ? "ok" : "FALLO")
+                                  << " carga=" << (cargada ? "ok" : "FALLO") << "; el agente sigue (la barrera del "
+                                     "suscriptor protege los rangos); revise el set con: sudo ipset list " << wl << std::endl;
+                    }
+                }
+            } else {
+                std::cerr << "[CONFIG-AVISO] ipsets.whitelist ausente: los rangos protegidos no se reflejan en el kernel; "
+                             "solo los protege la barrera del suscriptor" << std::endl;
+            }
+        }
         const auto& blacklist_ipset = config.ipsets.at("blacklist");
 
         FIREWALL_LOG_INFO("Configuring IPTables",
