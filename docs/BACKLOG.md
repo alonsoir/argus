@@ -7570,3 +7570,32 @@ features DDoS embebidas es el de la ruta ransomware (grieta B, DAY263).
 ### Paso 3b — NOTA DE DISENO DAY300
 Medido: la sombra de ddos_v2 hace return antes de cualquier bloqueo (zmq_subscriber.cpp, [DDOS-SHADOW-D293]);
 hoy no existe el camino ddos_v2 -> ipset. El 3b empieza por el diseno con Alonso.
+
+## DAY301 — paso 3b (mitigación real de ddos_v2), deudas nuevas
+
+- **DEBT-FW-ENFORCEMENT-POINT-001**: bloqueo solo en INPUT. Cuando el defender es pasarela (en el lab el client
+  ya enruta por él) hace falta FORWARD: lista de cadenas configurable en el JSON (INPUT/FORWARD), con defecto
+  INPUT y [CONFIG-DEFAULT].
+- **DEBT-FW-RATELIMIT-ACCEPT-ALL-001**: el rate limiting heredado aceptaba toda conexión TCP nueva (ACCEPT antes
+  del DROP) y se creaba aunque enable_rate_limiting=false. Desde DAY301 no se crea; con true solo avisa. Rehacer
+  sin ACCEPT, dentro de la cadena de aRGus, si se quiere.
+- **DEBT-FW-IPV6-SETS-001**: los sets son family inet; los rangos protegidos IPv6 (fc00::/7 del defecto) no van a
+  la whitelist del kernel (aviso [CONFIG-AVISO]); solo los protege la barrera del suscriptor. Sets inet6 gemelos.
+- **DEBT-FW-LOG-LEVEL-PERIODIC-DUMP-001**: los volcados periódicos de métricas salen con nivel CRASH
+  (context=periodic_metrics, is_running=1): confunden a quien filtre por gravedad.
+- **DEBT-FW-LEGACY-STEPS-001**: los pasos 5-8 antiguos de zmq_subscriber son inalcanzables y tienen
+  timeout_sec 300/600/3600 e ipset_name fijos en el código (el registro BLOCKED mentía sobre el timeout).
+  Retirarlos o reescribirlos en la tanda b2.
+- **DEBT-FW-SET-TYPE-EXISTING-001**: un set que ya existe en el kernel no cambia de tipo al cambiar set_type
+  (hay que destruirlo con el agente parado). Detectar el tipo real y avisar.
+- **DEBT-FW-CLEANUP-ON-STOP-001**: cleanup_rules existe pero main no la llama: las reglas sobreviven a la parada.
+  Hoy es deseable (los bloqueos siguen durante un reinicio); documentarlo en la guía y ofrecer limpieza explícita.
+- **DEBT-FW-E2E-FALSE-PASS-001** (amplía DEBT-FW-IPSET-TESTS-SIN-ROOT-001): los tests con GTEST_SKIP dentro de un
+  único binario salían como Passed sin root (0,02 s frente a 0,13 s con root). Patrón nuevo: sin gtest, salida
+  77 + SKIP_RETURN_CODE. El gate debe ejecutar test-firewall-e2e con root y fallar ante cualquier Skipped.
+- **DEBT-FW-MIN-DROPS-ORIGEN-TECHO-001**: el techo 100 de ddos_mitigacion.min_drops_origen es provisional; fijarlo
+  con la distribución de DROP por origen medida en el E2E.
+- **DEBT-FW-STRIKE-DEFAULTS-DUPLICATED-001**: la escalera por defecto vive en dos structs (RecidivismConfigNew y
+  RecidivismConfig) además del JSON; una sola fuente.
+- **Ampliación de CONFIG-SILENT-DEFAULTS**: el bloque ddos_shadow lee en silencio los valores válidos (solo avisa
+  de los defectos); ddos_mitigacion ya registra cada valor con [CONFIG].
