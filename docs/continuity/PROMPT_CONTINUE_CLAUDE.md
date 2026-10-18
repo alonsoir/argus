@@ -1,4 +1,3 @@
-'MDEOF'
 DAY302 — aRGus NDR. Rama: fix/ddos-etapa1-histeresis (sobre main 492580f6). NO mergear hasta EMECAS+++ verde.
 
 REGLAS: medir, no votar; predicción escrita antes de cada medida; si algo no da lo esperado, PARAR. Comandos
@@ -80,4 +79,3 @@ ddos_protegidos.hpp (categoria_de; saneado vive en detalle_protegidos), batch_pr
 sombra; resumen [SOMBRA-DDOS]), include/firewall/zmq_subscriber.hpp (Config), src/main.cpp (zmq_config.ddos_*,
 whitelist, recidivism), src/core/iptables_wrapper.cpp (setup_base_rules), config/firewall.json
 (ddos_mitigacion, recidivism, ipsets), tests/unit/test_argus_cadena_root.cpp, scripts/timebase/d301_*.
-MDEOF
