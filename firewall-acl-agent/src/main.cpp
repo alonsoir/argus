@@ -5,6 +5,7 @@
 // Day 52: Config-driven logging, ipsets-only (no singleton ipset)
 //===----------------------------------------------------------------------===//
 
+#include <sstream>  // [DDOS-MITIGACION-B1-D301]
 #include <iostream>
 #include <csignal>
 #include <atomic>
@@ -533,7 +534,19 @@ int main(int argc, char** argv) {
 
                     IPSetConfig ipset_config;
                     ipset_config.name = ipset_cfg.set_name;
-                    ipset_config.type = IPSetType::HASH_IP;
+                    // [DDOS-MITIGACION-B1-D301] el tipo sale del JSON (antes HASH_IP fijo: set_type se ignoraba)
+                    if (ipset_cfg.set_type == "hash:net") {
+                        ipset_config.type = IPSetType::HASH_NET;
+                    } else {
+                        if (ipset_cfg.set_type != "hash:ip") {
+                            std::cerr << "[CONFIG-DEFAULT] ipsets." << name << ".set_type '"
+                                      << ::mldefender::firewall::detalle_protegidos::saneado(ipset_cfg.set_type)
+                                      << "' no admitido (formato: hash:ip | hash:net): se usa hash:ip" << std::endl;
+                        }
+                        ipset_config.type = IPSetType::HASH_IP;
+                    }
+                    std::cout << "[CONFIG] ipsets." << name << ".set_type="
+                              << (ipset_config.type == IPSetType::HASH_NET ? "hash:net" : "hash:ip") << std::endl;
                     ipset_config.family = IPSetFamily::INET;
                     ipset_config.hashsize = ipset_cfg.hash_size;
                     ipset_config.maxelem = ipset_cfg.max_elements;
@@ -696,6 +709,29 @@ int main(int argc, char** argv) {
         static_cast<size_t>(config.recidivism.max_tracked_ips);
     recidivism_config.overflow_log_path = config.recidivism.overflow_log_path;
     processor.set_recidivism_config(recidivism_config);  // RECIDIVISM-D276
+    {   // [DDOS-MITIGACION-B1-D301] escalera efectiva al log y aviso de castigos de prueba
+        std::ostringstream esc;
+        for (size_t i = 0; i < recidivism_config.strike_durations_sec.size(); ++i) {
+            esc << (i ? ", " : "") << recidivism_config.strike_durations_sec[i];
+        }
+        std::cout << "[CONFIG] recidivism: enabled=" << (recidivism_config.enabled ? "true" : "false")
+                  << " strike_durations_sec=[" << esc.str() << "] max_penalty_after_strikes="
+                  << recidivism_config.max_penalty_after_strikes << " max_penalty_sec=" << recidivism_config.max_penalty_sec
+                  << " quiet_period_reset_sec=" << config.recidivism.quiet_period_reset_sec
+                  << " max_tracked_ips=" << recidivism_config.max_tracked_ips
+                  << " (valores pedidos; set_recidivism_config corrige con ERROR/WARN si hace falta)" << std::endl;
+        const auto cortos = ::mldefender::firewall::escalones_cortos(
+            recidivism_config.strike_durations_sec, static_cast<uint32_t>(config.ddos_mitigacion.aviso_castigo_corto_sec));
+        if (!cortos.empty()) {
+            std::ostringstream c;
+            for (size_t i = 0; i < cortos.size(); ++i) {
+                c << (i ? ", " : "") << cortos[i];
+            }
+            std::cerr << "[CONFIG-AVISO] recidivism.strike_durations_sec tiene escalones por debajo de "
+                         "ddos_mitigacion.aviso_castigo_corto_sec=" << config.ddos_mitigacion.aviso_castigo_corto_sec
+                      << " s: [" << c.str() << "] = castigo SOLO DE PRUEBAS, no de produccion" << std::endl;
+        }
+    }
         FIREWALL_LOG_INFO("Batch processor started successfully",
             "irp_auto_isolate", config.irp.auto_isolate,
             "irp_threshold",    config.irp.threat_score_threshold,

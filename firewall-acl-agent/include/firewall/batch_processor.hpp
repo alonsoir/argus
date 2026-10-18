@@ -57,7 +57,7 @@ struct StrikeState {
 struct RecidivismConfig {
     bool enabled{true};
     /// Duracion en segundos por nivel de reincidencia (indice 0 = 1a vez)
-    std::vector<uint32_t> strike_durations_sec{60, 300, 3600, 86400, 604800};
+    std::vector<uint32_t> strike_durations_sec{3600, 86400, 604800, 2073600};  // [DDOS-MITIGACION-B1-D301] 1 h, 1 d, 7 d, 24 d
     /// A partir de este numero de reincidencias se aplica max_penalty_sec.
     /// NUNCA bloqueo permanente (DAY277-NEVER-PERMANENT): las IPs de botnets
     /// suelen ser victimas (equipos comprometidos, CGNAT compartido). El drop

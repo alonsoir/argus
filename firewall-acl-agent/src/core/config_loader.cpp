@@ -191,6 +191,35 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
         }
         config.ddos_shadow = d;
     }
+    {   // [DDOS-MITIGACION-B1-D301] mitigacion real de la cabeza ddos_v2 (paso 3b)
+        ::mldefender::firewall::DdosMitigacionParams dm;
+        const Json::Value s = root.isMember("ddos_mitigacion") ? root["ddos_mitigacion"] : Json::Value(Json::nullValue);
+        if (!s.isObject()) {
+            std::cerr << "[CONFIG-DEFAULT] ddos_mitigacion ausente o no es un objeto: habilitada=false (sombra pura) "
+                         "min_drops_origen=1 aviso_castigo_corto_sec=3600 max_origenes=100000" << std::endl;
+        } else {
+            auto get_int = [&s](const char* name, int def, int lo, int hi) -> int {
+                if (s.isMember(name) && s[name].isInt() && s[name].asInt() >= lo && s[name].asInt() <= hi) {
+                    std::cout << "[CONFIG] ddos_mitigacion." << name << "=" << s[name].asInt() << std::endl;
+                    return s[name].asInt();
+                }
+                std::cerr << "[CONFIG-DEFAULT] ddos_mitigacion." << name << " ausente, no entero o fuera de rango (entero en ["
+                          << lo << ", " << hi << "]): se usa " << def << std::endl;
+                return def;
+            };
+            if (s.isMember("habilitada") && s["habilitada"].isBool()) {
+                dm.habilitada = s["habilitada"].asBool();
+                std::cout << "[CONFIG] ddos_mitigacion.habilitada=" << (dm.habilitada ? "true" : "false") << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] ddos_mitigacion.habilitada ausente o no booleano (formato true|false): "
+                             "se usa false (sombra pura)" << std::endl;
+            }
+            dm.min_drops_origen = get_int("min_drops_origen", 1, 1, 100);
+            dm.aviso_castigo_corto_sec = get_int("aviso_castigo_corto_sec", 3600, 1, 2147483);
+            dm.max_origenes = get_int("max_origenes", 100000, 1, 10000000);
+        }
+        config.ddos_mitigacion = dm;
+    }
     {   // [PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001: rangos protegidos de la cabeza DDoS
         const Json::Value p = root.isMember("ddos_protegidos") ? root["ddos_protegidos"] : Json::Value(Json::nullValue);
         std::vector<std::string> dmz, intranet, externos;
@@ -402,8 +431,26 @@ BatchProcessorConfigNew ConfigLoader::parse_batch_processor(const Json::Value& j
 RecidivismConfigNew ConfigLoader::parse_recidivism(const Json::Value& json) {
     RecidivismConfigNew config;
     config.enabled = get_optional<bool>(json, "enabled", true);
-    if (json.isMember("strike_durations_sec")) {
-        config.strike_durations_sec = parse_int_array(json["strike_durations_sec"]);
+    {   // [DDOS-MITIGACION-B1-D301] escalera validada: lista no vacia de enteros en [1, 2147483] s; si no, defecto de produccion
+        const Json::Value& a = json["strike_durations_sec"];
+        bool ok = json.isMember("strike_durations_sec") && a.isArray() && !a.empty();
+        std::vector<int> v;
+        if (ok) {
+            for (const auto& e : a) {
+                if (!e.isInt() || e.asInt() < 1 || e.asInt() > 2147483) {
+                    ok = false;
+                    break;
+                }
+                v.push_back(e.asInt());
+            }
+        }
+        if (ok) {
+            config.strike_durations_sec = v;
+        } else {
+            std::cerr << "[CONFIG-DEFAULT] recidivism.strike_durations_sec ausente, vacia o con valores fuera de rango (lista "
+                         "no vacia de enteros en [1, 2147483] s): se usa la escalera de produccion [3600, 86400, 604800, 2073600]"
+                      << std::endl;
+        }
     }
     // DAY277-NEVER-PERMANENT: clave renombrada (ya no existe bloqueo permanente).
     // La antigua se acepta como fallback para no romper configs desplegadas.

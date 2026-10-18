@@ -4,6 +4,7 @@
 // config.hpp - Complete Configuration Structures (JSON is LAW)
 //===----------------------------------------------------------------------===//
 
+#include "firewall/ddos_mitigacion.hpp"  // [DDOS-MITIGACION-B1-D301]
 #include <string>
 #include <vector>
 #include <chrono>
@@ -86,7 +87,7 @@ struct BatchProcessorConfigNew {
 //===----------------------------------------------------------------------===//
 struct RecidivismConfigNew {
     bool enabled = true;
-    std::vector<int> strike_durations_sec = {60, 300, 3600, 86400, 604800};
+    std::vector<int> strike_durations_sec = {3600, 86400, 604800, 2073600};  // [DDOS-MITIGACION-B1-D301] 1 h, 1 d, 7 d, 24 d
     int max_penalty_after_strikes = 6;   // DAY277-NEVER-PERMANENT (antes permanent_after_strikes)
     int max_penalty_sec = 2073600;       // 24 dias; techo ipset medido 2147483
     int quiet_period_reset_sec = 259200;
@@ -211,6 +212,7 @@ struct FirewallAgentConfig {
     AutonomyConfig autonomy;   // DAY 155 — DEBT-FIREWALL-DENY-SELECTIVE-001
     DdosShadowParams ddos_shadow;  // [DDOS-SHADOW-D293] política por víctima en sombra
     ::mldefender::firewall::RangosProtegidos ddos_protegidos;  // [PROTEGIDOS-D300] rangos protegidos de la cabeza DDoS
+    ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  // [DDOS-MITIGACION-B1-D301] mitigacion real de ddos_v2
 
 
     bool is_valid() const { return true; }

@@ -36,6 +36,13 @@
     "intranet": ["192.168.100.61/32"],
     "externos_criticos": []
   },
+  "ddos_mitigacion": {
+    "_doc": "[DDOS-MITIGACION-B1-D301] Mitigacion REAL de la cabeza ddos_v2 (paso 3b): bloquea en el ipset blacklist la IP de ORIGEN de los DROP de ddos_v2 solo mientras su victima {dst, proto} esta en episodio (INICIO..FIN de ddos_shadow); nunca la victima ni un origen protegido (ddos_protegidos). Doble llave: solo bloquea si operation.dry_run=false Y habilitada=true; con dry_run=true se registra lo que se haria. Un episodio = un strike de reincidencia (recidivism); mientras el origen siga atacando en el mismo episodio el bloqueo se renueva sin sumar strike y, tras su ultimo DROP, corre el escalon entero. habilitada: true|false (defecto false = sombra pura). min_drops_origen: entero en [1, 100], DROP del origen en el episodio antes de bloquearlo (defecto 1; techo PROVISIONAL, se fijara con la medida del E2E). aviso_castigo_corto_sec: entero en [1, 2147483], todo escalon de recidivism.strike_durations_sec por debajo se aplica pero se avisa como castigo SOLO DE PRUEBAS (defecto 3600). max_origenes: entero en [1, 10000000], origenes seguidos a la vez entre todas las victimas; por encima un origen nuevo se bloquea con el escalon vigente sin sumar strike y se cuenta (defecto 100000). Campo ausente o invalido: defecto con [CONFIG-DEFAULT] y el agente arranca igual; cada valor valido se registra con [CONFIG].",
+    "habilitada": false,
+    "min_drops_origen": 1,
+    "aviso_castigo_corto_sec": 3600,
+    "max_origenes": 100000
+  },
   "_comment_transport": "NEW FOR DAY 23: Decryption + Decompression of incoming data from ml-detector",
   "transport": {
     "compression": {
@@ -101,7 +108,8 @@
     },
     "whitelist": {
       "set_name": "ml_defender_whitelist",
-      "set_type": "hash:ip",
+      "_doc_set_type": "[DDOS-MITIGACION-B1-D301] hash:ip (hosts) o hash:net (redes CIDR); otro valor = hash:ip con [CONFIG-DEFAULT]. La whitelist es hash:net para alojar los rangos protegidos (ddos_protegidos). Un set que YA existe en el kernel no cambia de tipo: con el agente parado, sudo ipset destroy <set_name>.",
+      "set_type": "hash:net",
       "hash_size": 512,
       "max_elements": 500,
       "timeout": 0,
@@ -132,7 +140,8 @@
   "recidivism": {
     "_comment": "RECIDIVISM-D276 -- escalado de castigo por reincidencia, vive en firewall no en los detectores",
     "enabled": true,
-    "strike_durations_sec": [60, 300, 3600, 86400, 604800],
+    "_doc_strike_durations_sec": "[DDOS-MITIGACION-B1-D301] Escalera de castigo en segundos por strike (indice 0 = 1.er strike). Lista no vacia de enteros en [1, 2147483] (techo medido de ipset); nunca 0 ni permanente. Defecto de produccion [3600, 86400, 604800, 2073600] = 1 h, 1 dia, 7 dias, 24 dias (decision de Alonso DAY301: el castigo debe durar mas que la rafaga y dar tiempo al admin y a las autoridades para investigar). Ausente o invalida: defecto con [CONFIG-DEFAULT]. Los escalones por debajo de ddos_mitigacion.aviso_castigo_corto_sec se aplican pero se avisan con [CONFIG-AVISO]: solo pruebas.",
+    "strike_durations_sec": [3600, 86400, 604800, 2073600],
     "max_penalty_after_strikes": 6,
     "max_penalty_sec": 2073600,
     "_comment_max_penalty": "DAY277: NUNCA permanente. 2073600 s = 24 dias; techo ipset medido 2147483 s. Drop permanente = accion manual del admin",
