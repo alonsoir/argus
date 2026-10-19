@@ -747,6 +747,7 @@ int main(int argc, char** argv) {
         static_cast<size_t>(config.recidivism.max_tracked_ips);
     recidivism_config.overflow_log_path = config.recidivism.overflow_log_path;
     processor.set_recidivism_config(recidivism_config);  // RECIDIVISM-D276
+    processor.set_rangos_protegidos(config.ddos_protegidos);  // [DDOS-MITIGACION-B2-D302] barrera (2 puertas)
     {   // [DDOS-MITIGACION-B1-D301] escalera efectiva al log y aviso de castigos de prueba
         std::ostringstream esc;
         for (size_t i = 0; i < recidivism_config.strike_durations_sec.size(); ++i) {
@@ -810,6 +811,15 @@ int main(int argc, char** argv) {
         // [DDOS-SHADOW-D293] política por víctima en sombra (solo registra)
         zmq_config.ddos_shadow = config.ddos_shadow;
         zmq_config.ddos_protegidos = config.ddos_protegidos;  // [PROTEGIDOS-D300]
+        zmq_config.ddos_mitigacion = config.ddos_mitigacion;  // [DDOS-MITIGACION-B2-D302]
+        zmq_config.dry_run = config.operation.dry_run;        // [DDOS-MITIGACION-B2-D302] 1.a llave
+        zmq_config.ddos_escalones_cortos = ::mldefender::firewall::escalones_cortos(
+            recidivism_config.strike_durations_sec, static_cast<uint32_t>(config.ddos_mitigacion.aviso_castigo_corto_sec));
+        std::cout << "[DDOS-MITIGACION] modo: "
+                  << (!config.ddos_mitigacion.habilitada ? "DESHABILITADA (sombra pura, no se llama a la mitigacion)"
+                      : (config.operation.dry_run ? "DRY_RUN (simula; solo resumen periodico)"
+                                                  : "ACTIVA (bloquea en el ipset; una linea por accion)"))
+                  << std::endl;
         {
             std::cout << "[SOMBRA-DDOS] rangos protegidos ("
                       << (config.ddos_protegidos.por_defecto ? "DEFECTO RFC 1918 + fc00::/7" : "JSON") << "):";

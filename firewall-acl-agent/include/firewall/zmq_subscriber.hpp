@@ -41,6 +41,7 @@
 #include <chrono>  // [DDOS-SHADOW-OBS-D293]
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
 #include "firewall/ddos_protegidos.hpp"  // [PROTEGIDOS-D300]
+#include "firewall/ddos_mitigacion.hpp"  // [DDOS-MITIGACION-B2-D302]
 #include "firewall/timebase_lite.hpp"  // [TIMEBASE-D295]
 #include "firewall/seq_tracker.hpp"  // [TIMEBASE-SEQ-D297]
 #include "firewall/batch_processor.hpp"
@@ -123,6 +124,9 @@ public:
         std::string crypto_token;        ///< Decryption key (hex)
         ::mldefender::firewall::DdosShadowParams ddos_shadow;  ///< [DDOS-SHADOW-D293] política por víctima en sombra
         ::mldefender::firewall::RangosProtegidos ddos_protegidos;  ///< [PROTEGIDOS-D300] rangos protegidos
+        ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  ///< [DDOS-MITIGACION-B2-D302] mitigacion real
+        std::vector<uint32_t> ddos_escalones_cortos;  ///< [DDOS-MITIGACION-B2-D302] escalones de prueba (aviso periodico)
+        bool dry_run = true;  ///< [DDOS-MITIGACION-B2-D302] copia de operation.dry_run (1.a llave); defecto el seguro
 
         /**
          * @brief Default configuration
@@ -363,6 +367,15 @@ private:
     bool sombra_primer_drop_ = false;
     uint64_t prot_alertas_[4] = {};  // [PROTEGIDOS-D300] ALERTA_PROTEGIDO acumuladas por CategoriaProtegida
     uint64_t prot_detalle_ = 0;      // [PROTEGIDOS-D300] lineas de detalle del periodo (tope anomalias_detalle_max)
+    ::mldefender::firewall::DdosMitigacion ddos_mitigacion_{config_.ddos_mitigacion};  ///< [DDOS-MITIGACION-B2-D302]
+    // [DDOS-MITIGACION-B2-D302] contadores del periodo de resumen y acumulados (solo hilo receptor)
+    uint64_t mit_bloquear_ = 0;
+    uint64_t mit_renovar_ = 0;
+    uint64_t mit_esperar_ = 0;
+    uint64_t mit_protegido_ = 0;
+    uint64_t mit_invalida_ = 0;
+    uint64_t mit_bloquear_total_ = 0;
+    uint64_t mit_renovar_total_ = 0;
     // [TIMEBASE-D295] validacion de time_context y retraso sniffer->firewall (contrato temporal v1).
     // Todo evento anomalo queda FUERA de las ventanas: puede ser un fallo nuestro, un productor sin contrato o un
     // componente comprometido; se registra para estudiarlo, nunca se castiga a la IP del paquete.
