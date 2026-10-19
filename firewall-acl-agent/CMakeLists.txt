@@ -341,6 +341,7 @@ if(BUILD_TESTS)
             tests/unit/test_comment_validator.cpp
             tests/unit/test_safe_exec.cpp
             tests/unit/test_batch_processor_recidivism.cpp   # ← RECIDIVISM-D276
+            tests/unit/test_batch_processor_episodio.cpp     # ← [DDOS-MITIGACION-B2-D302]
             tests/test_globals_stub.cpp
     )
 

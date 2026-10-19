@@ -39,6 +39,7 @@
 #include <functional>
 
 #include <optional>  // DAY277-NEVER-PERMANENT
+#include "firewall/ddos_protegidos.hpp"  // [DDOS-MITIGACION-B2-D302] barrera de protegidos
 
 namespace mldefender::firewall {
 
@@ -178,6 +179,15 @@ struct BatchProcessorMetrics {
 ///
 /// Performance: Designed for 100K+ detections/sec with sub-millisecond latency.
 ///
+/// [DDOS-MITIGACION-B2-D302] Resultado de encolar un origen de ddos_v2 por episodio
+/// (BLOQUEAR = un strike; RENOVAR = escalon vigente sin strike).
+struct ResultadoEpisodio {
+    enum class Estado : uint8_t { ENCOLADO = 0, PROTEGIDO = 1, IP_INVALIDA = 2 };
+    Estado estado = Estado::ENCOLADO;
+    std::optional<uint32_t> timeout_sec;  ///< nullopt = timeout por defecto del set (reincidencia deshabilitada)
+    uint32_t strikes = 0;                 ///< strikes del origen tras la operacion
+};
+
 class BatchProcessor {
 public:
     /// Constructor
@@ -261,6 +271,23 @@ public:
     /// lo llaman sin concurrencia.
     std::optional<uint32_t> compute_penalty_timeout(const std::string& ip);
 
+    /// [DDOS-MITIGACION-B2-D302] Escalon vigente de la IP SIN sumar strike: sin estado (o con la calma
+    /// cumplida) = escalon 0; nullopt si la reincidencia esta deshabilitada. Misma formula que
+    /// compute_penalty_timeout. Requiere mutex_ tomado (encolar_episodio; tests sin concurrencia).
+    std::optional<uint32_t> escalon_vigente(const std::string& ip) const;
+    /// [DDOS-MITIGACION-B2-D302] BLOQUEAR del episodio: UN strike (compute_penalty_timeout) y a la cola con
+    /// ese timeout. Barrera: IP invalida o protegida no entra (sin strike). Toma mutex_.
+    ResultadoEpisodio bloquear_episodio(const std::string& ip);
+    /// [DDOS-MITIGACION-B2-D302] RENOVAR: escalon vigente SIN strike; actualiza last_seen (decision de Alonso
+    /// DAY302: el pipeline ha visto actuar a la IP). Misma barrera. Toma mutex_.
+    ResultadoEpisodio renovar_episodio(const std::string& ip);
+    /// [DDOS-MITIGACION-B2-D302] Rangos que NUNCA entran en la blacklist (vacio = sin barrera). Toma mutex_.
+    void set_rangos_protegidos(const RangosProtegidos& rangos);
+    /// [DDOS-MITIGACION-B2-D302] Rechazos de la barrera (entrada + flush) desde el arranque. Toma mutex_.
+    uint64_t rechazos_protegidos() const;
+    /// [DDOS-MITIGACION-B2-D302] Latido: flush si toca por tamano o por tiempo. Devuelve IPs enviadas.
+    size_t flush_si_toca();
+
     //===------------------------------------------------------------------===//
     // Metrics and Monitoring
     //===------------------------------------------------------------------===//
@@ -310,6 +337,10 @@ private:
     /// flush fallido la reutilizan (no suman strikes). Se vacia con pending_ips_.
     /// Guardado por mutex_.
     std::unordered_map<std::string, std::optional<uint32_t>> pending_penalty_;
+    RangosProtegidos rangos_protegidos_;     ///< [DDOS-MITIGACION-B2-D302] barrera; guardado por mutex_
+    uint64_t rechazos_protegidos_{0};        ///< [DDOS-MITIGACION-B2-D302] guardado por mutex_
+    /// [DDOS-MITIGACION-B2-D302] comun a bloquear_episodio / renovar_episodio
+    ResultadoEpisodio encolar_episodio(const std::string& ip, bool nuevo_strike);
     std::chrono::steady_clock::time_point last_flush_;  ///< Last flush timestamp
 
     // Thread safety

@@ -175,9 +175,9 @@ TEST_F(RecidivismTest, EmptyDurationsDoesNotCrash) {
 }
 
 // DAY277-H6: reintentos de un flush fallido NO suman strikes.
-// En dry_run el set no existe -> add_batch devuelve SET_NOT_FOUND (medido en
-// ipset_wrapper.cpp: set_exists_unlocked va antes del dry_run) -> flush falla
-// y la IP sigue pendiente. Con el bug: 5 flushes = 5 strikes -> siguiente = 3600.
+// [DRYRUN-ADD-BATCH-D302] el fallo ya no es accidental (antes: SET_NOT_FOUND porque set_exists_unlocked
+// iba antes del dry_run). Ahora se PROVOCA: una IP mal formada en el lote -> INVALID_IP_FORMAT (validacion,
+// tambien en dry_run) -> flush falla y el lote sigue pendiente. Con el bug: 5 flushes = 5 strikes -> 3600.
 TEST_F(RecidivismTest, FailedFlushRetriesDoNotInflateStrikes) {
     RecidivismConfig cfg;
     cfg.strike_durations_sec = {60, 300, 3600};
@@ -186,10 +186,11 @@ TEST_F(RecidivismTest, FailedFlushRetriesDoNotInflateStrikes) {
     processor_->set_recidivism_config(cfg);
 
     processor_->add_ip("198.51.100.77");
+    processor_->add_ip("no-es-una-ip");  // [DRYRUN-ADD-BATCH-D302] fallo provocado (DEBT-FW-BATCH-INVALID-IP-POISON-001)
     for (int i = 0; i < 5; ++i) {
         processor_->flush();
     }
-    ASSERT_EQ(processor_->get_pending_count(), 1u)
+    ASSERT_EQ(processor_->get_pending_count(), 2u)
         << "el flush no fallo: el test no reproduce el reintento";
 
     // Una deteccion = un strike. La siguiente llamada debe ser el strike 2.
