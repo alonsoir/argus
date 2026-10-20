@@ -122,7 +122,9 @@ CMAKE_FLAGS_ASAN := -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                     -DCMAKE_SHARED_LINKER_FLAGS="$(PROFILE_ASAN_LD)"
 
 # Default profile (can be overridden: make PROFILE=tsan all)
-PROFILE ?= debug
+# [ARGUS-PROFILE-D303] defecto production (decision de Alonso DAY303: compilar y probar siempre en
+# produccion). Debug, tsan y asan siguen disponibles con PROFILE=... explicito.
+PROFILE ?= production
 CMAKE_FLAGS := $(CMAKE_FLAGS_$(shell echo $(PROFILE) | tr a-z A-Z))
 VERBOSE ?=
 FORCE_ALL_HEADS ?=
@@ -163,8 +165,8 @@ help:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "📋 Build Profiles (PROFILE=name):"
-	@echo "  debug       - Debug symbols (-g -O0) [DEFAULT] — desarrollo diario"
-	@echo "  production  - Optimized (-O3, LTO, march=native) — ODR check + benchmarks FEDER"
+	@echo "  debug       - Debug symbols (-g -O0) — depuracion a mano (PROFILE=debug)"
+	@echo "  production  - Optimized (-O3, LTO, march=native) [DEFAULT] — ODR check + benchmarks FEDER"
 	@echo "  tsan        - ThreadSanitizer (-fsanitize=thread) — race conditions"
 	@echo "  asan        - AddressSanitizer (-fsanitize=address,undefined) — memory errors + UB"
 	@echo "  NOTE: PROFILE=production activa -flto → ODR verification cross-module (P0 bloqueante)"
@@ -724,7 +726,7 @@ rag-ingester-start:
 	@echo "🧹 Limpiando SQLite lock anterior (si existe)..."
 	@vagrant ssh -c "rm -f /vagrant/shared/indices/metadata.db-wal /vagrant/shared/indices/metadata.db-shm || true"
 	@echo "Ejecución desde la raíz del componente para resolver paths relativos del config..."
-	@vagrant ssh -c "tmux new-session -d -s rag-ingester 'mkdir -p /vagrant/logs/lab && cd /vagrant/rag-ingester && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./build-debug/rag-ingester /etc/ml-defender/rag-ingester/rag-ingester.json >> /vagrant/logs/lab/rag-ingester.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s rag-ingester 'mkdir -p /vagrant/logs/lab && cd /vagrant/rag-ingester && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib $(RAG_INGESTER_BUILD_DIR)/rag-ingester /etc/ml-defender/rag-ingester/rag-ingester.json >> /vagrant/logs/lab/rag-ingester.log 2>&1'"
 	@sleep 2
 
 rag-ingester: proto etcd-client-build crypto-transport-build plugin-loader-build
@@ -998,7 +1000,7 @@ set-build-profile:
 # 4. sign-plugins    → firma Ed25519 (ADR-025)
 # 5. test-provision-1 → CI gate PHASE 3
 # 6. pipeline-start  → arranca los 6 componentes
-pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install
+pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install tools
 
 tools: proto etcd-client-build crypto-transport-build
 	@echo ""
@@ -1316,6 +1318,9 @@ test: test-all
 # emecas++: emecas + 3 Actos enterprise (Vault, rotación, fault injection)
 # Decisión arquitectura: targets anidados (opción C, 8/8 Consejo)
 # ============================================================================
+# [ARGUS-GATE-EMECAS-D303] tras test-all, la puerta del firewall con root: test-firewall-e2e (falla con
+# cualquier test saltado o una ejecucion de gtest de 0 tests) y test-firewall-perf (da numeros del
+# entorno; falla solo si la medida es invalida). Heredan el PROFILE de la corrida: make emecas+++ PROFILE=production
 emecas:
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -1325,6 +1330,8 @@ emecas:
 	vagrant up defender client suricata
 	$(MAKE) bootstrap
 	$(MAKE) test-all
+	$(MAKE) test-firewall-e2e
+	$(MAKE) test-firewall-perf
 	$(MAKE) test-e2e-synthetic
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -1398,7 +1405,7 @@ test-e2e-synthetic-full:
 	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
 	@echo "── Inyectando 100 eventos vía synthetic_sniffer_injector ──"
 	@vagrant ssh -c "tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s e2e-sniffer-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_sniffer_injector 100 10 > /vagrant/logs/lab/e2e-sniffer-injector.log 2>&1; tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true'"
+	@vagrant ssh -c "tmux new-session -d -s e2e-sniffer-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib $(TOOLS_BUILD_DIR)/synthetic_sniffer_injector 100 10 > /vagrant/logs/lab/e2e-sniffer-injector.log 2>&1; tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true'"
 	@echo "   Esperando fin de inyeccion (~20s)..."
 	@vagrant ssh -c "timeout 60 bash -c 'until grep -q \"Injection complete\" /vagrant/logs/lab/e2e-sniffer-injector.log 2>/dev/null; do sleep 1; done'"
 	@vagrant ssh -c "tail -3 /vagrant/logs/lab/e2e-sniffer-injector.log"
@@ -1429,7 +1436,7 @@ test-e2e-synthetic-firewall:
 	@sleep 2
 	@vagrant ssh -c "truncate -s 0 /vagrant/logs/lab/firewall-agent.log"
 	@echo "── Arrancando injector primero (PUB bind a :5572) ──"
-	@vagrant ssh -c "tmux new-session -d -s e2e-ml-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_ml_output_injector 300 5 > /vagrant/logs/lab/e2e-ml-injector.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s e2e-ml-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib $(TOOLS_BUILD_DIR)/synthetic_ml_output_injector 300 5 > /vagrant/logs/lab/e2e-ml-injector.log 2>&1'"
 	@sleep 3
 	@echo "── Arrancando firewall (SUB connect → primer intento exitoso) ──"
 	@$(MAKE) firewall-start
@@ -1530,9 +1537,9 @@ test-e2e-vault: vault-dev-seed
 	@echo "── Step 3: Tests vault_provider (6/6) ──"
 	@$(MAKE) test-enterprise-plugin
 	@echo "── Step 4: Compilando etcd-server con ARGUS_VAULT_ENABLED=ON ──"
-	@vagrant ssh -c "cd /vagrant/etcd-server/build-debug && cmake .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3"
+	@vagrant ssh -c "mkdir -p /vagrant/etcd-server/build-vault-$(PROFILE) && cd /vagrant/etcd-server/build-vault-$(PROFILE) && cmake $(CMAKE_FLAGS) .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3"
 	@echo "── Step 5: Smoke test etcd-server enterprise (Acto I — VaultProvider) ──"
-	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-debug/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
+	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ TEST-E2E-VAULT PASSED                                 ║"
@@ -1552,7 +1559,7 @@ vault-fault-inject:
 	@echo "── Fase 1: Crear token hijo para etcd-server ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token create -ttl=120s -display-name=argus-etcd-server-fault -field=token) && echo \$$CHILD_TOKEN > /tmp/argus_fault_token.txt && echo '✅ Token hijo creado'"
 	@echo "── Fase 2: Arrancar etcd-server con token hijo ──"
-	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-debug/etcd-server > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
+	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
 	@echo "── Fase 3: Revocar token hijo (simular Vault KO) ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token revoke \$$CHILD_TOKEN > /dev/null && echo '✅ Token revocado — Vault KO simulado'"
 	@echo "── Fase 4: Verificar modo AUTONOMOUS (cache RCU) ──"

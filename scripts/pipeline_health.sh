@@ -1,15 +1,16 @@
 #!/usr/bin/env bash
+# [ARGUS-PROFILE-D303] rutas via build-active (enlace del perfil activo, set-build-profile)
 # ML Defender — Pipeline Health Monitor
 # Muestra qué componentes están activos vs idle
 # Uso: bash scripts/pipeline_health.sh
 
 COMPONENTS=(
-    "etcd-server:etcd-server/build-debug/etcd-server"
+    "etcd-server:etcd-server/build-active/etcd-server"
     "rag-security:rag/build/rag-security"
-    "rag-ingester:rag-ingester/build-debug/rag-ingester"
-    "ml-detector:ml-detector/build-debug/ml-detector"
-    "sniffer:sniffer/build-debug/sniffer"
-    "firewall:firewall-acl-agent/build-debug/firewall-acl-agent"
+    "rag-ingester:rag-ingester/build-active/rag-ingester"
+    "ml-detector:ml-detector/build-active/ml-detector"
+    "sniffer:sniffer/build-active/sniffer"
+    "firewall:firewall-acl-agent/build-active/firewall-acl-agent"
 )
 
 LOG_DIR="/vagrant/logs/lab"
