@@ -28,7 +28,7 @@ paso "4 pipeline-start PROFILE=production"
 make pipeline-start PROFILE=production > "/tmp/${N}_start.txt" 2>&1 || { tail -n 20 "/tmp/${N}_start.txt"; falla "pipeline-start rc!=0"; }
 if grep -E '^[[:space:]]*❌.*STOPPED' "/tmp/${N}_start.txt"; then falla "algun componente STOPPED"; fi
 paso "5 esperar ESTABLE"
-vagrant ssh defender -c "bash /vagrant/day288_esperar_estable.sh" || falla "esperar_estable"
+bash scripts/timebase/d303_esperar_estable_lab.sh || falla "esperar_estable"  # [ARGUS-ESTABLE-LAB-D303] fondo ICMP controlado
 marca estable
 paso "6 captura en eth2 ($FIL)"
 vagrant ssh defender -c "DIA=$DIA FILTRO='$FIL' bash $H cap_start $N" || falla "no arranca tcpdump"

@@ -91,7 +91,7 @@ done
 grep -E "\[DDOS-MITIGACION\] modo|CONFIG-AVISO\] recidivism" "$F" | head -n 3
 vagrant ssh defender -c "sudo iptables -S $CHAIN && sudo ipset list -n | grep -x -e $BL -e $WL" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]' || falla "faltan la cadena $CHAIN o los sets"
 paso "8 esperar ESTABLE"
-vagrant ssh defender -c "bash /vagrant/day288_esperar_estable.sh" || falla "esperar_estable"
+bash scripts/timebase/d303_esperar_estable_lab.sh || falla "esperar_estable"  # [ARGUS-ESTABLE-LAB-D303] fondo ICMP controlado
 marca estable
 paso "9 captura en eth2 ($FIL)"
 vagrant ssh defender -c "DIA=$DIA FILTRO='$FIL' bash $H cap_start $N" || falla "no arranca tcpdump"
