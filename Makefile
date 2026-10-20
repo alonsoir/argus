@@ -151,7 +151,8 @@ FIREWALL_LEGACY_LINK      := /vagrant/firewall-acl-agent/build
 ETCD_SERVER_LEGACY_LINK   := /vagrant/etcd-server/build
 TOOLS_LEGACY_LINK         := /vagrant/tools/build
 
-RAG_BUILD_DIR := /vagrant/rag/build
+# [ARGUS-CLEAN-D303] rag por perfil como el resto (su deprecado va en rama propia)
+RAG_BUILD_DIR := /vagrant/rag/build-$(PROFILE)
 RAG_INGESTER_BIN_DIR := /vagrant/rag-ingester/build
 # ============================================================================
 # HELP
@@ -1000,7 +1001,10 @@ set-build-profile:
 # 4. sign-plugins    → firma Ed25519 (ADR-025)
 # 5. test-provision-1 → CI gate PHASE 3
 # 6. pipeline-start  → arranca los 6 componentes
+# [ARGUS-CLEAN-D303] al final, set-build-profile: build-active -> build-$(PROFILE) de lo recien
+# compilado (antes solo corria en bootstrap, ANTES de compilar, y se saltaba lo que no existia)
 pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install tools
+	@$(MAKE) set-build-profile
 
 tools: proto etcd-client-build crypto-transport-build
 	@echo ""
@@ -1179,6 +1183,11 @@ clean-all:
 	@vagrant ssh -c "rm -rf /vagrant/etcd-server/build-*"
 	@vagrant ssh -c "rm -rf /vagrant/tools/build-*"
 	@echo ""
+	@echo "  - [ARGUS-CLEAN-D303] rag, vault-client (common/build), host-engine, correlation-engine..."
+	@vagrant ssh -c "rm -rf /vagrant/rag/build /vagrant/rag/build-*"
+	@$(MAKE) vault-client-clean
+	@$(MAKE) host-engine-clean
+	@$(MAKE) correlation-engine-clean
 	@$(MAKE) clean-libs
 	@echo ""
 	@echo "✅ Nuclear clean complete - ALL builds + libraries removed"
@@ -1328,7 +1337,10 @@ emecas:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	vagrant destroy -f
 	vagrant up defender client suricata
+	$(MAKE) clean-all
+	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	$(MAKE) bootstrap
+	$(MAKE) emecas-frescura
 	$(MAKE) test-all
 	$(MAKE) test-firewall-e2e
 	$(MAKE) test-firewall-perf
@@ -1337,6 +1349,13 @@ emecas:
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS PASSED                                        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
+
+# [ARGUS-CLEAN-D303] emecas-frescura: cada binario del pipeline existe en build-$(PROFILE), build-active
+# apunta ahi y es mas nuevo que el sello escrito tras clean-all. Fuera de EMECAS, sin sello:
+#   vagrant ssh defender -c "bash /vagrant/scripts/emecas/emecas_frescura.sh production"
+.PHONY: emecas-frescura
+emecas-frescura:
+	@vagrant ssh defender -c "bash /vagrant/scripts/emecas/emecas_frescura.sh $(PROFILE) /vagrant/logs/lab/emecas_inicio.stamp"
 
 emecas++: emecas
 	@echo ""
@@ -2306,9 +2325,9 @@ rag-clean:
 	@vagrant ssh -c "cd /vagrant/rag && make clean"
 
 rag-start:
-	@echo "🚀 Starting rag-security (from /vagrant/rag/build-active)..."
+	@echo "🚀 Starting rag-security (from $(RAG_BUILD_DIR))..."
 	@vagrant ssh -c "tmux kill-session -t rag-security 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s rag-security 'mkdir -p /vagrant/logs/lab && cd /vagrant/rag/build-active && ./rag-security >> /vagrant/logs/lab/rag-security.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s rag-security 'mkdir -p /vagrant/logs/lab && cd $(RAG_BUILD_DIR) && ./rag-security >> /vagrant/logs/lab/rag-security.log 2>&1'"
 	@sleep 2
 
 rag-stop:
