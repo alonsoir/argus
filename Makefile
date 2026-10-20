@@ -1611,7 +1611,8 @@ test-e2e-vault: vault-dev-seed
 	@echo "── Step 3: Tests vault_provider (6/6) ──"
 	@$(MAKE) test-enterprise-plugin
 	@echo "── Step 4: Compilando etcd-server con ARGUS_VAULT_ENABLED=ON ──"
-	@vagrant ssh -c "mkdir -p /vagrant/etcd-server/build-vault-$(PROFILE) && cd /vagrant/etcd-server/build-vault-$(PROFILE) && cmake $(CMAKE_FLAGS) .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3"
+	@# [ARGUS-VAULT-QUOTE-D303] comillas simples: CMAKE_FLAGS lleva comillas dobles (medido DAY303)
+	@vagrant ssh -c 'mkdir -p /vagrant/etcd-server/build-vault-$(PROFILE) && cd /vagrant/etcd-server/build-vault-$(PROFILE) && cmake $(CMAKE_FLAGS) .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3'
 	@echo "── Step 5: Smoke test etcd-server enterprise (Acto I — VaultProvider) ──"
 	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
 	@echo ""
