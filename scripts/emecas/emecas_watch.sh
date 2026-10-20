@@ -18,8 +18,8 @@ CALLADO_AVISO=900
 FASES=(
   "OSS gate (destroy"
   "Destroying VM"
+  "[CLEAN-HOST] PASA"
   "Bringing machine 'defender' up"
-  "NUCLEAR CLEAN"
   "[1/8]"
   "[2/8]"
   "[3/8]"

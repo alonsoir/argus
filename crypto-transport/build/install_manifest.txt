@@ -1,9 +1,0 @@
-/usr/local/lib/libcrypto_transport.so.1.0.0
-/usr/local/lib/libcrypto_transport.so.1
-/usr/local/lib/libcrypto_transport.so
-/usr/local/include/crypto_transport/crypto.hpp
-/usr/local/include/crypto_transport/compression.hpp
-/usr/local/include/crypto_transport/utils.hpp
-/usr/local/include/crypto_transport/crypto_manager.hpp
-/usr/local/include/crypto_transport/transport.hpp
-/usr/local/include/crypto_transport/contexts.hpp

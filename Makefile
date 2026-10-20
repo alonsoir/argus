@@ -1161,6 +1161,16 @@ clean: clean-components
 	@echo "💡 Tip: Use 'make clean-libs' to also clean libraries"
 	@echo "💡 Tip: Use 'make clean-all' to clean ALL profiles + libs"
 
+# [ARGUS-CLEAN-HOST-D303] limpieza de los build* en el MAC (carpeta del repo, sobrevive a vagrant destroy), con las
+# VMs destruidas y ANTES de vagrant up: provision.sh compila seed-client, crypto-transport, plugin-loader y
+# etcd-client en sus build/ durante el up (medido DAY303). No toca adapters ni cmake-build-* (CLion).
+.PHONY: clean-host-builds
+clean-host-builds:
+	@test -f Makefile -a -d .git -a -f Vagrantfile || { echo "[CLEAN-HOST] FALLA: no estoy en la raiz del repo"; exit 1; }
+	@echo "[CLEAN-HOST] borrando en el Mac: sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build"
+	@rm -rf sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build
+	@q=$$(ls -d sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build 2>/dev/null | wc -l | tr -d ' '); if [ "$$q" != "0" ]; then echo "[CLEAN-HOST] FALLA: quedan $$q directorios"; exit 1; fi; echo "[CLEAN-HOST] PASA: 0 directorios de build en el Mac"
+
 clean-all:
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -1336,8 +1346,8 @@ emecas:
 	@echo "║  🏛️  EMECAS — OSS gate (destroy → up → bootstrap → test)  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	vagrant destroy -f
+	$(MAKE) clean-host-builds
 	vagrant up defender client suricata
-	$(MAKE) clean-all
 	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	$(MAKE) bootstrap
 	$(MAKE) emecas-frescura
