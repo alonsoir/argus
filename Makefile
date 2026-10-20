@@ -1272,7 +1272,7 @@ test-components: correlation-engine-test
 	@vagrant ssh -c "cd $(RAG_BUILD_DIR) && ctest --output-on-failure"
 	@echo ""
 	@echo "Testing Firewall ACL Agent..."
-	@vagrant ssh -c "cd $(FIREWALL_BUILD_DIR) && ctest --output-on-failure"
+	@vagrant ssh -c "cd $(FIREWALL_BUILD_DIR) && ctest -LE 'e2e|root|perf' --output-on-failure"
 	@echo ""
 
 deploy-configs:
@@ -3072,10 +3072,13 @@ test-firewall:
 
 # e2e/root: integracion contra ipset real (canario de inyeccion H-2). Solo VM, con sudo.
 test-firewall-e2e:
-	@echo "🧪 firewall e2e (perfil=$(PROFILE), CON root)"
-	@vagrant ssh -c 'cd $(FIREWALL_BUILD_DIR) && \
-		sudo env LD_LIBRARY_PATH=/usr/local/lib \
-		ctest -L "e2e" --output-on-failure'
+	@echo "🧪 firewall e2e (perfil=$(PROFILE), CON root): falla si algun test se salta  [ARGUS-GATE-PERF-D303]"
+	@vagrant ssh -c 'bash /vagrant/firewall-acl-agent/tests/ctest_label_gate.sh $(FIREWALL_BUILD_DIR) e2e'
+
+.PHONY: test-firewall-perf
+test-firewall-perf:
+	@echo "📏 firewall perf (perfil=$(PROFILE), CON root): mide y valida la medida; no falla por tiempo  [ARGUS-GATE-PERF-D303]"
+	@vagrant ssh -c 'bash /vagrant/firewall-acl-agent/tests/ctest_label_gate.sh $(FIREWALL_BUILD_DIR) perf'
 # ══════════════════════════════════════════════════════════════════════════
 # EMECAS+++ — Gate E2E rio-abajo (DAY 204, ADR-058 §1)
 # Hoy: alias de emecas++. El test de circuito completo bronce->Kuzu

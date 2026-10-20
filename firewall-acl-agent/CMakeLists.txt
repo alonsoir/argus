@@ -332,7 +332,6 @@ if(BUILD_TESTS)
 
     set(TEST_SOURCES
             tests/unit/test_ipset_is_valid_ip.cpp
-            tests/unit/test_ipset_wrapper.cpp
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_config_loader_setname.cpp
@@ -527,6 +526,28 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     set_tests_properties(test_ipset_setname_injection_integration PROPERTIES LABELS "e2e;root")
 
     gtest_discover_tests(firewall_tests)
+
+    # [ARGUS-GATE-PERF-D303] IPSetWrapperTest fuera de firewall_tests: necesita root (ipset del kernel).
+    #   funcionales -> ipset_wrapper_tests       LABEL e2e  (make test-firewall-e2e; root; falla si algo se salta)
+    #   rendimiento -> ipset_wrapper_perf_tests  LABEL perf (make test-firewall-perf; root; mide, no falla por tiempo)
+    # test-components excluye e2e|root|perf: ningun Skipped por falta de root.
+    # [ARGUS-GATE-PERF-D303-B] medido: gtest_discover_tests(PROPERTIES LABELS "a;b") aplana la lista y solo
+    # queda la primera etiqueta. Por eso una sola etiqueta por ejecutable descubierto.
+    add_executable(ipset_wrapper_tests
+            tests/unit/test_ipset_wrapper.cpp
+            tests/test_globals_stub.cpp
+    )
+    target_include_directories(ipset_wrapper_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core)
+    target_link_libraries(ipset_wrapper_tests PRIVATE firewall_core OpenSSL::Crypto GTest::gtest GTest::gtest_main)
+    gtest_discover_tests(ipset_wrapper_tests PROPERTIES LABELS e2e)
+
+    add_executable(ipset_wrapper_perf_tests
+            tests/unit/test_ipset_wrapper_perf.cpp
+            tests/test_globals_stub.cpp
+    )
+    target_include_directories(ipset_wrapper_perf_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core)
+    target_link_libraries(ipset_wrapper_perf_tests PRIVATE firewall_core OpenSSL::Crypto GTest::gtest GTest::gtest_main)
+    gtest_discover_tests(ipset_wrapper_perf_tests PROPERTIES LABELS perf)
 
     message(STATUS "✅ Unit tests enabled (including logger tests)")
 endif()

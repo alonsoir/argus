@@ -7,7 +7,7 @@
 //   - Batch operations (add, delete, deduplication)
 //   - Single operations (add, delete, test)
 //   - Error handling (invalid IPs, missing sets)
-//   - Performance benchmarks (target: 1000 IPs in <10ms)
+//   - Performance: en test_ipset_wrapper_perf.cpp (etiqueta perf) [ARGUS-GATE-PERF-D303]
 //   - Statistics and monitoring
 //   - Advanced operations (rename, swap, save/restore)
 //
@@ -18,80 +18,7 @@
 // Via Appia Quality: Thorough testing for decade-lasting code
 //===----------------------------------------------------------------------===//
 
-#include "firewall/ipset_wrapper.hpp"
-
-#include <gtest/gtest.h>
-#include <unistd.h>
-#include <chrono>
-#include <random>
-#include <sstream>
-
-using namespace mldefender::firewall;
-using namespace std::chrono;
-
-//===----------------------------------------------------------------------===//
-// Test Fixture
-//===----------------------------------------------------------------------===//
-
-class IPSetWrapperTest : public ::testing::Test {
-protected:
-    void SetUp() override {
-        // Verify root privileges
-        if (geteuid() != 0) {
-            GTEST_SKIP() << "⚠️  Tests require root privileges (sudo)";
-        }
-
-        // Clean up any leftover test sets
-        cleanup_test_sets();
-
-        wrapper_ = std::make_unique<IPSetWrapper>();
-    }
-
-    void TearDown() override {
-        // Cleanup test sets
-        cleanup_test_sets();
-        wrapper_.reset();
-    }
-
-    void cleanup_test_sets() {
-        IPSetWrapper temp_wrapper;
-        auto sets = temp_wrapper.list_sets();
-
-        for (const auto& set : sets) {
-            if (set.find("test_") == 0) {
-                temp_wrapper.destroy_set(set);
-            }
-        }
-    }
-
-    std::string generate_random_ip() {
-        static std::random_device rd;
-        static std::mt19937 gen(rd());
-        static std::uniform_int_distribution<> dist(1, 254);
-
-        std::ostringstream oss;
-        oss << dist(gen) << "." << dist(gen) << "."
-            << dist(gen) << "." << dist(gen);
-        return oss.str();
-    }
-
-    std::vector<IPSetEntry> generate_random_ips(size_t count) {
-        std::vector<IPSetEntry> ips;
-        ips.reserve(count);
-
-        for (size_t i = 0; i < count; ++i) {
-            ips.emplace_back(generate_random_ip());
-        }
-
-        return ips;
-    }
-
-    std::unique_ptr<IPSetWrapper> wrapper_;
-
-    // Standard test set configurations
-    static constexpr const char* TEST_SET_NAME = "test_ipset";
-    static constexpr const char* TEST_SET_NAME_2 = "test_ipset_2";
-};
+#include "ipset_wrapper_fixture.hpp"  // [ARGUS-GATE-PERF-D303] fixture compartido con test_ipset_wrapper_perf.cpp
 
 //===----------------------------------------------------------------------===//
 // Basic Set Management Tests
@@ -171,32 +98,6 @@ TEST_F(IPSetWrapperTest, BatchAddIPs) {
         EXPECT_TRUE(wrapper_->test(TEST_SET_NAME, entry.ip))
             << "IP " << entry.ip << " not found after batch add";
     }
-}
-
-TEST_F(IPSetWrapperTest, BatchAddPerformance) {
-    auto config = make_blacklist_config(TEST_SET_NAME);
-    wrapper_->create_set(config);
-
-    // Generate 1000 random IPs
-    auto entries = generate_random_ips(1000);
-
-    // Measure batch add time
-    auto start = high_resolution_clock::now();
-    auto result = wrapper_->add_batch(TEST_SET_NAME, entries);
-    auto end = high_resolution_clock::now();
-
-    ASSERT_TRUE(result) << "Batch add failed: " << result.get_error().message;
-
-    auto duration_ms = duration_cast<milliseconds>(end - start).count();
-
-    std::cout << "📊 Batch add 1000 IPs: " << duration_ms << "ms\n";
-
-    // Performance target: <10ms for 1000 IPs
-    EXPECT_LT(duration_ms, 10)
-        << "⚠️  Batch add too slow! Target: <10ms, Actual: " << duration_ms << "ms";
-
-    // Verify count
-    EXPECT_EQ(wrapper_->get_entry_count(TEST_SET_NAME), 1000);
 }
 
 TEST_F(IPSetWrapperTest, BatchAddDeduplication) {
@@ -280,33 +181,6 @@ TEST_F(IPSetWrapperTest, DeleteSingleIP) {
     ASSERT_TRUE(result);
 
     EXPECT_FALSE(wrapper_->test(TEST_SET_NAME, "192.168.1.100"));
-}
-
-TEST_F(IPSetWrapperTest, TestPerformance) {
-    auto config = make_blacklist_config(TEST_SET_NAME);
-    wrapper_->create_set(config);
-
-    // Add 10000 IPs
-    auto entries = generate_random_ips(10000);
-    wrapper_->add_batch(TEST_SET_NAME, entries);
-
-    // Test lookup performance (should be O(1))
-    auto start = high_resolution_clock::now();
-
-    constexpr int NUM_TESTS = 1000;
-    for (int i = 0; i < NUM_TESTS; ++i) {
-        wrapper_->test(TEST_SET_NAME, entries[i % entries.size()].ip);
-    }
-
-    auto end = high_resolution_clock::now();
-    auto duration_us = duration_cast<microseconds>(end - start).count();
-    auto avg_us = duration_us / NUM_TESTS;
-
-    std::cout << "📊 Average lookup time (10K entries): " << avg_us << "μs\n";
-
-    // Should be <1μs for kernel hash lookup
-    EXPECT_LT(avg_us, 1)
-        << "⚠️  Lookup too slow! Expected <1μs, got " << avg_us << "μs";
 }
 
 //===----------------------------------------------------------------------===//
@@ -553,26 +427,6 @@ TEST_F(IPSetWrapperTest, CommentInjectionRejected) {
 // Main
 //===----------------------------------------------------------------------===//
 
-int main(int argc, char** argv) {
-    ::testing::InitGoogleTest(&argc, argv);
-
-    std::cout << "\n";
-    std::cout << "╔════════════════════════════════════════════════════════╗\n";
-    std::cout << "║  ML Defender - IPSet Wrapper Unit Tests              ║\n";
-    std::cout << "╚════════════════════════════════════════════════════════╝\n";
-    std::cout << "\n";
-
-    if (geteuid() != 0) {
-        std::cout << "⚠️  WARNING: Tests require root privileges\n";
-        std::cout << "   Run: sudo ./firewall_tests\n";
-        std::cout << "\n";
-    }
-
-    int result = RUN_ALL_TESTS();
-
-    std::cout << "\n";
-    std::cout << "════════════════════════════════════════════════════════\n";
-    std::cout << "\n";
-
-    return result;
-}
+// [ARGUS-GATE-PERF-D303-B] sin main propio: lo pone gtest_main. El de antes escribia el aviso de root por
+// stdout y gtest_discover_tests (que lista los tests sin root al compilar) lo registraba como un test
+// falso que corria 0 tests y pasaba. Sin root, el SetUp hace GTEST_SKIP y la puerta lo trata como FALLA.
