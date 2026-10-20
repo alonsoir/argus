@@ -1345,6 +1345,7 @@ emecas:
 	$(MAKE) test-firewall-e2e
 	$(MAKE) test-firewall-perf
 	$(MAKE) test-e2e-synthetic
+	$(MAKE) lab-e2e
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS PASSED                                        ║"
@@ -1356,6 +1357,50 @@ emecas:
 .PHONY: emecas-frescura
 emecas-frescura:
 	@vagrant ssh defender -c "bash /vagrant/scripts/emecas/emecas_frescura.sh $(PROFILE) /vagrant/logs/lab/emecas_inicio.stamp"
+
+# [ARGUS-LAB-E2E-D303] E2E del lab con PASA/FALLA (decision de Alonso DAY303: EMECAS estricto y determinista).
+# Cada objetivo prepara el client, corre el E2E (que para al primer fallo) y aplica su veredicto (rc 0 = PASA).
+# Corridas en logs/lab/$(LAB_E2E_DIA)/lab_*/. Duracion total de lab-e2e: ~60 min.
+# lab_corrida_defender.sh exige DIA con formato dayNNN (medido DAY303)
+LAB_E2E_DIA ?= day303
+.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion
+lab-e2e-prep:
+	@echo "[LAB-E2E] client: alias 192.168.100.51 en eth1 y MAC de 192.168.100.1 en la tabla de vecinos"
+	@vagrant ssh client -c "ip -4 addr show dev eth1 | grep -q 192.168.100.51 || sudo ip addr add 192.168.100.51/24 dev eth1; ping -c 3 -W 1 -I eth1 192.168.100.1 > /dev/null 2>&1; ip -4 addr show dev eth1 | grep -q 192.168.100.51 && ip neigh show 192.168.100.1 dev eth1 | grep -q lladdr && ip neigh show 192.168.100.1 dev eth1" || { echo "[LAB-E2E] FALLA: client sin alias .51 o sin MAC de .1"; exit 1; }
+
+lab-e2e-reinicio-antes:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_reinicio_e2e.sh antes lab_reinicio_antes
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_reinicio.sh antes /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_reinicio_antes"
+
+lab-e2e-reinicio-ordenada:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_reinicio_e2e.sh ordenada lab_reinicio_ordenada
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_reinicio.sh ordenada /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_reinicio_ordenada"
+
+lab-e2e-reinicio-kill9:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_reinicio_e2e.sh kill9 lab_reinicio_kill9
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_reinicio.sh kill9 /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_reinicio_kill9"
+
+lab-e2e-protegidos:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_protegidos_e2e.sh lab_protegidos
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_protegidos.sh /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_protegidos"
+
+lab-e2e-mitigacion:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d302_mitigacion_e2e.sh lab_mitigacion
+
+lab-e2e:
+	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion"
+	$(MAKE) lab-e2e-reinicio-antes
+	$(MAKE) lab-e2e-reinicio-ordenada
+	$(MAKE) lab-e2e-reinicio-kill9
+	$(MAKE) lab-e2e-protegidos
+	$(MAKE) lab-e2e-mitigacion
+	@echo "[LAB-E2E] PASA los cinco E2E del lab $$(date '+%F %T')"
+
 
 emecas++: emecas
 	@echo ""

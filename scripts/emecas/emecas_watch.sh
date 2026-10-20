@@ -33,6 +33,11 @@ FASES=(
   "ALL TESTS COMPLETE"
   "[CTEST-GATE] PASA (e2e)"
   "[CTEST-GATE] PASA (perf)"
+  "RESULTADO PASA (reinicio antes)"
+  "RESULTADO PASA (reinicio ordenada)"
+  "RESULTADO PASA (reinicio kill9)"
+  "RESULTADO PASA (protegidos)"
+  "PASA los cinco E2E del lab"
   "EMECAS PASSED"
   "Acto I "
   "Acto II "
@@ -42,7 +47,8 @@ FASES=(
 )
 NF=${#FASES[@]}
 
-mtime() { stat -c %Y "$1" 2>/dev/null || stat -f %m "$1"; }
+# -L: emecas_actual.log es un enlace; sin -L el Mac da la fecha del enlace, no la del log (medido DAY303)
+mtime() { stat -L -c %Y "$1" 2>/dev/null || stat -L -f %m "$1"; }
 hm() { local s=$1; printf '%dh%02dm' $((s / 3600)) $((s % 3600 / 60)); }
 
 while true; do
