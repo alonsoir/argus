@@ -1409,6 +1409,10 @@ lab-e2e:
 	$(MAKE) lab-e2e-reinicio-kill9
 	$(MAKE) lab-e2e-protegidos
 	$(MAKE) lab-e2e-mitigacion
+	@echo "[LAB-E2E] [ARGUS-LAB-RESTORE-D303] los E2E paran el pipeline: se deja arrancado, como se encontro"
+	$(MAKE) pipeline-start > /tmp/argus_lab_e2e_restore.txt 2>&1 || { tail -n 20 /tmp/argus_lab_e2e_restore.txt; echo "[LAB-E2E] FALLA: pipeline-start al restaurar"; exit 1; }
+	@if grep -E 'STOPPED' /tmp/argus_lab_e2e_restore.txt; then echo "[LAB-E2E] FALLA: componente STOPPED al restaurar"; exit 1; fi
+	@grep -E 'RUNNING' /tmp/argus_lab_e2e_restore.txt
 	@echo "[LAB-E2E] PASA los cinco E2E del lab $$(date '+%F %T')"
 
 
