@@ -1411,8 +1411,9 @@ lab-e2e:
 	$(MAKE) lab-e2e-mitigacion
 	@echo "[LAB-E2E] [ARGUS-LAB-RESTORE-D303] los E2E paran el pipeline: se deja arrancado, como se encontro"
 	$(MAKE) pipeline-start > /tmp/argus_lab_e2e_restore.txt 2>&1 || { tail -n 20 /tmp/argus_lab_e2e_restore.txt; echo "[LAB-E2E] FALLA: pipeline-start al restaurar"; exit 1; }
-	@if grep -E 'STOPPED' /tmp/argus_lab_e2e_restore.txt; then echo "[LAB-E2E] FALLA: componente STOPPED al restaurar"; exit 1; fi
-	@grep -E 'RUNNING' /tmp/argus_lab_e2e_restore.txt
+	@# [ARGUS-LAB-RESTORE-D303] patron estricto: pgrep -a -f se imprime a si mismo y su linea contiene STOPPED
+	@if grep -E '^[[:space:]]*❌.*STOPPED' /tmp/argus_lab_e2e_restore.txt; then echo "[LAB-E2E] FALLA: componente STOPPED al restaurar"; exit 1; fi
+	@n=$$(grep -c -E '^[[:space:]]+✅ (etcd-server|rag-security|ml-detector|sniffer|firewall):' /tmp/argus_lab_e2e_restore.txt); if [ "$$n" -lt 5 ]; then echo "[LAB-E2E] FALLA: solo $$n de 5 componentes RUNNING al restaurar"; exit 1; fi; echo "[LAB-E2E] restaurado: $$n de 5 componentes RUNNING"
 	@echo "[LAB-E2E] PASA los cinco E2E del lab $$(date '+%F %T')"
 
 
