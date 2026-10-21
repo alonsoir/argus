@@ -127,6 +127,11 @@ public:
     }
 
     std::size_t victims() const noexcept { return st_.size(); }
+    // [DDOS-MITIGACION-D301] solo lectura: la victima {dst, proto} esta en episodio (entre INICIO y FIN).
+    bool en_episodio(const std::string& dst, uint32_t proto) const {
+        const auto it = st_.find(dst + "/" + std::to_string(proto));
+        return it != st_.end() && it->second.blocked;
+    }
     const DdosShadowParams& params() const noexcept { return p_; }
 
 private:

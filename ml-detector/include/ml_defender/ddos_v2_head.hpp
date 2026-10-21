@@ -17,6 +17,20 @@ namespace ml_defender::ddos_v2 {
 inline constexpr const char* kModelName = "ddos_v2_fact_rf";
 inline constexpr const char* kModelVersion = "day293-f3d6b261";
 
+// [DDOS-ETAPA1-D298] Estado de la victima segun la histeresis del sniffer (DDoSFeatures.victim_state). Valores
+// alineados con protobuf::VictimState (zmq_handler.cpp lo comprueba con static_assert); la cabecera no depende del proto.
+enum class EstadoVictima : int { Desconocido = 0, Frio = 1, Normal = 2, BajoPresion = 3 };
+
+// Etapa 1. BajoPresion: pasa siempre (la EWMA del sniffer esta congelada y el episodio sigue). Frio: nunca (ratio
+// sin base). Normal: ratio >= k. Desconocido o valor no previsto: regla antigua (ratio >= k).
+inline bool etapa1_pasa(EstadoVictima e, float ratio, double k) noexcept {
+    switch (e) {
+        case EstadoVictima::BajoPresion: return true;
+        case EstadoVictima::Frio: return false;
+        default: return static_cast<double>(ratio) >= k;
+    }
+}
+
 struct Input {
     float syn_ack_ratio;
     float mean_packet_size;
@@ -34,9 +48,10 @@ struct Result {
     int clase = 0;
 };
 
-inline Result evaluate(const Input& in, double k) noexcept {
+inline Result evaluate(const Input& in, double k,
+                       EstadoVictima estado = EstadoVictima::Desconocido) noexcept {  // [DDOS-ETAPA1-D298]
     Result r;
-    r.stage1 = static_cast<double>(in.victim_rate_ratio) >= k;
+    r.stage1 = etapa1_pasa(estado, in.victim_rate_ratio, k);
     if (!r.stage1) {
         return r;
     }

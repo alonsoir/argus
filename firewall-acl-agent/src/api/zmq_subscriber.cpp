@@ -338,6 +338,10 @@ void ZMQSubscriber::receive_loop() {
         try {
             TRACK_OPERATION("zmq_receive");
 
+            // [DDOS-MITIGACION-B2-D302] latido: flush por tiempo aunque no lleguen IPs nuevas (medido DAY302:
+            // should_flush solo se evaluaba al anadir; un bloqueo solo en la cola podia no llegar nunca al ipset)
+            processor_.flush_si_toca();
+
             // Receive message
             zmq::message_t message;
             auto result = socket_->recv(message, zmq::recv_flags::none);
@@ -614,6 +618,49 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                           << " ALLOW=" << sombra_allow_ << " otro_o_vacio=" << sombra_otro_
                           << " ts_evento_min=" << sombra_ts_min_ << " ts_evento_max=" << sombra_ts_max_
                           << " victimas_activas=" << ddos_shadow_.victims() << std::endl;
+                {   // [PROTEGIDOS-D300] linea propia (no altera [SOMBRA-DDOS] resumen); alertas acumuladas
+                    const uint64_t* pa = prot_alertas_;
+                    std::cout << "[SOMBRA-DDOS] protegidos: alertas=" << (pa[1] + pa[2] + pa[3]) << " dmz=" << pa[1]
+                              << " intranet=" << pa[2] << " externos_criticos=" << pa[3]
+                              << " por_defecto=" << (config_.ddos_protegidos.por_defecto ? 1 : 0) << std::endl;
+                    if (config_.ddos_protegidos.por_defecto) {
+                        std::cerr << "[CONFIG-DEFAULT] ddos_protegidos: rigen los rangos privados por defecto (RFC 1918 + "
+                                     "fc00::/7 como intranet); configure los de ESTE despliegue (GUIA_OPERACIONES, "
+                                     "seccion DDOS-PROTEGIDOS)" << std::endl;
+                    }
+                    prot_detalle_ = 0;
+                }
+                {   // [DDOS-MITIGACION-B2-D302] resumen de la mitigacion (linea propia; en dry_run es la unica salida, D2)
+                    const std::size_t purgadas = ddos_mitigacion_.purgar(
+                        [this](const std::string& d, uint32_t p) { return ddos_shadow_.en_episodio(d, p); });
+                    mit_bloquear_total_ += mit_bloquear_;
+                    mit_renovar_total_ += mit_renovar_;
+                    std::cout << "[DDOS-MITIGACION] resumen: modo="
+                              << (!config_.ddos_mitigacion.habilitada ? "deshabilitada"
+                                  : (config_.dry_run ? "dry_run" : "ACTIVA"))
+                              << " bloquear=" << mit_bloquear_ << " renovar=" << mit_renovar_
+                              << " esperar=" << mit_esperar_ << " rechazo_protegido=" << mit_protegido_
+                              << " rechazo_ip_invalida=" << mit_invalida_
+                              << " bloquear_total=" << mit_bloquear_total_ << " renovar_total=" << mit_renovar_total_
+                              << " victimas_seguidas=" << ddos_mitigacion_.victimas_seguidas()
+                              << " origenes_seguidos=" << ddos_mitigacion_.origenes_seguidos()
+                              << " desbordes=" << ddos_mitigacion_.desbordes() << " purgadas=" << purgadas
+                              << " barrera_total=" << processor_.rechazos_protegidos() << std::endl;
+                    if (config_.ddos_mitigacion.habilitada && !config_.ddos_escalones_cortos.empty()) {
+                        std::ostringstream c;
+                        for (std::size_t i = 0; i < config_.ddos_escalones_cortos.size(); ++i) {
+                            c << (i ? ", " : "") << config_.ddos_escalones_cortos[i];
+                        }
+                        std::cerr << "[CONFIG-AVISO] ddos_mitigacion: escalones por debajo de aviso_castigo_corto_sec="
+                                  << config_.ddos_mitigacion.aviso_castigo_corto_sec << " s: [" << c.str()
+                                  << "] = castigo SOLO DE PRUEBAS, no de produccion" << std::endl;
+                    }
+                    mit_bloquear_ = 0;
+                    mit_renovar_ = 0;
+                    mit_esperar_ = 0;
+                    mit_protegido_ = 0;
+                    mit_invalida_ = 0;
+                }
                 {  // [TIMEBASE-D295] retraso sniffer->firewall y anomalias de tiempo del periodo
                     uint64_t total = 0;
                     std::ostringstream o;
@@ -684,6 +731,21 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
             }
         }
         const double ratio = nf2.has_ddos_embedded() ? static_cast<double>(nf2.ddos_embedded().victim_rate_ratio()) : 0.0;
+        {   // [PROTEGIDOS-D300] origen protegido: ALERTA_PROTEGIDO; no entra en el episodio ni se bloquea nunca
+            const auto cat = config_.ddos_protegidos.categoria_de(nf2.source_ip());
+            if (cat != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+                ++prot_alertas_[static_cast<std::size_t>(cat)];
+                if (prot_detalle_ < static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) {
+                    ++prot_detalle_;
+                    std::cout << "[SOMBRA-DDOS] ALERTA_PROTEGIDO origen=" << nf2.source_ip()
+                              << " categoria=" << ::mldefender::firewall::nombre_categoria(cat)
+                              << " victima=" << nf2.destination_ip() << " proto=" << nf2.protocol_number()
+                              << " ts_s=" << ts_s << " ratio=" << ratio << " p1=" << p1 << " modelo=" << modelo
+                              << " evento=" << event.event_id() << " (no se bloquea)" << std::endl;
+                }
+                return;
+            }
+        }
         ddos_shadow_.add_drop(nf2.destination_ip(), static_cast<uint32_t>(nf2.protocol_number()), ts_s, nf2.source_ip(),
                               p1, ratio, event.event_id(), modelo);
         if (!sombra_primer_drop_) {  // [DDOS-SHADOW-OBS-D293]
@@ -692,8 +754,62 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                       << " proto=" << nf2.protocol_number() << " origen=" << nf2.source_ip() << " ratio=" << ratio
                       << " p1=" << p1 << " modelo=" << modelo << " evento=" << event.event_id() << std::endl;
         }
-        // [DDOS-SHADOW-D293] en este PR NO se bloquea nada: los pasos 5-8 (bloqueo por IP de origen, ipset, registro
-        // BLOCKED) no se ejecutan. La mitigación real será por víctima (DEBT-FIREWALL-PER-VICTIM-001).
+        {   // [DDOS-MITIGACION-B2-D302] mitigacion real por ORIGEN con su victima en episodio. Doble llave:
+            // operation.dry_run (config_.dry_run) + ddos_mitigacion.habilitada (decidir devuelve NADA si es false).
+            // Los protegidos ya han salido arriba (ALERTA_PROTEGIDO); la barrera de BatchProcessor es la 2.a y 3.a puerta.
+            // D2: en dry_run, solo contadores (resumen); activo, una linea por accion. D1: registro con set y timeout reales.
+            const std::string& dst = nf2.destination_ip();
+            const uint32_t proto = static_cast<uint32_t>(nf2.protocol_number());
+            const std::string& src = nf2.source_ip();
+            using Accion = ::mldefender::firewall::AccionMitigacion;
+            using Estado = ::mldefender::firewall::ResultadoEpisodio::Estado;
+            const Accion accion = ddos_mitigacion_.decidir(dst, proto, src, ddos_shadow_.en_episodio(dst, proto));
+            if (accion == Accion::ESPERAR) {
+                ++mit_esperar_;
+            } else if (accion == Accion::BLOQUEAR || accion == Accion::RENOVAR) {
+                const bool bloquear = (accion == Accion::BLOQUEAR);
+                const auto r = bloquear ? processor_.bloquear_episodio(src) : processor_.renovar_episodio(src);
+                const char* nombre = bloquear ? "BLOQUEAR" : "RENOVAR";
+                if (r.estado == Estado::ENCOLADO) {
+                    ++(bloquear ? mit_bloquear_ : mit_renovar_);
+                    const std::string set = processor_.get_config().blacklist_ipset;
+                    // -1 = timeout por defecto del set (reincidencia deshabilitada); nunca 0 (= permanente en ipset)
+                    const int t = r.timeout_sec ? static_cast<int>(*r.timeout_sec) : -1;
+                    if (!config_.dry_run) {
+                        std::cout << "[DDOS-MITIGACION] " << nombre << " origen=" << src << " victima=" << dst
+                                  << " proto=" << proto << " timeout_s="
+                                  << (r.timeout_sec ? std::to_string(*r.timeout_sec) : std::string("defecto_del_set"))
+                                  << " strikes=" << r.strikes << " set=" << set << " ts_s=" << ts_s
+                                  << " evento=" << event.event_id() << std::endl;
+                    }
+                    {  // [DDOS-MITIGACION-B2C-D302] D1: se registra TODA accion (Alonso DAY302: tambien RENOVAR en dry_run)
+                        const std::string accion_reg = config_.dry_run
+                            ? (bloquear ? "DRY_RUN_BLOCK" : "DRY_RUN_RENEW")
+                            : (bloquear ? "BLOCKED" : "BLOCK_RENEWED");
+                        try {
+                            BlockedEvent ev = create_blocked_event_from_proto(event, accion_reg, set, t);
+                            if (logger_ && logger_->log_blocked_event(ev)) {
+                                stats_.events_logged++;
+                            }
+                            if (logger_ && hmac_key_.has_value()) {
+                                logger_->append_csv_log(ev, hmac_key_.value());
+                            }
+                        } catch (const std::exception& e) {
+                            FIREWALL_LOG_ERROR("[DDOS-MITIGACION] fallo al registrar la accion", "error", e.what(),
+                                "ip", src);
+                        }
+                    }
+                } else {
+                    ++(r.estado == Estado::PROTEGIDO ? mit_protegido_ : mit_invalida_);
+                    if (!config_.dry_run) {
+                        std::cerr << "[DDOS-MITIGACION] RECHAZADO " << nombre << " origen=" << src
+                                  << (r.estado == Estado::PROTEGIDO ? " motivo=protegido" : " motivo=ip_invalida")
+                                  << " victima=" << dst << " proto=" << proto << " evento=" << event.event_id()
+                                  << std::endl;
+                    }
+                }
+            }
+        }
         return;
     }
 
@@ -713,6 +829,8 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
     // STEP 5 - Determine action based on threat category (Day 50: Enhanced)
     // ═══════════════════════════════════════════════════════════════════
 
+    // [DDOS-MITIGACION-B2-D302] INALCANZABLE: la rama ddos_v2 de arriba hace return en todos los casos. Nombre de set
+    // y timeouts fijos (300/600/3600) que solo iban al registro. Se retira en su propia PR (DEBT-FW-LEGACY-STEPS-001).
     std::string ipset_name = "ml_defender_blacklist_test";
     int timeout_sec = 300;  // 5 minutes default
 

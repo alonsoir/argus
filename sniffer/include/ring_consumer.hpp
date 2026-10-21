@@ -29,6 +29,8 @@
 #include <thread>
 #include <mutex>
 #include <condition_variable>
+#include <mutex>   // [PARADA-INMEDIATA-D300]
+#include <chrono>  // [PARADA-INMEDIATA-D300]
 #include <atomic>
 #include <array>
 #include <functional>
@@ -209,6 +211,7 @@ private:
     SnifferConfig config_;
     FastDetectorConfig fast_detector_config_;
     std::shared_ptr<::sniffer::DdosVictimBoard> victim_board_;  // [DDOS-VWIN-D279:RC-MEMBER]
+    mutable std::atomic<bool> aviso_arranque_vencido_{false};  // [DDOS-ESTADO-ARRANQUE-D299] el ERROR se escribe una vez
 #ifdef PLUGIN_LOADER_ENABLED
 #endif
 #ifdef PLUGIN_LOADER_ENABLED
@@ -226,6 +229,14 @@ private:
     std::atomic<int> active_consumers_{0};
     std::atomic<bool> running_{false};
     std::atomic<bool> should_stop_{false};
+    // [PARADA-INMEDIATA-D300] espera interrumpible de los hilos que duermen por intervalo (estadisticas,
+    // ransomware). Devuelve true si hay que parar. stop() notifica tras poner should_stop_.
+    std::mutex parada_mtx_;
+    std::condition_variable parada_cv_;
+    bool espera_o_parada(std::chrono::seconds s) {
+        std::unique_lock<std::mutex> lk(parada_mtx_);
+        return parada_cv_.wait_for(lk, s, [this] { return should_stop_.load(); });
+    }
     std::atomic<bool> initialized_{false};
     // [TIMEBASE-D295] contrato temporal v1: el hilo del reloj escribe tb_state_; el resto lee atomicos.
     // tb_start_mono_ns_ y tb_boot_id_ se fijan en start() antes de lanzar ningun hilo.

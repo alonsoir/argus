@@ -365,6 +365,13 @@ size_t BatchProcessor::flush_internal() {
     entries.reserve(batch_size);
 
     for (const auto& ip : pending_ips_) {
+        if (rangos_protegidos_.categoria_de(ip) != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+            // [DDOS-MITIGACION-B2-D302] 2.a puerta de la barrera: NINGUN camino mete un protegido en el ipset
+            ++rechazos_protegidos_;
+            FIREWALL_LOG_ERROR("[DDOS-MITIGACION] origen protegido en la cola de bloqueo: NO entra en el ipset",
+                "ip", ip);
+            continue;
+        }
         // RECIDIVISM-D276: timeout variable por reincidencia en vez del fijo del set.
         // DAY277-NEVER-PERMANENT: nullopt (deshabilitado) -> IPSetEntry SIN
         // timeout -> timeout por defecto del set, igual que antes de D276.
@@ -804,6 +811,108 @@ void BatchProcessor::set_recidivism_config(const RecidivismConfig& cfg) {
 
     std::lock_guard<std::mutex> lock(mutex_);
     recidivism_config_ = std::move(c);
+}
+
+//===----------------------------------------------------------------------===//
+// [DDOS-MITIGACION-B2-D302] API por episodio de ddos_v2 (DAY302, tanda b2-1)
+//===----------------------------------------------------------------------===//
+
+std::optional<uint32_t> BatchProcessor::escalon_vigente(const std::string& ip) const {
+    if (!recidivism_config_.enabled) {
+        return std::nullopt;
+    }
+    uint32_t strikes = 0;
+    if (auto it = strike_states_.find(ip); it != strike_states_.end()) {
+        strikes = it->second.strikes;
+        if (strikes > 0 &&
+            (std::chrono::steady_clock::now() - it->second.last_seen) > recidivism_config_.quiet_period_reset) {
+            strikes = 0;
+        }
+    }
+    if (recidivism_config_.max_penalty_after_strikes == 0 ||
+        (strikes > 0 && strikes >= recidivism_config_.max_penalty_after_strikes)) {
+        return recidivism_config_.max_penalty_sec;
+    }
+    const auto& esc = recidivism_config_.strike_durations_sec;
+    if (esc.empty()) {
+        return recidivism_config_.max_penalty_sec;
+    }
+    const size_t idx = (strikes == 0) ? 0 : std::min<size_t>(strikes - 1, esc.size() - 1);
+    return std::min(esc[idx], recidivism_config_.max_penalty_sec);
+}
+
+ResultadoEpisodio BatchProcessor::encolar_episodio(const std::string& ip, bool nuevo_strike) {
+    ResultadoEpisodio r;
+    {
+        std::lock_guard<std::mutex> lock(mutex_);
+        bool v6 = false;
+        std::array<uint8_t, 16> b{};
+        if (!::mldefender::firewall::detalle_protegidos::a_bytes(ip, v6, b)) {
+            r.estado = ResultadoEpisodio::Estado::IP_INVALIDA;
+            return r;
+        }
+        if (rangos_protegidos_.categoria_de(ip) != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+            ++rechazos_protegidos_;
+            r.estado = ResultadoEpisodio::Estado::PROTEGIDO;
+            return r;
+        }
+        if (nuevo_strike) {
+            r.timeout_sec = compute_penalty_timeout(ip);
+        } else {
+            auto it = strike_states_.find(ip);
+            if (recidivism_config_.enabled && it != strike_states_.end()) {
+                const auto now = std::chrono::steady_clock::now();
+                if (it->second.strikes > 0 && (now - it->second.last_seen) > recidivism_config_.quiet_period_reset) {
+                    it->second.strikes = 0;  // misma regla de calma que compute_penalty_timeout
+                }
+                it->second.last_seen = now;  // decision de Alonso DAY302: RENOVAR = el pipeline la ha visto actuar
+            }
+            r.timeout_sec = escalon_vigente(ip);
+        }
+        if (auto it = strike_states_.find(ip); it != strike_states_.end()) {
+            r.strikes = it->second.strikes;
+        }
+        if (!pending_ips_.insert(ip).second) {
+            metrics_.ips_deduplicated.fetch_add(1, std::memory_order_relaxed);
+        }
+        auto pp = pending_penalty_.find(ip);
+        if (pp == pending_penalty_.end()) {
+            pending_penalty_.emplace(ip, r.timeout_sec);
+        } else if (pp->second && r.timeout_sec && *r.timeout_sec > *pp->second) {
+            pp->second = r.timeout_sec;  // nunca se acorta un castigo ya encolado
+        }
+        metrics_.pending_ips_current.store(pending_ips_.size(), std::memory_order_relaxed);
+        check_backpressure();
+    }
+    if (should_flush()) {
+        flush();
+    }
+    return r;
+}
+
+ResultadoEpisodio BatchProcessor::bloquear_episodio(const std::string& ip) {
+    return encolar_episodio(ip, true);
+}
+
+ResultadoEpisodio BatchProcessor::renovar_episodio(const std::string& ip) {
+    return encolar_episodio(ip, false);
+}
+
+void BatchProcessor::set_rangos_protegidos(const RangosProtegidos& rangos) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    rangos_protegidos_ = rangos;
+}
+
+uint64_t BatchProcessor::rechazos_protegidos() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return rechazos_protegidos_;
+}
+
+size_t BatchProcessor::flush_si_toca() {
+    if (!should_flush()) {
+        return 0;
+    }
+    return flush();
 }
 
 void BatchProcessor::dump_and_reset_strike_states() {

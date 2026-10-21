@@ -60,6 +60,24 @@ int main(int argc, char** argv) {
         }
         ++n;
     }
+    // [DDOS-ETAPA1-D298] etapa 1 con el estado de la victima (casos fijos, independientes del CSV)
+    {
+        namespace d2 = ml_defender::ddos_v2;
+        const double k = d2::kTrainK;
+        const d2::Input alto{0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, static_cast<float>(k) + 2.0f};
+        d2::Input bajo = alto;
+        bajo.victim_rate_ratio = 0.5f;
+        int e = 0;
+        if (!d2::evaluate(alto, k).stage1) ++e;                                    // desconocido: regla antigua
+        if (d2::evaluate(bajo, k).stage1) ++e;
+        if (d2::evaluate(alto, k, d2::EstadoVictima::Frio).stage1) ++e;            // frio: nunca (frio benigno D298)
+        if (!d2::evaluate(bajo, k, d2::EstadoVictima::BajoPresion).stage1) ++e;    // presion: siempre
+        if (!d2::evaluate(alto, k, d2::EstadoVictima::Normal).stage1) ++e;         // normal: ratio >= k
+        if (d2::evaluate(bajo, k, d2::EstadoVictima::Normal).stage1) ++e;
+        if (!d2::evaluate(alto, k, static_cast<d2::EstadoVictima>(7)).stage1) ++e;  // valor no previsto: regla antigua
+        std::printf("[DDOS-V2-ETAPA1] casos=7 fallos=%d\n", e);
+        bad += e;
+    }
     std::printf("[DDOS-V2-PARITY] filas=%ld discrepancias=%ld\n", n, bad);
     return (bad == 0 && n > 0) ? 0 : 1;
 }

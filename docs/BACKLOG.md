@@ -7335,3 +7335,346 @@ Deudas nuevas o cambiadas:
 - DEBT-SNIFFER-EVENT-ID-NOT-UNIQUE-001: event_id = ts_ns + "_" + (src XOR dst); tambien es correlation_id (grafo).
 - DEBT-LAB-ENV-VMS-001: anotar en cada medida que VMs estaban levantadas (DAY297: las cinco; el trafico de Wazuh cambia
   el reposo y puede disparar el arranque en frio).
+
+## DAY298 — etapa 1 con histéresis (rama fix/ddos-etapa1-histeresis; medidos antes y después)
+
+**Resueltas en la rama (pendiente de merge):**
+- DEBT-DDOS-V2-LONG-ATTACK-001 — RESUELTA (pasos 2+3). Antes: la EWMA aprendía con alfa lento dentro de
+  bajo_presion y la etapa 1 (ratio crudo) dejaba de pasar a t = tau·ln(3(r−1)/(2r)); A5 en vivo 888,6 s
+  (885,7 predichos con r medido 6,786), 84,3 % marcado. Después: EWMA congelada en presión; A5 en vivo
+  sin corte, FIN a fin_ataque + 30 s, 62978/63000 = 99,97 % marcado; .51 legítimo 0 DROP (10510 pases de la
+  etapa 1 rechazados por el RF). Offline: test_ddos_victim_board 13a (2 h sostenido, ratio mín 7,0).
+- DEBT-DDOS-COLDSTART-ETAPA1-001 — RESUELTA salvo persistencia (paso 4). La etapa 1 consume
+  DDoSFeatures.victim_state (proto campo 16): FRIO nunca pasa (frío benigno 50 pps: 200 pases antes → 0);
+  clave fría con pps >= ddos_victim_ewma_abs_pps (defecto 200, seguro no óptimo) entra en presión desde la
+  primera ventana (frío 300 pps: 13373 pases = 13373 marcados). Precio documentado: frío 60 pps se aprende
+  como base (antes 1,2 % marcado, después 0). El pico de 140 pps de DAY297 fue tráfico real puntual (Wazuh),
+  no artefacto: la primera ventana del agregador se descarta (window_ms = 0).
+
+**Nuevas o pendientes de la misma rama (siguiente sesión, DAY299):**
+- DEBT-DDOS-ESTADO-ARRANQUE-001: los eventos sellados en la ventana de arranque del lector salen sin
+  victim_state (≈ 1 s de tráfico por arranque: 53 / 66 / 298 / 2 medidos). Decisión de Alonso (b): sellar
+  FRIO en esa ventana y renombrar el aviso para que diga sin ambigüedad que es una anomalía de la cabeza
+  DDoS (propuesta: [DDOS-V2-ANOMALIA] estado_victima_ausente). Test incluido.
+- DEBT-DDOS-STATE-PERSIST-001 (paso 4): volcar el estado por víctima (ewma, seen, bajo_presion, instante)
+  cada snapshot_s y en la parada si llega; restaurar al arrancar con caducidad; fallo de lectura o
+  escritura = aviso y arranca igual. Sin esto, tras un reinicio todas las víctimas vuelven a frío.
+- DEBT-DDOS-STATE-HMAC-001: integridad del fichero de estado (un fichero manipulado podría precargar una
+  base alta y cegar la detección). Depende de la provisión de claves HMAC.
+- DEBT-FW-PROTECTED-RANGES-001 (paso 5): DMZ, intranet y externos críticos en el JSON del firewall; DROP de
+  la cabeza DDoS sobre un origen protegido = ALERTA_PROTEGIDO, nunca bloqueo automático.
+- DEBT-DDOS-AUTO-EXIT-001: salida automática de presión si en N horas el RF no da ningún positivo para la
+  víctima (requiere realimentación ml-detector → sniffer; N en el JSON). Abierta, rama de medidas y modelo.
+- DEBT-DATASET-WRITER-VICTIM-STATE-001: el volcado del dataset del ml-detector no lleva victim_state ni el
+  resultado de la etapa 1; hoy se miden con el resumen [DDOS-V2] del ml-detector.
+- Tests de la PR: integración sniffer → proto → ml-detector en test-components; objetivo make del E2E del
+  laboratorio con criterios PASA/FALLA automáticos; EMECAS+++ desde cero (recompila tools/build-production,
+  que conserva el proto anterior).
+
+**Cifras nuevas para deudas existentes:**
+- DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001: seq_desorden crece con el ritmo: 0,03 % de los eventos a 60 pps,
+  5,1 % (1417/27785) a 300 pps (frio_atq300_despues). seq_ventana ya es configurable en el JSON del firewall.
+- DEBT-SNIFFER-FLOW-EXPIRY-001 + DEBT-SNIFFER-FLOWTABLE-CONFIG-001: confirmado DAY298 que cleanup_expired_flows
+  no se llama nunca (A5 en vivo exigió pcaps sin 5-tuplas repetidas, gen_disjunto.py). Rama propia
+  inmediatamente después del merge de esta (decisión de Alonso DAY298), antes de la vía rápida XDP.
+- Observación del laboratorio: el sniffer arranca ~145 s después del inicio de pipeline-start; la primera
+  fila del dataset llega a +140 s.
+
+## 🆕 Entradas DAY299 [DDOS-AGG-AVISO-D299]
+
+### DEBT-DDOS-ESTADO-ARRANQUE-001 — ✅ RESUELTA DAY299 (código b05f880c, medida e586aa31)
+- Causa medida: sin foto del agregador (have_snapshot=false; la baseline no se publica) el evento salía sin
+  victim_state, y además el consumidor del anillo arranca ANTES que el lector (main.cpp). El diagnóstico de
+  DAY298 (window_ms==0) era incorrecto.
+- Arreglo: plazo de arranque ddos_victim_arranque_ventanas (sniffer.json, [2,60], defecto 5). Sin foto dentro
+  del plazo = FRIO; fuera del plazo o sin lector = sin estado + [DDOS-ARRANQUE] ERROR (sniffer) +
+  [DDOS-V2-ANOMALIA] estado_victima_ausente (ml-detector, antes [DDOS-V2] sin_estado). Agregador apagado =
+  [DDOS-ARRANQUE] AVISO. Línea [DDOS-ARRANQUE] primera foto por arranque.
+- Medido: frío con ataque de 300 pps presente en el arranque: estado_victima_ausente 298 -> 0; primera foto a
+  1015-1035 ms; 648 eventos FRIO (fast alerts incluidas); pases = marcados = 51655; DROP solo .50.
+  Agregador apagado: 12 avisos, ~3000 por 10 s durante el ataque (~17900 de 18000 paquetes), 0 DROP.
+- Nace docs/operaciones/GUIA_OPERACIONES.md: cada aviso al administrador tiene su sección.
+
+### DEBT-DDOS-SNAPSHOT-STALE-001 — ABIERTA
+Si el lector muere DESPUÉS de publicar, la foto se queda vieja y se sigue sellando su estado. snapshot_age_ms
+viaja en el evento, pero nadie lo vigila. Propuesta: edad máxima en ventanas en el JSON, aviso y estado
+desconocido al superarla.
+
+### DEBT-HEADS-VENTANA-BASE-ARRANQUE-001 — ABIERTA (decisión de Alonso DAY299)
+Todas las cabezas comparten la unidad de tiempo: una ventana base del pipeline en el JSON, y cada cabeza
+expresa sus ventanas y su plazo de arranque como múltiplos. Hoy DDoS = 1 s (lector del kernel) y el
+agregador de ransomware = 30 s. El plazo de arranque se generaliza a cada cabeza al certificarla, configurable
+y medido.
+
+### DEBT-LAB-FRIO-SOLAPE-001 — ABIERTA (herramienta del laboratorio)
+El sniffer arranca entre ~140 y >215 s tras el inicio de pipeline-start (pipeline-start entero: 226-262 s).
+Un pcap disjunto de un solo origen tiene un techo de ~64k tuplas (~210 s a 300 pps), así que una corrida fría
+sin RETRASO_S puede no solapar (frio_atq300_d299: 0 paquetes del ataque vistos). Mitigado con RETRASO_S en
+lab_frio.sh. De fondo: caducidad de flujos (DEBT-SNIFFER-FLOW-EXPIRY-001) o pcaps multiorigen; medir por qué
+varía pipeline-start.
+
+### DEBT-CONFIG-KERNEL-STRUCT-DUP-001 — ABIERTA
+ddos_kernel_agg_interval_ms está en dos structs (sniffer/include/config_manager.hpp:96 y config_types.h:157).
+Medir cuál se usa y unificar.
+
+### Nota DAY299 a DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001
+seq_desorden 6232 / 106867 = 5,8 % a 300 pps (frio_atq300_d299b), en línea con el 5,1 % de DAY298.
+
+### DEBT-PIPELINE-STOP-GRACEFUL-001 — ABIERTA (decisión de Alonso DAY299) [SNIFFER-STOP-D299]
+pipeline-stop hacía tmux kill-session de cada componente: SIGHUP, y ninguno lo trataba, así que morían sin su
+parada ordenada (medido DAY299 en el sniffer: 0 líneas [Cleanup] en sniffer.log). Hecho DAY299 para el
+sniffer: target sniffer-stop (SIGTERM, espera SNIFFER_STOP_GRACE_S, SIGKILL de último recurso con aviso),
+pipeline-stop lo llama primero, y el sniffer trata SIGHUP como parada ordenada. Pendiente: lo mismo para
+ml-detector, firewall-acl-agent y el resto (decisión de Alonso: los procesos deben hacer su parada ordenada
+también ante SIGHUP). El firewall lo necesitará para volcar strike_states_ en la parada.
+
+### DEBT-SNIFFER-SHUTDOWN-HANG-001 — ABIERTA (P1) [D299-CIERRE]
+Con sniffer-stop (SIGTERM), el sniffer ejecuta su limpieza ([Cleanup], parada del lector y volcado de
+parada medidos), pero NO termina en 15 s y acaba en SIGKILL (2 de 2 paradas, DAY299). Se cuelga en algún
+paso posterior al lector: anillo, thread manager, ZMQ (linger) o loader eBPF. Medir qué paso es la última
+línea del log antes del SIGKILL. Además, el aviso de sniffer-stop dice «sin volcado de parada», y es falso
+cuando el volcado ya se hizo: corregir el texto (p. ej. «parada incompleta»). Y medir por qué la
+restauración dice «volcado de hace 60 s» cuando el rearranque fue inmediato.
+
+### DEBT-FW-IPSET-TESTS-SIN-ROOT-001 — ABIERTA (P1) [D299-CIERRE]
+Los 21 IPSetWrapperTest, test_recidivism_e2e y los dos *_injection_integration hacen GTEST_SKIP sin root:
+en test-components se saltan siempre. make test-firewall-e2e existe (Makefile:3058), pero ni test-all ni
+EMECAS lo llaman. El camino real del ipset no lo valida ningún gate. Va con el punto 3b de la rama.
+
+### PENDIENTE de la rama (punto 3b): drop temporal real de punta a punta [D299-CIERRE]
+Decisión de Alonso DAY299: un test E2E con dry_run apagado solo durante el test, donde una IP entra en el
+ipset con un drop temporal calculado y sale al vencer (basta probar el mecanismo). Antes de diseñar,
+medir: (1) soporte de ipset en el kernel del defender (ver [FW-DRYRUN-VERIF-D294]); (2) qué camino toma
+un DROP de ddos_v2 con dry_run=false (la sombra decide por víctima; el ipset guarda orígenes con el
+timeout de RECIDIVISM-D276); (3) conmutador del JSON del firewall que se restaure siempre.
+
+### Nota DAY299 — calibración de los valores por defecto [D299-CIERRE]
+Decisión de Alonso: los defectos de la persistencia, el plazo de arranque y abs_pps son seguros, no
+óptimos. Más adelante se diseñarán experimentos para hallar los óptimos de cada instalación (dependen de su
+topología); los lanzarán los administradores, y aRGus dará el método y una guía.
+
+### DEBT-SNIFFER-SHUTDOWN-HANG-001 — RESUELTA DAY300 [BACKLOG-PARADA-D300]
+Causa medida: cuatro hilos dormian con sleep_for(30 s) no interrumpible y su parada hacia join():
+estadisticas y procesador ransomware (ring_consumer), extraccion ransomware (RansomwareFeatureProcessor) y
+heartbeat (etcd-client, este retenia el final de main). La parada tardaba 0-30 s y sniffer-stop (15 s)
+acababa en SIGKILL (2/2 en DAY299). Arreglo [PARADA-INMEDIATA-D300]: condition_variable::wait_for con
+predicado y notify_all tras poner la bandera (sin despertar perdido); intervalos sin cambios. Medido DAY300:
+3/3 paradas ordenadas (337, 1086, 448 ms), con [Cleanup], volcado de parada, All components stopped,
+Heartbeat thread stopped y Sniffer stopped correctly. Edad de restauracion exacta: -0,64 s frente a
+volcado_wall_ns del CSV y el arranque del proceso; el "volcado de hace 60 s" de DAY299 era el hueco real.
+Criterio aceptado: parada ordenada, sin SIGKILL, < 2 s. stats_interval_seconds validado con
+[CONFIG-DEFAULT]; aviso de sniffer-stop corregido (el volcado pudo hacerse antes del SIGKILL).
+
+### DEBT-SNIFFER-MAIN-LOOP-POLL-001 — ABIERTA [BACKLOG-PARADA-D300]
+El bucle principal (main.cpp, while g_running) sondea con sleep_for(1 s) fijo: la parada ve la senal con
+hasta 1 s de retraso (explica la dispersion 337-1086 ms). Arreglo propuesto: esperar la senal en lugar de
+sondear (sigwait/signalfd), que elimina el numero fijo en vez de llevarlo al JSON.
+
+### DEBT-SNIFFER-CONFIG-SILENT-DEFAULTS-001 — ABIERTA [BACKLOG-PARADA-D300]
+config_manager.cpp lee muchos campos con get(campo, defecto) sin aviso (p. ej.
+zmq.queue_management.queue_timeout_ms, processing.user_processing.queue_timeout_seconds,
+monitoring.performance_tracking). Incumple la regla del JSON (defecto validado + [CONFIG-DEFAULT] con
+campo, formato y limites). Migrar campo a campo al patron de timebase/kernel_space.
+
+### DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001 — ABIERTA (va con el interruptor de cabezas) [BACKLOG-PARADA-D300]
+RingBufferConsumer::stop() libera ransomware_processor_ (shutdown_ransomware_detection) ANTES de
+shutdown_consumers(): un consumidor aun vivo puede usar el procesador liberado. Ademas las estadisticas
+finales dicen "Ransomware Detection: DISABLED" porque shutdown pone ransomware_enabled_=false antes de
+print_stats (falso: estuvo activo toda la corrida). Ransomware se inicializa siempre, sin interruptor JSON.
+
+### DEBT-ETCD-CLIENT-DEAD-VARIANTS-001 — ABIERTA (higiene) [BACKLOG-PARADA-D300]
+etcd-client/src/etcd_client_base.cpp y etcd_client_manual.cpp estan trackeados pero no se compilan
+(CMakeLists solo usa etcd_client.cpp) y conservan el sleep_for del heartbeat; tambien
+etcd-client/include/etcd_client/etcd_client.hpp.day54_hmac_only. Borrar o documentar.
+
+### DEBT-LAB-GDB-PROVISION-001 — ABIERTA [BACKLOG-PARADA-D300]
+gdb no esta en el aprovisionamiento del defender (instalado a mano DAY300 para el volcado de pilas de
+d300_parada.sh). Anadir al Vagrantfile si se quiere tener siempre a mano para diagnostico.
+
+### DEBT-SNIFFER-MAIN-LOOP-POLL-001 — RESUELTA DAY300 [BACKLOG-SIGWAIT-D300]
+[SIGWAIT-D300]: SIGINT/SIGTERM/SIGHUP se bloquean con pthread_sigmask en main antes de crear ningun hilo
+(mascara heredada) y el hilo principal las espera con sigwait(); sin manejador asincrono, sin sondeo, sin
+numero fijo. Medido: 15 de 16 hilos con SigBlk & 0x4003 = 0x4003 y el principal dormido en do_sigtimedwait
+(dentro de sigwait el kernel le desbloquea temporalmente las senales esperadas y /proc muestra SigBlk=0 en
+ese hilo: es lo correcto; d300_sigblk.sh lo comprueba asi). Paradas 4/4 en 123-231 ms (antes 337-1086 ms).
+Hijos: solo dos system("sysctl -w ...") cortos en dual_nic_manager, que heredan la mascara sin efecto.
+
+### DEBT-SNIFFER-CONFIG-SILENT-DEFAULTS-001 — AMPLIACION (decision de Alonso DAY300) [BACKLOG-SIGWAIT-D300]
+Un valor correcto leido del JSON tambien se registra en el log (campo=valor, fuente JSON), no solo los
+defectos: el log de arranque debe recoger la configuracion efectiva completa, campo a campo.
+
+### OBS-DDOS-PRESION-BASE-MINIMA-001 — ABIERTA (medir en el E2E del reinicio) [BACKLOG-SIGWAIT-D300]
+DAY300, sin trafico de ataque, una victima entro en bajo_presion durante unos 4 min de vida del sniffer
+(volcado de parada: "1 bajo presion"); la restauracion la conservo y salio sola en menos de 60 ventanas
+(el primer volcado periodico ya la escribio con 0). Hipotesis NO medida: victima con EWMA casi nula (en
+el CSV hay bases de 0,33 pps) y K_in=3: una rafaga de 1-2 paquetes cruza el umbral. En sombra solo afecta
+a la etapa 1. Medir que victima y con que tasas antes de decidir nada (p. ej. suelo minimo de pps).
+
+### DEBT-DDOS-STATE-PERSIST-001 — E2E HECHO DAY300 [BACKLOG-E2E-REINICIO-D300]
+Reinicio del sniffer a mitad de un ataque de 60 pps (bajo abs_pps): sin estado, 0 marcados tras el rearranque
+(razon 0,000, DROP/cable 0,416); con parada ordenada, razon 1,305 y DROP/cable 0,924; con kill -9 (volcado
+periodico de hace 34 s), razon 1,236 y 0,920. Un solo episodio de sombra cuando hay estado. Inocente .51: 0 DROP.
+Detalle: docs/ml-heads/day300_reinicio_e2e.md. Scripts: d300_reinicio_e2e.sh / _client.sh / _analisis.sh.
+
+### DEBT-SNIFFER-ZMQ-DROP-ARRANQUE-001 — ABIERTA [BACKLOG-E2E-REINICIO-D300]
+En los primeros 10 s tras cada rearranque del sniffer con trafico aparece [ZMQ-DROP] (15 y 4 eventos medidos
+DAY300). Medir la causa (conexion al ml-detector, HWM, cola) antes de decidir.
+
+### DEBT-SNIFFER-LOG-INTERLEAVE-001 — ABIERTA [BACKLOG-E2E-REINICIO-D300]
+Varios hilos escriben en std::cout sin exclusion y las lineas se mezclan (DAY300: "[ZMQ-DROP] descartados="
+seguido de "[ML-PHASE] ..." en la misma linea). Rompe los grep de diagnostico. Escribir cada linea completa
+de una vez (buffer local + una sola escritura, o logger con cerrojo).
+
+### OBS-FW-SOMBRA-DROP-FUERA-EPISODIO-001 — ABIERTA [BACKLOG-E2E-REINICIO-D300]
+antes2 (DAY300): los resumenes [SOMBRA-DDOS] suman 8980 DROP y el FIN cuenta 8976; los 4 de la diferencia son
+de ts=17472 (el "primer DROP", ratio 3,3), anteriores al inicio del episodio (17473). Hipotesis NO verificada:
+la ventana tuvo menos de m=5 DROP, no fue positiva y el FIN no la incluye. Comprobar en DdosShadowPolicy.
+
+
+### DEBT-DEPLOY-TEMPLATES-001 — ABIERTA (vision de Alonso DAY300) [PROTEGIDOS-D300]
+Plantillas de despliegue por instalacion: cada instalacion tendra su propia tarea de despliegue (Jenkinsfile)
+escrita a partir de plantillas que aRGus provee (hoy solo existe una muy generica: todo on premise en la misma VM
+Vagrant). El script de despliegue debe calcular o pedir al admin los rangos protegidos (dmz, intranet, externos
+criticos) en lugar de dejar los valores del laboratorio. Objetivo: plantillas para despliegue distribuido real en
+maquinas fisicas, con un motor mas avanzado que Vagrant e imagen segura minima Debian por maquina; por ejemplo,
+sniffers en maquinas propias, una maquina mayor con dos o tres ml-detector dando servicio a varios sniffers, el
+firewall-acl-agent en la maquina a proteger de la DMZ, y la parte de grafo (Suricata, Zeek, Wazuh, Falco y Kuzu)
+en otras maquinas. Requiere hardware de pruebas. Poner especial atencion a los rangos protegidos en las plantillas.
+
+### DEBT-FW-PROTECTED-RANGES-001 — tandas 2a y 2b DAY300 [PROTEGIDOS-D300]
+2a (3c273162): ddos_protegidos.hpp y test_ddos_protegidos. Correccion: el test tiene 38 comprobaciones (medido),
+no 36 como dice el mensaje del commit. 2b: cableado en config y sombra (ALERTA_PROTEGIDO, el origen protegido no
+entra en el episodio), JSON con valores de laboratorio documentados y guia. Pendiente 2c (con el paso 3b): ipset de
+whitelist en hash:net cargado con los rangos protegidos y barrera en batch_processor (camino real).
+
+## Cierre DAY300 [BACKLOG-CIERRE-D300]
+
+### DEBT-FW-PROTECTED-RANGES-001 — SOMBRA HECHA DAY300
+E2E (.50 a 60 pps + .61 protegido a 30 pps, misma victima, 180 s): FIN solo .50 (10742 de 10800), 5371
+ALERTA_PROTEGIDO intranet, .61 y .51 0 DROP, identidad 16113 = 10742 + 5371 (diferencia 0). Pendiente 2c con el
+paso 3b: ipset de whitelist en hash:net (hoy hash:ip y whitelist.json vacio) cargado con los rangos protegidos y
+barrera en batch_processor.
+
+### DEBT-HEADS-SWITCH-001 — ABIERTA, rama propia tras el merge (decisiones de Alonso DAY300)
+Interruptor por JSON/etcd de cada cabeza (ddos, ransomware, fast-path y las demas), todas o ninguna, con aviso
+del estado en el log. Configuracion en etcd (un solo sitio) y activable en RUNTIME. Con todas apagadas: ningun
+calculo (tampoco fast-path), ninguna recomendacion del ml-detector y el firewall no actua sobre el ipset aunque
+dry_run este apagado. El sniffer sigue capturando y enviando su senal al grafo (solo se apaga la clasificacion de
+aRGus). El fast-path es una cabeza propia en el sniffer. Medido DAY300: ransomware se inicializa siempre sin
+interruptor; [ML-PHASE] muestra ransomware/traffic/internal calculando por evento; los intervalos de ransomware
+(RANSOMWARE_EXTRACTION_INTERVAL_SEC y extraction_interval_seconds_, 30 s fijos) pasan al JSON del bloque de la
+cabeza con la constante como respaldo; arreglar a la vez DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001 y el
+"Ransomware Detection: DISABLED" falso. Riesgo a medir antes de apagar ransomware: el TimeWindowAggregator de las
+features DDoS embebidas es el de la ruta ransomware (grieta B, DAY263).
+
+### Paso 3b — NOTA DE DISENO DAY300
+Medido: la sombra de ddos_v2 hace return antes de cualquier bloqueo (zmq_subscriber.cpp, [DDOS-SHADOW-D293]);
+hoy no existe el camino ddos_v2 -> ipset. El 3b empieza por el diseno con Alonso.
+
+## DAY301 — paso 3b (mitigación real de ddos_v2), deudas nuevas
+
+- **DEBT-FW-ENFORCEMENT-POINT-001**: bloqueo solo en INPUT. Cuando el defender es pasarela (en el lab el client
+  ya enruta por él) hace falta FORWARD: lista de cadenas configurable en el JSON (INPUT/FORWARD), con defecto
+  INPUT y [CONFIG-DEFAULT].
+- **DEBT-FW-RATELIMIT-ACCEPT-ALL-001**: el rate limiting heredado aceptaba toda conexión TCP nueva (ACCEPT antes
+  del DROP) y se creaba aunque enable_rate_limiting=false. Desde DAY301 no se crea; con true solo avisa. Rehacer
+  sin ACCEPT, dentro de la cadena de aRGus, si se quiere.
+- **DEBT-FW-IPV6-SETS-001**: los sets son family inet; los rangos protegidos IPv6 (fc00::/7 del defecto) no van a
+  la whitelist del kernel (aviso [CONFIG-AVISO]); solo los protege la barrera del suscriptor. Sets inet6 gemelos.
+- **DEBT-FW-LOG-LEVEL-PERIODIC-DUMP-001**: los volcados periódicos de métricas salen con nivel CRASH
+  (context=periodic_metrics, is_running=1): confunden a quien filtre por gravedad.
+- **DEBT-FW-LEGACY-STEPS-001**: los pasos 5-8 antiguos de zmq_subscriber son inalcanzables y tienen
+  timeout_sec 300/600/3600 e ipset_name fijos en el código (el registro BLOCKED mentía sobre el timeout).
+  Retirarlos o reescribirlos en la tanda b2.
+- **DEBT-FW-SET-TYPE-EXISTING-001**: un set que ya existe en el kernel no cambia de tipo al cambiar set_type
+  (hay que destruirlo con el agente parado). Detectar el tipo real y avisar.
+- **DEBT-FW-CLEANUP-ON-STOP-001**: cleanup_rules existe pero main no la llama: las reglas sobreviven a la parada.
+  Hoy es deseable (los bloqueos siguen durante un reinicio); documentarlo en la guía y ofrecer limpieza explícita.
+- **DEBT-FW-E2E-FALSE-PASS-001** (amplía DEBT-FW-IPSET-TESTS-SIN-ROOT-001): los tests con GTEST_SKIP dentro de un
+  único binario salían como Passed sin root (0,02 s frente a 0,13 s con root). Patrón nuevo: sin gtest, salida
+  77 + SKIP_RETURN_CODE. El gate debe ejecutar test-firewall-e2e con root y fallar ante cualquier Skipped.
+- **DEBT-FW-MIN-DROPS-ORIGEN-TECHO-001**: el techo 100 de ddos_mitigacion.min_drops_origen es provisional; fijarlo
+  con la distribución de DROP por origen medida en el E2E.
+- **DEBT-FW-STRIKE-DEFAULTS-DUPLICATED-001**: la escalera por defecto vive en dos structs (RecidivismConfigNew y
+  RecidivismConfig) además del JSON; una sola fuente.
+- **Ampliación de CONFIG-SILENT-DEFAULTS**: el bloque ddos_shadow lee en silencio los valores válidos (solo avisa
+  de los defectos); ddos_mitigacion ya registra cada valor con [CONFIG].
+
+
+## Cierre DAY303 [CIERRE-D303]
+
+Resuelto DAY303 (EMECAS+++ production desde cero, 2h32m, rc=0): perfil por defecto production; pipeline-build
+compila tools y termina con set-build-profile; rag por perfil; clean-host-builds en el Mac antes de vagrant up;
+emecas-frescura con sello; puerta e2e/perf del firewall con root (ctest_label_gate.sh); lab-e2e (reinicio
+antes/ordenada/kill9, protegidos, mitigacion) con veredictos estrictos; espera ESTABLE con fondo ICMP controlado;
+tools/build y crypto-transport/build fuera de git; emecas_run.sh / emecas_watch.sh.
+
+### DEBT-RAG-DEPRECATION-CERT-001 — ABIERTA, siguiente rama (decision de Alonso DAY303)
+Deprecado de rag/rag-security nunca certificado: se quito parte del Makefile pero sigue compilandose, arrancando,
+perfilado en AppArmor/Falco, con semillas y tests que lo nombran. Inventario K6 en docs/ml-heads/prompt_day304.md.
+
+### DEBT-PIPELINE-STATUS-LIVENESS-001 — ABIERTA
+pipeline-status solo comprueba que el proceso existe. rag-security salia RUNNING sin registrarse en etcd desde
+septiembre (MAC verification failed, K8). Comprobar registro en etcd o heartbeat aceptado por componente.
+
+### DEBT-APPARMOR-FIREWALL-BIN-NAME-001 — ABIERTA
+tools/apparmor-promote.sh usa firewall_acl_agent; el binario es firewall-acl-agent (FIREWALL_BIN). Si el perfil
+usa ese path, AppArmor no confina el binario real. Medir en la VM hardened.
+
+### DEBT-FW-LEGACY-LINK-DIR-001 — ABIERTA
+firewall-acl-agent/build es un directorio real: ln -sfn $(FIREWALL_BUILD_DIR) $(FIREWALL_LEGACY_LINK) crea el
+enlace DENTRO. (clean-host-builds lo borra en EMECAS; en el dia a dia persiste.)
+
+### DEBT-BUILD-INCREMENTAL-001 — ABIERTA
+pipeline-build recompila todo en cada llamada (DAY303: 08:35-08:48 y 09:43-09:56 sin cambios de fuente
+intermedios relevantes). Medir que cmake/make reconfigura y por que.
+
+### DEBT-EMECAS-SENSOR-VMS-001 — ABIERTA
+EMECAS levanta defender, client y suricata; zeek y wazuh no entran en el gate (make up levanta las 5).
+
+### DEBT-LAB-ESTABLE-LECTOR-001 — MITIGADA
+day288_esperar_estable.sh necesita trafico: el lector del kernel solo escribe claves con paquetes. Mitigado con
+fondo ICMP controlado (d303_esperar_estable_lab.sh). Solucion de fondo: un latido del lector por sondeo.
+
+### DEBT-LAB-VIVOS-DIA-001 — ABIERTA
+lab_corrida_defender.sh con DIA invalido (no dayNNN) hace que el E2E diga "quedan procesos vivos": mensaje
+enganoso. Distinguir DIA invalido de proceso vivo.
+
+### DEBT-GIT-BUILD-ARTIFACTS-001 — ABIERTA
+Quedan versionados common-rag-ingester/build (5 ficheros; va con DEBT-RAG-DEPRECATION-CERT-001) y
+plugin-loader/build-enterprise (4; medir quien lo usa antes de quitarlo).
+
+### DEBT-BUILD-BASURA-001 — ABIERTA
+Directorios sin dueno en el Makefile: common/build-vault, plugin-loader/build-debug, ml-detector/build_detector_test,
+sniffer/build-prod (los build-* los borra clean-host-builds; el resto persiste).
+
+### DEBT-MAKE-DEAD-TARGETS-001 — ABIERTA
+test-alert-client y test-wire-protocol no los llama nadie.
+
+### DEBT-VAULT-COMMON-BUILD-001 — ABIERTA
+Los actos de Vault reconfiguran common/build con ARGUS_VAULT_ENABLED=ON y lo instalan con sudo make install: en
+una sesion manual contamina los builds OSS posteriores (en EMECAS lo limpia clean-host-builds en la siguiente).
+
+### DEBT-PROVISION-LIBS-PROFILE-001 — ABIERTA (a medir)
+provision.sh compila las librerias con CMAKE_BUILD_TYPE=Release, no con los flags del perfil production; medir
+si pipeline-build las recompila con CMAKE_FLAGS y cual queda instalada en /usr/local/lib.
+
+### DEBT-SANITIZERS-PREPROD-001 — ABIERTA (decision de Alonso DAY303)
+Pase ASan/TSan (emecas++++) solo en hardware real de preproduccion/produccion. Existe tsan-all; falta objetivo asan.
+
+### DEBT-SYNTH-E2E-FAIL-FAST-001 — ABIERTA
+test-e2e-synthetic-full espera "Injection complete" con timeout 60 y no reacciona a "Error" del injector:
+con etcd-server caido tardo 60 s en fallar y sin decir por que. Fallar al ver Error con su mensaje.
+
+### DEBT-MAKE-PREFLIGHT-001 — PROPUESTA (DAY303)
+make preflight de segundos antes de cualquier corrida larga: expandir cada vagrant ssh -c (uniendo lineas de
+continuacion) y comprobar con shlex 4 argumentos; ficheros del repo con salto de linea final; ningun build*/
+versionado; LAB_E2E_DIA con formato dayNNN; patrones de estado que no casen con su propio pgrep.
+Habria cazado 3-4 de los fallos de DAY303 antes de lanzar nada.
+
+### Practica DAY303 (Alonso)
+Ramas pequenas con su EMECAS al final; EMECAS cuando el Mac no se usa (de noche).
+
+### Leccion DAY303
+Nunca printf >> sobre ficheros del repo: .gitignore no terminaba en salto de linea y el anadido rompio la regla
+seed-repro/*.json. Siempre patcher que compruebe el salto final.

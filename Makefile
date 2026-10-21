@@ -122,7 +122,9 @@ CMAKE_FLAGS_ASAN := -DCMAKE_BUILD_TYPE=RelWithDebInfo \
                     -DCMAKE_SHARED_LINKER_FLAGS="$(PROFILE_ASAN_LD)"
 
 # Default profile (can be overridden: make PROFILE=tsan all)
-PROFILE ?= debug
+# [ARGUS-PROFILE-D303] defecto production (decision de Alonso DAY303: compilar y probar siempre en
+# produccion). Debug, tsan y asan siguen disponibles con PROFILE=... explicito.
+PROFILE ?= production
 CMAKE_FLAGS := $(CMAKE_FLAGS_$(shell echo $(PROFILE) | tr a-z A-Z))
 VERBOSE ?=
 FORCE_ALL_HEADS ?=
@@ -149,7 +151,8 @@ FIREWALL_LEGACY_LINK      := /vagrant/firewall-acl-agent/build
 ETCD_SERVER_LEGACY_LINK   := /vagrant/etcd-server/build
 TOOLS_LEGACY_LINK         := /vagrant/tools/build
 
-RAG_BUILD_DIR := /vagrant/rag/build
+# [ARGUS-CLEAN-D303] rag por perfil como el resto (su deprecado va en rama propia)
+RAG_BUILD_DIR := /vagrant/rag/build-$(PROFILE)
 RAG_INGESTER_BIN_DIR := /vagrant/rag-ingester/build
 # ============================================================================
 # HELP
@@ -163,8 +166,8 @@ help:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "📋 Build Profiles (PROFILE=name):"
-	@echo "  debug       - Debug symbols (-g -O0) [DEFAULT] — desarrollo diario"
-	@echo "  production  - Optimized (-O3, LTO, march=native) — ODR check + benchmarks FEDER"
+	@echo "  debug       - Debug symbols (-g -O0) — depuracion a mano (PROFILE=debug)"
+	@echo "  production  - Optimized (-O3, LTO, march=native) [DEFAULT] — ODR check + benchmarks FEDER"
 	@echo "  tsan        - ThreadSanitizer (-fsanitize=thread) — race conditions"
 	@echo "  asan        - AddressSanitizer (-fsanitize=address,undefined) — memory errors + UB"
 	@echo "  NOTE: PROFILE=production activa -flto → ODR verification cross-module (P0 bloqueante)"
@@ -641,6 +644,21 @@ sniffer-start:
 	   >> $(SNIFFER_LOG) 2>&1'"
 	@sleep 4
 
+# ── sniffer-stop — parada ORDENADA [SNIFFER-STOP-D299] ──────────────────────────────────
+# SIGTERM y espera; SIGKILL solo como ultimo recurso. tmux kill-session (SIGHUP) mataba el sniffer
+# sin limpieza ni volcado del estado por victima (medido DAY299: 0 lineas [Cleanup]).
+SNIFFER_STOP_GRACE_S ?= 15
+sniffer-stop:
+	@vagrant ssh defender -c "if pgrep -x sniffer >/dev/null; then \
+	    sudo pkill -TERM -x sniffer; \
+	    for i in \$$(seq 1 $(SNIFFER_STOP_GRACE_S)); do pgrep -x sniffer >/dev/null || break; sleep 1; done; \
+	    if pgrep -x sniffer >/dev/null; then \
+	      echo '⚠️  sniffer no paró en $(SNIFFER_STOP_GRACE_S) s: SIGKILL. Si en sniffer.log no consta el volcado de parada se restaurara el ultimo periodico'; \
+	      sudo pkill -KILL -x sniffer; \
+	    else echo '✅ sniffer parado de forma ordenada'; fi; \
+	  else echo '➖ sniffer no estaba en marcha'; fi; \
+	  tmux kill-session -t sniffer 2>/dev/null || true"
+
 # ── sniffer-libpcap-start — Variant B (libpcap) ──────────────────────────────
 sniffer-libpcap-start:
 	@echo "🚀 Starting Sniffer Variant B (libpcap) [$(PROFILE)]..."
@@ -709,7 +727,7 @@ rag-ingester-start:
 	@echo "🧹 Limpiando SQLite lock anterior (si existe)..."
 	@vagrant ssh -c "rm -f /vagrant/shared/indices/metadata.db-wal /vagrant/shared/indices/metadata.db-shm || true"
 	@echo "Ejecución desde la raíz del componente para resolver paths relativos del config..."
-	@vagrant ssh -c "tmux new-session -d -s rag-ingester 'mkdir -p /vagrant/logs/lab && cd /vagrant/rag-ingester && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib ./build-debug/rag-ingester /etc/ml-defender/rag-ingester/rag-ingester.json >> /vagrant/logs/lab/rag-ingester.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s rag-ingester 'mkdir -p /vagrant/logs/lab && cd /vagrant/rag-ingester && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib $(RAG_INGESTER_BUILD_DIR)/rag-ingester /etc/ml-defender/rag-ingester/rag-ingester.json >> /vagrant/logs/lab/rag-ingester.log 2>&1'"
 	@sleep 2
 
 rag-ingester: proto etcd-client-build crypto-transport-build plugin-loader-build
@@ -936,6 +954,7 @@ pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
 
 pipeline-stop:
 	@echo "🛑 Stopping all pipeline components..."
+	@$(MAKE) --no-print-directory sniffer-stop  # [SNIFFER-STOP-D299] parada ordenada antes del resto
 	@vagrant ssh -c "for s in sniffer ml-detector firewall rag-ingester rag-security etcd-server; do tmux kill-session -t $$s 2>/dev/null || true; done"
 	@echo "✅ Pipeline stopped"
 
@@ -982,7 +1001,10 @@ set-build-profile:
 # 4. sign-plugins    → firma Ed25519 (ADR-025)
 # 5. test-provision-1 → CI gate PHASE 3
 # 6. pipeline-start  → arranca los 6 componentes
-pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install
+# [ARGUS-CLEAN-D303] al final, set-build-profile: build-active -> build-$(PROFILE) de lo recien
+# compilado (antes solo corria en bootstrap, ANTES de compilar, y se saltaba lo que no existia)
+pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install tools
+	@$(MAKE) set-build-profile
 
 tools: proto etcd-client-build crypto-transport-build
 	@echo ""
@@ -1139,6 +1161,16 @@ clean: clean-components
 	@echo "💡 Tip: Use 'make clean-libs' to also clean libraries"
 	@echo "💡 Tip: Use 'make clean-all' to clean ALL profiles + libs"
 
+# [ARGUS-CLEAN-HOST-D303] limpieza de los build* en el MAC (carpeta del repo, sobrevive a vagrant destroy), con las
+# VMs destruidas y ANTES de vagrant up: provision.sh compila seed-client, crypto-transport, plugin-loader y
+# etcd-client en sus build/ durante el up (medido DAY303). No toca adapters ni cmake-build-* (CLion).
+.PHONY: clean-host-builds
+clean-host-builds:
+	@test -f Makefile -a -d .git -a -f Vagrantfile || { echo "[CLEAN-HOST] FALLA: no estoy en la raiz del repo"; exit 1; }
+	@echo "[CLEAN-HOST] borrando en el Mac: sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build"
+	@rm -rf sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build
+	@q=$$(ls -d sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build 2>/dev/null | wc -l | tr -d ' '); if [ "$$q" != "0" ]; then echo "[CLEAN-HOST] FALLA: quedan $$q directorios"; exit 1; fi; echo "[CLEAN-HOST] PASA: 0 directorios de build en el Mac"
+
 clean-all:
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -1161,6 +1193,11 @@ clean-all:
 	@vagrant ssh -c "rm -rf /vagrant/etcd-server/build-*"
 	@vagrant ssh -c "rm -rf /vagrant/tools/build-*"
 	@echo ""
+	@echo "  - [ARGUS-CLEAN-D303] rag, vault-client (common/build), host-engine, correlation-engine..."
+	@vagrant ssh -c "rm -rf /vagrant/rag/build /vagrant/rag/build-*"
+	@$(MAKE) vault-client-clean
+	@$(MAKE) host-engine-clean
+	@$(MAKE) correlation-engine-clean
 	@$(MAKE) clean-libs
 	@echo ""
 	@echo "✅ Nuclear clean complete - ALL builds + libraries removed"
@@ -1256,7 +1293,7 @@ test-components: correlation-engine-test
 	@vagrant ssh -c "cd $(RAG_BUILD_DIR) && ctest --output-on-failure"
 	@echo ""
 	@echo "Testing Firewall ACL Agent..."
-	@vagrant ssh -c "cd $(FIREWALL_BUILD_DIR) && ctest --output-on-failure"
+	@vagrant ssh -c "cd $(FIREWALL_BUILD_DIR) && ctest -LE 'e2e|root|perf' --output-on-failure"
 	@echo ""
 
 deploy-configs:
@@ -1300,20 +1337,85 @@ test: test-all
 # emecas++: emecas + 3 Actos enterprise (Vault, rotación, fault injection)
 # Decisión arquitectura: targets anidados (opción C, 8/8 Consejo)
 # ============================================================================
+# [ARGUS-GATE-EMECAS-D303] tras test-all, la puerta del firewall con root: test-firewall-e2e (falla con
+# cualquier test saltado o una ejecucion de gtest de 0 tests) y test-firewall-perf (da numeros del
+# entorno; falla solo si la medida es invalida). Heredan el PROFILE de la corrida: make emecas+++ PROFILE=production
 emecas:
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🏛️  EMECAS — OSS gate (destroy → up → bootstrap → test)  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	vagrant destroy -f
+	$(MAKE) clean-host-builds
 	vagrant up defender client suricata
+	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	$(MAKE) bootstrap
+	$(MAKE) emecas-frescura
 	$(MAKE) test-all
+	$(MAKE) test-firewall-e2e
+	$(MAKE) test-firewall-perf
 	$(MAKE) test-e2e-synthetic
+	$(MAKE) lab-e2e
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS PASSED                                        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
+
+# [ARGUS-CLEAN-D303] emecas-frescura: cada binario del pipeline existe en build-$(PROFILE), build-active
+# apunta ahi y es mas nuevo que el sello escrito tras clean-all. Fuera de EMECAS, sin sello:
+#   vagrant ssh defender -c "bash /vagrant/scripts/emecas/emecas_frescura.sh production"
+.PHONY: emecas-frescura
+emecas-frescura:
+	@vagrant ssh defender -c "bash /vagrant/scripts/emecas/emecas_frescura.sh $(PROFILE) /vagrant/logs/lab/emecas_inicio.stamp"
+
+# [ARGUS-LAB-E2E-D303] E2E del lab con PASA/FALLA (decision de Alonso DAY303: EMECAS estricto y determinista).
+# Cada objetivo prepara el client, corre el E2E (que para al primer fallo) y aplica su veredicto (rc 0 = PASA).
+# Corridas en logs/lab/$(LAB_E2E_DIA)/lab_*/. Duracion total de lab-e2e: ~60 min.
+# lab_corrida_defender.sh exige DIA con formato dayNNN (medido DAY303)
+LAB_E2E_DIA ?= day303
+.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion
+lab-e2e-prep:
+	@echo "[LAB-E2E] client: alias 192.168.100.51 en eth1 y MAC de 192.168.100.1 en la tabla de vecinos"
+	@vagrant ssh client -c "ip -4 addr show dev eth1 | grep -q 192.168.100.51 || sudo ip addr add 192.168.100.51/24 dev eth1; ping -c 3 -W 1 -I eth1 192.168.100.1 > /dev/null 2>&1; ip -4 addr show dev eth1 | grep -q 192.168.100.51 && ip neigh show 192.168.100.1 dev eth1 | grep -q lladdr && ip neigh show 192.168.100.1 dev eth1" || { echo "[LAB-E2E] FALLA: client sin alias .51 o sin MAC de .1"; exit 1; }
+
+lab-e2e-reinicio-antes:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_reinicio_e2e.sh antes lab_reinicio_antes
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_reinicio.sh antes /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_reinicio_antes"
+
+lab-e2e-reinicio-ordenada:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_reinicio_e2e.sh ordenada lab_reinicio_ordenada
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_reinicio.sh ordenada /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_reinicio_ordenada"
+
+lab-e2e-reinicio-kill9:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_reinicio_e2e.sh kill9 lab_reinicio_kill9
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_reinicio.sh kill9 /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_reinicio_kill9"
+
+lab-e2e-protegidos:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d300_protegidos_e2e.sh lab_protegidos
+	@vagrant ssh defender -c "bash /vagrant/scripts/timebase/d303_veredicto_protegidos.sh /vagrant/logs/lab/$(LAB_E2E_DIA)/lab_protegidos"
+
+lab-e2e-mitigacion:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d302_mitigacion_e2e.sh lab_mitigacion
+
+lab-e2e:
+	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion"
+	$(MAKE) lab-e2e-reinicio-antes
+	$(MAKE) lab-e2e-reinicio-ordenada
+	$(MAKE) lab-e2e-reinicio-kill9
+	$(MAKE) lab-e2e-protegidos
+	$(MAKE) lab-e2e-mitigacion
+	@echo "[LAB-E2E] [ARGUS-LAB-RESTORE-D303] los E2E paran el pipeline: se deja arrancado, como se encontro"
+	$(MAKE) pipeline-start > /tmp/argus_lab_e2e_restore.txt 2>&1 || { tail -n 20 /tmp/argus_lab_e2e_restore.txt; echo "[LAB-E2E] FALLA: pipeline-start al restaurar"; exit 1; }
+	@# [ARGUS-LAB-RESTORE-D303] patron estricto: pgrep -a -f se imprime a si mismo y su linea contiene STOPPED
+	@if grep -E '^[[:space:]]*❌.*STOPPED' /tmp/argus_lab_e2e_restore.txt; then echo "[LAB-E2E] FALLA: componente STOPPED al restaurar"; exit 1; fi
+	@n=$$(grep -c -E '^[[:space:]]+✅ (etcd-server|rag-security|ml-detector|sniffer|firewall):' /tmp/argus_lab_e2e_restore.txt); if [ "$$n" -lt 5 ]; then echo "[LAB-E2E] FALLA: solo $$n de 5 componentes RUNNING al restaurar"; exit 1; fi; echo "[LAB-E2E] restaurado: $$n de 5 componentes RUNNING"
+	@echo "[LAB-E2E] PASA los cinco E2E del lab $$(date '+%F %T')"
+
 
 emecas++: emecas
 	@echo ""
@@ -1382,7 +1484,7 @@ test-e2e-synthetic-full:
 	@vagrant ssh -c "python3 /vagrant/scripts/check_e2e_pipeline.py snapshot"
 	@echo "── Inyectando 100 eventos vía synthetic_sniffer_injector ──"
 	@vagrant ssh -c "tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s e2e-sniffer-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_sniffer_injector 100 10 > /vagrant/logs/lab/e2e-sniffer-injector.log 2>&1; tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true'"
+	@vagrant ssh -c "tmux new-session -d -s e2e-sniffer-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib $(TOOLS_BUILD_DIR)/synthetic_sniffer_injector 100 10 > /vagrant/logs/lab/e2e-sniffer-injector.log 2>&1; tmux kill-session -t e2e-sniffer-injector 2>/dev/null || true'"
 	@echo "   Esperando fin de inyeccion (~20s)..."
 	@vagrant ssh -c "timeout 60 bash -c 'until grep -q \"Injection complete\" /vagrant/logs/lab/e2e-sniffer-injector.log 2>/dev/null; do sleep 1; done'"
 	@vagrant ssh -c "tail -3 /vagrant/logs/lab/e2e-sniffer-injector.log"
@@ -1413,7 +1515,7 @@ test-e2e-synthetic-firewall:
 	@sleep 2
 	@vagrant ssh -c "truncate -s 0 /vagrant/logs/lab/firewall-agent.log"
 	@echo "── Arrancando injector primero (PUB bind a :5572) ──"
-	@vagrant ssh -c "tmux new-session -d -s e2e-ml-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib /vagrant/tools/build-debug/synthetic_ml_output_injector 300 5 > /vagrant/logs/lab/e2e-ml-injector.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s e2e-ml-injector 'sudo env LD_LIBRARY_PATH=/usr/local/lib $(TOOLS_BUILD_DIR)/synthetic_ml_output_injector 300 5 > /vagrant/logs/lab/e2e-ml-injector.log 2>&1'"
 	@sleep 3
 	@echo "── Arrancando firewall (SUB connect → primer intento exitoso) ──"
 	@$(MAKE) firewall-start
@@ -1514,9 +1616,10 @@ test-e2e-vault: vault-dev-seed
 	@echo "── Step 3: Tests vault_provider (6/6) ──"
 	@$(MAKE) test-enterprise-plugin
 	@echo "── Step 4: Compilando etcd-server con ARGUS_VAULT_ENABLED=ON ──"
-	@vagrant ssh -c "cd /vagrant/etcd-server/build-debug && cmake .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3"
+	@# [ARGUS-VAULT-QUOTE-D303] comillas simples: CMAKE_FLAGS lleva comillas dobles (medido DAY303)
+	@vagrant ssh -c 'mkdir -p /vagrant/etcd-server/build-vault-$(PROFILE) && cd /vagrant/etcd-server/build-vault-$(PROFILE) && cmake $(CMAKE_FLAGS) .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3'
 	@echo "── Step 5: Smoke test etcd-server enterprise (Acto I — VaultProvider) ──"
-	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-debug/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
+	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ TEST-E2E-VAULT PASSED                                 ║"
@@ -1536,7 +1639,7 @@ vault-fault-inject:
 	@echo "── Fase 1: Crear token hijo para etcd-server ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token create -ttl=120s -display-name=argus-etcd-server-fault -field=token) && echo \$$CHILD_TOKEN > /tmp/argus_fault_token.txt && echo '✅ Token hijo creado'"
 	@echo "── Fase 2: Arrancar etcd-server con token hijo ──"
-	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-debug/etcd-server > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
+	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
 	@echo "── Fase 3: Revocar token hijo (simular Vault KO) ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token revoke \$$CHILD_TOKEN > /dev/null && echo '✅ Token revocado — Vault KO simulado'"
 	@echo "── Fase 4: Verificar modo AUTONOMOUS (cache RCU) ──"
@@ -2283,9 +2386,9 @@ rag-clean:
 	@vagrant ssh -c "cd /vagrant/rag && make clean"
 
 rag-start:
-	@echo "🚀 Starting rag-security (from /vagrant/rag/build-active)..."
+	@echo "🚀 Starting rag-security (from $(RAG_BUILD_DIR))..."
 	@vagrant ssh -c "tmux kill-session -t rag-security 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s rag-security 'mkdir -p /vagrant/logs/lab && cd /vagrant/rag/build-active && ./rag-security >> /vagrant/logs/lab/rag-security.log 2>&1'"
+	@vagrant ssh -c "tmux new-session -d -s rag-security 'mkdir -p /vagrant/logs/lab && cd $(RAG_BUILD_DIR) && ./rag-security >> /vagrant/logs/lab/rag-security.log 2>&1'"
 	@sleep 2
 
 rag-stop:
@@ -3056,10 +3159,13 @@ test-firewall:
 
 # e2e/root: integracion contra ipset real (canario de inyeccion H-2). Solo VM, con sudo.
 test-firewall-e2e:
-	@echo "🧪 firewall e2e (perfil=$(PROFILE), CON root)"
-	@vagrant ssh -c 'cd $(FIREWALL_BUILD_DIR) && \
-		sudo env LD_LIBRARY_PATH=/usr/local/lib \
-		ctest -L "e2e" --output-on-failure'
+	@echo "🧪 firewall e2e (perfil=$(PROFILE), CON root): falla si algun test se salta  [ARGUS-GATE-PERF-D303]"
+	@vagrant ssh -c 'bash /vagrant/firewall-acl-agent/tests/ctest_label_gate.sh $(FIREWALL_BUILD_DIR) e2e'
+
+.PHONY: test-firewall-perf
+test-firewall-perf:
+	@echo "📏 firewall perf (perfil=$(PROFILE), CON root): mide y valida la medida; no falla por tiempo  [ARGUS-GATE-PERF-D303]"
+	@vagrant ssh -c 'bash /vagrant/firewall-acl-agent/tests/ctest_label_gate.sh $(FIREWALL_BUILD_DIR) perf'
 # ══════════════════════════════════════════════════════════════════════════
 # EMECAS+++ — Gate E2E rio-abajo (DAY 204, ADR-058 §1)
 # Hoy: alias de emecas++. El test de circuito completo bronce->Kuzu

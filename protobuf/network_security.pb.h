@@ -442,6 +442,33 @@ inline bool EventBatch_ProcessingMode_Parse(
   return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<EventBatch_ProcessingMode>(
     EventBatch_ProcessingMode_descriptor(), name, value);
 }
+enum VictimState : int {
+  VICTIM_STATE_UNKNOWN = 0,
+  VICTIM_STATE_COLD = 1,
+  VICTIM_STATE_NORMAL = 2,
+  VICTIM_STATE_UNDER_PRESSURE = 3,
+  VictimState_INT_MIN_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::min(),
+  VictimState_INT_MAX_SENTINEL_DO_NOT_USE_ = std::numeric_limits<int32_t>::max()
+};
+bool VictimState_IsValid(int value);
+constexpr VictimState VictimState_MIN = VICTIM_STATE_UNKNOWN;
+constexpr VictimState VictimState_MAX = VICTIM_STATE_UNDER_PRESSURE;
+constexpr int VictimState_ARRAYSIZE = VictimState_MAX + 1;
+
+const ::PROTOBUF_NAMESPACE_ID::EnumDescriptor* VictimState_descriptor();
+template<typename T>
+inline const std::string& VictimState_Name(T enum_t_value) {
+  static_assert(::std::is_same<T, VictimState>::value ||
+    ::std::is_integral<T>::value,
+    "Incorrect type passed to function VictimState_Name.");
+  return ::PROTOBUF_NAMESPACE_ID::internal::NameOfEnum(
+    VictimState_descriptor(), enum_t_value);
+}
+inline bool VictimState_Parse(
+    ::PROTOBUF_NAMESPACE_ID::ConstStringParam name, VictimState* value) {
+  return ::PROTOBUF_NAMESPACE_ID::internal::ParseNamedEnum<VictimState>(
+    VictimState_descriptor(), name, value);
+}
 enum ClockState : int {
   CLOCK_STATE_OK = 0,
   CLOCK_STATE_SLEWING = 1,
@@ -690,6 +717,7 @@ class DDoSFeatures final :
     kFlowPacketCountFieldNumber = 13,
     kVictimRateRatioFieldNumber = 14,
     kVictimPpsFieldNumber = 15,
+    kVictimStateFieldNumber = 16,
   };
   // float syn_ack_ratio = 1;
   void clear_syn_ack_ratio();
@@ -826,6 +854,15 @@ class DDoSFeatures final :
   void _internal_set_victim_pps(float value);
   public:
 
+  // .protobuf.VictimState victim_state = 16;
+  void clear_victim_state();
+  ::protobuf::VictimState victim_state() const;
+  void set_victim_state(::protobuf::VictimState value);
+  private:
+  ::protobuf::VictimState _internal_victim_state() const;
+  void _internal_set_victim_state(::protobuf::VictimState value);
+  public:
+
   // @@protoc_insertion_point(class_scope:protobuf.DDoSFeatures)
  private:
   class _Internal;
@@ -849,6 +886,7 @@ class DDoSFeatures final :
     float flow_packet_count_;
     float victim_rate_ratio_;
     float victim_pps_;
+    int victim_state_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -11057,6 +11095,26 @@ inline void DDoSFeatures::_internal_set_victim_pps(float value) {
 inline void DDoSFeatures::set_victim_pps(float value) {
   _internal_set_victim_pps(value);
   // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.victim_pps)
+}
+
+// .protobuf.VictimState victim_state = 16;
+inline void DDoSFeatures::clear_victim_state() {
+  _impl_.victim_state_ = 0;
+}
+inline ::protobuf::VictimState DDoSFeatures::_internal_victim_state() const {
+  return static_cast< ::protobuf::VictimState >(_impl_.victim_state_);
+}
+inline ::protobuf::VictimState DDoSFeatures::victim_state() const {
+  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.victim_state)
+  return _internal_victim_state();
+}
+inline void DDoSFeatures::_internal_set_victim_state(::protobuf::VictimState value) {
+  
+  _impl_.victim_state_ = value;
+}
+inline void DDoSFeatures::set_victim_state(::protobuf::VictimState value) {
+  _internal_set_victim_state(value);
+  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.victim_state)
 }
 
 // -------------------------------------------------------------------
@@ -25964,6 +26022,11 @@ template <> struct is_proto_enum< ::protobuf::EventBatch_ProcessingMode> : ::std
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::EventBatch_ProcessingMode>() {
   return ::protobuf::EventBatch_ProcessingMode_descriptor();
+}
+template <> struct is_proto_enum< ::protobuf::VictimState> : ::std::true_type {};
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::protobuf::VictimState>() {
+  return ::protobuf::VictimState_descriptor();
 }
 template <> struct is_proto_enum< ::protobuf::ClockState> : ::std::true_type {};
 template <>

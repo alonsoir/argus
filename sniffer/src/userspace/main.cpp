@@ -39,6 +39,8 @@
 #include <unistd.h>
 #include <errno.h>
 #include <csignal>
+#include <pthread.h>  // [SIGWAIT-D300]
+#include <cstring>    // [SIGWAIT-D300] strsignal, strerror
 #include <getopt.h>
 #include <iomanip>
 #include <random>
@@ -191,24 +193,25 @@ std::shared_ptr<sniffer::ThreadManager> thread_manager = nullptr;
 // SIGNAL HANDLERS
 // ============================================================================
 
-void signal_handler(int signum) {
-    // async-signal-safe: write() only (DEBT-SIGNAL-001)
-    static const char msg[] = "\n[Signal] Shutdown signal received\n";
-    write(STDERR_FILENO, msg, sizeof(msg) - 1);
-    (void)signum;
-    g_running = false;
-}
+// [SIGWAIT-D300] Senales de parada: se BLOQUEAN en el hilo principal antes de crear ningun hilo (la mascara
+// se hereda, asi que ningun hilo las recibe) y el hilo principal las espera con sigwait() en lugar de
+// sondear g_running. Sin manejador asincrono: el mensaje se escribe desde el hilo principal.
+// SIGHUP = parada ordenada [SNIFFER-STOP-D299] (tmux kill-session).
+sigset_t g_senales_parada;
 
 void setup_signal_handlers() {
-    struct sigaction sa;
-    sa.sa_handler = signal_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-
-    sigaction(SIGINT, &sa, nullptr);
-    sigaction(SIGTERM, &sa, nullptr);
-
-    std::cout << "✅ Signal handlers configured (SIGINT, SIGTERM)" << std::endl;
+    sigemptyset(&g_senales_parada);
+    sigaddset(&g_senales_parada, SIGINT);
+    sigaddset(&g_senales_parada, SIGTERM);
+    sigaddset(&g_senales_parada, SIGHUP);
+    const int rc = pthread_sigmask(SIG_BLOCK, &g_senales_parada, nullptr);
+    if (rc != 0) {
+        std::cerr << "[SIGWAIT] ERROR pthread_sigmask=" << rc << " (" << std::strerror(rc)
+                  << "): las senales de parada no quedan bloqueadas" << std::endl;
+        return;
+    }
+    std::cout << "✅ Senales de parada (SIGINT, SIGTERM, SIGHUP) bloqueadas en todos los hilos; "
+                 "el hilo principal las espera con sigwait" << std::endl;
 }
 
 // ============================================================================
@@ -743,6 +746,20 @@ if (encryption_seed.empty()) {
             return 1;
         }
 
+        // [DDOS-ESTADO-ARRANQUE-D299] plazo de arranque de la cabeza DDoS: se marca ANTES de arrancar el consumidor del
+        // anillo (los primeros eventos se sellan antes de que exista el lector) y se borra mas abajo si el
+        // lector no llega a arrancar. Agregador apagado = sin plazo = anomalia visible en el ml-detector.
+        if (g_config.kernel_space.ddos_kernel_agg_enabled) {
+            const auto& pe = g_config.kernel_space.ddos_victim_ewma;
+            g_ddos_victim_board->marcar_arranque(
+                sniffer::ddos_steady_now_ns(),
+                static_cast<uint64_t>(static_cast<double>(pe.arranque_ventanas) * pe.interval_ms * 1.0e6));
+        } else {  // [DDOS-AGG-AVISO-D299] el admin lo ve en el arranque, no por ausencia de lineas
+            std::cerr << "[DDOS-ARRANQUE] AVISO agregador del kernel desactivado "
+                         "(kernel_space.ddos_kernel_agg_enabled=false): la cabeza DDoS no recibira el estado "
+                         "de las victimas y el ml-detector avisara [DDOS-V2-ANOMALIA]. Guia: "
+                         "docs/operaciones/GUIA_OPERACIONES.md seccion DDOS-V2-ANOMALIA" << std::endl;
+        }
         if (!ring_consumer.start()) {
             std::cerr << "❌ Failed to start RingBufferConsumer" << std::endl;
             return 1;
@@ -761,6 +778,12 @@ if (encryption_seed.empty()) {
 
         // [DDOS-HYST-D291] parametros de la EWMA por victima, antes de arrancar el lector
         g_ddos_victim_board->set_ewma_params(g_config.kernel_space.ddos_victim_ewma);
+        // [DDOS-ESTADO-PERSIST-D299] estado por victima del arranque anterior, ANTES de arrancar el lector
+        // (escritor unico de la EWMA). Fallo o caducidad = aviso y arranque en frio; nunca tumba el sniffer.
+        if (g_config.kernel_space.ddos_kernel_agg_enabled) {
+            g_ddos_victim_board->activar_persistencia();
+            g_ddos_victim_board->restaurar_al_arrancar();
+        }
 
         // [DDOS-KREAD-D274:MAIN-START] Lector del agregador DDoS en-kernel (opcional, DAY274).
         // Es una capa de MEDICION: un fallo aqui nunca tumba el sniffer.
@@ -784,9 +807,19 @@ if (encryption_seed.empty()) {
                 }
             }
         }
+        if (!ddos_reader_ptr) g_ddos_victim_board->borrar_arranque();  // [DDOS-ESTADO-ARRANQUE-D299] sin lector no hay foto: anomalia, no FRIO
 
-        while (g_running) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+        {   // [SIGWAIT-D300] espera la senal de parada sin sondeo
+            int sig = 0;
+            const int rc = sigwait(&g_senales_parada, &sig);
+            if (rc == 0) {
+                std::cout << "\n[Signal] " << strsignal(sig) << " (" << sig
+                          << ") recibida: parada ordenada" << std::endl;
+            } else {
+                std::cerr << "\n[Signal] sigwait fallo (" << rc << ", " << std::strerror(rc)
+                          << "): parada ordenada" << std::endl;
+            }
+            g_running = false;
         }
 
         // ============================================================================
@@ -802,6 +835,7 @@ if (encryption_seed.empty()) {
             delete ddos_reader_ptr;
             ddos_reader_ptr = nullptr;
         }
+        g_ddos_victim_board->volcar_parada();  // [DDOS-ESTADO-PERSIST-D299] el lector ya no toca la EWMA
 
         // Stop RingBufferConsumer first
         if (ring_consumer_ptr) {

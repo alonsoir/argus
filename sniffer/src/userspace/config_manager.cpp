@@ -266,8 +266,13 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
     double x = 0.0;
     n += ddos_ewma_num(k, "ddos_victim_ewma_alpha", d.alpha, dd::kVictimEwmaAlphaMin, dd::kVictimEwmaAlphaMax, false, x);
     p.alpha = x;
-    n += ddos_ewma_num(k, "ddos_victim_ewma_tau_s", d.tau_s, dd::kVictimEwmaTauMin, dd::kVictimEwmaTauMax, false, x);
-    p.tau_s = x;
+    n += ddos_ewma_num(k, "ddos_victim_ewma_abs_pps", d.abs_pps, dd::kVictimEwmaAbsPpsMin, dd::kVictimEwmaAbsPpsMax, false, x);
+    p.abs_pps = x;  // [DDOS-ETAPA1-D298]
+    if (k.isMember("ddos_victim_ewma_tau_s")) {
+        std::cerr << "[CONFIG-OBSOLETO] sniffer.json: ddos_victim_ewma_tau_s ya no se usa desde DAY298 (bajo_presion "
+                     "congela la EWMA; antes aprendia con alfa lento y absorbia los ataques sostenidos). Se ignora."
+                  << std::endl;
+    }
     n += ddos_ewma_num(k, "ddos_victim_ewma_k_in", d.k_in, dd::kVictimEwmaKInMin, dd::kVictimEwmaKInMax, false, x);
     p.k_in = x;
     n += ddos_ewma_num(k, "ddos_victim_ewma_k_out", d.k_out, dd::kVictimEwmaKOutMin, dd::kVictimEwmaKOutMax, false, x);
@@ -280,6 +285,23 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
     n += ddos_ewma_num(k, "ddos_victim_ewma_evict_windows", static_cast<double>(d.evict_windows),
                        dd::kVictimEwmaEvictMin, dd::kVictimEwmaEvictMax, true, x);
     p.evict_windows = static_cast<uint64_t>(x);
+    n += ddos_ewma_num(k, "ddos_victim_arranque_ventanas", static_cast<double>(d.arranque_ventanas),
+                       dd::kVictimArranqueVentanasMin, dd::kVictimArranqueVentanasMax, true, x);
+    p.arranque_ventanas = static_cast<uint64_t>(x);  // [DDOS-ESTADO-ARRANQUE-D299]
+    n += ddos_ewma_num(k, "ddos_victim_estado_volcado_ventanas", static_cast<double>(d.estado_volcado_ventanas),
+                       dd::kVictimEstadoVolcadoMin, dd::kVictimEstadoVolcadoMax, true, x);
+    p.estado_volcado_ventanas = static_cast<uint64_t>(x);  // [DDOS-ESTADO-PERSIST-D299]
+    n += ddos_ewma_num(k, "ddos_victim_estado_max_edad_ventanas", static_cast<double>(d.estado_max_edad_ventanas),
+                       dd::kVictimEstadoEdadMin, dd::kVictimEstadoEdadMax, true, x);
+    p.estado_max_edad_ventanas = static_cast<uint64_t>(x);
+    if (k.isMember("ddos_victim_estado_ruta") && k["ddos_victim_estado_ruta"].isString() &&
+        dd::victim_estado_ruta_ok(k["ddos_victim_estado_ruta"].asString())) {
+        p.estado_ruta = k["ddos_victim_estado_ruta"].asString();
+    } else {
+        std::cerr << "[CONFIG-DEFAULT] kernel_space.ddos_victim_estado_ruta: falta, no es texto o no es una ruta "
+                     "absoluta de fichero (formato /dir/fichero) -> " << d.estado_ruta << std::endl;
+        ++n;
+    }
     if (interval_ms > 0) {
         p.interval_ms = static_cast<double>(interval_ms);
     } else {
@@ -294,13 +316,6 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
         p.k_out = d.k_out;
         ++n;
     }
-    if (!(p.alpha_slow() < p.alpha)) {
-        std::cerr << "[CONFIG-DEFAULT] regla alfa_lento < alfa rota (alfa=" << p.alpha << ", alfa_lento="
-                  << p.alpha_slow() << ") -> defectos alfa=" << d.alpha << " tau_s=" << d.tau_s << std::endl;
-        p.alpha = d.alpha;
-        p.tau_s = d.tau_s;
-        ++n;
-    }
     if (!dd::victim_ewma_params_ok(p)) {
         std::cerr << "[CONFIG-DEFAULT] combinacion de parametros de la EWMA invalida -> todos los defectos" << std::endl;
         const double iv = p.interval_ms;
@@ -312,10 +327,13 @@ int ddos_ewma_num(const Json::Value& j, const char* field, double def, double lo
         std::cerr << "[CONFIG-DEFAULT] " << n
                   << " ajustes con valor por defecto en la EWMA por victima: revisar sniffer.json" << std::endl;
     }
-    std::cout << "[DDOS-HYST] ewma alpha=" << p.alpha << " tau_s=" << p.tau_s << " alpha_lento=" << p.alpha_slow()
+    std::cout << "[DDOS-HYST] ewma alpha=" << p.alpha << " bajo_presion=congelada abs_pps=" << p.abs_pps
               << " k_in=" << p.k_in << " k_out=" << p.k_out << " warm=" << p.warm_windows
               << " floor_pps=" << p.floor_pps << " evict=" << p.evict_windows
-              << " interval_ms=" << p.interval_ms << std::endl;
+              << " interval_ms=" << p.interval_ms << " arranque_ventanas=" << p.arranque_ventanas
+              << " estado_ruta=" << p.estado_ruta << " volcado_ventanas=" << p.estado_volcado_ventanas
+              << " max_edad_ventanas=" << p.estado_max_edad_ventanas
+              << std::endl;  // [DDOS-ESTADO-ARRANQUE-D299] [DDOS-ESTADO-PERSIST-D299]
     return p;
 }
 }  // namespace
@@ -511,7 +529,25 @@ ProcessingConfig ConfigManager::parse_processing(const Json::Value& processing_j
 
 MonitoringConfig ConfigManager::parse_monitoring(const Json::Value& monitoring_json) {
     MonitoringConfig monitoring;
-    monitoring.stats_interval_seconds = monitoring_json.get("stats_interval_seconds", 30).asInt();
+    {   // [PARADA-INMEDIATA-D300] el JSON manda: entero [1, 3600] s, defecto 30; si falta o es invalido, defecto
+        // con [CONFIG-DEFAULT] y el sniffer arranca igual.
+        constexpr int kDef = 30, kMin = 1, kMax = 3600;
+        const Json::Value& v = monitoring_json["stats_interval_seconds"];
+        int x = kDef;
+        if (v.isNull()) {
+            std::cerr << "[CONFIG-DEFAULT] monitoring.stats_interval_seconds ausente -> defecto=" << kDef
+                      << " (entero, rango [" << kMin << ", " << kMax << "] s)" << std::endl;
+        } else if (!v.isInt()) {
+            std::cerr << "[CONFIG-DEFAULT] monitoring.stats_interval_seconds no es entero -> defecto=" << kDef
+                      << " (entero, rango [" << kMin << ", " << kMax << "] s)" << std::endl;
+        } else if (v.asInt() < kMin || v.asInt() > kMax) {
+            std::cerr << "[CONFIG-DEFAULT] monitoring.stats_interval_seconds=" << v.asInt()
+                      << " fuera de rango [" << kMin << ", " << kMax << "] -> defecto=" << kDef << std::endl;
+        } else {
+            x = v.asInt();
+        }
+        monitoring.stats_interval_seconds = x;
+    }
     monitoring.performance_tracking = monitoring_json.get("performance_tracking", true).asBool();
 
     // Parse kernel metrics

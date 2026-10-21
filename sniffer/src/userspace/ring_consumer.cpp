@@ -320,6 +320,8 @@ bool RingBufferConsumer::start() {
 
     std::cout << "[INFO] Stopping Enhanced RingBufferConsumer..." << std::endl;
     should_stop_ = true;
+    { std::lock_guard<std::mutex> lk(parada_mtx_); }  // [PARADA-INMEDIATA-D300] sin despertar perdido
+    parada_cv_.notify_all();
 
     // ORDEN CORRECTO DE PARADA:
 
@@ -566,7 +568,7 @@ void RingBufferConsumer::stats_display_loop() {
               << stats_interval_seconds_ << "s)" << std::endl;
 
     while (!should_stop_) {
-        std::this_thread::sleep_for(std::chrono::seconds(stats_interval_seconds_));
+        if (espera_o_parada(std::chrono::seconds(stats_interval_seconds_))) break;  // [PARADA-INMEDIATA-D300]
 
         if (should_stop_) break;
 
@@ -1351,8 +1353,7 @@ void RingBufferConsumer::ransomware_processor_loop() {
               << RANSOMWARE_EXTRACTION_INTERVAL_SEC << "s extraction)" << std::endl;
 
     while (!should_stop_) {
-        std::this_thread::sleep_for(
-            std::chrono::seconds(RANSOMWARE_EXTRACTION_INTERVAL_SEC));
+        if (espera_o_parada(std::chrono::seconds(RANSOMWARE_EXTRACTION_INTERVAL_SEC))) break;  // [PARADA-INMEDIATA-D300]
 
         if (should_stop_) break;
 
@@ -1390,6 +1391,12 @@ void RingBufferConsumer::stamp_time_context(protobuf::NetworkSecurityEvent& ev, 
         std::chrono::steady_clock::now().time_since_epoch()).count()));
 }
 
+// [DDOS-ETAPA1-D298] el estado del sniffer se sella con static_cast: los valores deben coincidir con el proto.
+static_assert(static_cast<int>(::argus::ddos::VictimEwmaEstado::Frio) == protobuf::VICTIM_STATE_COLD &&
+              static_cast<int>(::argus::ddos::VictimEwmaEstado::Normal) == protobuf::VICTIM_STATE_NORMAL &&
+              static_cast<int>(::argus::ddos::VictimEwmaEstado::BajoPresion) == protobuf::VICTIM_STATE_UNDER_PRESSURE,
+              "VictimEwmaEstado desalineado con protobuf::VictimState");
+
 void RingBufferConsumer::stamp_victim_window(protobuf::NetworkSecurityEvent& ev,
                                              const SimpleEvent& e) const {
     if (!victim_board_) return;
@@ -1404,7 +1411,18 @@ void RingBufferConsumer::stamp_victim_window_from(protobuf::NetworkSecurityEvent
                                                   const ::sniffer::DdosVictimLookup& r) const {
     const uint32_t dst = static_cast<uint32_t>(e.dst_ip);
     const uint32_t proto = static_cast<uint32_t>(e.protocol);
-    if (!r.have_snapshot) return;
+    if (!r.have_snapshot) {  // [DDOS-ESTADO-ARRANQUE-D299]
+        const auto sello = ::sniffer::sello_estado_victima(r);
+        if (sello) {
+            ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_state(
+                static_cast<protobuf::VictimState>(*sello));
+        } else if (r.arranque_vencido && !aviso_arranque_vencido_.exchange(true)) {
+            std::cerr << "[DDOS-ARRANQUE] ERROR sin foto del agregador tras el plazo de arranque "
+                         "(ddos_victim_arranque_ventanas): la cabeza DDoS no ve el estado de las victimas. "
+                         "Guia: docs/operaciones/GUIA_OPERACIONES.md seccion DDOS-V2-ANOMALIA" << std::endl;
+        }
+        return;
+    }
     auto* vw = ev.mutable_victim_window();
     vw->set_victim_ip(::sniffer::DdosKernelAggregator::ip_to_string(dst));
     vw->set_protocol(proto);
@@ -1417,6 +1435,8 @@ void RingBufferConsumer::stamp_victim_window_from(protobuf::NetworkSecurityEvent
         ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_pps(
             ::argus::ddos::victim_pps(r.d_pkts, r.window_ms));
         ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_rate_ratio(r.rate_ratio);  // [DDOS-H2-D286]
+        ev.mutable_network_features()->mutable_ddos_embedded()->set_victim_state(
+            static_cast<protobuf::VictimState>(r.estado));  // [DDOS-ETAPA1-D298]
     }
 }
 

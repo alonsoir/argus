@@ -332,7 +332,6 @@ if(BUILD_TESTS)
 
     set(TEST_SOURCES
             tests/unit/test_ipset_is_valid_ip.cpp
-            tests/unit/test_ipset_wrapper.cpp
             tests/unit/test_logger.cpp
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_config_loader_setname.cpp
@@ -341,6 +340,7 @@ if(BUILD_TESTS)
             tests/unit/test_comment_validator.cpp
             tests/unit/test_safe_exec.cpp
             tests/unit/test_batch_processor_recidivism.cpp   # ← RECIDIVISM-D276
+            tests/unit/test_batch_processor_episodio.cpp     # ← [DDOS-MITIGACION-B2-D302]
             tests/test_globals_stub.cpp
     )
 
@@ -405,6 +405,26 @@ if(BUILD_TESTS)
     )
     add_test(NAME test_ip_cidr_validator COMMAND test_ip_cidr_validator)
 
+    # test_ddos_protegidos — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
+    add_executable(test_ddos_protegidos
+            tests/unit/test_ddos_protegidos.cpp
+    )
+    target_include_directories(test_ddos_protegidos
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_ddos_protegidos COMMAND test_ddos_protegidos)
+# [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_ddos_protegidos)
+    # test_ddos_mitigacion — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
+    add_executable(test_ddos_mitigacion
+            tests/unit/test_ddos_mitigacion.cpp
+    )
+    target_include_directories(test_ddos_mitigacion
+            PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_ddos_mitigacion COMMAND test_ddos_mitigacion)
+
     # test_ddos_shadow_policy — DAY293, política por víctima en sombra (header-only, propio CHECK) [DDOS-SHADOW-D293]
     add_executable(test_ddos_shadow_policy
             tests/unit/test_ddos_shadow_policy.cpp
@@ -458,6 +478,20 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     add_test(NAME test_ipset_injection_integration COMMAND test_ipset_injection_integration)
     set_tests_properties(test_ipset_injection_integration PROPERTIES LABELS "e2e;root")
 
+    # [ARGUS-WHITELIST-D301] [ARGUS-CADENA-D301] reglas base de aRGus contra el kernel (requiere root; sin root sale 77 = Skipped)
+    add_executable(test_argus_cadena_root
+        tests/unit/test_argus_cadena_root.cpp
+    )
+    target_include_directories(test_argus_cadena_root PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_argus_cadena_root PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_argus_cadena_root COMMAND test_argus_cadena_root)
+    set_tests_properties(test_argus_cadena_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
+
     # test_recidivism_e2e — RECIDIVISM-D276 (INTEGRACION, requiere root+ipset -> VM, no make test normal)
     add_executable(test_recidivism_e2e
         tests/test_recidivism_e2e.cpp
@@ -492,6 +526,28 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     set_tests_properties(test_ipset_setname_injection_integration PROPERTIES LABELS "e2e;root")
 
     gtest_discover_tests(firewall_tests)
+
+    # [ARGUS-GATE-PERF-D303] IPSetWrapperTest fuera de firewall_tests: necesita root (ipset del kernel).
+    #   funcionales -> ipset_wrapper_tests       LABEL e2e  (make test-firewall-e2e; root; falla si algo se salta)
+    #   rendimiento -> ipset_wrapper_perf_tests  LABEL perf (make test-firewall-perf; root; mide, no falla por tiempo)
+    # test-components excluye e2e|root|perf: ningun Skipped por falta de root.
+    # [ARGUS-GATE-PERF-D303-B] medido: gtest_discover_tests(PROPERTIES LABELS "a;b") aplana la lista y solo
+    # queda la primera etiqueta. Por eso una sola etiqueta por ejecutable descubierto.
+    add_executable(ipset_wrapper_tests
+            tests/unit/test_ipset_wrapper.cpp
+            tests/test_globals_stub.cpp
+    )
+    target_include_directories(ipset_wrapper_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core)
+    target_link_libraries(ipset_wrapper_tests PRIVATE firewall_core OpenSSL::Crypto GTest::gtest GTest::gtest_main)
+    gtest_discover_tests(ipset_wrapper_tests PROPERTIES LABELS e2e)
+
+    add_executable(ipset_wrapper_perf_tests
+            tests/unit/test_ipset_wrapper_perf.cpp
+            tests/test_globals_stub.cpp
+    )
+    target_include_directories(ipset_wrapper_perf_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src/core)
+    target_link_libraries(ipset_wrapper_perf_tests PRIVATE firewall_core OpenSSL::Crypto GTest::gtest GTest::gtest_main)
+    gtest_discover_tests(ipset_wrapper_perf_tests PROPERTIES LABELS perf)
 
     message(STATUS "✅ Unit tests enabled (including logger tests)")
 endif()

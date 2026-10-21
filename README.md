@@ -26,7 +26,7 @@ The sensors are heterogeneous **by design** and complementary, not competitors: 
 
 ## Defensive by design
 
-aRGus exists to protect hospitals and civilian critical infrastructure. It is **defensive by design**: it observes, classifies and (in the future) blocks traffic on the perimeter it watches. It has no offensive capabilities — no counter-attack, no active scanning of third parties, no "hack-back" — and it never will. This is a statement of the project's purpose, not a restriction added to the license.
+aRGus exists to protect hospitals and civilian critical infrastructure. It is **defensive by design**: it observes, classifies and can block traffic on the perimeter it watches. It has no offensive capabilities — no counter-attack, no active scanning of third parties, no "hack-back" — and it never will. This is a statement of the project's purpose, not a restriction added to the license.
 
 ## The honest thesis
 
@@ -61,32 +61,41 @@ These are the paper's results and they describe the pipeline **as it was in that
 
 ## Current state (after the paper)
 
-### DDoS head v2 — in shadow mode (tag `pre-release-ddos-only-0.0.3`)
+### DDoS head v2 — detects, classifies and can stop a DDoS (lab-verified; mitigation off by default)
 
-The DDoS head was rebuilt from scratch and is the **only head trusted to decide** (`final_decision`). The other models are still loaded but do not decide.
+The DDoS head was rebuilt from scratch and is the **only head trusted to decide** (`final_decision`). The other models are still loaded but do not decide. Since DAY303 the pipeline can, in the lab, **detect a DDoS, classify it and block it at the firewall**, and every one of those steps is checked end to end by the quality gate (see *Quality gate*).
 
-- **Two stages.** Stage 1: per-victim rate ratio against its own baseline (`victim_rate_ratio ≥ 3`). Stage 2: a 100-tree Random Forest over 6 flow features, trained only on rows under pressure, exported to C++ with raw thresholds. Python/C++ parity: 127,930 / 127,930.
+- **Two stages.** Stage 1: per-victim state with hysteresis, computed in the sniffer (cold / normal / under pressure) against the victim's own baseline (`victim_rate_ratio ≥ 3` to enter). Stage 2: a 100-tree Random Forest over 6 flow features, trained only on rows under pressure, exported to C++ with raw thresholds. Python/C++ parity: 127,930 / 127,930.
 - **Trained on lab-generated traffic** (a controlled battery of reflection/flood families at several rates), not on a public dataset.
-- **The firewall runs it in SHADOW mode** (`dry_run`): a per-victim policy (m = 5 DROP per 1 s window, k/n = 3/5 windows to start, 30 windows of hold to end) **records** START/END but **does not block**.
+- **Per-victim episodes** (m = 5 DROP per 1 s window, k/n = 3/5 windows to start, 30 windows of hold to end), recorded as START/END.
+- **Real mitigation, behind two keys.** With `operation.dry_run = false` **and** `ddos_mitigacion.habilitada = true` in the firewall JSON, the source of an episode is put in an `ipset` with a timeout; each repeated offence raises the penalty (escalation ladder, `recidivism.strike_durations_sec`), and every packet still seen renews the penalty without adding a strike. **Both keys ship off**: out of the box the firewall only records what it would block (`[DDOS-MITIGACION] modo: DESHABILITADA`).
+- **Protected ranges.** Sources in the protected ranges of the JSON (DMZ, intranet, critical externals; RFC 1918 + `fc00::/7` by default) are **never blocked**: they raise `ALERTA_PROTEGIDO` instead.
 
-Measured live in the lab (NTP reflection at 60 pps against a host, with an innocent concurrent sender at 10 pps):
+Fixed in the branch merged on DAY303 (measured before and after, see `docs/ml-heads/`):
+
+| Problem (measured before) | After |
+|---|---|
+| A sustained attack was absorbed into the baseline: marking stopped after ~889 s | the baseline freezes while the victim is under pressure: **99.97%** of a sustained attack marked (was 84.3%), no cut-off |
+| Cold start: an empty baseline decided on legitimate traffic, and an attack in progress was learned as normal | victims with no history enter via an absolute threshold (`abs_pps`, 200 by default, calibrated per installation): **0** false passes on 50 pps benign traffic (was 200); a 300 pps attack at startup marked 13,373 / 13,373 |
+| A sniffer restart lost the per-victim state | state is persisted (periodic and on stop) and restored: after a clean stop **or a `kill -9`** mid-attack the victim is restored under pressure and marking continues |
+
+Measured end to end in the lab, inside the from-scratch quality gate of DAY303 (production build):
 
 | Measure | Value |
 |---|---|
-| First DROP decision after the attack starts | 0.8–1.8 s |
-| Shadow START after the first DROP | 2 windows (k = 3) |
-| Shadow END after the last DROP | exactly 30 windows (also under ±5 s wall-clock jumps) |
-| DROP events | all from the attacker; 0 from the innocent sender (different traffic type: see the twin test below) |
-| Benign run pressing stage 1 (real `dnsperf` at 30/100 q/s + legitimate 50 KB/s TCP upload) | 0 START; 2 isolated positives in ~18,000 rows, absorbed by k = 3/5 |
+| Restart mid-attack, CSV deleted (control) | restored cold; 0 events marked after the restart, as designed (70 pps < `abs_pps`) |
+| Restart mid-attack, clean stop / `kill -9` | restored with 1 victim under pressure; marking continues (after/before ratio 1.397 / 1.378) |
+| Detector → firewall accounting | **exact**: marked events = firewall DROP decisions, difference 0 (8,260 / 20,290 / 20,272 in the three restart runs) |
+| Protected source (`.61`, intranet) attacking at 30 pps together with the attacker | never blocked; 5,393 `ALERTA_PROTEGIDO`; identity DROP = episode + alerts holds with difference 0 (16,180 = 10,787 + 5,393) |
+| Real mitigation (DAY302, two NTP attacks at 60 pps) | the attacker enters the block set **4.5–4.9 s** after the attack starts; the DROP rule drops **92%** of the attack packets (3,312 / 3,348 of 3,600); the second attack escalates the timeout from 60 s to 120 s; the innocent and the protected sources never enter |
 
 Known limits of this head (measured, not hidden):
 
 - **Stage 2 learns the signatures of our traffic generators** (packet size, reflection pattern), not behaviour. With a family left out of training, detection of that family drops to ~0%.
-- **The head discriminates the type of traffic, not the sender (measured, DAY297).** A "twin" sending the attacker's exact packets from another address is dropped like the attacker: 99.56% of its packets with the twin at 10 pps and 99.17% at 60 pps (attacker: 99.65% / 99.19%). In the same runs, 446 legitimate NTP packets to the same victim from the benign sender got 0 DROP. Per-source features are future work; until then, no per-source blocking.
-- **Cold start (measured, to be fixed):** the 30-window warm-up only gates the sniffer's hysteresis state; stage 1 compares the raw rate ratio, so a cold victim can be decided on. In one run, 32 DROP decisions hit legitimate traffic (a Wazuh agent talking to its manager) in the first second after the pipeline started; the shadow did not open an episode.
-- **Long attacks are absorbed (measured offline against the production function):** the per-victim baseline keeps learning during the attack, so stage 1 stops passing a sustained attack after 15–25 minutes (sooner for weaker attacks) and the shadow would close the episode mid-attack. Real DDoS attacks can last days; the next branch makes stage 1 consume the hysteresis state and freezes the baseline during an episode.
-- **The firewall does not block yet.** Real mitigation is a separate piece of work.
-- **Lab only:** VirtualBox VMs on a laptop, rates up to ~110 pps without ring losses; end-to-end accounting at up to 130 pps toward the victim found 0 events lost or duplicated between sniffer and firewall. None of this is real hardware: see [docs/carta_reyes_magos_caceres.md](docs/carta_reyes_magos_caceres.md) for what cannot be measured here.
+- **The head discriminates the type of traffic, not the sender (measured, DAY297).** A "twin" sending the attacker's exact packets from another address is dropped like the attacker (99.56% / 99.17% of its packets). With mitigation on, that twin would be blocked too. Per-source features are future work — one reason mitigation ships off.
+- **Reaction window of ~5 s.** The ~8% of attack packets that get through are the ones sent while detection, episode start and the firewall flush happen. A fast path in XDP (drop before classification) is planned to close it.
+- **Below `abs_pps` at cold start**, an attack is learned as baseline (0% marked): the documented cost of never deciding on a victim with no history.
+- **Lab only:** VirtualBox VMs on a laptop, rates up to ~110 pps without ring losses; end-to-end accounting at up to 130 pps toward the victim found 0 events lost or duplicated between sniffer and firewall. A 300 pps attack at startup was marked in full, with delivery reordering growing with rate (5.1% at 300 pps vs 0.03% at 60 pps; decision logic unaffected). None of this is real hardware: see [docs/carta_reyes_magos_caceres.md](docs/carta_reyes_magos_caceres.md) for what cannot be measured here.
 
 ### Time contract v1 — one time base for the whole pipeline (accepted, DAY297)
 
@@ -114,6 +123,25 @@ The contract is **single-node** (sensor, detector and firewall on the same host)
 
 - The Parquet validator now checks **every row**, not just the first one. Doing so revealed that 89% of the rows of the historical ML-detector Parquet (from 2026-03-08) carried timestamps in the wrong clock base; that data was discarded.
 - **Fast-alerts are excluded from the `correlation_v1` bronze** (`correlation_writer.include_fast_alerts = false`) until they are reliable: they carry no flow start time and fire roughly once per DNS packet.
+
+### Quality gate — EMECAS+++, from scratch for real (DAY303)
+
+A merge to `main` is certified by `make emecas+++` with the default production build. On DAY303 it was made to be **from scratch in fact, not only in name**: the repository folder is shared with the VMs and survives `vagrant destroy`, and with it every build directory. Measured that day: the synthetic E2E injectors had not been rebuilt since June, one component was starting a debug binary from April, and the active-profile links pointed to debug builds. No test failed — everything "worked". The gate now:
+
+1. destroys the VMs and **deletes every build directory on the host** before `vagrant up` (`clean-host-builds`);
+2. builds everything from zero and **checks freshness**: every pipeline binary must be newer than a stamp written after the VMs are created, and must be the one the active profile points to (validated negatively first: with a later stamp, 8/8 binaries fail);
+3. runs all unit and component tests, the firewall's root-only tests (fails on any skipped test) and its performance measurements;
+4. runs the **lab E2E tests with strict PASS/FAIL verdicts** derived from the design, not from timing: sniffer restart mid-attack (cold, clean stop, `kill -9`), protected ranges, and real mitigation. The verdicts were validated against earlier, already-judged runs: they accept the four runs that were accepted and reject the one that was rejected;
+5. runs the Vault acts (nominal start, rotation through the synthetic pipeline, token revocation).
+
+DAY303 result: **28/28 milestones, rc = 0, 2 h 33 min** on a 2019 laptop.
+
+```bash
+nohup bash scripts/emecas/emecas_run.sh emecas+++ production < /dev/null > /dev/null 2>&1 &
+bash scripts/emecas/emecas_watch.sh 60    # progress, VM CPU, stopped/zombie processes, first make error
+```
+
+Sanitizer runs (ASan/TSan) are deliberately left for real pre-production hardware.
 
 ## Reproduce the paper
 
@@ -167,13 +195,14 @@ make up && make bootstrap    # first run ~20–30 min: builds llama.cpp, install
 
 ### Running the live lab
 
-The Makefile defaults to a **debug** build (`PROFILE ?= debug`), and `pipeline-start` launches the build of the profile it is given — not the last one compiled. To measure what would be deployed, build, test **and start** with the same profile:
+The Makefile builds the **production** profile by default (`PROFILE ?= production`: `-O3`, LTO, `-march=native`, warnings as errors), so what you test is what would be deployed. `make pipeline-build` builds the whole pipeline and finishes by pointing every `build-active` link at the profile just built; debug, TSan and ASan builds stay available with an explicit `PROFILE=…`.
 
 ```bash
-make pipeline-build  PROFILE=production
-make test-components PROFILE=production
+make pipeline-build
+make test-components
 make pipeline-stop
-make pipeline-start  PROFILE=production
+make pipeline-start
+make lab-e2e            # the five lab E2E tests with their PASS/FAIL verdicts (~65 min)
 ```
 
 If the host sleeps (e.g. the laptop is suspended), the VMs freeze and their wall clocks fall behind; chrony may take a couple of minutes to notice. Realign the lab clocks as soon as the host wakes up, before measuring:
@@ -190,6 +219,7 @@ Component configuration lives in each component's JSON (`*/config/*.json`): ever
 - **Architecture decisions:** `docs/adr/`
 - **Living contracts** (Protobuf / JSON / RAG): `docs/contracts/`
 - **Time contract v1:** [`docs/timebase/contrato_temporal_day295.md`](docs/timebase/contrato_temporal_day295.md) (Spanish; §8 holds the measurements)
+- **DDoS head, day by day** (Spanish): `docs/ml-heads/` — `day298_etapa1_resultados.md`, `day299_estado_arranque_persistencia.md`, `day300_reinicio_e2e.md`, `day300_parada_y_protegidos.md`, `day303_emecas_desde_cero.md`
 - **Writing an attack driver:** [`docs/WRITING-A-DRIVER.md`](docs/WRITING-A-DRIVER.md)
 - **Code graph** (Graphify — on-device, Apache-2.0): a graph of the *source code*, distinct from the telemetry graph above. Kept by the author as a maintenance aid; **requires login**: https://app.graphify.com/aironman-labs/
 - The design was reviewed across eight independent models — the *Consejo de Sabios* (Claude, Grok, ChatGPT, DeepSeek, Qwen, Gemini, Kimi, Mistral) — as structured disagreement. The methodology is documented in §6 of the paper.
@@ -198,14 +228,26 @@ Component configuration lives in each component's JSON (`*/config/*.json`): ever
 
 Honesty as an engineering property, not an afterthought:
 
-- **Research artifact, not production.** Only the DDoS head is trusted to decide, and it runs in shadow mode: nothing is blocked yet. The other heads (ransomware, internal traffic, the original level-1 classifier) are not trusted and do not decide.
+- **Research artifact, not production.** Only the DDoS head is trusted to decide. Its real mitigation works in the lab but **ships switched off**; turning it on is an operator's decision, two keys in the JSON. The other heads (ransomware, internal traffic, the original level-1 classifier) are not trusted and do not decide.
 - **Lab, not hardware.** Every live measurement comes from VirtualBox VMs on a laptop. Latencies, clock behaviour and the thresholds in the JSON files are lab-calibrated and must be measured again on real hardware. What cannot be measured without hardware (native XDP drop rate, ring saturation, ransomware detection under a real DDoS, upstream defence of the bandwidth) and the equipment that would unlock it are written down in [docs/carta_reyes_magos_caceres.md](docs/carta_reyes_magos_caceres.md) (in Spanish).
-- **DDoS head, measured limits:** it discriminates traffic type, not sender; it absorbs sustained attacks after 15–25 minutes; it can decide on a cold victim. See "Current state" above.
+- **DDoS head, measured limits:** it discriminates traffic type, not sender (a twin of the attacker would be blocked too); ~5 s reaction window; an attack below `abs_pps` at cold start is learned as baseline. See "Current state" above.
+- **Status checks are liveness only.** `pipeline-status` reports a process as RUNNING when it exists, not when it is healthy; measured DAY303: `rag-security` has not registered with etcd since September while showing RUNNING.
 - **Single node.** The time contract assumes sensor, detector and firewall on one host. Distributed deployment (PTP-synchronized clocks) is future work.
 - **Fast-alerts are not reliable** and are excluded from the bronze contract until they are.
-- **Deferred hardening**, carried as known-and-deferred (not hidden): productive Vault, key rotation, real fault-injection, secure HMAC transport (HTTPS/Vault), and a reverse-engineering audit of the shipped binaries.
+- **Deferred hardening**, carried as known-and-deferred (not hidden): productive Vault, key rotation, secure HMAC transport (HTTPS/Vault), sanitizer runs on real hardware, and a reverse-engineering audit of the shipped binaries.
 - **Replay fidelity:** 0.47% of the offline-true botnet flows do not reach the replayed wire.
 - **Provenance:** the 2011 Neris pcap is third-party, captured under unknown conditions.
+
+## What comes next
+
+In order, one branch each, each closed by a from-scratch EMECAS+++:
+
+1. **Retire `rag` / `rag-security`, certified.** The graph already covers what it did; its removal was started but never verified (it is still built, started, profiled in AppArmor/Falco and named in tests).
+2. **Head switch:** turn each detection head on or off from configuration (etcd), at runtime, with the state reported in the log.
+3. **Flow expiry in the sniffer:** flows never expire by inactivity today, which distorts the flow features of long-lived legitimate traffic (memory is bounded; the features are not).
+4. **Fast path in XDP:** drop clear attacks before classification, to close the ~5 s reaction window.
+5. **Hardening audit of the shipped binaries** (what an attacker gets from a sensor's binary), then as an asynchronous CI stage.
+6. The remaining heads (ransomware, lateral movement, generic attacks), **one at a time**, under the same bar as DDoS.
 
 ## History
 

@@ -126,7 +126,8 @@ IPSetResult<void> IPSetWrapper::create_set(const IPSetConfig& config) {
     if (config.comment) {
         args.push_back("comment");
     }
-    if (config.type == IPSetType::HASH_NET) {
+    // [ARGUS-CADENA-D301] medido DAY301: ipset 7.17 rechaza 'netmask' en hash:net (rc 2). Solo hash:ip, y solo si < 32.
+    if (config.type == IPSetType::HASH_IP && config.netmask < 32) {
         args.push_back("netmask");
         args.push_back(std::to_string(config.netmask));
     }
@@ -266,7 +267,9 @@ IPSetResult<void> IPSetWrapper::add_batch(
         });
     }
 
-    if (!set_exists_unlocked(set_name)) {
+    // [DRYRUN-ADD-BATCH-D302] en dry_run no se consulta el kernel: el set no se crea en dry_run, y antes
+    // esto hacia fallar TODO flush en dry_run (SET_NOT_FOUND) aunque la validacion fuera correcta.
+    if (!m_dry_run && !set_exists_unlocked(set_name)) {
         return IPSetResult<void>(IPSetError{
             IPSetErrorCode::SET_NOT_FOUND,
             "Set '" + set_name + "' does not exist"
@@ -332,6 +335,27 @@ IPSetResult<void> IPSetWrapper::add_batch(
             "Some comments rejected (CWE-93 ipset restore newline/quote injection)",
             failed_comments
         });
+    }
+
+    // [DRYRUN-ADD-BATCH-D302] dry_run: validacion ya hecha (set, IPs, comentarios, timeout). No se escribe el
+    // fichero temporal (/run/argus/irp puede no existir o no ser escribible) ni se toca el kernel: se imprimen
+    // las ordenes y se devuelve exito. Limite de detalle de log (no de comportamiento).
+    if (m_dry_run) {
+        constexpr size_t kDryRunDetalleMax = 20;
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " restore -exist (" << entries.size()
+                  << " entradas, set " << set_name << ")" << std::endl;
+        std::istringstream ordenes(restore_input.str());
+        std::string linea;
+        size_t n = 0;
+        while (std::getline(ordenes, linea)) {
+            if (n++ < kDryRunDetalleMax) {
+                std::cout << "[DRY-RUN]   " << linea << std::endl;
+            }
+        }
+        if (n > kDryRunDetalleMax) {
+            std::cout << "[DRY-RUN]   ... (+" << (n - kDryRunDetalleMax) << " ordenes)" << std::endl;
+        }
+        return IPSetResult<void>();
     }
 
     // Write to temporary file

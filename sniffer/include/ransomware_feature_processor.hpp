@@ -10,6 +10,8 @@
 #include "network_security.pb.h"
 #include <thread>
 #include <atomic>
+#include <mutex>               // [PARADA-INMEDIATA-D300]
+#include <condition_variable>  // [PARADA-INMEDIATA-D300]
 #include <memory>
 
 namespace sniffer {
@@ -46,6 +48,8 @@ namespace sniffer {
         // Timer thread for periodic extraction
         std::thread extraction_thread_;
         std::atomic<bool> running_{false};
+        std::mutex parada_mtx_;               // [PARADA-INMEDIATA-D300] espera interrumpible de la extraccion
+        std::condition_variable parada_cv_;   // [PARADA-INMEDIATA-D300]
 
         // Config
         uint32_t extraction_interval_seconds_ = 30;

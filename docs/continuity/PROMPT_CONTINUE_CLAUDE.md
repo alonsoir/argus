@@ -1,71 +1,81 @@
-# Prompt de continuidad — aRGus NDR, DAY297 -> DAY298
+DAY302 — aRGus NDR. Rama: fix/ddos-etapa1-histeresis (sobre main 492580f6). NO mergear hasta EMECAS+++ verde.
 
-Reglas (sin cambios): medir, no votar; prediccion escrita antes de medir; si algo no da lo esperado, PARAR.
-Comandos EXACTOS y COMPLETOS, en orden, diciendo donde va cada uno (Mac / defender / client). Comandos separados o cada
-salida a su fichero, y con `; cat` del fichero al final. Nunca `grep -rn` desde la raiz (`git grep` o el fichero concreto;
-excluir ':!*.pb.cc' ':!*.pb.h' ':!*_pb2.py'). Scripts como bloque `cat > f <<'EOF'`; `LC_ALL=C` en todo awk con
-aritmetica. Tras pegar un heredoc, comprobar que la terminal vuelve al prompt y no queda en `heredoc>` (en DAY295 un
-heredoc mal cerrado duplico la seccion 7 del contrato). Patchers atomicos, todo-o-nada, con `--check` / `--apply` y
-marca. Compilar, probar Y ARRANCAR con el MISMO perfil: `make pipeline-build PROFILE=production`,
-`make test-components PROFILE=production`, `make pipeline-start PROFILE=production`. Configuracion: el JSON manda;
-defecto validado + `[CONFIG-DEFAULT]`. Relojes: tras suspender el Mac, `make lab-clock-step` justo al despertar.
-Corridas de lab: `bash scripts/timebase/lab_corrida.sh NOMBRE 'comando del client'` desde el Mac (hace relojes,
-parada, nada vivo, logs a cero, arranque production, ESTABLE, tcpdump en eth2, client, parada y contabilidad; para al
-primer fallo; resultados en logs/lab/day297/NOMBRE/). Anotar en cada medida que VMs estaban levantadas.
+REGLAS: medir, no votar; predicción escrita antes de cada medida; si algo no da lo esperado, PARAR. Comandos
+completos diciendo dónde (Mac / defender / client); salidas a fichero + "; cat". Scripts como cat > f <<'EOF'
+(PYEOF/MDEOF si el texto contiene EOF). Nada de grep -rn desde la raíz: git grep o ruta concreta. Compilar TODO
+el pipeline y probar con el mismo perfil: make pipeline-build / test-components PROFILE=production. El JSON
+manda: valor correcto se aplica Y se registra ([CONFIG]); ausente o inválido = defecto validado con
+[CONFIG-DEFAULT] y el proceso arranca igual. awk con LC_ALL=C. Patchers atómicos --check/--apply con marca.
+Al despertar el Mac: make lab-clock-step. Corridas en logs/lab/day302/ (DIA=day302). Tras reiniciar el client:
+sudo ip addr add 192.168.100.51/24 dev eth1. Leer un fichero tocado: anclar por nombre (git grep -n -A N),
+no por número de línea. Las esperas y marcas de tiempo las hace el script, nunca a mano.
+NUEVO DAY301: arrancar SIEMPRE con PROFILE=production (firewall-start/pipeline-start sin PROFILE lanzan
+build-debug, un binario anterior a DAY300; medido). El firewall solo, sin pipeline, muere (sin etcd).
+Arranque con verificación: bash scripts/timebase/d301_arranque_b1.sh 2>&1 | tee /tmp/f.txt (pipeline-start/stop
+PROFILE=production, ~3,5 min, progreso por pantalla). Tests con root: make test-firewall-e2e PROFILE=production.
+Scripts largos: progreso por pantalla con tee, nunca solo a fichero.
 
-## 0. Estado
-- fix/event-timestamp-timebase: EMECAS+++ VERDE en DAY297 (rc=0, sobre 38a77aea); PR y merge a main al cierre de DAY297.
-  Comprobar al empezar: `git log --oneline -3 origin/main` y que no quedan PR abiertos.
-- LEER PRIMERO: docs/timebase/contrato_temporal_day295.md (sec. 9 = DAY297), docs/carta_reyes_magos_caceres.md
-  (que no se puede medir en el lab virtual y que equipo haria falta) y docs/ml-heads/consejo_day294_sintesis.md.
-- Hecho DAY297: contadores de producer_seq en el firewall (0 duplicados y 0 huecos en 15262/17129/26110 eventos);
-  orquestador de corridas; A1 aceptada (cable = DROP = sombra al evento); A2 (gemelo .61 marcado 0,9956 / 0,9917,
-  igual que el atacante; NTP legitimo de .51 0 DROP); A5 confirmada offline contra victim_ewma_step de produccion
-  (la etapa 1 deja de marcar un ataque sostenido a los 15-25 min); seccion 7 duplicada del contrato eliminada.
+HECHO DAY301 (subido, último 91cb3fe6), paso 3b preparado por tandas:
+baa8bfbf 3b-a: ddos_mitigacion.hpp (DdosMitigacion: NADA/ESPERAR/BLOQUEAR/RENOVAR por origen; solo con la
+víctima en episodio; un episodio = un strike; RENOVAR sin strike; desborde por max_origenes sin strike; purgar;
+escalones_cortos) + DdosShadowPolicy::en_episodio() + test_ddos_mitigacion (coherencia con INICIO/FIN medida)
+b68d81e6 b1: bloque ddos_mitigacion en firewall.json y config ([CONFIG]/[CONFIG-DEFAULT]); escalera de producción
+[3600, 86400, 604800, 2073600] (código x2 structs + JSON, validada en parse_recidivism); [CONFIG] de la escalera
+efectiva y [CONFIG-AVISO] de escalones cortos; set_type del ipset leído del JSON; whitelist hash:net
+98d730b1 arranque b1 verificado en real (PROFILE=production)
+5e4e272a c1 [ARGUS-CADENA-D301]: setup_base_rules reescrita: INPUT -I 1 -j ML_DEFENDER_TEST (único salto,
+idempotente); dentro whitelist RETURN y blacklist DROP (nunca ACCEPT); sin rate limiting (solo aviso);
+netmask solo en hash:ip; dry_run simula todas las órdenes
+91cb3fe6 c2 [ARGUS-WHITELIST-D301]: la whitelist se vacía y carga con los rangos protegidos IPv4 al arrancar;
+test_argus_cadena_root contra el kernel (32/32; sin root sale 77 = Skipped honesto). test-components 100/100;
+test-firewall-e2e con root 4/4 (los 3 antiguos corren de verdad por primera vez)
 
-## 1. DAY298: rama nueva fix/ddos-etapa1-histeresis (DEBT-DDOS-COLDSTART-ETAPA1-001 + DEBT-DDOS-V2-LONG-ATTACK-001)
-Causa comun medida: la etapa 1 (ddos_v2_head.hpp:39) compara el ratio crudo con K = 3 y nadie consume bajo_presion;
-warm_windows solo condiciona la entrada en el estado (ddos_contract_v2.hpp:103); la EWMA aprende del propio ataque.
-Postura de Alonso: un DDoS puede durar dias, semanas o meses; hay que pararlo de raiz en cuanto se detecta y la
-insistencia debe salir cada vez mas cara; lo mas peligroso es el DDoS como cortina para lateralizar ransomware.
-1. ANTES (medir, con prediccion escrita):
-   a. A5 en vivo, ~20 min de ntp a 60 pps. El pcap tiene 10000 paquetes (166 s a 60 pps): medir primero si --loop
-      (5-tuplas repetidas) cambia flow_packet_count u otros rasgos; si cambia, generar un pcap largo reproducible.
-      Prediccion: FIN de la sombra a ~15,6 min del inicio (base 10) .
-   b. Arranque en frio PROVOCADO: trafico hacia una victima en los primeros segundos tras pipeline-start.
-2. DISENO (doc corto antes de patchers):
-   - La etapa 1 consume el estado de histeresis (llevar bajo_presion en el evento: campo nuevo en el proto -> `make proto`).
-   - EWMA de la victima congelada mientras dure un episodio (no aprender de trafico clasificado como ataque); el episodio
-     acaba cuando el trafico vuelve a la base; aviso periodico al administrador si dura mas de X horas (X en el JSON).
-   - Rangos protegidos en el JSON: DMZ e intranet nunca se banean automaticamente (solo alerta); lista de externos
-     criticos que tampoco (resolvedores, NTP usados, operador, socios).
-3. DESPUES: mismas corridas con el orquestador (A5 en vivo, frio provocado, A1, A2) y comparacion antes/despues.
-4. EMECAS+++, PR, merge.
+DECISIONES DE ALONSO DAY301:
+- Se bloquea la IP de ORIGEN de los DROP de ddos_v2 solo con su víctima en episodio; nunca la víctima ni un
+  origen protegido. El origen se bloquea en su siguiente DROP dentro del episodio (no la lista del INICIO).
+- FIN no desbloquea: manda el timeout. Un episodio = un strike; mientras siga atacando se renueva sin strike;
+  tras su último DROP corre el escalón entero; reincidencia solo por episodio nuevo.
+- Escalera de producción 1 h / 1 d / 7 d / 24 d, nunca permanente; castigos cortos solo para pruebas, con aviso.
+- Doble llave: dry_run + ddos_mitigacion.habilitada (defecto false). min_drops_origen defecto 1, techo con medida.
+- "Protegido" = aRGus nunca lo bloquea, no que el host lo acepte todo: cadena propia, whitelist RETURN.
+- Tests con root: que pasen todos; primero los de esta feature, después los antiguos.
 
-## 2. Rama siguiente: via rapida en XDP (decision de Alonso: drop inmediato ante un ataque claro, antes de
-clasificacion, firewall y grafo; actuar primero, informar despues)
-- Empezar por "respuestas sin pregunta" (NTP/DNS/memcached/SSDP entrantes sin consulta saliente previa; el defender es
-  el gateway y ve la salida): drop en XDP sin umbral; sin falsos positivos por construccion y no utilizable con
-  origenes falsificados.
-- Volumetrico no reflejado: limitacion de tasa por victima en XDP.
-- Ban por origen con escalada (dias a meses, reutilizando RECIDIVISM-D276) solo con evidencia por origen (D19 o TCP con
-  handshake), fuera de los rangos protegidos; agregacion por subred externa con N origenes confirmados y caducidad.
-- Cada regla cuenta lo que tira, muestrea y manda resumen del episodio aguas abajo (grafo); configuracion en el JSON.
-- Correlacion: DDoS activo + anomalia interna = maxima severidad. Modo degradado (D21) protege primero la deteccion de
-  ransomware.
-- Limite del lab: VirtualBox ejecuta XDP generico -> solo validacion funcional; rendimiento y defensa del ancho de banda
-  (FlowSpec/RTBH aguas arriba) requieren el equipo de la carta.
+MEDIDO DAY301: la víctima del lab es el propio defender (eth2 = 192.168.100.1) y el client enruta por él
+(default via .1): INPUT basta; FORWARD medible en el futuro sin cambiar topología. Kernel 6.1.0-53: ip_set,
+hash_ip, hash_net y xt_set cargables. ipset 7.17 rechaza netmask en hash:net (rc 2). /etc/ml-defender/
+firewall-acl-agent/firewall.json es enlace al JSON del repo. Hoy no existe ningún set ni regla en el defender.
 
-## 3. Despues
-- DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001: flujo adelantado por la fast-alert siguiente (12 casos a 120 pps); anadir
-  mld_recv/mld_send a la linea [TIMEBASE-SEQ].
-- DEBT-SNIFFER-EVENT-ID-NOT-UNIQUE-001 (event_id = ts_ns + "_" + src XOR dst; tambien correlation_id).
-- Rama de estandarizacion (DEBT-LAB-RUNTIME-STANDARD-001); rama DEBT-FW-IPSET-TESTS-SKIPPED-001 (21 saltadas).
-- PR de limpieza de scripts de la raiz + README (firewall-acl-agent/proto/ muerta; avisos de graphify day287/288).
-- DEBT-FLOWUID-TIMEBASE-VERIFY-001; Variant B y herramientas sinteticas al contrato v1.
-- Rama de medidas y modelo (D18, D19, D21, luego D20). D22 cuando haya cliente.
-- Imagen endurecida y Falco: verificar el estado REAL antes de afirmar nada (11 reglas frente a 13 acordadas; perfiles
-  AppArmor en security/apparmor/ y tools/apparmor/; ultimo hardened-full verde en abril). Primero `make hardened-full`
-  desde VM destruida, con prediccion escrita.
-- Antes de publicar el post de DAY294 en LinkedIn: corregir "~1.3 s" por "~1-2 s".
-- Carta de los Reyes Magos de Cáceres: si se envia a Andres, version compartible del documento.
+PENDIENTE, EN ORDEN:
+1. Tanda b2, cableado:
+   - batch_processor: API por episodio. BLOQUEAR -> compute_penalty_timeout (strike+1). RENOVAR -> escalón
+     vigente SIN strike (función nueva; sin estado = escalón 0). Ojo con pending_penalty_ (H6) y la dedup de
+     pending_ips_.
+   - Barrera: un origen en rangos protegidos nunca entra en la blacklist.
+   - zmq_subscriber, tras add_drop: decidir(dst, proto, src, ddos_shadow_.en_episodio(dst, proto)) ->
+     processor_; líneas [DDOS-MITIGACION] (detalle limitado) y contadores en el resumen; purgar en cada resumen;
+     [CONFIG-AVISO] periódico de escalones cortos.
+   - Config del suscriptor: ddos_mitigacion + escalones cortos; main los copia.
+   - Pasos 5-8 viejos (inalcanzables; timeout_sec 300/600/3600 e ipset_name fijos): retirar o anotar.
+   - Tests unitarios de batch_processor en dry_run: strike por episodio, renovar sin strike, barrera.
+2. E2E real, con conmutador solo durante el test (dry_run false, habilitada true, escalera corta) y trap que
+   restaura y verifica. Criterios PASA/FALLA:
+   - .50 entra en el ipset a pocos s del INICIO;
+   - sube el contador de la regla DROP (iptables -L ML_DEFENDER_TEST -v -n);
+   - .61 nunca entra;
+   - .50 sale tras su último DROP + escalón;
+   - en un 2.º ataque, el escalón sube;
+   - medir si el sniffer sigue viendo el tráfico bloqueado (XDP antes que netfilter);
+   - distribución de DROP por origen para fijar el techo de min_drops_origen.
+3. Gate: test-firewall-e2e dentro de EMECAS, fallando si hay Skipped. Después los 21 IPSetWrapperTest antiguos.
+4. Tests de integración sniffer -> proto -> ml-detector; objetivos make E2E con PASA/FALLA; EMECAS+++ desde cero.
+5. PR con docs day298_etapa1_resultados, day299_estado_arranque_persistencia, day300_reinicio_e2e,
+   day300_parada_y_protegidos, paper_apoyo_day301.
+6. Tras el merge: interruptor de cabezas (DEBT-HEADS-SWITCH-001) y caducidad de flujos
+   (DEBT-SNIFFER-FLOW-EXPIRY-001 + FLOWTABLE-CONFIG-001). Alonso decide el orden.
+
+FICHEROS CLAVE: firewall-acl-agent/include/firewall/ddos_mitigacion.hpp, ddos_shadow_policy.hpp (en_episodio),
+ddos_protegidos.hpp (categoria_de; saneado vive en detalle_protegidos), batch_processor.hpp/.cpp
+(flush_internal, compute_penalty_timeout, pending_penalty_), src/api/zmq_subscriber.cpp (add_drop y return de la
+sombra; resumen [SOMBRA-DDOS]), include/firewall/zmq_subscriber.hpp (Config), src/main.cpp (zmq_config.ddos_*,
+whitelist, recidivism), src/core/iptables_wrapper.cpp (setup_base_rules), config/firewall.json
+(ddos_mitigacion, recidivism, ipsets), tests/unit/test_argus_cadena_root.cpp, scripts/timebase/d301_*.

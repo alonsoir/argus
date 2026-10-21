@@ -214,7 +214,18 @@ private:
             counter_resets_ += w->counter_resets;
             evicted_ += w->evicted;
             // [DDOS-VWIN-D279:PUBLISH] snapshot COMPLETO (sin tope CSV); la baseline (t_start_ns == 0) no es tasa
-            if (board_ && w->t_start_ns != 0) board_->publish_window(win, *w);
+            if (board_ && w->t_start_ns != 0) {
+                board_->publish_window(win, *w);
+                if (board_->published() == 1) {  // [DDOS-ESTADO-ARRANQUE-D299] medida del plazo de arranque
+                    const uint64_t ini = board_->arranque_ns();
+                    const uint64_t ahora = ddos_steady_now_ns();
+                    const double ms = (ini != 0 && ahora >= ini) ? static_cast<double>(ahora - ini) / 1.0e6 : -1.0;
+                    std::cout << "[DDOS-ARRANQUE] primera foto del agregador a " << ms
+                              << " ms del arranque (" << (interval_ms_ > 0 ? ms / interval_ms_ : 0.0)
+                              << " ventanas de " << interval_ms_ << " ms); eventos sellados FRIO sin foto: "
+                              << board_->frio_arranque() << std::endl;
+                }
+            }
             if (w->victims.empty() || csv_failed_ || csv_path_.empty()) return;
             const std::size_t n_rows = std::min(w->victims.size(), kDdosMaxRowsPerWindow);
             const uint64_t ts_ms = static_cast<uint64_t>(

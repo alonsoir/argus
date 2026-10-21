@@ -347,6 +347,7 @@ void ZMQHandler::run() {
                 const uint64_t d_int  = summary_delta(s.detections_internal, summary_prev.detections_internal);
                 const uint64_t d_v2p  = summary_delta(s.ddos_v2_presion, summary_prev.ddos_v2_presion);  // [DDOS-V2-D293]
                 const uint64_t d_v2a  = summary_delta(s.ddos_v2_ataque, summary_prev.ddos_v2_ataque);
+                const uint64_t d_v2s  = summary_delta(s.ddos_v2_sin_estado, summary_prev.ddos_v2_sin_estado);  // [DDOS-ETAPA1-D298]
                 if (d_drop > 0) {
                     logger_->warn("[ZMQ-DROP-OUT] descartados={} en los últimos {} s (total={})",
                                   d_drop, secs, s.send_failures);
@@ -358,6 +359,13 @@ void ZMQHandler::run() {
                 if (d_v2p > 0) {  // [DDOS-V2-D293]
                     logger_->warn("[DDOS-V2] bajo_presion={} ataque={} en los últimos {} s (k_ratio={})",
                                   d_v2p, d_v2a, secs, config_.ml.ddos_v2.k_ratio);
+                }
+                if (d_v2s > 0) {  // [DDOS-ETAPA1-D298]
+                    logger_->warn("[DDOS-V2-ANOMALIA] estado_victima_ausente={} en los últimos {} s: eventos sin "
+                                  "victim_state (campo 16); la cabeza DDoS no puede marcar ataques en ellos. Causas: "
+                                  "agregador del kernel apagado o sin foto, o sniffer sin el campo 16. Qué hacer: "
+                                  "docs/operaciones/GUIA_OPERACIONES.md §DDOS-V2-ANOMALIA",
+                                  d_v2s, secs);  // [DDOS-ESTADO-ARRANQUE-D299]
                 }
                 summary_prev = s;
                 summary_last = now;
@@ -483,7 +491,15 @@ void ZMQHandler::process_event(const std::string& message) {
             const ml_defender::ddos_v2::Input in2{dv2.syn_ack_ratio(), dv2.mean_packet_size(), dv2.reflection_signature(),
                                                   dv2.packet_size_entropy(), dv2.flow_packet_count(),
                                                   dv2.flow_completion_rate(), dv2.victim_rate_ratio()};
-            const auto r2 = ml_defender::ddos_v2::evaluate(in2, config_.ml.ddos_v2.k_ratio);
+            // [DDOS-ETAPA1-D298] la etapa 1 consume el estado de la victima del sniffer
+            static_assert(static_cast<int>(ml_defender::ddos_v2::EstadoVictima::Frio) == protobuf::VICTIM_STATE_COLD &&
+                          static_cast<int>(ml_defender::ddos_v2::EstadoVictima::Normal) == protobuf::VICTIM_STATE_NORMAL &&
+                          static_cast<int>(ml_defender::ddos_v2::EstadoVictima::BajoPresion) ==
+                              protobuf::VICTIM_STATE_UNDER_PRESSURE &&
+                          static_cast<int>(ml_defender::ddos_v2::EstadoVictima::Desconocido) == protobuf::VICTIM_STATE_UNKNOWN,
+                          "EstadoVictima desalineado con protobuf::VictimState");
+            const auto ev2 = static_cast<ml_defender::ddos_v2::EstadoVictima>(static_cast<int>(dv2.victim_state()));
+            const auto r2 = ml_defender::ddos_v2::evaluate(in2, config_.ml.ddos_v2.k_ratio, ev2);
             ddos_v2_attack = (r2.clase == 1);
             ddos_v2_score = r2.stage1 ? r2.p1 : 0.0;  // [DDOS-SHADOW-D293]
             auto* p2 = ml_analysis->add_level2_specialized_predictions();
@@ -492,6 +508,10 @@ void ZMQHandler::process_event(const std::string& message) {
             p2->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_DDOS);
             p2->set_prediction_class(ddos_v2_attack ? "DDOS" : (r2.stage1 ? "NORMAL" : "NO_PRESSURE"));
             p2->set_confidence_score(static_cast<float>(r2.p1));
+            if (dv2.victim_state() == protobuf::VICTIM_STATE_UNKNOWN) {  // [DDOS-ETAPA1-D298] etapa 1 antigua
+                std::lock_guard<std::mutex> lock(stats_mutex_);
+                stats_.ddos_v2_sin_estado++;
+            }
             if (r2.stage1) {
                 std::lock_guard<std::mutex> lock(stats_mutex_);
                 stats_.ddos_v2_presion++;
@@ -499,8 +519,9 @@ void ZMQHandler::process_event(const std::string& message) {
                     stats_.ddos_v2_ataque++;
                 }
             }
-            logger_->debug("🤖 DDoS-v2: etapa1={} ratio={:.3f} p1={:.4f} clase={} event={}",
-                           r2.stage1, dv2.victim_rate_ratio(), r2.p1, r2.clase, event.event_id());
+            logger_->debug("🤖 DDoS-v2: etapa1={} estado={} ratio={:.3f} p1={:.4f} clase={} event={}",
+                           r2.stage1, static_cast<int>(dv2.victim_state()), dv2.victim_rate_ratio(), r2.p1, r2.clase,
+                           event.event_id());
         }
 
         // Dual-Score Architecture
