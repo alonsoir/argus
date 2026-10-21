@@ -7599,3 +7599,82 @@ hoy no existe el camino ddos_v2 -> ipset. El 3b empieza por el diseno con Alonso
   RecidivismConfig) además del JSON; una sola fuente.
 - **Ampliación de CONFIG-SILENT-DEFAULTS**: el bloque ddos_shadow lee en silencio los valores válidos (solo avisa
   de los defectos); ddos_mitigacion ya registra cada valor con [CONFIG].
+
+
+## Cierre DAY303 [CIERRE-D303]
+
+Resuelto DAY303 (EMECAS+++ production desde cero, 2h32m, rc=0): perfil por defecto production; pipeline-build
+compila tools y termina con set-build-profile; rag por perfil; clean-host-builds en el Mac antes de vagrant up;
+emecas-frescura con sello; puerta e2e/perf del firewall con root (ctest_label_gate.sh); lab-e2e (reinicio
+antes/ordenada/kill9, protegidos, mitigacion) con veredictos estrictos; espera ESTABLE con fondo ICMP controlado;
+tools/build y crypto-transport/build fuera de git; emecas_run.sh / emecas_watch.sh.
+
+### DEBT-RAG-DEPRECATION-CERT-001 — ABIERTA, siguiente rama (decision de Alonso DAY303)
+Deprecado de rag/rag-security nunca certificado: se quito parte del Makefile pero sigue compilandose, arrancando,
+perfilado en AppArmor/Falco, con semillas y tests que lo nombran. Inventario K6 en docs/ml-heads/prompt_day304.md.
+
+### DEBT-PIPELINE-STATUS-LIVENESS-001 — ABIERTA
+pipeline-status solo comprueba que el proceso existe. rag-security salia RUNNING sin registrarse en etcd desde
+septiembre (MAC verification failed, K8). Comprobar registro en etcd o heartbeat aceptado por componente.
+
+### DEBT-APPARMOR-FIREWALL-BIN-NAME-001 — ABIERTA
+tools/apparmor-promote.sh usa firewall_acl_agent; el binario es firewall-acl-agent (FIREWALL_BIN). Si el perfil
+usa ese path, AppArmor no confina el binario real. Medir en la VM hardened.
+
+### DEBT-FW-LEGACY-LINK-DIR-001 — ABIERTA
+firewall-acl-agent/build es un directorio real: ln -sfn $(FIREWALL_BUILD_DIR) $(FIREWALL_LEGACY_LINK) crea el
+enlace DENTRO. (clean-host-builds lo borra en EMECAS; en el dia a dia persiste.)
+
+### DEBT-BUILD-INCREMENTAL-001 — ABIERTA
+pipeline-build recompila todo en cada llamada (DAY303: 08:35-08:48 y 09:43-09:56 sin cambios de fuente
+intermedios relevantes). Medir que cmake/make reconfigura y por que.
+
+### DEBT-EMECAS-SENSOR-VMS-001 — ABIERTA
+EMECAS levanta defender, client y suricata; zeek y wazuh no entran en el gate (make up levanta las 5).
+
+### DEBT-LAB-ESTABLE-LECTOR-001 — MITIGADA
+day288_esperar_estable.sh necesita trafico: el lector del kernel solo escribe claves con paquetes. Mitigado con
+fondo ICMP controlado (d303_esperar_estable_lab.sh). Solucion de fondo: un latido del lector por sondeo.
+
+### DEBT-LAB-VIVOS-DIA-001 — ABIERTA
+lab_corrida_defender.sh con DIA invalido (no dayNNN) hace que el E2E diga "quedan procesos vivos": mensaje
+enganoso. Distinguir DIA invalido de proceso vivo.
+
+### DEBT-GIT-BUILD-ARTIFACTS-001 — ABIERTA
+Quedan versionados common-rag-ingester/build (5 ficheros; va con DEBT-RAG-DEPRECATION-CERT-001) y
+plugin-loader/build-enterprise (4; medir quien lo usa antes de quitarlo).
+
+### DEBT-BUILD-BASURA-001 — ABIERTA
+Directorios sin dueno en el Makefile: common/build-vault, plugin-loader/build-debug, ml-detector/build_detector_test,
+sniffer/build-prod (los build-* los borra clean-host-builds; el resto persiste).
+
+### DEBT-MAKE-DEAD-TARGETS-001 — ABIERTA
+test-alert-client y test-wire-protocol no los llama nadie.
+
+### DEBT-VAULT-COMMON-BUILD-001 — ABIERTA
+Los actos de Vault reconfiguran common/build con ARGUS_VAULT_ENABLED=ON y lo instalan con sudo make install: en
+una sesion manual contamina los builds OSS posteriores (en EMECAS lo limpia clean-host-builds en la siguiente).
+
+### DEBT-PROVISION-LIBS-PROFILE-001 — ABIERTA (a medir)
+provision.sh compila las librerias con CMAKE_BUILD_TYPE=Release, no con los flags del perfil production; medir
+si pipeline-build las recompila con CMAKE_FLAGS y cual queda instalada en /usr/local/lib.
+
+### DEBT-SANITIZERS-PREPROD-001 — ABIERTA (decision de Alonso DAY303)
+Pase ASan/TSan (emecas++++) solo en hardware real de preproduccion/produccion. Existe tsan-all; falta objetivo asan.
+
+### DEBT-SYNTH-E2E-FAIL-FAST-001 — ABIERTA
+test-e2e-synthetic-full espera "Injection complete" con timeout 60 y no reacciona a "Error" del injector:
+con etcd-server caido tardo 60 s en fallar y sin decir por que. Fallar al ver Error con su mensaje.
+
+### DEBT-MAKE-PREFLIGHT-001 — PROPUESTA (DAY303)
+make preflight de segundos antes de cualquier corrida larga: expandir cada vagrant ssh -c (uniendo lineas de
+continuacion) y comprobar con shlex 4 argumentos; ficheros del repo con salto de linea final; ningun build*/
+versionado; LAB_E2E_DIA con formato dayNNN; patrones de estado que no casen con su propio pgrep.
+Habria cazado 3-4 de los fallos de DAY303 antes de lanzar nada.
+
+### Practica DAY303 (Alonso)
+Ramas pequenas con su EMECAS al final; EMECAS cuando el Mac no se usa (de noche).
+
+### Leccion DAY303
+Nunca printf >> sobre ficheros del repo: .gitignore no terminaba en salto de linea y el anadido rompio la regla
+seed-repro/*.json. Siempre patcher que compruebe el salto final.
