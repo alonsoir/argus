@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # vagrant/hardened-x86/scripts/setup-apparmor.sh
-# Instala y activa los 6 perfiles AppArmor (uno por componente).
+# Instala y activa los 4 perfiles AppArmor (uno por componente).
 # Modo: enforce (no complain).
 # Se ejecuta DENTRO de la hardened VM como root.
 #
@@ -11,7 +11,7 @@ PROFILES_DIR=/vagrant/security/apparmor
 AA_DIR=/etc/apparmor.d
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  AppArmor profiles — 6 componentes en enforce mode       ║"
+echo "║  AppArmor profiles — 4 componentes en enforce mode       ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 
 # Verificar AppArmor disponible
@@ -27,7 +27,7 @@ fi
 
 echo ""
 echo "── Installing profiles ──"
-for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do
+for comp in etcd-server sniffer ml-detector firewall-acl-agent; do
     src="${PROFILES_DIR}/argus.${comp}"
     dst="${AA_DIR}/argus.${comp}"
 

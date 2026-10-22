@@ -23,7 +23,7 @@ struct HMACKey {
     std::chrono::system_clock::time_point created_at;  // Creation timestamp
     std::chrono::system_clock::time_point expires_at;  // Expiration timestamp (created_at + grace_period after rotation)
     bool is_active;                                     // true = current key, false = grace period only
-    std::string component;                              // Component name (e.g., "rag-ingester")
+    std::string component;                              // Component name (e.g., "ml-detector")
 };
 
 /**
@@ -75,7 +75,7 @@ public:
     /**
      * @brief Generate new HMAC key for component
      *
-     * @param component Component name (e.g., "rag-ingester")
+     * @param component Component name (e.g., "ml-detector")
      * @return HMACKey Generated key with metadata
      */
     HMACKey generate_hmac_key(const std::string& component);

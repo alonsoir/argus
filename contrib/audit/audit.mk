@@ -5,7 +5,7 @@
 
 AUDIT_DIRS := sniffer/src ml-detector/src firewall-acl-agent/src \
               etcd-server/src correlation-engine/src crypto-transport \
-              plugin-loader rag-ingester/src common-rag-ingester libs
+              plugin-loader libs
 
 audit-tools:
 	echo "🔧 Verificando herramientas de auditoria en el guest..."

@@ -106,7 +106,7 @@ void test_tamper_degraded() {
 
     // Desde NORMAL
     {
-        CryptoAutonomy sm{"rag-ingester"};
+        CryptoAutonomy sm{"firewall-acl-agent"};
         sm.on_tamper_detected();
         ASSERT_EQ(sm.current_mode(), OperationalMode::DEGRADED,
             "tamper desde NORMAL → DEGRADED");
@@ -116,7 +116,7 @@ void test_tamper_degraded() {
 
     // Desde RECONCILING
     {
-        CryptoAutonomy sm{"rag-security"};
+        CryptoAutonomy sm{"ml-detector"};
         sm.on_vault_unreachable();
         sm.on_vault_restored();
         sm.on_tamper_detected();

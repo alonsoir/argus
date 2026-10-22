@@ -82,36 +82,7 @@ sniffer/logs/
 *.rej
 *_INTEGRATION_EXAMPLE.cpp
 
-# ============================================================================
-# NUEVAS EXCLUSIONES PARA RAG Y LLAMA.CPP
-# ============================================================================
-
-# RAG Component build artifacts
-rag/build/
-rag/cmake-build-*/
-rag/CMakeFiles/
-rag/*.cmake
-rag/Makefile
-rag/cmake_install.cmake
-rag/CMakeCache.txt
-
-# llama.cpp - CRÍTICO: NO SUBIR BUILD ARTIFACTS
-third_party/llama.cpp/build/
-third_party/llama.cpp/CMakeFiles/
-third_party/llama.cpp/*.cmake
-third_party/llama.cpp/Makefile
-third_party/llama.cpp/cmake_install.cmake
-third_party/llama.cpp/CMakeCache.txt
-
-# llama.cpp binaries and libraries
-third_party/llama.cpp/bin/
-third_party/llama.cpp/lib/
-third_party/llama.cpp/*.a
-third_party/llama.cpp/*.so
-third_party/llama.cpp/*.dylib
-third_party/llama.cpp/*.dll
-
-# LLM Model files - NO SUBIR (muy grandes)
+# Binarios y modelos - NO SUBIR (seeds *.bin, modelos *.gguf/*.ggml)
 *.bin
 *.gguf
 *.ggml
@@ -127,10 +98,6 @@ firewall-acl-agent/cmake_install.cmake
 firewall-acl-agent/CMakeCache.txt
 
 # ML Training temporary files
-ml-training/scripts/rag_shield/archive_old_models/
-ml-training/scripts/rag_shield/*.json.tmp
-ml-training/scripts/rag_shield/*.pth
-ml-training/scripts/rag_shield/*.pt
 
 # Protobuf generated files (ya están en git, pero builds nuevos)
 **/network_security.pb.cc
@@ -174,11 +141,9 @@ logs/# ONNX models (generate on-the-fly)
 logs/
 *.jsonl
 
-contrib/claude/pca_pipeline/models/
-contrib/claude/pca_pipeline/*.npz# Build artifacts
+# Build artifacts
 *.dylib
 build/
-contrib/claude/pca_pipeline/training_data.npz
 *.npz
 
 # Build directories (all profiles)
@@ -190,9 +155,6 @@ contrib/claude/pca_pipeline/training_data.npz
 !*/build-*/config/  # Exception: keep config symlinks*/build-*/
 rm --cached ml-detector/build-asan/ml-detector
 /build-*/config/
-shared/indices/*.db-wal
-shared/indices/*.db-shm
-shared/indices/*.db
 .cache_ggshield
 
 # Backups locales (no para el repo)
@@ -206,14 +168,12 @@ Vagrantfile.backup*
 stress_*.log
 stress_live.log
 */build-active
-shared/indices/
 trivy_*.txt
 warnings.txt
 
 # Binarios de test sueltos (no pertenecen al build system)
 etcd-client/tests/test_put_config_integration
 firewall-acl-agent/test_simple
-rag/models/test_real_embedders
 
 # Archivos pcap (datos de red, potencialmente sensibles)
 **/*.pcap
@@ -250,7 +210,6 @@ docs/argus_ndr_v*.pdf
 docs/latex/Archivo.zip
 docs/latex/*.zip
 etcd-server/build
-rag-ingester/build
 scripts/parquet/schemas/__pycache__/
 test_sos_e2e.cpp
 enterprise_vendor.key

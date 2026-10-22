@@ -1,5 +1,5 @@
 // generate_synthetic_events.cpp
-// Synthetic Event Generator for RAG Ingester Testing
+// Synthetic Event Generator for pipeline testing
 // Via Appia Quality - Uses Production RAGLogger
 //
 // PURPOSE: Generate synthetic events with 101 features + ADR-002 provenance
@@ -30,7 +30,7 @@
 // Crypto
 #include <crypto_transport/crypto_manager.hpp>
 #include <crypto_transport/utils.hpp>
-// etcd-client (consistent with ml-detector, rag-ingester)
+// etcd-client (consistent with ml-detector)
 #include <etcd_client/etcd_client.hpp>
 // RAG Logger (PRODUCTION CODE - zero drift)
 #include "rag_logger.hpp"

@@ -78,12 +78,8 @@ profile argus-sniffer /opt/argus/bin/sniffer {
   deny /etc/shadow          rw,
   deny /etc/ml-defender/ml-detector/** rwx,
   deny /etc/ml-defender/firewall-acl-agent/** rwx,
-  deny /etc/ml-defender/rag-ingester/** rwx,
-  deny /etc/ml-defender/rag-security/** rwx,
   deny /opt/argus/bin/ml-detector           x,
   deny /opt/argus/bin/firewall-acl-agent    x,
-  deny /opt/argus/bin/rag-ingester          x,
-  deny /opt/argus/bin/rag-security          x,
 
   # ── APT Sources integrity (DEBT-PROD-APT-SOURCES-INTEGRITY-001 DAY 135) ───
   deny /etc/apt/sources.list w,

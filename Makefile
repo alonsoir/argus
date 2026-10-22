@@ -1,6 +1,5 @@
 .PHONY: help status
 .PHONY: up halt destroy ssh
-.PHONY: submodule-init
 .PHONY: proto proto-unified proto-verify sniffer detector firewall all rebuild
 .PHONY: sniffer-build sniffer-clean sniffer-package sniffer-install
 .PHONY: detector-build detector-clean
@@ -26,7 +25,6 @@
 .PHONY: monitor-day23-tmux
 .PHONY: test-day23-full test-day23-stress verify-rag-logs-day23
 .PHONY: day23
-.PHONY: rag-ingester rag-ingester-build rag-ingester-clean
 .PHONY: tools-build tools-clean tools-synthetic-gen
 .PHONY: crypto-transport-build crypto-transport-clean crypto-transport-test
 .PHONY: plugin-loader-build plugin-loader-clean plugin-loader-test
@@ -41,8 +39,6 @@ validate-prod-configs:
 	    /vagrant/sniffer/config/ \
 	    /vagrant/firewall-acl-agent/config/ \
 	    /vagrant/ml-detector/config/ \
-	    /vagrant/rag/config/ \
-	    /vagrant/rag-ingester/config/ \
 	    /vagrant/etcd-server/config/ 2>/dev/null" 2>/dev/null | grep -v '.backup'; then \
 		echo ""; \
 		echo "❌ DEBT-HELLO-001: libplugin_hello encontrado en configs de producción"; \
@@ -53,15 +49,14 @@ validate-prod-configs:
 
 
 .PHONY: etcd-server etcd-server-build etcd-server-clean etcd-server-start etcd-server-stop
-.PHONY: rag-build rag-clean rag-start rag-stop rag-status rag-logs rag-attach
 .PHONY: etcd-server-status pipeline-start pipeline-stop pipeline-status
 .PHONY: test-hardening test-hardening-build test-hardening-run
 .PHONY: day38-step1 day38-step2 day38-step3 day38-step4 day38-step5
 .PHONY: day38-full day38-status day38-clean day38-pipeline
 .PHONY: tsan-all tsan-quick tsan-clean tsan-summary tsan-status
 .PHONY: etcd-server-status pipeline-start pipeline-stop pipeline-status
-.PHONY: ml-detector-start firewall-start sniffer-start sniffer-libpcap-start rag-ingester-start
-.PHONY: etcd-server-start rag-start rag-stop dev-setup-tools pipeline-health
+.PHONY: ml-detector-start firewall-start sniffer-start sniffer-libpcap-start
+.PHONY: etcd-server-start dev-setup-tools pipeline-health
 .PHONY: provision provision-status provision-check provision-reprovision test-provision-1 test-invariant-seed
 .PHONY: seed-client-build seed-client-test seed-client-clean seed-client-rebuild
 
@@ -133,7 +128,6 @@ FORCE_ALL_HEADS ?=
 # ============================================================================
 SNIFFER_BUILD_DIR       := /vagrant/sniffer/build-$(PROFILE)
 ML_DETECTOR_BUILD_DIR   := /vagrant/ml-detector/build-$(PROFILE)
-RAG_INGESTER_BUILD_DIR  := /vagrant/rag-ingester/build-$(PROFILE)
 FIREWALL_BUILD_DIR      := /vagrant/firewall-acl-agent/build-$(PROFILE)
 ETCD_SERVER_BUILD_DIR   := /vagrant/etcd-server/build-$(PROFILE)
 TOOLS_BUILD_DIR         := /vagrant/tools/build-$(PROFILE)
@@ -146,14 +140,10 @@ PLUGIN_LOADER_BUILD_DIR    := /vagrant/plugin-loader/build
 # Legacy compatibility (for existing scripts that reference /vagrant/component/build)
 SNIFFER_LEGACY_LINK       := /vagrant/sniffer/build
 ML_DETECTOR_LEGACY_LINK   := /vagrant/ml-detector/build
-RAG_INGESTER_LEGACY_LINK  := /vagrant/rag-ingester/build
 FIREWALL_LEGACY_LINK      := /vagrant/firewall-acl-agent/build
 ETCD_SERVER_LEGACY_LINK   := /vagrant/etcd-server/build
 TOOLS_LEGACY_LINK         := /vagrant/tools/build
 
-# [ARGUS-CLEAN-D303] rag por perfil como el resto (su deprecado va en rama propia)
-RAG_BUILD_DIR := /vagrant/rag/build-$(PROFILE)
-RAG_INGESTER_BIN_DIR := /vagrant/rag-ingester/build
 # ============================================================================
 # HELP
 # ============================================================================
@@ -185,7 +175,6 @@ help:
 	@echo "  make sniffer         - Build sniffer (Variant A, eBPF/XDP)"
 	@echo "  make sniffer-libpcap - Build sniffer (Variant B, libpcap)"
 	@echo "  make ml-detector     - Build ML detector"
-	@echo "  make rag-ingester    - Build RAG ingester"
 	@echo "  make firewall        - Build firewall agent"
 	@echo "  make etcd-server     - Build etcd server"
 	@echo "  make tools           - Build tools"
@@ -271,7 +260,7 @@ bootstrap-x86-ebpf:
 	@$(MAKE) plugin-integ-test
 	@vagrant ssh defender -c "tmux has-session -t sniffer 2>/dev/null" || (echo "\n❌ Bootstrap FAILED — sniffer STOPPED (DEBT-BOOTSTRAP-SNIFFER-VERIFY-001)" && exit 1)
 	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  ✅ Bootstrap x86 eBPF completado — 6/6 RUNNING           ║"
+	@echo "║  ✅ Bootstrap x86 eBPF completado — 4/4 RUNNING           ║"
 	@echo "║  Sniffer activo: Variant A (eBPF/XDP)                     ║"
 	@echo "║  Siguiente: make test-all                                  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
@@ -304,7 +293,7 @@ bootstrap-x86-libpcap:
 	@$(MAKE) pipeline-status
 	@$(MAKE) plugin-integ-test
 	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  ✅ Bootstrap x86 libpcap completado — 6/6 RUNNING        ║"
+	@echo "║  ✅ Bootstrap x86 libpcap completado — 4/4 RUNNING        ║"
 	@echo "║  Sniffer activo: Variant B (libpcap)                      ║"
 	@echo "║  Siguiente: make test-all                                  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
@@ -331,7 +320,7 @@ post-up-verify:
 	@vagrant ssh -c "test -d /usr/lib/ml-defender/plugins || { echo '❌ plugins dir missing'; exit 1; }"
 	@vagrant ssh -c "test -f /usr/lib/ml-defender/plugins/libplugin_xgboost.so || { echo '❌ libplugin_xgboost.so missing'; exit 1; }"
 	@vagrant ssh -c "test -f /etc/ml-defender/plugins/plugin_signing.pk || { echo '❌ plugin_signing.pk missing'; exit 1; }"
-	@vagrant ssh -c "sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ' | grep -q '^6$$' || { echo '❌ seeds missing (esperados 6)'; exit 1; }"
+	@vagrant ssh -c "sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ' | grep -q '^4$$' || { echo '❌ seeds missing (esperados 4)'; exit 1; }"
 	@echo "✅ Entorno post-up verificado"
 
 # [LAB-CLOCK-STEP-D296] Alinea los relojes del lab tras suspender el Mac: makestep en defender y DESPUES en client
@@ -520,13 +509,13 @@ sign-models:
 plugin-integ-test:
 	@echo "TEST-INTEG-4a-PLUGIN: variantes A/B/C..."
 	@vagrant ssh -c 'cd /tmp && g++ -std=c++20 -o test_variants /vagrant/plugins/test-message/test_variants.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && MLD_ALLOW_DEV_MODE=1 ./test_variants && echo TEST-INTEG-4a PASSED || echo TEST-INTEG-4a FAILED'
-	@echo "TEST-INTEG-4b: plugin READ-ONLY contract (rag-ingester PHASE 2b)..."
+	@echo "TEST-INTEG-4b: plugin READ-ONLY contract (PHASE 2b)..."
 	@vagrant ssh -c 'cd /tmp && g++ -std=c++20 -o test_integ_4b /vagrant/plugins/test-message/test_integ_4b.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && MLD_ALLOW_DEV_MODE=1 ./test_integ_4b && echo TEST-INTEG-4b PASSED || echo TEST-INTEG-4b FAILED'
 	@echo "TEST-INTEG-4c: plugin NORMAL contract (sniffer PHASE 2c)..."
 	@vagrant ssh -c 'cd /tmp && g++ -std=c++20 -o test_integ_4c /vagrant/plugins/test-message/test_integ_4c.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && MLD_ALLOW_DEV_MODE=1 ./test_integ_4c && echo TEST-INTEG-4c PASSED || echo TEST-INTEG-4c FAILED'
 	@echo "TEST-INTEG-4d: plugin NORMAL contract (ml-detector PHASE 2d)..."
 	@vagrant ssh -c 'cd /tmp && g++ -std=c++20 -o test_integ_4d /vagrant/plugins/test-message/test_integ_4d.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && MLD_ALLOW_DEV_MODE=1 ./test_integ_4d && echo TEST-INTEG-4d PASSED || echo TEST-INTEG-4d FAILED'
-	@echo "TEST-INTEG-4e: rag-security READONLY + ADR-029 D1-D5..."
+	@echo "TEST-INTEG-4e: plugin READONLY contract + ADR-029 D1-D5..."
 	@vagrant ssh -c 'cd /tmp && g++ -std=c++20 -o test_integ_4e /vagrant/plugins/test-message/test_integ_4e.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && MLD_ALLOW_DEV_MODE=1 ./test_integ_4e && echo TEST-INTEG-4e PASSED || echo TEST-INTEG-4e FAILED'
 	@echo "TEST-INTEG-SIGN: Ed25519 plugin verification (ADR-025)..."
 	@vagrant ssh -c 'cd /tmp && g++ -std=c++20 -o test_integ_sign /vagrant/plugins/test-message/test_integ_sign.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && sudo ./test_integ_sign && echo TEST-INTEG-SIGN PASSED || echo TEST-INTEG-SIGN FAILED'
@@ -721,37 +710,6 @@ ml-detector: proto etcd-client-build plugin-loader-build correlation-v1-build
 	@echo ""
 	@echo "✅ ML Detector built ($(PROFILE))"
 
-rag-ingester-start:
-	@echo "🚀 Starting RAG Ingester (Full Context)..."
-	@vagrant ssh -c "tmux kill-session -t rag-ingester 2>/dev/null || true"
-	@echo "🧹 Limpiando SQLite lock anterior (si existe)..."
-	@vagrant ssh -c "rm -f /vagrant/shared/indices/metadata.db-wal /vagrant/shared/indices/metadata.db-shm || true"
-	@echo "Ejecución desde la raíz del componente para resolver paths relativos del config..."
-	@vagrant ssh -c "tmux new-session -d -s rag-ingester 'mkdir -p /vagrant/logs/lab && cd /vagrant/rag-ingester && export LD_LIBRARY_PATH=/usr/local/lib:$$LD_LIBRARY_PATH && sudo env LD_LIBRARY_PATH=/usr/local/lib $(RAG_INGESTER_BUILD_DIR)/rag-ingester /etc/ml-defender/rag-ingester/rag-ingester.json >> /vagrant/logs/lab/rag-ingester.log 2>&1'"
-	@sleep 2
-
-rag-ingester: proto etcd-client-build crypto-transport-build plugin-loader-build
-	@echo ""
-	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  🔨 Building RAG Ingester [$(PROFILE)]                    ║"
-	@echo "╚════════════════════════════════════════════════════════════╝"
-	@echo ""
-	@echo "Build dir: $(RAG_INGESTER_BUILD_DIR)"
-	@echo "Flags: $(CMAKE_FLAGS)"
-	@echo ""
-	@echo "Copying protobuf files..."
-	@vagrant ssh -c 'mkdir -p $(RAG_INGESTER_BUILD_DIR)/proto && \
-		cp /vagrant/protobuf/network_security.pb.* $(RAG_INGESTER_BUILD_DIR)/proto/'
-	@echo "Running CMake and build..."
-	@vagrant ssh -c 'cd /vagrant/rag-ingester && \
-		mkdir -p $(RAG_INGESTER_BUILD_DIR) && \
-		cd $(RAG_INGESTER_BUILD_DIR) && \
-		cmake $(CMAKE_FLAGS) .. && \
-		make -j4'
-	@vagrant ssh -c "ln -sfn $(RAG_INGESTER_BUILD_DIR) $(RAG_INGESTER_LEGACY_LINK)"
-	@echo ""
-	@echo "✅ RAG Ingester built ($(PROFILE))"
-
 FIREWALL_DIR := /vagrant/firewall-acl-agent
 FIREWALL_BIN := ./firewall-acl-agent
 FIREWALL_CFG := /etc/ml-defender/firewall-acl-agent/firewall.json
@@ -813,8 +771,8 @@ etcd-server-status:
 # ADR pendiente: mover configuración log_file a JSON de cada componente.
 # ============================================================================
 logs-all:
-	@echo '📋 Tailing all 6 pipeline component logs (Ctrl+C to stop)...'
-	@vagrant ssh -c "tail -f /vagrant/logs/lab/etcd-server.log /vagrant/logs/lab/rag-security.log /vagrant/logs/lab/rag-ingester.log /vagrant/logs/lab/ml-detector.log /vagrant/logs/lab/firewall-agent.log /vagrant/logs/lab/sniffer.log 2>/dev/null"
+	@echo '📋 Tailing all 4 pipeline component logs (Ctrl+C to stop)...'
+	@vagrant ssh -c "tail -f /vagrant/logs/lab/etcd-server.log /vagrant/logs/lab/ml-detector.log /vagrant/logs/lab/firewall-agent.log /vagrant/logs/lab/sniffer.log 2>/dev/null"
 
 logs-lab-clean:
 	@echo '🧹 Rotating pipeline logs...'
@@ -869,8 +827,7 @@ test-provision-1:
 	@vagrant ssh -c "test -L /vagrant/sniffer/build-active && \
 		test -L /vagrant/ml-detector/build-active && \
 		test -L /vagrant/firewall-acl-agent/build-active && \
-		test -L /vagrant/etcd-server/build-active && \
-		test -L /vagrant/rag-ingester/build-active" || \
+		test -L /vagrant/etcd-server/build-active" || \
 		(echo "❌ CHECK 4 FAILED: build-active symlinks ausentes" && \
 		 echo "   Ejecuta: vagrant ssh -c 'sudo bash /vagrant/etcd-server/config/set-build-profile.sh debug'" && \
 		 exit 1)
@@ -878,8 +835,8 @@ test-provision-1:
 	@echo ""
 	@echo "── Check 5/8: systemd units instalados ──"
 	@vagrant ssh -c "systemctl list-unit-files ml-defender-*.service 2>/dev/null | grep -c 'ml-defender'" | \
-		grep -q "6" || \
-		(echo "❌ CHECK 5 FAILED: systemd units no instalados (esperado: 6)" && \
+		grep -q "4" || \
+		(echo "❌ CHECK 5 FAILED: systemd units no instalados (esperado: 4)" && \
 		 echo "   Ejecuta: vagrant ssh -c 'sudo bash /vagrant/etcd-server/config/install-systemd-units.sh'" && \
 		 exit 1)
 	@echo "✅ Check 5/8 OK"
@@ -909,10 +866,10 @@ test-provision-1:
 
 test-invariant-seed:
 	@echo ""
-	@echo "── TEST-INVARIANT-SEED: 6 seeds idénticos post-reset ──"
+	@echo "── TEST-INVARIANT-SEED: 4 seeds idénticos post-reset ──"
 	@vagrant ssh -c 'sudo bash -c " \
 	  hashes=\"\" ; \
-	  for c in etcd-server ml-detector sniffer firewall-acl-agent rag-ingester rag-security; do \
+	  for c in etcd-server ml-detector sniffer firewall-acl-agent; do \
 	    h=\$$(od -A n -t x1 /etc/ml-defender/\$$c/seed.bin | tr -d \" \\n\") ; \
 	    hashes=\"\$$hashes \$$h\" ; \
 	  done ; \
@@ -925,7 +882,6 @@ test-invariant-seed:
 pipeline-start: test-provision-1 etcd-server-start
 	@echo "⏳ Waiting for etcd-server to stabilize (Seed generation)..."
 	@sleep 4
-	@$(MAKE) rag-start
 	@sleep 5
 	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE) FORCE_ALL_HEADS=$(FORCE_ALL_HEADS)
 	@$(MAKE) firewall-start
@@ -940,7 +896,6 @@ pipeline-start: test-provision-1 etcd-server-start
 pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
 	@echo "⏳ Waiting for etcd-server to stabilize (Seed generation)..."
 	@sleep 4
-	@$(MAKE) rag-start
 	@sleep 5
 	@$(MAKE) ml-detector-start
 	@$(MAKE) firewall-start
@@ -955,7 +910,7 @@ pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
 pipeline-stop:
 	@echo "🛑 Stopping all pipeline components..."
 	@$(MAKE) --no-print-directory sniffer-stop  # [SNIFFER-STOP-D299] parada ordenada antes del resto
-	@vagrant ssh -c "for s in sniffer ml-detector firewall rag-ingester rag-security etcd-server; do tmux kill-session -t $$s 2>/dev/null || true; done"
+	@vagrant ssh -c "for s in sniffer ml-detector firewall etcd-server; do tmux kill-session -t $$s 2>/dev/null || true; done"
 	@echo "✅ Pipeline stopped"
 
 pipeline-status:
@@ -964,7 +919,6 @@ pipeline-status:
 	@echo "║  📊 ML Defender Pipeline Status (via TMUX + pgrep)        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@vagrant ssh -c "( tmux has-session -t etcd-server 2>/dev/null || pgrep -x etcd-server >/dev/null 2>&1 ) && echo '  ✅ etcd-server:   RUNNING' || echo '  ❌ etcd-server:   STOPPED'"
-	@vagrant ssh -c "( tmux has-session -t rag-security 2>/dev/null || pgrep -x rag-security >/dev/null 2>&1 ) && echo '  ✅ rag-security:  RUNNING' || echo '  ❌ rag-security:  STOPPED'"
 	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
 	  EBPF=0; PCAP=0; \
@@ -1000,10 +954,10 @@ set-build-profile:
 # 3. set-build-profile → activa symlinks build-active
 # 4. sign-plugins    → firma Ed25519 (ADR-025)
 # 5. test-provision-1 → CI gate PHASE 3
-# 6. pipeline-start  → arranca los 6 componentes
+# 6. pipeline-start  → arranca los 4 componentes
 # [ARGUS-CLEAN-D303] al final, set-build-profile: build-active -> build-$(PROFILE) de lo recien
 # compilado (antes solo corria en bootstrap, ANTES de compilar, y se saltaba lo que no existia)
-pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server rag-build rag-ingester-build ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install tools
+pipeline-build: crypto-transport-build seed-client-build etcd-client-build plugin-loader-build vault-client-build plugin-test-message-build etcd-server ml-detector sniffer firewall-build argus-network-isolate-build argus-network-isolate-install tools
 	@$(MAKE) set-build-profile
 
 tools: proto etcd-client-build crypto-transport-build
@@ -1063,7 +1017,6 @@ sniffer-libpcap: proto etcd-client-build plugin-loader-build
 detector: ml-detector
 sniffer-build: sniffer
 detector-build: ml-detector
-rag-ingester-build: rag-ingester
 firewall-build: firewall
 etcd-server-build: etcd-server
 tools-build: tools
@@ -1122,10 +1075,6 @@ detector-clean:
 	@echo "🧹 Cleaning ML Detector [$(PROFILE)]..."
 	@vagrant ssh -c "rm -rf $(ML_DETECTOR_BUILD_DIR)"
 
-rag-ingester-clean:
-	@echo "🧹 Cleaning RAG Ingester [$(PROFILE)]..."
-	@vagrant ssh -c "rm -rf $(RAG_INGESTER_BUILD_DIR)"
-
 firewall-clean:
 	@echo "🧹 Cleaning Firewall [$(PROFILE)]..."
 	@vagrant ssh -c "rm -rf $(FIREWALL_BUILD_DIR)"
@@ -1153,7 +1102,7 @@ clean-libs:
 	@echo ""
 	@echo "✅ Libraries cleaned"
 
-clean-components: sniffer-clean detector-clean firewall-clean rag-ingester-clean etcd-server-clean tools-clean
+clean-components: sniffer-clean detector-clean firewall-clean etcd-server-clean tools-clean
 	@echo "✅ Components cleaned [$(PROFILE)]"
 
 clean: clean-components
@@ -1167,9 +1116,9 @@ clean: clean-components
 .PHONY: clean-host-builds
 clean-host-builds:
 	@test -f Makefile -a -d .git -a -f Vagrantfile || { echo "[CLEAN-HOST] FALLA: no estoy en la raiz del repo"; exit 1; }
-	@echo "[CLEAN-HOST] borrando en el Mac: sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build"
-	@rm -rf sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build
-	@q=$$(ls -d sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* rag-ingester/build rag-ingester/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* rag/build rag/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build 2>/dev/null | wc -l | tr -d ' '); if [ "$$q" != "0" ]; then echo "[CLEAN-HOST] FALLA: quedan $$q directorios"; exit 1; fi; echo "[CLEAN-HOST] PASA: 0 directorios de build en el Mac"
+	@echo "[CLEAN-HOST] borrando en el Mac: sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build"
+	@rm -rf sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build
+	@q=$$(ls -d sniffer/build sniffer/build-* ml-detector/build ml-detector/build-* firewall-acl-agent/build firewall-acl-agent/build-* etcd-server/build etcd-server/build-* tools/build tools/build-* common/build host-engine/build correlation-engine/build libs/seed-client/build libs/correlation-v1/build libs/host-domain-v1/build crypto-transport/build etcd-client/build plugin-loader/build 2>/dev/null | wc -l | tr -d ' '); if [ "$$q" != "0" ]; then echo "[CLEAN-HOST] FALLA: quedan $$q directorios"; exit 1; fi; echo "[CLEAN-HOST] PASA: 0 directorios de build en el Mac"
 
 clean-all:
 	@echo ""
@@ -1181,20 +1130,17 @@ clean-all:
 	@echo "  - Removing legacy build/ directories..."
 	@vagrant ssh -c "rm -rf /vagrant/sniffer/build"
 	@vagrant ssh -c "rm -rf /vagrant/ml-detector/build"
-	@vagrant ssh -c "rm -rf /vagrant/rag-ingester/build"
 	@vagrant ssh -c "rm -rf /vagrant/firewall-acl-agent/build"
 	@vagrant ssh -c "rm -rf /vagrant/etcd-server/build"
 	@vagrant ssh -c "rm -rf /vagrant/tools/build"
 	@echo "  - Removing profile-specific builds (production/debug/tsan/asan)..."
 	@vagrant ssh -c "rm -rf /vagrant/sniffer/build-*"
 	@vagrant ssh -c "rm -rf /vagrant/ml-detector/build-*"
-	@vagrant ssh -c "rm -rf /vagrant/rag-ingester/build-*"
 	@vagrant ssh -c "rm -rf /vagrant/firewall-acl-agent/build-*"
 	@vagrant ssh -c "rm -rf /vagrant/etcd-server/build-*"
 	@vagrant ssh -c "rm -rf /vagrant/tools/build-*"
 	@echo ""
-	@echo "  - [ARGUS-CLEAN-D303] rag, vault-client (common/build), host-engine, correlation-engine..."
-	@vagrant ssh -c "rm -rf /vagrant/rag/build /vagrant/rag/build-*"
+	@echo "  - [ARGUS-CLEAN-D303] vault-client (common/build), host-engine, correlation-engine..."
 	@$(MAKE) vault-client-clean
 	@$(MAKE) host-engine-clean
 	@$(MAKE) correlation-engine-clean
@@ -1283,14 +1229,8 @@ test-components: correlation-engine-test
 	@echo "Testing ML Detector..."
 	@vagrant ssh -c "cd $(ML_DETECTOR_BUILD_DIR) && ctest --output-on-failure"
 	@echo ""
-	@echo "Testing RAG Ingester..."
-	@vagrant ssh -c "cd $(RAG_INGESTER_BUILD_DIR) && ctest --output-on-failure"
-	@echo ""
 	@echo "Testing etcd-server..."
 	@vagrant ssh -c "cd $(ETCD_SERVER_BUILD_DIR) && ctest --output-on-failure"
-	@echo ""
-	@echo "Testing RAG Security..."
-	@vagrant ssh -c "cd $(RAG_BUILD_DIR) && ctest --output-on-failure"
 	@echo ""
 	@echo "Testing Firewall ACL Agent..."
 	@vagrant ssh -c "cd $(FIREWALL_BUILD_DIR) && ctest -LE 'e2e|root|perf' --output-on-failure"
@@ -1413,7 +1353,7 @@ lab-e2e:
 	$(MAKE) pipeline-start > /tmp/argus_lab_e2e_restore.txt 2>&1 || { tail -n 20 /tmp/argus_lab_e2e_restore.txt; echo "[LAB-E2E] FALLA: pipeline-start al restaurar"; exit 1; }
 	@# [ARGUS-LAB-RESTORE-D303] patron estricto: pgrep -a -f se imprime a si mismo y su linea contiene STOPPED
 	@if grep -E '^[[:space:]]*❌.*STOPPED' /tmp/argus_lab_e2e_restore.txt; then echo "[LAB-E2E] FALLA: componente STOPPED al restaurar"; exit 1; fi
-	@n=$$(grep -c -E '^[[:space:]]+✅ (etcd-server|rag-security|ml-detector|sniffer|firewall):' /tmp/argus_lab_e2e_restore.txt); if [ "$$n" -lt 5 ]; then echo "[LAB-E2E] FALLA: solo $$n de 5 componentes RUNNING al restaurar"; exit 1; fi; echo "[LAB-E2E] restaurado: $$n de 5 componentes RUNNING"
+	@n=$$(grep -c -E '^[[:space:]]+✅ (etcd-server|ml-detector|sniffer|firewall):' /tmp/argus_lab_e2e_restore.txt); if [ "$$n" -lt 4 ]; then echo "[LAB-E2E] FALLA: solo $$n de 4 componentes RUNNING al restaurar"; exit 1; fi; echo "[LAB-E2E] restaurado: $$n de 4 componentes RUNNING"
 	@echo "[LAB-E2E] PASA los cinco E2E del lab $$(date '+%F %T')"
 
 
@@ -1451,7 +1391,7 @@ test-e2e-live:
 	@echo "║  🧪 TEST-E2E-LIVE — Pipeline real, sin injectors          ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
-	@echo "── Verificando 6/6 RUNNING ──"
+	@echo "── Verificando 4/4 RUNNING ──"
 	@$(MAKE) pipeline-status
 	@echo "── Snapshot de contadores (DEBT-E2E-LIVE-DELTA-001) ──"
 	@echo "── Verificando precondiciones del pipeline ──"
@@ -1767,11 +1707,6 @@ verify-etcd-linkage:
 	else \
 		echo "   ⚠️  ML Detector not built"; \
 	fi'
-	@vagrant ssh -c 'if [ -f $(RAG_INGESTER_BUILD_DIR)/rag-ingester ]; then \
-		ldd $(RAG_INGESTER_BUILD_DIR)/rag-ingester 2>/dev/null | grep etcd_client && echo "   ✅ RAG Ingester linked" || echo "   ❌ RAG Ingester NOT linked"; \
-	else \
-		echo "   ⚠️  RAG Ingester not built"; \
-	fi'
 	@vagrant ssh -c 'if [ -f $(FIREWALL_BUILD_DIR)/firewall-acl-agent ]; then \
 		ldd $(FIREWALL_BUILD_DIR)/firewall-acl-agent 2>/dev/null | grep etcd_client && echo "   ✅ Firewall linked" || echo "   ❌ Firewall NOT linked"; \
 	else \
@@ -1812,7 +1747,7 @@ verify-all:
 # Unified Build Targets
 # ============================================================================
 
-build-unified: proto-unified seed-client-build crypto-transport-build etcd-client-build plugin-loader-build sniffer ml-detector rag-ingester rag-build firewall tools
+build-unified: proto-unified seed-client-build crypto-transport-build etcd-client-build plugin-loader-build sniffer ml-detector firewall tools
 	@echo ""
 	@echo "✅ Unified build complete [$(PROFILE)]"
 	@$(MAKE) proto-verify
@@ -1830,7 +1765,6 @@ all: build-unified etcd-server
 	@echo "  ✅ plugin-loader library (PHASE 1)"
 	@echo "  ✅ Sniffer"
 	@echo "  ✅ ML Detector"
-	@echo "  ✅ RAG Ingester"
 	@echo "  ✅ Firewall ACL Agent"
 	@echo "  ✅ etcd-server"
 	@echo "  ✅ Tools"
@@ -2253,11 +2187,6 @@ tsan-all:
 		TSAN_OPTIONS="log_path=/vagrant/tsan-reports/day48/ml-detector-tsan history_size=7" \
 		ctest --output-on-failure 2>&1 | tee /vagrant/tsan-reports/day48/ml-detector-tsan-tests.log' || true
 	@echo ""
-	@echo "  Testing RAG Ingester..."
-	@vagrant ssh -c 'cd $(RAG_INGESTER_BUILD_DIR) && \
-		TSAN_OPTIONS="log_path=/vagrant/tsan-reports/day48/rag-ingester-tsan history_size=7" \
-		ctest --output-on-failure 2>&1 | tee /vagrant/tsan-reports/day48/rag-ingester-tsan-tests.log' || true
-	@echo ""
 	@echo "  Testing etcd-server..."
 	@vagrant ssh -c 'cd $(ETCD_SERVER_BUILD_DIR) && \
 		TSAN_OPTIONS="log_path=/vagrant/tsan-reports/day48/etcd-server-tsan history_size=7" \
@@ -2272,16 +2201,12 @@ tsan-all:
 		mkdir -p $(ML_DETECTOR_BUILD_DIR) && cd $(ML_DETECTOR_BUILD_DIR) && \
 		TSAN_OPTIONS="log_path=/vagrant/tsan-reports/day48/ml-detector-integration history_size=7" \
 		timeout 300 ./ml-detector --config /vagrant/ml-detector/config/detector.json > /vagrant/tsan-reports/day48/ml-detector-integration.log 2>&1 &' || true
-	@vagrant ssh -c 'cd /vagrant/rag-ingester && \
-		mkdir -p $(RAG_INGESTER_BUILD_DIR) && cd $(RAG_INGESTER_BUILD_DIR) && \
-		TSAN_OPTIONS="log_path=/vagrant/tsan-reports/day48/rag-ingester-integration history_size=7" \
-		timeout 300 ./rag-ingester /vagrant/rag-ingester/config/rag-ingester.json > /vagrant/tsan-reports/day48/rag-ingester-integration.log 2>&1 &' || true
 	@vagrant ssh -c 'cd /vagrant/etcd-server && \
 		mkdir -p $(ETCD_SERVER_BUILD_DIR) && cd $(ETCD_SERVER_BUILD_DIR) && \
 		TSAN_OPTIONS="log_path=/vagrant/tsan-reports/day48/etcd-server-integration history_size=7" \
 		timeout 300 ./etcd-server > /vagrant/tsan-reports/day48/etcd-server-integration.log 2>&1 &' || true
 	@sleep 310
-	@vagrant ssh -c "pkill -f 'sniffer|ml-detector|rag-ingester|etcd-server' || true"
+	@vagrant ssh -c "pkill -f 'sniffer|ml-detector|etcd-server' || true"
 	@echo ""
 	@echo "Step 5: Create baseline symlink..."
 	@vagrant ssh -c "ln -sfn /vagrant/tsan-reports/day48 /vagrant/tsan-reports/baseline"
@@ -2317,7 +2242,6 @@ tsan-summary:
 	@echo "-------------------"
 	@vagrant ssh -c "grep -E 'tests passed|test.*PASSED|PASS' /vagrant/tsan-reports/day48/sniffer-tsan-tests.log 2>/dev/null | tail -5 || echo 'No sniffer results'"
 	@vagrant ssh -c "grep -E 'tests passed|test.*PASSED|PASS' /vagrant/tsan-reports/day48/ml-detector-tsan-tests.log 2>/dev/null | tail -5 || echo 'No ml-detector results'"
-	@vagrant ssh -c "grep -E 'tests passed|test.*PASSED|PASS' /vagrant/tsan-reports/day48/rag-ingester-tsan-tests.log 2>/dev/null | tail -5 || echo 'No rag-ingester results'"
 	@echo ""
 	@echo "Race Conditions Detected:"
 	@echo "-------------------------"
@@ -2335,7 +2259,6 @@ tsan-status:
 	@echo ""
 	@vagrant ssh -c "ls -lh $(SNIFFER_BUILD_DIR)/sniffer 2>/dev/null && echo '  ✅ Sniffer (TSAN)' || echo '  ❌ Sniffer not built'"
 	@vagrant ssh -c "ls -lh $(ML_DETECTOR_BUILD_DIR)/ml-detector 2>/dev/null && echo '  ✅ ML Detector (TSAN)' || echo '  ❌ ML Detector not built'"
-	@vagrant ssh -c "ls -lh $(RAG_INGESTER_BUILD_DIR)/rag-ingester 2>/dev/null && echo '  ✅ RAG Ingester (TSAN)' || echo '  ❌ RAG Ingester not built'"
 	@vagrant ssh -c "ls -lh $(ETCD_SERVER_BUILD_DIR)/etcd-server 2>/dev/null && echo '  ✅ etcd-server (TSAN)' || echo '  ❌ etcd-server not built'"
 	@echo ""
 	@echo "Reports:"
@@ -2368,45 +2291,6 @@ day38-step3:
 
 day38-full: day38-step1 day38-step2 day38-step3
 	@echo "✅ Day 38 workflow complete"
-
-# ============================================================================
-# RAG Ecosystem
-# ============================================================================
-
-rag-build: plugin-loader-build
-	@echo "🔨 Building RAG Security System [$(PROFILE)]..."
-	@vagrant ssh -c 'mkdir -p $(RAG_BUILD_DIR) && \
-		cd $(RAG_BUILD_DIR) && \
-		cmake $(CMAKE_FLAGS) .. && \
-		make -j4'
-	@echo "✅ rag-security built ($(PROFILE))"
-
-rag-clean:
-	@echo "🧹 Cleaning RAG..."
-	@vagrant ssh -c "cd /vagrant/rag && make clean"
-
-rag-start:
-	@echo "🚀 Starting rag-security (from $(RAG_BUILD_DIR))..."
-	@vagrant ssh -c "tmux kill-session -t rag-security 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s rag-security 'mkdir -p /vagrant/logs/lab && cd $(RAG_BUILD_DIR) && ./rag-security >> /vagrant/logs/lab/rag-security.log 2>&1'"
-	@sleep 2
-
-rag-stop:
-	@vagrant ssh -c "tmux kill-session -t rag-security 2>/dev/null || true"
-	@echo "✅ rag-security stopped"
-
-rag-status:
-	@echo "════════════════════════════════════════════════════════════"
-	@echo "RAG Security Status:"
-	@vagrant ssh -c "pgrep -a -f rag-security && echo '✅ rag-security: RUNNING' || echo '❌ rag-security: STOPPED'"
-	@vagrant ssh -c "tail -5 /vagrant/logs/rag.log 2>/dev/null || echo '⚠️  No log yet'"
-	@echo "════════════════════════════════════════════════════════════"
-
-rag-logs:
-	@vagrant ssh -c "tail -f /vagrant/logs/lab/rag-security.log"
-
-rag-attach:
-	vagrant ssh -- tmux attach -t rag-security
 
 # ============================================================================
 # Test Hardening Suite (Day 46/47)
@@ -2468,7 +2352,7 @@ provision-check:
 provision-reprovision:
 	@test -n "$(COMPONENT)" || \
 		(echo "❌ Uso: make provision-reprovision COMPONENT=sniffer" && \
-		 echo "   Componentes: etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security" && \
+		 echo "   Componentes: etcd-server sniffer ml-detector firewall-acl-agent" && \
 		 exit 1)
 	@echo "⚠️  Re-provisionando $(COMPONENT)..."
 	@vagrant ssh -c "sudo bash /vagrant/tools/provision.sh reprovision $(COMPONENT)"
@@ -2658,9 +2542,9 @@ prod-deploy-seeds: _check-hardened-up
 	@mkdir -p dist/seeds
 	@chmod 700 dist/seeds
 	@echo "── Step 1: extrayendo seeds de dev VM ──"
-	@vagrant ssh -c 'sudo cp -r /etc/ml-defender/*/seed.bin /etc/ml-defender/*/seed.hex /tmp/seeds-export/ 2>/dev/null || true; 		sudo mkdir -p /tmp/seeds-export; 		for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do 			sudo mkdir -p /tmp/seeds-export/$$comp; 			sudo cp /etc/ml-defender/$$comp/seed.bin /tmp/seeds-export/$$comp/; 			sudo cp /etc/ml-defender/$$comp/seed.hex /tmp/seeds-export/$$comp/; 		done; 		sudo cp -r /tmp/seeds-export/* /vagrant/dist/seeds/; 		sudo chmod -R 700 /vagrant/dist/seeds/; 		sudo rm -rf /tmp/seeds-export'
+	@vagrant ssh -c 'sudo cp -r /etc/ml-defender/*/seed.bin /etc/ml-defender/*/seed.hex /tmp/seeds-export/ 2>/dev/null || true; 		sudo mkdir -p /tmp/seeds-export; 		for comp in etcd-server sniffer ml-detector firewall-acl-agent; do 			sudo mkdir -p /tmp/seeds-export/$$comp; 			sudo cp /etc/ml-defender/$$comp/seed.bin /tmp/seeds-export/$$comp/; 			sudo cp /etc/ml-defender/$$comp/seed.hex /tmp/seeds-export/$$comp/; 		done; 		sudo cp -r /tmp/seeds-export/* /vagrant/dist/seeds/; 		sudo chmod -R 700 /vagrant/dist/seeds/; 		sudo rm -rf /tmp/seeds-export'
 	@echo "── Step 2: instalando seeds en hardened VM ──"
-	@cd $(HARDENED_X86_DIR) && vagrant ssh -c '		for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do 			sudo cp /vagrant/dist/seeds/$$comp/seed.bin /etc/ml-defender/$$comp/seed.bin; 			sudo cp /vagrant/dist/seeds/$$comp/seed.hex /etc/ml-defender/$$comp/seed.hex; 			sudo chmod 0400 /etc/ml-defender/$$comp/seed.bin; 			sudo chmod 0400 /etc/ml-defender/$$comp/seed.hex; 			sudo chown argus:argus /etc/ml-defender/$$comp/seed.bin; 			sudo chown argus:argus /etc/ml-defender/$$comp/seed.hex; 			echo "  ✅ $$comp/seed.bin desplegado"; 		done'
+	@cd $(HARDENED_X86_DIR) && vagrant ssh -c '		for comp in etcd-server sniffer ml-detector firewall-acl-agent; do 			sudo cp /vagrant/dist/seeds/$$comp/seed.bin /etc/ml-defender/$$comp/seed.bin; 			sudo cp /vagrant/dist/seeds/$$comp/seed.hex /etc/ml-defender/$$comp/seed.hex; 			sudo chmod 0400 /etc/ml-defender/$$comp/seed.bin; 			sudo chmod 0400 /etc/ml-defender/$$comp/seed.hex; 			sudo chown argus:argus /etc/ml-defender/$$comp/seed.bin; 			sudo chown argus:argus /etc/ml-defender/$$comp/seed.hex; 			echo "  ✅ $$comp/seed.bin desplegado"; 		done'
 	@echo "── Step 2b: desplegando plugin_signing.pk (clave pública) ──"
 	@vagrant ssh -c 'sudo cp /etc/ml-defender/plugins/plugin_signing.pk /vagrant/dist/seeds/plugin_signing.pk; sudo chmod 644 /vagrant/dist/seeds/plugin_signing.pk'
 	@cd $(HARDENED_X86_DIR) && vagrant ssh -c 'sudo cp /vagrant/dist/seeds/plugin_signing.pk /etc/ml-defender/plugins/plugin_signing.pk; sudo chmod 0444 /etc/ml-defender/plugins/plugin_signing.pk; sudo chown root:argus /etc/ml-defender/plugins/plugin_signing.pk; echo "  ✅ plugin_signing.pk desplegado"'
@@ -2668,7 +2552,7 @@ prod-deploy-seeds: _check-hardened-up
 	@echo "── Step 3: limpieza inmediata de dist/seeds/ ──"
 	@rm -rf dist/seeds/
 	@echo "  ✅ dist/seeds/ eliminado del Mac host"
-	@echo "✅ prod-deploy-seeds completado (6 componentes)"
+	@echo "✅ prod-deploy-seeds completado (4 componentes)"
 
 # ─────────────────────────────────────────────────────────────────────────────
 # Pipeline completo: build → libs → sign → checksums → deploy
@@ -2692,7 +2576,7 @@ hardened-setup-filesystem: _check-hardened-up
 	@cd $(HARDENED_X86_DIR) && vagrant ssh -c 'sudo bash /vagrant/vagrant/hardened-x86/scripts/setup-filesystem.sh'
 
 hardened-setup-apparmor: _check-hardened-up
-	@echo "=== Installing AppArmor profiles (6 components) ==="
+	@echo "=== Installing AppArmor profiles (4 components) ==="
 	@cd $(HARDENED_X86_DIR) && vagrant ssh -c 'sudo bash /vagrant/vagrant/hardened-x86/scripts/setup-apparmor.sh'
 
 hardened-setup-falco: _check-hardened-up
@@ -2726,12 +2610,12 @@ check-prod-no-compiler: _check-hardened-up
 	  done; \
 	  [ $$FAIL -eq 0 ] && echo "OK: no compiler present (dpkg + PATH verified)" || exit 1'
 
-# AppArmor: 6 perfiles en modo enforce
+# AppArmor: 4 perfiles en modo enforce
 check-prod-apparmor: _check-hardened-up
-	@echo "=== AppArmor: verifying 6 profiles in enforce mode ==="
+	@echo "=== AppArmor: verifying 4 profiles in enforce mode ==="
 	@cd $(HARDENED_X86_DIR) && vagrant ssh -c '\
 	  FAIL=0; \
-	  for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do \
+	  for comp in etcd-server sniffer ml-detector firewall-acl-agent; do \
 	    STATUS=$$(sudo aa-status 2>/dev/null | grep -c "argus-$$comp"); \
 	    if [ "$$STATUS" -eq 0 ]; then \
 	      echo "FAIL: argus-$$comp not in enforce mode"; FAIL=1; \

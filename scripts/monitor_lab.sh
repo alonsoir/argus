@@ -1,7 +1,7 @@
 #!/bin/bash
 # ML Defender - Lab Monitoring Script (Enhanced v2.3)
 # Shows: CPU, RAM, ZMQ ports, IPSet stats, config files, uptime, logs
-# Includes: etcd-server, RAG, Dual-NIC monitoring
+# Includes: etcd-server, Dual-NIC monitoring
 # scripts/monitor_lab.sh
 
 PROJECT_ROOT="/vagrant"
@@ -109,15 +109,6 @@ get_config_file() {
                 echo -e "${YELLOW}No config file found${NC}"
             fi
             ;;
-        "rag")
-            config_file="/vagrant/rag/config/rag-config.json"
-            if [ -f "$config_file" ]; then
-                echo -e "${CYAN}$(basename $config_file)${NC}"
-                found=1
-            else
-                echo -e "${YELLOW}No config file found${NC}"
-            fi
-            ;;
     esac
 }
 
@@ -174,24 +165,6 @@ get_sniffer_info() {
 
         echo -e "${CYAN}Profile: ${profile}${NC}"
         echo -e "  ${YELLOW}Interface: ${interface}${NC}"
-    fi
-}
-
-# Function to get RAG status
-get_rag_status() {
-    if pgrep -f "rag" > /dev/null; then
-        # Check if RAG is responding (assuming HTTP port 8080)
-        if command -v curl > /dev/null; then
-            if curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8080/health 2>/dev/null | grep -q "200\|OK"; then
-                echo -e "${GREEN}✅ Healthy${NC}"
-            else
-                echo -e "${YELLOW}⚠️  Running${NC}"
-            fi
-        else
-            echo -e "${GREEN}✅ Running${NC}"
-        fi
-    else
-        echo -e "${RED}❌ Not running${NC}"
     fi
 }
 
@@ -256,7 +229,6 @@ show_log_commands() {
         ["Detector"]="$LOG_DIR/detector.log"
         ["Sniffer"]="$LOG_DIR/sniffer.log"
         ["etcd"]="$LOG_DIR/etcd-server.log"
-        ["RAG"]="$LOG_DIR/rag.log"
     )
 
     for component in "${!log_files[@]}"; do
@@ -382,15 +354,6 @@ while true; do
     fi
 
     echo ""
-    echo -n "🧠 RAG Engine: "
-    if get_process_stats "rag"; then
-        echo -n "   Status: "
-        get_rag_status
-        echo -n "          Config: "
-        get_config_file "rag"
-    fi
-
-    echo ""
 
     # ========================================
     # Network Ports
@@ -410,9 +373,6 @@ while true; do
 
     echo -n "Port 2380 (etcd peer): "
     check_zmq_ports 2380
-
-    echo -n "Port 8080 (RAG API): "
-    check_zmq_ports 8080
 
     echo ""
 
@@ -450,7 +410,6 @@ while true; do
         ["🤖 Detector"]="$LOG_DIR/detector.log"
         ["📡 Sniffer"]="$LOG_DIR/sniffer.log"
         ["🗄️  etcd"]="$LOG_DIR/etcd-server.log"
-        ["🧠 RAG"]="$LOG_DIR/rag.log"
     )
 
     for component in "${!log_files[@]}"; do
@@ -471,9 +430,6 @@ while true; do
                     tail -50 "${log_files[$component]}" 2>/dev/null | grep -E "Paquetes procesados:|Paquetes enviados:|Tasa:|Dual-NIC|eth[0-9]" | tail -5 | sed 's/^/  /'
                     ;;
                 "etcd")
-                    tail -5 "${log_files[$component]}" 2>/dev/null | sed 's/^/  /'
-                    ;;
-                "RAG")
                     tail -5 "${log_files[$component]}" 2>/dev/null | sed 's/^/  /'
                     ;;
             esac

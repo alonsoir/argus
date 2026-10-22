@@ -1,7 +1,7 @@
 // ============================================================================
 // test_integ_4e.cpp — TEST-INTEG-4e
 // ============================================================================
-// Verifica PHASE 2e: contrato READONLY de rag-security (ADR-029 D1-D5).
+// Verifica PHASE 2e: contrato READONLY del plugin-loader (ADR-029 D1-D5).
 //   Caso A: READONLY + evento real → PLUGIN_OK, result_code ignorado (D4)
 //   Caso B: g_plugin_loader=nullptr → invoke_all no llamado, no crash (D3)
 //   Caso C: simulación lógica signal handler → shutdown limpio (D2/D5)
@@ -21,7 +21,7 @@ static ml_defender::PluginLoader* g_plugin_loader = nullptr;
 // ADR-029 D2: simulación de la lógica del signal handler (sin señal real)
 // En producción esto se ejecuta desde signalHandler() con write() + raise()
 static bool simulate_signal_handler_logic() {
-    const char msg[] = "[rag-security] signal received — shutting down\n";
+    const char msg[] = "[test_integ_4e] signal received — shutting down\n";
     write(STDERR_FILENO, msg, sizeof(msg) - 1);
     if (g_plugin_loader != nullptr) {
         g_plugin_loader->shutdown();

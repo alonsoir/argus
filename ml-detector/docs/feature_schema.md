@@ -2,9 +2,9 @@
 # ML Defender — CSV Feature Schema (Day 64)
 # Authors: Alonso Isidoro Roman + Claude (Anthropic)
 #
-# CONTRACT between ml-detector (producer) and rag-ingester (consumer).
+# CONTRACT for ml-detector's CSV output (producer). Its original consumer, the RAG ingester, was retired in DAY304.
 # Any change to column order, count, or type is a BREAKING CHANGE and
-# requires bumping CSV_SCHEMA_VERSION and updating CsvEventLoader.
+# requires bumping CSV_SCHEMA_VERSION.
 #
 # CSV_SCHEMA_VERSION: 1.0
 # CSV_TOTAL_COLS:     127
@@ -23,7 +23,7 @@
 # ZERO VALUES
 # ───────────
 # If a field was not populated by its producer, it appears as 0 (numeric)
-# or empty string (text). CsvEventLoader must tolerate zeros gracefully.
+# or empty string (text). CSV consumers must tolerate zeros gracefully.
 # A future FEATURE_SCHEMA v1.1 may add a bitmask column flagging which
 # sections were actually populated.
 
@@ -275,7 +275,7 @@ Source: TricapaMLAnalysis sub-messages in NetworkSecurityEvent.ml_analysis.
 
 NOTE: level2/level3 repeated fields are indexed by position, not by model_name.
 If a detector did not fire, its slot contains empty string and 0.0.
-CsvEventLoader must NOT assume index 0 = DDoS; it should validate model_name
+CSV consumers must NOT assume index 0 = DDoS; it should validate model_name
 from the ModelPrediction message. A v1.1 schema may replace positional indexing
 with named columns once the detector activation order is stabilised.
 
@@ -291,7 +291,7 @@ HMAC computation:
 row_content = join(cols[0..125], ",")
 hmac        = HMAC-SHA256(key=hmac_key_bytes, data=row_content).hex()
 
-Verification (CsvEventLoader):
+Verification (CSV consumer):
 Recompute HMAC over cols[0..125], compare with col[126].
 Rows with mismatched HMAC must be quarantined, not silently dropped.
 

@@ -9,9 +9,9 @@
 // fichero a medio escribir.
 //
 // Sintaxis syscall pura (inotify_init1/poll/read), sin dependencias externas.
-// Patron calcado de rag-ingester/CsvDirWatcher (DAY 69), reescrito aqui para no
+// Patron calcado del CsvDirWatcher del antiguo ingestor RAG (DAY 69), reescrito aqui para no
 // acoplar correlation-engine a un componente marcado para deprecar -- la logica
-// en si (syscalls de inotify) no se deprecia, solo el binario de rag-ingester.
+// en si (syscalls de inotify) no se deprecia, solo aquel binario (retirado DAY304).
 #include <string>
 #include <functional>
 #include <atomic>

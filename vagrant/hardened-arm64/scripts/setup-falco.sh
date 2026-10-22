@@ -53,7 +53,7 @@ cat > "${FALCO_RULES}" << 'FALCO_RULES_EOF'
 # ── Macros ────────────────────────────────────────────────────────────────────
 
 - macro: argus_processes
-  condition: proc.name in (etcd-server, sniffer, ml-detector, firewall-acl-agent, rag-ingester, rag-security)
+  condition: proc.name in (etcd-server, sniffer, ml-detector, firewall-acl-agent)
 
 - macro: argus_allowed_write_paths
   condition: >
@@ -86,7 +86,7 @@ cat > "${FALCO_RULES}" << 'FALCO_RULES_EOF'
   desc: Un componente de aRGus ejecuta un binario inesperado
   condition: >
     spawned_process and
-    proc.pname in (etcd-server, sniffer, ml-detector, rag-ingester, rag-security) and
+    proc.pname in (etcd-server, sniffer, ml-detector) and
     not proc.name in (sh, iptables, ipset)
   output: >
     aRGus unexpected exec (parent=%proc.pname child=%proc.name cmd=%proc.cmdline)
@@ -109,7 +109,7 @@ cat > "${FALCO_RULES}" << 'FALCO_RULES_EOF'
   desc: Un componente de aRGus invoca una shell — casi seguro compromiso
   condition: >
     spawned_process and
-    proc.pname in (etcd-server, sniffer, ml-detector, firewall-acl-agent, rag-ingester, rag-security) and
+    proc.pname in (etcd-server, sniffer, ml-detector, firewall-acl-agent) and
     proc.name in (bash, sh, zsh, dash, ksh)
   output: >
     CRITICAL: aRGus shell spawn (parent=%proc.pname shell=%proc.name cmd=%proc.cmdline)
@@ -143,7 +143,7 @@ cat > "${FALCO_RULES}" << 'FALCO_RULES_EOF'
   desc: Componente no-sniffer abre un raw socket
   condition: >
     evt.type = socket and evt.arg.domain in (AF_PACKET, PF_PACKET) and
-    proc.name in (ml-detector, rag-ingester, rag-security, etcd-server)
+    proc.name in (ml-detector, etcd-server)
   output: >
     aRGus non-sniffer opened raw socket (proc=%proc.name pid=%proc.pid)
   priority: WARNING
@@ -162,13 +162,12 @@ cat > "${FALCO_RULES}" << 'FALCO_RULES_EOF'
   tags: [argus, config, integrity, adr-030]
 
 # ── Regla 9 (nuevo Consejo): Sustitución de modelo o plugin ──────────────────
-# Un rename de .so o .gguf en runtime puede ser sustitución maliciosa
+# Un rename de .so o .onnx en runtime puede ser sustitución maliciosa
 - rule: argus_model_or_plugin_replaced
   desc: Modelo ML o plugin de aRGus reemplazado en runtime
   condition: >
     evt.type = rename and
     (fd.name glob "/opt/argus/plugins/*.so" or
-     fd.name glob "/opt/argus/models/*.gguf" or
      fd.name glob "/opt/argus/models/*.onnx") and
     not argus_provisioning_processes
   output: >

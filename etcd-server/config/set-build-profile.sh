@@ -16,8 +16,6 @@ esac
 
 COMPONENTS=(
     "/vagrant/etcd-server"
-    "/vagrant/rag"
-    "/vagrant/rag-ingester"
     "/vagrant/ml-detector"
     "/vagrant/sniffer"
     "/vagrant/firewall-acl-agent"

@@ -126,7 +126,7 @@ TEST_F(SafePathTest, SeedRejectWrongPermissions) {
 // ATAQUE: componente recibe config_path = "config/foo.json" (relativo al CWD)
 // SIN FIX: weakly_canonical no canonicalizaba el prefix antes de la comparacion
 //          → prefix era "config/" → no matching con path absoluto resuelto
-//          → SECURITY VIOLATION falso positivo → rag-ingester STOPPED (DAY 124)
+//          → SECURITY VIOLATION falso positivo → componente consumidor STOPPED (DAY 124)
 // CON FIX: prefix canonicalizado con weakly_canonical antes de la comparacion.
 TEST_F(SafePathTest, RelativePathResolvesBeforePrefixCheck) {
     // Crear un config legitimo dentro del allowed_dir

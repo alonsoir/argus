@@ -4,7 +4,6 @@
 # DEBT-PARQUET-TIMESTAMP-NS-001: firewall-acl-agent produce ms.
 # Workaround: writer multiplica x 1_000_000 -> ns en Parquet.
 # Fix correcto: modificar firewall-acl-agent para emitir ns en origen.
-# Revisar rag-security si en algun momento consume Parquet directamente.
 import pyarrow as pa
 
 FIREWALL_ACTION = {"ALLOW": 0, "BLOCKED": 1}

@@ -9,7 +9,7 @@
  * 2. etcd-client computes HMAC over log data
  * 3. etcd-client validates HMAC
  *
- * This simulates how rag-ingester will use HMAC for log validation.
+ * This simulates how a log consumer will use HMAC for log validation.
  */
 
 #include "etcd_client/etcd_client.hpp"
@@ -150,21 +150,21 @@ bool test_complete_hmac_workflow() {
     }
 }
 
-// Test 3: Simulate rag-ingester validating multiple log entries
-bool test_rag_ingester_simulation() {
+// Test 3: Simulate a log consumer validating multiple log entries
+bool test_log_consumer_simulation() {
     std::cout << std::endl;
     std::cout << BLUE << "─────────────────────────────────────────────────────" << RESET << std::endl;
-    std::cout << BLUE << "Test: RAG-Ingester Simulation (10 Log Entries)" << RESET << std::endl;
+    std::cout << BLUE << "Test: Log Consumer Simulation (10 Log Entries)" << RESET << std::endl;
     std::cout << BLUE << "─────────────────────────────────────────────────────" << RESET << std::endl;
 
     try {
         Config config;
-        config.component_name = "rag-ingester-sim";
+        config.component_name = "log-consumer-sim";
         config.encryption_enabled = false;
 
         EtcdClient client(config);
 
-        std::cout << "🏗️  Simulating rag-ingester startup..." << std::endl;
+        std::cout << "🏗️  Simulating log consumer startup..." << std::endl;
         if (!client.connect()) {
             return false;
         }
@@ -208,7 +208,7 @@ bool test_rag_ingester_simulation() {
 
         // We expect 8 valid, 2 tampered
         if (valid_count == 8 && tampered_count == 2) {
-            std::cout << "   ✅ RAG-ingester simulation successful" << std::endl;
+            std::cout << "   ✅ Log consumer simulation successful" << std::endl;
             std::cout << BLUE << "─────────────────────────────────────────────────────" << RESET << std::endl;
             return true;
         } else {
@@ -283,7 +283,7 @@ int main() {
 
     RUN_INTEGRATION_TEST(test_retrieve_hmac_key);
     RUN_INTEGRATION_TEST(test_complete_hmac_workflow);
-    RUN_INTEGRATION_TEST(test_rag_ingester_simulation);
+    RUN_INTEGRATION_TEST(test_log_consumer_simulation);
     RUN_INTEGRATION_TEST(test_key_not_found);
 
     std::cout << std::endl;
@@ -293,7 +293,7 @@ int main() {
 
     if (passed == total) {
         std::cout << GREEN << "🎉 ALL INTEGRATION TESTS PASSED!" << RESET << std::endl;
-        std::cout << YELLOW << "✅ Ready for Phase 3: rag-ingester EventLoader HMAC validation" << RESET << std::endl;
+        std::cout << YELLOW << "✅ Ready for Phase 3: log consumer HMAC validation" << RESET << std::endl;
         return 0;
     } else {
         std::cout << RED << "❌ SOME TESTS FAILED" << RESET << std::endl;

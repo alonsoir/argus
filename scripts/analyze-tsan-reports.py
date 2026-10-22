@@ -52,7 +52,7 @@ def generate_summary(report_dir):
     """Generate markdown summary of all TSAN reports."""
     report_path = Path(report_dir)
 
-    components = ['sniffer', 'ml-detector', 'rag-ingester', 'etcd-server']
+    components = ['sniffer', 'ml-detector', 'etcd-server']
     results = {}
 
     for comp in components:
