@@ -185,12 +185,8 @@ xcode-select --install
 
 **Windows 11** — best-effort, **not** officially supported. aRGus produces only Linux binaries (x86-64 / ARM64); Windows is the host, the pipeline runs inside the Linux VM. Run everything from Git Bash. Note the Hyper-V / VirtualBox conflict with WSL2.
 
-> **Clone with submodules** — `git clone --recurse-submodules https://github.com/alonsoir/argus.git`. `third_party/llama.cpp` is a submodule; without the flag it is empty and `rag-security` builds without LLM support (`make submodule-init` fixes an existing clone).
->
-> **TinyLlama** (`tinyllama-1.1b-chat-v1.0.Q4_0.gguf`, ~700 MB) is downloaded automatically during `vagrant up`; it is gitignored, never committed.
-
 ```bash
-make up && make bootstrap    # first run ~20–30 min: builds llama.cpp, installs FAISS/ONNX/XGBoost/libsodium
+make up && make bootstrap    # first run ~20–30 min: installs FAISS/ONNX/XGBoost/libsodium
 ```
 
 ### Running the live lab
@@ -231,7 +227,7 @@ Honesty as an engineering property, not an afterthought:
 - **Research artifact, not production.** Only the DDoS head is trusted to decide. Its real mitigation works in the lab but **ships switched off**; turning it on is an operator's decision, two keys in the JSON. The other heads (ransomware, internal traffic, the original level-1 classifier) are not trusted and do not decide.
 - **Lab, not hardware.** Every live measurement comes from VirtualBox VMs on a laptop. Latencies, clock behaviour and the thresholds in the JSON files are lab-calibrated and must be measured again on real hardware. What cannot be measured without hardware (native XDP drop rate, ring saturation, ransomware detection under a real DDoS, upstream defence of the bandwidth) and the equipment that would unlock it are written down in [docs/carta_reyes_magos_caceres.md](docs/carta_reyes_magos_caceres.md) (in Spanish).
 - **DDoS head, measured limits:** it discriminates traffic type, not sender (a twin of the attacker would be blocked too); ~5 s reaction window; an attack below `abs_pps` at cold start is learned as baseline. See "Current state" above.
-- **Status checks are liveness only.** `pipeline-status` reports a process as RUNNING when it exists, not when it is healthy; measured DAY303: `rag-security` has not registered with etcd since September while showing RUNNING.
+- **Status checks are liveness only.** `pipeline-status` reports a process as RUNNING when it exists, not when it is healthy; measured DAY303: a component (retired DAY304) had not registered with etcd for weeks while showing RUNNING.
 - **Single node.** The time contract assumes sensor, detector and firewall on one host. Distributed deployment (PTP-synchronized clocks) is future work.
 - **Fast-alerts are not reliable** and are excluded from the bronze contract until they are.
 - **Deferred hardening**, carried as known-and-deferred (not hidden): productive Vault, key rotation, secure HMAC transport (HTTPS/Vault), sanitizer runs on real hardware, and a reverse-engineering audit of the shipped binaries.
@@ -242,12 +238,11 @@ Honesty as an engineering property, not an afterthought:
 
 In order, one branch each, each closed by a from-scratch EMECAS+++:
 
-1. **Retire `rag` / `rag-security`, certified.** The graph already covers what it did; its removal was started but never verified (it is still built, started, profiled in AppArmor/Falco and named in tests).
-2. **Head switch:** turn each detection head on or off from configuration (etcd), at runtime, with the state reported in the log.
-3. **Flow expiry in the sniffer:** flows never expire by inactivity today, which distorts the flow features of long-lived legitimate traffic (memory is bounded; the features are not).
-4. **Fast path in XDP:** drop clear attacks before classification, to close the ~5 s reaction window.
-5. **Hardening audit of the shipped binaries** (what an attacker gets from a sensor's binary), then as an asynchronous CI stage.
-6. The remaining heads (ransomware, lateral movement, generic attacks), **one at a time**, under the same bar as DDoS.
+1. **Head switch:** turn each detection head on or off from configuration (etcd), at runtime, with the state reported in the log.
+2. **Flow expiry in the sniffer:** flows never expire by inactivity today, which distorts the flow features of long-lived legitimate traffic (memory is bounded; the features are not).
+3. **Fast path in XDP:** drop clear attacks before classification, to close the ~5 s reaction window.
+4. **Hardening audit of the shipped binaries** (what an attacker gets from a sensor's binary), then as an asynchronous CI stage.
+5. The remaining heads (ransomware, lateral movement, generic attacks), **one at a time**, under the same bar as DDoS.
 
 ## History
 

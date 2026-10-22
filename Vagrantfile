@@ -490,26 +490,6 @@ LIBBPF_PROFILE
         }
       fi
 
-      # llama.cpp
-      if [ ! -f /vagrant/third_party/llama.cpp/build/src/libllama.a ]; then
-        cd /vagrant/third_party/llama.cpp
-        mkdir -p build && cd build
-        cmake .. -DBUILD_SHARED_LIBS=OFF -DLLAMA_BUILD_TESTS=OFF -DLLAMA_BUILD_EXAMPLES=ON \
-          -DLLAMA_NATIVE=OFF -DLLAMA_NO_ACCELERATE=ON -DLLAMA_METAL=OFF -DCMAKE_BUILD_TYPE=Release
-        cmake --build . --target all -- -j4
-      fi
-
-      # Download LLM model
-      mkdir -p /vagrant/rag/models
-      cd /vagrant/rag/models
-      if [ ! -f "tinyllama-1.1b-chat-v1.0.Q4_0.gguf" ]; then
-        wget -q --show-progress --continue --timeout=120 --tries=3 \
-          "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_0.gguf" || \
-        curl -L -C - --progress-bar \
-          "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_0.gguf" \
-          -o tinyllama-1.1b-chat-v1.0.Q4_0.gguf
-      fi
-
       # Sudoers
       mkdir -p /etc/sudoers.d
       cat > /etc/sudoers.d/ml-defender << 'EOF'
@@ -539,7 +519,6 @@ EOF
       mkdir -p /vagrant/ml-detector/models/production/{level1,level2,level3}
       mkdir -p /vagrant/ml-training/outputs/onnx
       mkdir -p /vagrant/firewall-acl-agent/build/logs
-      mkdir -p /vagrant/rag/build/logs
       mkdir -p /vagrant/logs/lab
       mkdir -p /var/log/ml-defender
       chown -R vagrant:vagrant /var/log/ml-defender
@@ -570,19 +549,16 @@ EOF
 alias build-sniffer='cd /vagrant/sniffer && make'
 alias build-detector='cd /vagrant/ml-detector/build && rm -rf * && cmake .. && make -j4'
 alias build-firewall='cd /vagrant/firewall-acl-agent/build && rm -rf * && cmake .. && make -j4'
-alias build-rag='cd /vagrant/rag/build && rm -rf * && cmake .. && make -j4'
 alias proto-regen='cd /vagrant/protobuf && ./generate.sh && cp network_security.pb.* /vagrant/firewall-acl-agent/proto/'
 alias run-firewall='cd /vagrant/firewall-acl-agent/build && sudo ./firewall-acl-agent -c ../config/firewall.json'
 alias run-detector='cd /vagrant/ml-detector/build && ./ml-detector -c ../config/ml_detector_config.json'
 alias run-sniffer='cd /vagrant/sniffer/build && sudo ./sniffer -c ../config/sniffer.json'
-alias run-rag='cd /vagrant/rag/build && ./rag-security -c ../config/rag_config.json'
 alias run-lab='cd /vagrant && bash scripts/run_lab_dev.sh'
-alias kill-lab='sudo pkill -9 firewall-acl-agent; pkill -9 ml-detector; sudo pkill -9 sniffer; pkill -9 rag-security'
-alias status-lab='pgrep -a firewall-acl-agent; pgrep -a ml-detector; pgrep -a sniffer; pgrep -a rag-security'
+alias kill-lab='sudo pkill -9 firewall-acl-agent; pkill -9 ml-detector; sudo pkill -9 sniffer'
+alias status-lab='pgrep -a firewall-acl-agent; pgrep -a ml-detector; pgrep -a sniffer'
 alias logs-firewall='tail -f /vagrant/firewall-acl-agent/build/logs/*.log 2>/dev/null'
 alias logs-detector='tail -f /vagrant/ml-detector/build/logs/*.log 2>/dev/null'
 alias logs-sniffer='tail -f /vagrant/logs/lab/sniffer.log 2>/dev/null'
-alias logs-rag='tail -f /vagrant/rag/build/logs/*.log 2>/dev/null'
 alias logs-lab='cd /vagrant && bash scripts/monitor_lab.sh'
 
 # Gateway testing aliases

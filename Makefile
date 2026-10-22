@@ -1,6 +1,5 @@
 .PHONY: help status
 .PHONY: up halt destroy ssh
-.PHONY: submodule-init
 .PHONY: proto proto-unified proto-verify sniffer detector firewall all rebuild
 .PHONY: sniffer-build sniffer-clean sniffer-package sniffer-install
 .PHONY: detector-build detector-clean

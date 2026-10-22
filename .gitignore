@@ -82,36 +82,7 @@ sniffer/logs/
 *.rej
 *_INTEGRATION_EXAMPLE.cpp
 
-# ============================================================================
-# NUEVAS EXCLUSIONES PARA RAG Y LLAMA.CPP
-# ============================================================================
-
-# RAG Component build artifacts
-rag/build/
-rag/cmake-build-*/
-rag/CMakeFiles/
-rag/*.cmake
-rag/Makefile
-rag/cmake_install.cmake
-rag/CMakeCache.txt
-
-# llama.cpp - CRÍTICO: NO SUBIR BUILD ARTIFACTS
-third_party/llama.cpp/build/
-third_party/llama.cpp/CMakeFiles/
-third_party/llama.cpp/*.cmake
-third_party/llama.cpp/Makefile
-third_party/llama.cpp/cmake_install.cmake
-third_party/llama.cpp/CMakeCache.txt
-
-# llama.cpp binaries and libraries
-third_party/llama.cpp/bin/
-third_party/llama.cpp/lib/
-third_party/llama.cpp/*.a
-third_party/llama.cpp/*.so
-third_party/llama.cpp/*.dylib
-third_party/llama.cpp/*.dll
-
-# LLM Model files - NO SUBIR (muy grandes)
+# Binarios y modelos - NO SUBIR (seeds *.bin, modelos *.gguf/*.ggml)
 *.bin
 *.gguf
 *.ggml
@@ -213,7 +184,6 @@ warnings.txt
 # Binarios de test sueltos (no pertenecen al build system)
 etcd-client/tests/test_put_config_integration
 firewall-acl-agent/test_simple
-rag/models/test_real_embedders
 
 # Archivos pcap (datos de red, potencialmente sensibles)
 **/*.pcap
