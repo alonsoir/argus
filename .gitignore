@@ -98,10 +98,6 @@ firewall-acl-agent/cmake_install.cmake
 firewall-acl-agent/CMakeCache.txt
 
 # ML Training temporary files
-ml-training/scripts/rag_shield/archive_old_models/
-ml-training/scripts/rag_shield/*.json.tmp
-ml-training/scripts/rag_shield/*.pth
-ml-training/scripts/rag_shield/*.pt
 
 # Protobuf generated files (ya están en git, pero builds nuevos)
 **/network_security.pb.cc

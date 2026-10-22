@@ -30,12 +30,12 @@
 
 ---
 
-## 3. Arquitectura del pipeline (6 componentes)
+## 3. Arquitectura del pipeline (5 componentes)
 
 ```
 [sniffer] → ZeroMQ → [ml-detector] → ZeroMQ → [firewall-acl-agent]
                 ↓                          ↓
-           [etcd-server]            [rag-ingester] → [rag/]
+           [etcd-server]            [rag-ingester]
 ```
 
 ### Componentes
@@ -47,7 +47,6 @@
 | `firewall-acl-agent/` | Aplica bloqueos iptables basados en decisión ML |
 | `etcd-server/` | Discovery de servicios, configuración distribuida, HMAC key rotation |
 | `rag-ingester/` | Ingesta de eventos en FAISS + MetadataDB (SQLite) |
-| `rag/` | Interfaz de consulta RAG (rag-local) |
 
 ### Configuraciones JSON (JSON is the law)
 - Sniffer: `sniffer/config/sniffer.json`
@@ -224,10 +223,6 @@ make test-ml-detector
 make test-trace-id
 ```
 
-### RAM requirements (TinyLlama 4-bit quantized)
-- Mínimo: 4 GB
-- Producción recomendado: 8–16 GB
-
 ---
 
 ## 11. Estructura del repo (post-cleanup DAY 88)
@@ -244,10 +239,10 @@ Vagrantfile
 ### Carpetas activas del pipeline
 ```
 sniffer/           ml-detector/       etcd-server/
-firewall-acl-agent/ rag-ingester/     rag/
+firewall-acl-agent/ rag-ingester/
 common/            common-rag-ingester/ protobuf/
 etcd-client/       crypto-transport/  tools/
-scripts/           docs/              third_party/
+scripts/           docs/
 ```
 
 ### Carpetas pendientes de revisión futura (no urgente)

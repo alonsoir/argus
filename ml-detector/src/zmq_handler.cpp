@@ -660,7 +660,7 @@ void ZMQHandler::process_event(const std::string& message) {
             ml_context.investigation_priority = "LOW";
         }
 
-        // DAY 175: zona bronce correlation_v1 — punto UNICO, ANTES de la bifurcacion rag/no-rag.
+        // DAY 175: zona bronce correlation_v1 — punto UNICO, ANTES de la bifurcacion RAG Logger / sin RAG Logger.
         // NO va dentro del if(!rag_logger_ && csv_writer_) (bug de los dos caminos).
         if (correlation_writer_ && !event.network_features().community_id().empty() &&
             (event.event_kind() != protobuf::EVENT_KIND_FAST_ALERT ||
