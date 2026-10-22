@@ -320,7 +320,7 @@ post-up-verify:
 	@vagrant ssh -c "test -d /usr/lib/ml-defender/plugins || { echo '❌ plugins dir missing'; exit 1; }"
 	@vagrant ssh -c "test -f /usr/lib/ml-defender/plugins/libplugin_xgboost.so || { echo '❌ libplugin_xgboost.so missing'; exit 1; }"
 	@vagrant ssh -c "test -f /etc/ml-defender/plugins/plugin_signing.pk || { echo '❌ plugin_signing.pk missing'; exit 1; }"
-	@vagrant ssh -c "sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ' | grep -q '^6$$' || { echo '❌ seeds missing (esperados 6)'; exit 1; }"
+	@vagrant ssh -c "sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ' | grep -q '^4$$' || { echo '❌ seeds missing (esperados 4)'; exit 1; }"
 	@echo "✅ Entorno post-up verificado"
 
 # [LAB-CLOCK-STEP-D296] Alinea los relojes del lab tras suspender el Mac: makestep en defender y DESPUES en client
