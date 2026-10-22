@@ -7,7 +7,7 @@
 #   sudo bash tools/apparmor-promote.sh <componente>
 #
 # COMPONENTES VÁLIDOS:
-#   etcd-server | rag-security | rag-ingester | ml-detector |
+#   etcd-server | rag-ingester | ml-detector |
 #   firewall-acl-agent | sniffer
 #
 # COMPORTAMIENTO:
@@ -32,7 +32,6 @@ AUDIT_LOG="${LOG_DIR}/promote-audit.log"
 get_profile_path() {
     case "$1" in
         etcd-server)      echo "/vagrant/etcd-server/build-active/etcd-server" ;;
-        rag-security)     echo "/vagrant/rag/build-active/rag-security" ;;
         rag-ingester)     echo "/vagrant/rag-ingester/build-active/rag-ingester" ;;
         ml-detector)      echo "/vagrant/ml-detector/build-active/ml-detector" ;;
         firewall-acl-agent) echo "/vagrant/firewall-acl-agent/build-active/firewall_acl_agent" ;;
@@ -44,7 +43,6 @@ get_profile_path() {
 get_profile_file() {
     case "$1" in
         etcd-server)      echo "ml-defender-etcd-server" ;;
-        rag-security)     echo "ml-defender-rag-security" ;;
         rag-ingester)     echo "ml-defender-rag-ingester" ;;
         ml-detector)      echo "ml-defender-ml-detector" ;;
         firewall-acl-agent) echo "ml-defender-firewall-acl-agent" ;;

@@ -46,7 +46,6 @@ readonly COMPONENTS=(
     "ml-detector"
     "firewall-acl-agent"
     "rag-ingester"
-    "rag-security"
 )
 
 # Colors
@@ -503,7 +502,7 @@ reset_plugin_signing_keypair() {
 
 # =============================================================================
 # RESET ALL KEYS (ADR-025 D11 — provision.sh --reset)
-# Rota: seed_family + keypairs Ed25519 de 6 componentes + keypair firma plugins
+# Rota: seed_family + keypairs Ed25519 de 5 componentes + keypair firma plugins
 # NO auto-firma plugins. Post-reset: operador debe ejecutar make sign-plugins.
 # En dev con flag --dev: llama a check-plugins (firma automática).
 # =============================================================================
@@ -534,7 +533,7 @@ reset_all_keys() {
     openssl rand -out "$shared_seed_tmp" ${SEED_BYTES}
     chmod 600 "$shared_seed_tmp"
 
-    log_section "Reset keypairs + seed_family de componentes (6/6)"
+    log_section "Reset keypairs + seed_family de componentes (5/5)"
     for component in "${COMPONENTS[@]}"; do
         local dir="${KEYS_ROOT}/${component}"
 
@@ -1121,8 +1120,8 @@ provision_full() {
         log_info "Directorio raíz creado: ${KEYS_ROOT}"
     fi
 
-    # Provisionar los 6 componentes del pipeline
-    log_section "Componentes del pipeline (6)"
+    # Provisionar los 5 componentes del pipeline
+    log_section "Componentes del pipeline (5)"
     for component in "${COMPONENTS[@]}"; do
         provision_component "$component"
     done
@@ -1132,14 +1131,14 @@ provision_full() {
     provision_ebpf_plugins
     provision_plugin_signing_keypair
 
-    # ── FIX DAY 107: seed maestro → distribuir a los 5 componentes restantes ──
-    log_section "Sincronización de seed maestro (etcd-server → 5 componentes)"
+    # ── FIX DAY 107: seed maestro → distribuir a los 4 componentes restantes ──
+    log_section "Sincronización de seed maestro (etcd-server → 4 componentes)"
     local master_seed="${KEYS_ROOT}/etcd-server/seed.bin"
     if [[ ! -f "$master_seed" ]]; then
         log_error "Seed maestro no encontrado: $master_seed"
         exit 1
     fi
-    for component in sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do
+    for component in sniffer ml-detector firewall-acl-agent rag-ingester; do
         local dst="${KEYS_ROOT}/${component}/seed.bin"
         cp "$master_seed" "$dst"
         chmod 0400 "$dst"
@@ -1149,14 +1148,13 @@ provision_full() {
     log_info "Seeds sincronizados (todos los componentes usan el seed de etcd-server)"
 
     # ── FIX DAY 107: symlinks JSON /etc/ml-defender/* → /vagrant/*/config/ ──
-    log_section "Symlinks JSON config (6 componentes)"
+    log_section "Symlinks JSON config (5 componentes)"
     declare -A CONFIG_MAP=(
         ["etcd-server"]="/vagrant/etcd-server/config"
         ["sniffer"]="/vagrant/sniffer/config"
         ["ml-detector"]="/vagrant/ml-detector/config"
         ["firewall-acl-agent"]="/vagrant/firewall-acl-agent/config"
         ["rag-ingester"]="/vagrant/rag-ingester/config"
-        ["rag-security"]="/vagrant/rag-security/config"
     )
     for component in "${COMPONENTS[@]}"; do
         local link_dir="${KEYS_ROOT}/${component}"

@@ -118,7 +118,7 @@ echo "     (cap_net_bind_service eliminada — 2379 > 1024)"
 echo "     (LimitMEMLOCK=16M en systemd unit para mlock del seed)"
 
 # Componentes no-root reales
-for comp in ml-detector rag-ingester rag-security; do
+for comp in ml-detector rag-ingester; do
     echo "  ✅ ${comp}: sin capabilities (corre como ${ARGUS_USER}, no-root real)"
 done
 
@@ -129,7 +129,7 @@ echo "  Libraries: $(ls ${OPT_ARGUS}/lib/ | wc -l) installed"
 echo "  Plugins:   $(ls ${OPT_ARGUS}/plugins/*.so 2>/dev/null | wc -l) installed"
 echo ""
 echo "── Capabilities summary ──"
-for bin in sniffer firewall-acl-agent etcd-server ml-detector rag-ingester rag-security; do
+for bin in sniffer firewall-acl-agent etcd-server ml-detector rag-ingester; do
     CAPS=$(getcap "${OPT_ARGUS}/bin/${bin}" 2>/dev/null || echo "none")
     echo "  ${bin}: ${CAPS}"
 done

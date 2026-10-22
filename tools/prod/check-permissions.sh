@@ -83,7 +83,7 @@ check_dir "/opt/argus/models"       "750" "${ARGUS_USER}" "${ARGUS_GROUP}"
 echo ""
 echo "── /etc/ml-defender/ ──"
 check_dir "/etc/ml-defender"        "750" "root"        "${ARGUS_GROUP}"
-for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do
+for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester; do
     check_dir "/etc/ml-defender/${comp}" "750" "${ARGUS_USER}" "${ARGUS_GROUP}"
     # seed.bin debe ser solo-lectura por argus
     check_file "/etc/ml-defender/${comp}/seed.bin" "400" "${ARGUS_USER}" "${ARGUS_GROUP}"
@@ -94,7 +94,7 @@ check_file "/etc/ml-defender/plugins/plugin_signing.pk" "444" "root" "${ARGUS_GR
 echo ""
 echo "── /var/log/argus/ ──"
 check_dir "/var/log/argus"          "750" "root"        "${ARGUS_GROUP}"
-for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester rag-security; do
+for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester; do
     check_dir "/var/log/argus/${comp}" "750" "${ARGUS_USER}" "${ARGUS_GROUP}"
 done
 

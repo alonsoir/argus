@@ -52,7 +52,6 @@ profile argus-etcd-server /opt/argus/bin/etcd-server {
   deny /etc/ml-defender/ml-detector/seed.bin          r,
   deny /etc/ml-defender/firewall-acl-agent/seed.bin   r,
   deny /etc/ml-defender/rag-ingester/seed.bin         r,
-  deny /etc/ml-defender/rag-security/seed.bin         r,
 
   # ── APT Sources integrity (DEBT-PROD-APT-SOURCES-INTEGRITY-001 DAY 135) ───
   deny /etc/apt/sources.list w,
