@@ -141,11 +141,9 @@ logs/# ONNX models (generate on-the-fly)
 logs/
 *.jsonl
 
-contrib/claude/pca_pipeline/models/
-contrib/claude/pca_pipeline/*.npz# Build artifacts
+# Build artifacts
 *.dylib
 build/
-contrib/claude/pca_pipeline/training_data.npz
 *.npz
 
 # Build directories (all profiles)
@@ -157,9 +155,6 @@ contrib/claude/pca_pipeline/training_data.npz
 !*/build-*/config/  # Exception: keep config symlinks*/build-*/
 rm --cached ml-detector/build-asan/ml-detector
 /build-*/config/
-shared/indices/*.db-wal
-shared/indices/*.db-shm
-shared/indices/*.db
 .cache_ggshield
 
 # Backups locales (no para el repo)
@@ -173,7 +168,6 @@ Vagrantfile.backup*
 stress_*.log
 stress_live.log
 */build-active
-shared/indices/
 trivy_*.txt
 warnings.txt
 
@@ -216,7 +210,6 @@ docs/argus_ndr_v*.pdf
 docs/latex/Archivo.zip
 docs/latex/*.zip
 etcd-server/build
-rag-ingester/build
 scripts/parquet/schemas/__pycache__/
 test_sos_e2e.cpp
 enterprise_vendor.key

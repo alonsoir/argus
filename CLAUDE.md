@@ -30,12 +30,12 @@
 
 ---
 
-## 3. Arquitectura del pipeline (5 componentes)
+## 3. Arquitectura del pipeline (4 componentes)
 
 ```
 [sniffer] → ZeroMQ → [ml-detector] → ZeroMQ → [firewall-acl-agent]
-                ↓                          ↓
-           [etcd-server]            [rag-ingester]
+                ↓
+           [etcd-server]
 ```
 
 ### Componentes
@@ -46,7 +46,6 @@
 | `ml-detector/` | Clasificación ML (Random Forest embebido), emisión de alertas via ZeroMQ |
 | `firewall-acl-agent/` | Aplica bloqueos iptables basados en decisión ML |
 | `etcd-server/` | Discovery de servicios, configuración distribuida, HMAC key rotation |
-| `rag-ingester/` | Ingesta de eventos en FAISS + MetadataDB (SQLite) |
 
 ### Configuraciones JSON (JSON is the law)
 - Sniffer: `sniffer/config/sniffer.json`
@@ -239,8 +238,8 @@ Vagrantfile
 ### Carpetas activas del pipeline
 ```
 sniffer/           ml-detector/       etcd-server/
-firewall-acl-agent/ rag-ingester/
-common/            common-rag-ingester/ protobuf/
+firewall-acl-agent/
+common/            protobuf/
 etcd-client/       crypto-transport/  tools/
 scripts/           docs/
 ```

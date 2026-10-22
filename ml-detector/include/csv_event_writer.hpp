@@ -192,7 +192,7 @@ static constexpr size_t CSV_S5_HMAC_COL         = 126;
 
 static constexpr size_t CSV_TOTAL_COLS          = 127;
 
-// Derived — convenient aliases for CsvEventLoader
+// Derived — convenient aliases for CSV consumers and tests
 static constexpr size_t CSV_FEATURE_COLS        =  // S2 + S3 = raw + embedded
     CSV_S2_SNIFFER_COUNT + CSV_S3_EMBEDDED_COUNT;  // = 102
 

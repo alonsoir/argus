@@ -186,7 +186,7 @@ xcode-select --install
 **Windows 11** — best-effort, **not** officially supported. aRGus produces only Linux binaries (x86-64 / ARM64); Windows is the host, the pipeline runs inside the Linux VM. Run everything from Git Bash. Note the Hyper-V / VirtualBox conflict with WSL2.
 
 ```bash
-make up && make bootstrap    # first run ~20–30 min: installs FAISS/ONNX/XGBoost/libsodium
+make up && make bootstrap    # first run ~20–30 min: installs ONNX/XGBoost/libsodium
 ```
 
 ### Running the live lab
