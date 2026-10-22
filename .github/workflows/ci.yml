@@ -61,7 +61,7 @@ jobs:
       - name: Check CMakeLists.txt files exist
         run: |
           echo "=== Checking CMakeLists.txt presence ==="
-          for component in sniffer ml-detector firewall-acl-agent rag-ingester etcd-server crypto-transport libs/seed-client; do
+          for component in sniffer ml-detector firewall-acl-agent etcd-server crypto-transport libs/seed-client; do
             if [ -f "$component/CMakeLists.txt" ]; then
               echo "  ✅ $component/CMakeLists.txt"
             else
@@ -96,7 +96,7 @@ jobs:
             || echo "  ℹ️  set_terminate not in tests (expected in main())"
           echo "  ✅ contexts.hpp structure OK"
 
-      - name: Check set_terminate in all 5 main() files
+      - name: Check set_terminate in all 4 main() files
         run: |
           echo "=== Verifying set_terminate() in all components ==="
           failed=0
@@ -104,7 +104,6 @@ jobs:
             sniffer/src/userspace/main.cpp \
             ml-detector/src/main.cpp \
             firewall-acl-agent/src/main.cpp \
-            rag-ingester/src/main.cpp \
             etcd-server/src/main.cpp; do
             if grep -q "SET_TERMINATE\|set_terminate" "$f"; then
               echo "  ✅ $f"

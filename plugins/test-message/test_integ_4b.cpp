@@ -1,7 +1,7 @@
 // ============================================================================
 // test_integ_4b.cpp — TEST-INTEG-4b
 // ============================================================================
-// Verifica PHASE 2b: contrato READ-ONLY de rag-ingester.
+// Verifica PHASE 2b: contrato READ-ONLY del plugin-loader.
 //   Caso A: mode=READONLY, payload=nullptr → PLUGIN_OK, sin D8 VIOLATION
 //   Caso B: mode=READONLY, payload!=nullptr → std::terminate() (D8-pre)
 //           (solo verificable en entorno que intercepte SIGABRT)

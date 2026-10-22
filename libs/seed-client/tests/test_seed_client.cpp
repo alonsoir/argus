@@ -184,7 +184,7 @@ static bool test_component_id() {
 
     const std::vector<std::string> components = {
         "etcd-server", "sniffer", "ml-detector",
-        "firewall-acl-agent", "rag-ingester"
+        "firewall-acl-agent"
     };
 
     bool all_ok = true;

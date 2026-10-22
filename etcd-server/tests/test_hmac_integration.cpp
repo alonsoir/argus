@@ -79,7 +79,7 @@ bool test_e2e_hmac_workflow() {
 
     SecretsManager sm(make_config());
 
-    auto hmac_key = sm.generate_hmac_key("rag-ingester");
+    auto hmac_key = sm.generate_hmac_key("log-consumer");
     assert(hmac_key.is_active);
     assert(!hmac_key.key_data.empty());
     std::cout << "  ✅ Key generated (" << hmac_key.key_data.size()/2 << " bytes)" << std::endl;
@@ -106,10 +106,10 @@ bool test_multi_component_access() {
     std::cout << BLUE << "\n─── Test: Multi-component Key Access ───" << RESET << std::endl;
 
     SecretsManager sm(make_config());
-    sm.generate_hmac_key("rag-ingester");
+    sm.generate_hmac_key("log-consumer");
 
-    auto key1 = sm.get_hmac_key("rag-ingester");
-    auto key2 = sm.get_hmac_key("rag-ingester");
+    auto key1 = sm.get_hmac_key("log-consumer");
+    auto key2 = sm.get_hmac_key("log-consumer");
 
     assert(key1.key_data == key2.key_data);
     std::cout << "  ✅ Both components retrieved identical keys" << std::endl;
@@ -152,13 +152,13 @@ bool test_key_rotation_workflow() {
 }
 
 // ============================================================================
-// Test 4: RAG-ingester simulation
+// Test 4: log consumer simulation
 // ============================================================================
-bool test_rag_ingester_simulation() {
-    std::cout << BLUE << "\n─── Test: RAG-Ingester Simulation ───" << RESET << std::endl;
+bool test_log_consumer_simulation() {
+    std::cout << BLUE << "\n─── Test: Log Consumer Simulation ───" << RESET << std::endl;
 
     SecretsManager sm(make_config(true)); // auto_generate=true
-    auto hmac_key = sm.get_hmac_key("rag-ingester");
+    auto hmac_key = sm.get_hmac_key("log-consumer");
     auto key_bytes = hex_to_bytes(hmac_key.key_data);
     std::cout << "  ✅ RAG HMAC key retrieved (" << key_bytes.size() << " bytes)" << std::endl;
 
@@ -176,7 +176,7 @@ bool test_rag_ingester_simulation() {
 
     std::cout << "  ✅ Valid: " << valid_count << " | Tampered: " << tampered_count << std::endl;
     assert(valid_count == 8 && tampered_count == 2);
-    std::cout << "  ✅ RAG-ingester simulation correcta" << std::endl;
+    std::cout << "  ✅ Log consumer simulation correcta" << std::endl;
 
     return true;
 }
@@ -195,7 +195,7 @@ int main() {
     RUN(test_e2e_hmac_workflow);
     RUN(test_multi_component_access);
     RUN(test_key_rotation_workflow);
-    RUN(test_rag_ingester_simulation);
+    RUN(test_log_consumer_simulation);
     #undef RUN
 
     std::cout << "\n═══════════════════════════════════════════════════════════" << std::endl;

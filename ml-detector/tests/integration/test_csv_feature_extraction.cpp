@@ -15,7 +15,7 @@
 //     5. Numeric columns are parseable as floating-point / integer.
 //
 //   When a proto field is renamed or moved, these tests fail immediately,
-//   catching schema drift before it silently corrupts the RAG index.
+//   catching schema drift before it silently corrupts downstream consumers.
 
 #include <gtest/gtest.h>
 

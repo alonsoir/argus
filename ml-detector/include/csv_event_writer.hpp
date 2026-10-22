@@ -1,5 +1,5 @@
 // csv_event_writer.hpp
-// ML Defender - CSV Event Writer for RAG Ingester pipeline
+// ML Defender - CSV Event Writer (ml-detector event CSV)
 // Day 63: Initial implementation
 // Day 64: Full schema — 127 columns covering all pipeline stages
 // Authors: Alonso Isidoro Roman + Claude (Anthropic)
@@ -166,8 +166,7 @@ private:
 };
 
 // ============================================================================
-// Column count constants — used by CsvEventLoader in rag-ingester to
-// validate rows at parse time, and by tests to assert schema correctness.
+// Column count constants — used by tests to assert schema correctness.
 //
 // Schema v1.0 layout:
 //   cols   0–13  : Section 1 — Event metadata           (14 cols)

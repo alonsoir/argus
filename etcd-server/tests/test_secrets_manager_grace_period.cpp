@@ -156,13 +156,13 @@ TEST_F(SecretsManagerGracePeriodTest, Integration_RealRotationScenario) {
     // T3: Reader validates with both keys (should succeed)
 
     auto t0 = std::chrono::system_clock::now();
-    auto key1 = secrets_mgr->generate_hmac_key("rag-ingester");
+    auto key1 = secrets_mgr->generate_hmac_key("log-consumer");
 
     // Small delay to simulate time passing
     std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
     auto t1 = std::chrono::system_clock::now();
-    auto key2 = secrets_mgr->rotate_hmac_key("rag-ingester");
+    auto key2 = secrets_mgr->rotate_hmac_key("log-consumer");
 
     // At T2 (within grace period), key1 should still be valid
     auto t2 = t1 + std::chrono::seconds(2);
@@ -170,7 +170,7 @@ TEST_F(SecretsManagerGracePeriodTest, Integration_RealRotationScenario) {
     EXPECT_FALSE(key1.is_active);
 
     // At T3, get all valid keys (should include both)
-    auto valid_keys = secrets_mgr->get_valid_keys("rag-ingester", t2);
+    auto valid_keys = secrets_mgr->get_valid_keys("log-consumer", t2);
     EXPECT_EQ(valid_keys.size(), 2);
 
     // Active key should be first

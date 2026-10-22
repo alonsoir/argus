@@ -9,7 +9,7 @@
 // Propiedades:
 //   - Matemáticamente inalcanzable por cualquier ratio real de red
 //   - Determinístico: siempre el mismo valor, sin NaN propagation
-//   - Compatible con ONNX Runtime y FAISS (float32 well-defined)
+//   - Compatible con ONNX Runtime (float32 well-defined)
 //   - Compartido por todos los componentes — NO redefinir localmente
 //
 // Uso:

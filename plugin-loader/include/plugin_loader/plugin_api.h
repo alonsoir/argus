@@ -62,13 +62,13 @@ typedef struct PacketContext {
 // ----------------------------------------------------------------------------
 // PluginMode — modo de invocación del plugin (Q1 Consejo DAY 109)
 // PLUGIN_MODE_NORMAL:   payload presente, D8-v2 CRC32 activo (sniffer, PHASE 2c)
-// PLUGIN_MODE_READONLY: payload=nullptr garantizado (rag-ingester, PHASE 2b)
+// PLUGIN_MODE_READONLY: payload=nullptr garantizado (PHASE 2b)
 // El loader valida coherencia pre-invocación (D8):
 //   PLUGIN_MODE_READONLY && (payload!=nullptr || payload_len!=0) → std::terminate()
 // ----------------------------------------------------------------------------
 typedef enum {
     PLUGIN_MODE_NORMAL   = 0,  // acceso normal al payload
-    PLUGIN_MODE_READONLY = 1   // rag-ingester: payload=nullptr garantizado
+    PLUGIN_MODE_READONLY = 1   // payload=nullptr garantizado
 } PluginMode;
 
 // ----------------------------------------------------------------------------
