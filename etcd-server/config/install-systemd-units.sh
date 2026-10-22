@@ -1,6 +1,6 @@
 #!/bin/bash
 # install-systemd-units.sh
-# Instala los 6 units systemd de ML Defender (PHASE 3)
+# Instala los 4 units systemd de ML Defender (PHASE 3)
 # Ejecutar DENTRO de la VM: sudo bash /vagrant/etcd-server/config/install-systemd-units.sh
 # O desde Mac: vagrant ssh -c "sudo bash /vagrant/etcd-server/config/install-systemd-units.sh"
 
@@ -12,7 +12,6 @@ SYSTEMD_DIR="/etc/systemd/system"
 
 UNITS=(
     ml-defender-etcd-server.service
-    ml-defender-rag-ingester.service
     ml-defender-ml-detector.service
     ml-defender-sniffer.service
     ml-defender-firewall-acl-agent.service

@@ -5,7 +5,7 @@
 [Unit]
 Description=ML Defender — ml-detector (RandomForest + ONNX inference)
 Documentation=https://github.com/alonsoir/argus
-After=network.target ml-defender-etcd-server.service ml-defender-rag-ingester.service
+After=network.target ml-defender-etcd-server.service
 Requires=ml-defender-etcd-server.service
 
 [Service]

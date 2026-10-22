@@ -39,7 +39,6 @@ for lib in \
     libetcd_client.so.1 \
     libetcd-cpp-api.so \
     libonnxruntime.so.1.17.1 \
-    libfaiss.so \
     libxgboost.so; do
     if [ -f "/usr/local/lib/${lib}" ]; then
         cp -L "/usr/local/lib/${lib}" "${DIST_LIB}/"

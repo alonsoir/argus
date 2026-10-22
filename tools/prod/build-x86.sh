@@ -29,7 +29,6 @@ declare -A BINARIES=(
     ["sniffer"]="${VAGRANT}/sniffer/build-production/sniffer"
     ["ml-detector"]="${VAGRANT}/ml-detector/build-production/ml-detector"
     ["firewall-acl-agent"]="${VAGRANT}/firewall-acl-agent/build-production/firewall-acl-agent"
-    ["rag-ingester"]="${VAGRANT}/rag-ingester/build-production/rag-ingester"
 )
 
 for name in "${!BINARIES[@]}"; do

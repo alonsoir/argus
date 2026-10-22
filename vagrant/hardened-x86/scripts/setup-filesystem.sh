@@ -46,7 +46,7 @@ echo "── /etc/ml-defender/ ──"
 install -d -o root        -g "${ARGUS_GROUP}" -m 0750 /etc/ml-defender
 install -d -o root        -g "${ARGUS_GROUP}" -m 0750 /etc/ml-defender/plugins
 
-for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester; do
+for comp in etcd-server sniffer ml-detector firewall-acl-agent; do
     install -d -o "${ARGUS_USER}" -g "${ARGUS_GROUP}" -m 0750 /etc/ml-defender/${comp}
     echo "  ✅ /etc/ml-defender/${comp}/ (750 ${ARGUS_USER}:${ARGUS_GROUP})"
 done
@@ -56,7 +56,7 @@ echo ""
 echo "── /var/log/argus/ ──"
 install -d -o root        -g "${ARGUS_GROUP}" -m 0750 /var/log/argus
 
-for comp in etcd-server sniffer ml-detector firewall-acl-agent rag-ingester; do
+for comp in etcd-server sniffer ml-detector firewall-acl-agent; do
     install -d -o "${ARGUS_USER}" -g "${ARGUS_GROUP}" -m 0750 /var/log/argus/${comp}
     echo "  ✅ /var/log/argus/${comp}/ (750 ${ARGUS_USER}:${ARGUS_GROUP})"
 done

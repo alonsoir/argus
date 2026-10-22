@@ -45,7 +45,6 @@ readonly COMPONENTS=(
     "sniffer"
     "ml-detector"
     "firewall-acl-agent"
-    "rag-ingester"
 )
 
 # Colors
@@ -502,7 +501,7 @@ reset_plugin_signing_keypair() {
 
 # =============================================================================
 # RESET ALL KEYS (ADR-025 D11 — provision.sh --reset)
-# Rota: seed_family + keypairs Ed25519 de 5 componentes + keypair firma plugins
+# Rota: seed_family + keypairs Ed25519 de 4 componentes + keypair firma plugins
 # NO auto-firma plugins. Post-reset: operador debe ejecutar make sign-plugins.
 # En dev con flag --dev: llama a check-plugins (firma automática).
 # =============================================================================
@@ -533,7 +532,7 @@ reset_all_keys() {
     openssl rand -out "$shared_seed_tmp" ${SEED_BYTES}
     chmod 600 "$shared_seed_tmp"
 
-    log_section "Reset keypairs + seed_family de componentes (5/5)"
+    log_section "Reset keypairs + seed_family de componentes (4/4)"
     for component in "${COMPONENTS[@]}"; do
         local dir="${KEYS_ROOT}/${component}"
 
@@ -760,8 +759,6 @@ provision_plugins() {
         "${vagrant_root}/sniffer/config/sniffer.json"
         "${vagrant_root}/ml-detector/config/ml_detector_config.json"
         "${vagrant_root}/firewall-acl-agent/config/firewall.json"
-        "${vagrant_root}/rag-ingester/config/rag-ingester.json"
-        "${vagrant_root}/rag/config/rag-config.json"
         "${vagrant_root}/etcd-server/config/etcd-server.json"
     )
 
@@ -1120,8 +1117,8 @@ provision_full() {
         log_info "Directorio raíz creado: ${KEYS_ROOT}"
     fi
 
-    # Provisionar los 5 componentes del pipeline
-    log_section "Componentes del pipeline (5)"
+    # Provisionar los 4 componentes del pipeline
+    log_section "Componentes del pipeline (4)"
     for component in "${COMPONENTS[@]}"; do
         provision_component "$component"
     done
@@ -1131,14 +1128,14 @@ provision_full() {
     provision_ebpf_plugins
     provision_plugin_signing_keypair
 
-    # ── FIX DAY 107: seed maestro → distribuir a los 4 componentes restantes ──
-    log_section "Sincronización de seed maestro (etcd-server → 4 componentes)"
+    # ── FIX DAY 107: seed maestro → distribuir a los 3 componentes restantes ──
+    log_section "Sincronización de seed maestro (etcd-server → 3 componentes)"
     local master_seed="${KEYS_ROOT}/etcd-server/seed.bin"
     if [[ ! -f "$master_seed" ]]; then
         log_error "Seed maestro no encontrado: $master_seed"
         exit 1
     fi
-    for component in sniffer ml-detector firewall-acl-agent rag-ingester; do
+    for component in sniffer ml-detector firewall-acl-agent; do
         local dst="${KEYS_ROOT}/${component}/seed.bin"
         cp "$master_seed" "$dst"
         chmod 0400 "$dst"
@@ -1148,13 +1145,12 @@ provision_full() {
     log_info "Seeds sincronizados (todos los componentes usan el seed de etcd-server)"
 
     # ── FIX DAY 107: symlinks JSON /etc/ml-defender/* → /vagrant/*/config/ ──
-    log_section "Symlinks JSON config (5 componentes)"
+    log_section "Symlinks JSON config (4 componentes)"
     declare -A CONFIG_MAP=(
         ["etcd-server"]="/vagrant/etcd-server/config"
         ["sniffer"]="/vagrant/sniffer/config"
         ["ml-detector"]="/vagrant/ml-detector/config"
         ["firewall-acl-agent"]="/vagrant/firewall-acl-agent/config"
-        ["rag-ingester"]="/vagrant/rag-ingester/config"
     )
     for component in "${COMPONENTS[@]}"; do
         local link_dir="${KEYS_ROOT}/${component}"
