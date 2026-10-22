@@ -5,7 +5,7 @@
 [Unit]
 Description=ML Defender — rag-ingester (FAISS indexer)
 Documentation=https://github.com/alonsoir/argus
-After=network.target ml-defender-etcd-server.service ml-defender-rag-security.service
+After=network.target ml-defender-etcd-server.service
 Requires=ml-defender-etcd-server.service
 
 [Service]

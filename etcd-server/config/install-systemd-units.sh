@@ -12,7 +12,6 @@ SYSTEMD_DIR="/etc/systemd/system"
 
 UNITS=(
     ml-defender-etcd-server.service
-    ml-defender-rag-security.service
     ml-defender-rag-ingester.service
     ml-defender-ml-detector.service
     ml-defender-sniffer.service
