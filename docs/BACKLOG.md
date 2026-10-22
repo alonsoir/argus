@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 211 — 2026-07-08*
+*Última actualización: DAY 304 — 2026-10-22*
 
 ---
 
@@ -7678,3 +7678,55 @@ Ramas pequenas con su EMECAS al final; EMECAS cuando el Mac no se usa (de noche)
 ### Leccion DAY303
 Nunca printf >> sobre ficheros del repo: .gitignore no terminaba en salto de linea y el anadido rompio la regla
 seed-repro/*.json. Siempre patcher que compruebe el salto final.
+
+## Cierre DAY304 [CIERRE-D304]
+
+Resuelto DAY304 (PR #146, merge 772ff15e; EMECAS+++ production desde cero, emecas_20261022_101530.log, 28/28,
+rc=0, 2h16m; 239 ficheros, -27 380 lineas): retirado el subsistema RAG entero. rag-security (rag/, submodulo
+llama.cpp + .git/modules, TinyLlama), rag-ingester, common-rag-ingester, ml-training/scripts/rag_shield,
+contrib/*/pca_pipeline (7 IAs), shared/indices, tools/legacy/test_reducer.cpp. Fuera del vagrant up: llama.cpp,
+FAISS (+BLAS/LAPACK) y la provision SQLite del dia 40. Pipeline de 4 componentes; gates ajustados:
+test-provision-1 CHECK 5 (4 units), post-up-verify (4 seed.bin), LAB-E2E (umbral 4). plugin-loader intacto
+(TEST-INTEG-4b/4e/SIGN). Lista de cierre con 20 predicciones falladas: docs/ml-heads/day304_deprecar_subsistema_rag.md.
+
+### DEBT-RAG-DEPRECATION-CERT-001 — CERRADA DAY304
+git grep sin rastro fuera de historicos aprobados + EMECAS+++ verde (arriba).
+
+### DEBT-GIT-BUILD-ARTIFACTS-001 — PARCIAL DAY304
+common-rag-ingester/build salio con el componente. Queda plugin-loader/build-enterprise (medir quien lo usa).
+
+### DEBT-PIPELINE-STATUS-LIVENESS-001 — SIGUE ABIERTA
+Desaparece el caso rag-security (RUNNING sin registrarse en etcd), no el problema: el estado solo mira el proceso.
+
+### DEBT-RAG-LOGGER-BRANCH-001 — ABIERTA (nueva DAY304, rama propia)
+RAG Logger de ml-detector (rag_logger.enabled=false desde D285) y lo que cuelga de el: rag_logger_config.json,
+CTX_RAG_ARTIFACTS (contexts.hpp: ya sin consumidor), /vagrant/logs/rag, clave /secrets/rag/log_hmac_key
+(etcd-server.json, unica auto_generate; la usa el test de integracion de etcd-client), scripts/explore_rag_logs.sh
+(habla de "FAISS readiness"), scripts/day15_automated_test.sh, scripts/test_rag_logger.sh, scripts/tsan/run_tsan_test.sh,
+.PHONY muertos rag-log-*/test-rag-*/rag-watch/rag-validate/rag-consolidate/verify-rag-logs-day23 del Makefile,
+DEBT-RAG-ATTACKFAMILY-HARDCODED-001. Decidir retirar o mantener con medida.
+
+### DEBT-REPO-RESIDUOS-001 — ABIERTA (ampliada DAY304)
+site/ (19 MB), emecas++.md y emecas+++.md (1,2 MB), .md de cierre sueltos en la raiz ("Cierre day255 reparacion
+ddos.md"), scripts/test_rag_logger.sh.backup trackeado, .gitignore con lineas pegadas ("logs/# ONNX models...",
+"*.npz" con cabecera pegada ya separada en DAY304) y una linea "rm --cached ml-detector/build-asan/ml-detector"
+usada como patron.
+
+### DEBT-VAGRANT-EARLY-FW-BUILD-001 — ABIERTA (nueva DAY304)
+El bloque "Build components" del Vagrantfile compila firewall-acl-agent durante el provisionado, antes de que exista
+libcrypto_transport: "CMake Error at CMakeLists.txt:103 (find_library) CRYPTO_TRANSPORT_LIB" en cada vagrant up
+(ya en DAY303, linea 4191). El bootstrap lo recompila en orden; es ruido que confunde al leer el log.
+
+### DEBT-SECRET-IN-HISTORY-001 — ABIERTA (nueva DAY304, baja)
+rag-ingester/config/etcd_encryption.key (32 bytes) estaba trackeado; DAY304 lo quita del arbol, sigue en la historia
+(blob 4bbdd622). Medido: 0 copias vivas, nadie lo nombra. La historia no se reescribe: si algun entorno uso esa
+clave, rotarla.
+
+### DEBT-MAKE-PREFLIGHT-001 — AMPLIACION DAY304
+Anadir: comprobar las cuentas fijas de los gates (^N$, grep -q "N", -lt N, "esperados N", "N/N") contra las listas
+reales (COMPONENTS de provision.sh, UNITS de install-systemd-units.sh, pipeline-status). Habria cazado los dos
+fallos de cuenta de DAY304 (CHECK 5 y post-up-verify).
+
+### Leccion DAY304
+Al retirar un componente, medir quien CUENTA, no solo quien nombra. Y antes de relanzar un EMECAS caido, medir el
+target que fallo contra la VM viva (un minuto en vez de dos horas).
