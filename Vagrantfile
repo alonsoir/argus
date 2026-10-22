@@ -16,16 +16,14 @@
 # │  │  • eBPF/XDP Sniffer     │◄────────│  • Attack simulation         │   │
 # │  │  • ML Detector          │   LAN   │  • Gateway testing           │   │
 # │  │  • Firewall ACL Agent   │  eth2   │  • PCAP dataset replay       │   │
-# │  │  • RAG Security System  │         │  • Performance benchmarks    │   │
-# │  │  • FAISS Ingestion      │         │                              │   │
+# │  │                         │         │  • Performance benchmarks    │   │
 # │  │                         │         │                              │   │
 # │  │  eth1: 192.168.56.20    │         │  eth1: 192.168.100.50        │   │
 # │  │  eth2: 192.168.100.1    │         │  Gateway: 192.168.100.1      │   │
 # │  └─────────────────────────┘         └──────────────────────────────┘   │
 # └──────────────────────────────────────────────────────────────────────────┘
 #
-# PHASE 2A: FAISS Ingestion Support
-#   • FAISS v1.8.0 (CPU-only, shared library)
+# ML RUNTIME SUPPORT
 #   • ONNX Runtime v1.17.1
 #   • Cron restart every 72h (memory leak mitigation)
 #
@@ -250,7 +248,7 @@ Vagrant.configure("2") do |config|
       set -x
 
       echo "╔════════════════════════════════════════════════════════════╗"
-      echo "║  Installing ALL dependencies - Phase 2A (FAISS)           ║"
+      echo "║  Installing ALL dependencies                              ║"
       echo "╚════════════════════════════════════════════════════════════╝"
 
       # Core system packages
@@ -373,29 +371,6 @@ LIBBPF_PROFILE
         fi
       fi
 
-      # FAISS v1.8.0 (CPU-only, shared library) - Phase 2A
-      if [ ! -f /usr/local/lib/libfaiss.so ]; then
-        echo "🔍 Installing FAISS v1.8.0 (CPU-only, shared library)..."
-        apt-get install -y libblas-dev liblapack-dev
-        cd /tmp && rm -rf faiss
-        git clone --depth 1 --branch v1.8.0 https://github.com/facebookresearch/faiss.git
-        cd faiss
-        mkdir -p build && cd build
-        cmake .. \
-          -DFAISS_ENABLE_GPU=OFF \
-          -DFAISS_ENABLE_PYTHON=OFF \
-          -DBUILD_TESTING=OFF \
-          -DBUILD_SHARED_LIBS=ON \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=/usr/local
-        make -j$(nproc)
-        make install
-        ldconfig
-        cd /tmp && rm -rf faiss
-        echo "✅ FAISS installed successfully"
-      else
-        echo "✅ FAISS already installed"
-      fi
       # XGBoost 3.2.0 (C API + Python) - ADR-026 Track 1
       if [ ! -f /usr/local/lib/libxgboost.so ]; then
         echo "🔍 Installing XGBoost 3.2.0..."
@@ -543,7 +518,7 @@ EOF
       fi
 
       # Bash aliases
-      if ! grep -q "FAISS Ingestion aliases" /home/vagrant/.bashrc; then
+      if ! grep -q "# ML Defender aliases" /home/vagrant/.bashrc; then
         cat >> /home/vagrant/.bashrc << 'BASHRC_EOF'
 # ML Defender aliases
 alias build-sniffer='cd /vagrant/sniffer && make'
@@ -566,9 +541,8 @@ alias test-gateway='/vagrant/scripts/gateway/defender/validate_gateway.sh'
 alias start-gateway='/vagrant/scripts/gateway/defender/start_gateway_test.sh'
 alias gateway-dash='/vagrant/scripts/gateway/defender/gateway_dashboard.sh'
 
-# FAISS Ingestion aliases (Phase 2A)
+# Runtime aliases
 alias explore-logs='/vagrant/scripts/explore_rag_logs.sh'
-alias verify-faiss='ls -lh /usr/local/lib/libfaiss.so && ls -d /usr/local/include/faiss'
 alias verify-onnx='ls -lh /usr/local/lib/libonnxruntime.so && find /usr/local/include -name "onnxruntime*.h"'
 
 # Provisioning aliases (DAY 95)
@@ -581,7 +555,7 @@ export MODELS_DIR="/vagrant/ml-detector/models/production"
 cat << 'WELCOME'
 ╔════════════════════════════════════════════════════════════╗
 ║  ML Defender - Network Security Pipeline                   ║
-║  Development Environment - PHASE 2A (FAISS)                ║
+║  Development Environment                                   ║
 ╚════════════════════════════════════════════════════════════╝
 🎯 Dual-NIC Configuration:
    eth1: 192.168.56.20 (WAN-facing, host-based IDS)
@@ -589,9 +563,8 @@ cat << 'WELCOME'
 🔐 Cryptographic Provisioning (DAY 95):
    provision-status  # Estado de claves
    provision-verify  # Verificar integridad
-🔍 FAISS Ingestion Ready:
+🔍 Runtime:
    explore-logs     # Explore available RAG logs
-   verify-faiss     # Verify FAISS installation
    verify-onnx      # Verify ONNX Runtime
 🚀 Gateway Testing:
    start-gateway    # Start sniffer in gateway mode
@@ -966,29 +939,9 @@ BASHRC_EOF
     CRON
 
     # ════════════════════════════════════════════════════════════════════════
-    # Provisioning: SQLite.db necessary for RAG and RAG-INGESTER (Day 40)
-    # ════════════════════════════════════════════════════════════════════════
-    defender.vm.provision "shell", name: "configure-sqlite-day40", run: "once", inline: <<-SQLITE
-      echo "📁 Day 40: Creating shared indices directory..."
-      mkdir -p /vagrant/shared/indices
-      chown -R vagrant:vagrant /vagrant/shared/indices
-      chmod 755 /vagrant/shared/indices
-      echo "✅ Shared indices directory ready: /vagrant/shared/indices"
-
-      if ! dpkg -l | grep -q libsqlite3-dev; then
-        echo "📦 Installing SQLite3 development headers + CLI..."
-        apt-get install -y libsqlite3-dev sqlite3
-        echo "✅ SQLite3 dev + CLI installed"
-      else
-        echo "✅ SQLite3 dev already installed"
-        apt-get install -y sqlite3
-      fi
-    SQLITE
-
-    # ════════════════════════════════════════════════════════════════════════
     # Provisioning: Cryptographic Identity (DAY 95)
     # tools/provision.sh genera keypairs Ed25519 + seeds ChaCha20
-    # para los 6 componentes del pipeline.
+    # para los 4 componentes del pipeline.
     #
     # run: "once" — las claves persisten entre reinicios de VM.
     # Para re-provisionar manualmente: make provision

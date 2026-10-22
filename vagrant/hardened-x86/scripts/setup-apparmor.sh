@@ -11,7 +11,7 @@ PROFILES_DIR=/vagrant/security/apparmor
 AA_DIR=/etc/apparmor.d
 
 echo "╔════════════════════════════════════════════════════════════╗"
-echo "║  AppArmor profiles — 5 perfiles     en enforce mode       ║"
+echo "║  AppArmor profiles — 5 perfiles    en enforce mode       ║"
 echo "╚════════════════════════════════════════════════════════════╝"
 
 # Verificar AppArmor disponible
