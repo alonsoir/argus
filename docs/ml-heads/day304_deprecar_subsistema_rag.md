@@ -3,7 +3,8 @@
 Rama: `chore/deprecar-rag-security` (desde main `4feb3900`). Una rama, dos bloques de commits, UN solo EMECAS al final.
 Historia de git intacta: solo commits nuevos que borran; nada se reescribe (ni `--amend`).
 
-v3 (antes del EMECAS): las 15 piezas hechas, lo medido, cada predicción fallada y lo que queda para otras ramas.
+v4 (CERTIFICADA): EMECAS+++ production VERDE el 2026-10-22 (`emecas_20261022_101530.log`, rc=0, 28/28 hitos, 2h16m).
+Primera corrida (`emecas_20261022_093547.log`) cayó a los 28 min en `post-up-verify` (seeds `^6$`); arreglado en B6.
 
 ## Alcance (sin cambios respecto a v1)
 
@@ -33,7 +34,7 @@ etcd-client), `scripts/explore_rag_logs.sh` (habla de "FAISS readiness"), `day15
 5. `ml-training/scripts/rag_shield/` (lista blanca de comandos RAG): se borra. "Mantener código deprecado para
    recordarlo es absurdo."
 
-## Commits (15, sobre `4feb3900`)
+## Commits (17, sobre `4feb3900`)
 
 | Commit | Hash | Contenido |
 |---|---|---|
@@ -52,6 +53,8 @@ etcd-client), `scripts/explore_rag_logs.sh` (habla de "FAISS readiness"), `day15
 | B3 | `aca8b17b` | scripts sin rag-ingester; fuera `verify_libraries.sh`, `install_faiss_*.sh` |
 | B4 | `be08df34` | componentes vivos: solo comentarios, textos y nombre de ejemplo en tests (`log-consumer`); CI |
 | B5 | `ded541eb` | `git rm` de rag-ingester, common-rag-ingester, `shared/indices`, 7 `pca_pipeline`, `test_reducer` |
+| v3 | `fb5faa4a` | esta lista, v3, con las predicciones del EMECAS escritas antes de lanzarlo |
+| B6 | (ver `git log`) | `post-up-verify` espera 4 `seed.bin` (la 1.ª corrida cayó ahí) |
 
 ## Criterio de HECHO
 
@@ -62,22 +65,23 @@ etcd-client), `scripts/explore_rag_logs.sh` (habla de "FAISS readiness"), `day15
      ':!DEBT-COMPILER-WARNINGS-CLEANUP-001.md' ':!scripts/d284_patch_rag_ingester_off.py' ':!scripts/higiene-adr-day198.sh' \
      ':!tools/update-day158-docs.sh' ':!tools/update_day156.py' ':!scripts/explore_rag_logs.sh' ':!Cierre day255 reparacion ddos.md'
    ```
-2. **Un solo EMECAS+++ `production` desde cero, rc=0**, con:
-   - `test-provision-1` PASA (CHECK 4 sin rag-ingester; CHECK 5 cuenta 4 units);
-   - `pipeline-status` 4/4 (etcd-server, ml-detector, sniffer, firewall);
-   - TEST-INTEG-4b, 4e y SIGN PASSED (plugin-loader intacto);
-   - ctest de etcd-server con `test_hmac_integration` PASA (cadena `log-consumer`);
-   - E2E de restauración del lab PASA con umbral 4; `clean-host-builds` PASA;
-   - `emecas_frescura` PASA sin rag ni rag-ingester.
+2. **EMECAS+++ `production` desde cero, rc=0 — CUMPLIDO** (`emecas_20261022_101530.log`), medido en el log:
+   - `test-provision-1` PASSED ×3 (Check 4/8 y 5/8 OK ×3);
+   - `pipeline-status`: etcd-server, ml-detector, sniffer (Variant A), firewall RUNNING; 0 menciones de
+     rag-security/rag-ingester en todo el log;
+   - TEST-INTEG-4b, 4e y SIGN PASSED (0 failures) ×3 — plugin-loader intacto;
+   - `test_hmac_integration` Passed (cadena `log-consumer`);
+   - `[LAB-E2E] restaurado: 4 de 4 componentes RUNNING` y `PASA los cinco E2E del lab`;
+   - `[CLEAN-HOST] PASA: 0 directorios de build en el Mac`;
+   - `[FRESCURA] comprobados=6 fallos=0` y `PASA`;
+   - ctest: 100 % en las 8 suites (17, 14, 3, 82, 1, 1, 23, 2 tests).
 3. **Limitación declarada:** `vagrant/hardened-*` y `tools/prod/` no los ejecuta EMECAS: verificados con `bash -n` y grep.
 
 ## Predicciones del EMECAS (escritas antes de lanzarlo)
 
-- Verde a la primera: sí.
-- Duración: se mantiene la predicción de v1, ≈ 2h10m (±15 min), comparada con DAY303 (2h33m). Ya no se compilan
-  llama.cpp ni FAISS en el `vagrant up`, ni rag-security ni rag-ingester en el build: espero quedar por debajo,
-  pero no corrijo la cifra escrita.
-- Hitos: menos que en DAY303 (salen los de rag); se comparan uno a uno con `emecas_20261021_084020.log`.
+- Verde a la primera: sí. → **FALLÓ**: la 1.ª corrida cayó en `post-up-verify` (predicción fallada n.º 20).
+- Duración: ≈ 2h10m (±15 min), frente a 2h33m de DAY303. → **2h16m**, dentro del margen (17 min menos que DAY303).
+- Hitos: 28/28 en la corrida verde.
 
 ## Medidas de partida y resultados
 
@@ -111,6 +115,7 @@ etcd-client), `scripts/explore_rag_logs.sh` (habla de "FAISS readiness"), `day15
 | 17 | `shared/` sin trackear | 2 `.faiss` trackeados, 135 MB | — |
 | 18 | `rc` del criterio con `| cut` | `$?` era el de `cut` | sin tubería cuando importa el `rc` |
 | 19 | 17 commits en la rama | 15 (error aritmético mío) | — |
+| 20 | EMECAS verde a la primera | cayó en `post-up-verify`: `grep -q '^6$$'` de seeds | la búsqueda de cuentas debe cubrir `^N$`, `-eq N`, `grep -q N` y textos «esperados N»; mejor aún, medir el target en la VM viva antes de relanzar |
 
 Hueco sin explicar: DAY303 midió 27 líneas en el Makefile y main^1 da 30 (no afecta: se parte de main).
 
@@ -119,6 +124,12 @@ Hueco sin explicar: DAY303 midió 27 líneas en el Makefile y main^1 da 30 (no a
 `rag-ingester/config/etcd_encryption.key` estaba trackeado. B5 lo borra del árbol, pero **sigue en la historia de git**
 (no se reescribe). Si esa clave, o una derivada, la usa algún componente vivo o algún entorno, hay que rotarla.
 Comprobación pendiente: que ningún JSON/fichero vivo tenga el mismo contenido.
+
+## Deuda anotada durante la rama
+
+- Vagrantfile, bloque «Build components»: compila firewall-acl-agent durante el provisionado, antes de que exista
+  `libcrypto_transport` → `CMake Error at CMakeLists.txt:103` en cada `vagrant up` (ya estaba en DAY303). El
+  bootstrap lo recompila después, en orden: es ruido, pero confunde al leer el log.
 
 ## Después de esta rama
 
