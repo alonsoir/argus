@@ -109,15 +109,6 @@ get_config_file() {
                 echo -e "${YELLOW}No config file found${NC}"
             fi
             ;;
-        "rag")
-            config_file="/vagrant/rag/config/rag-config.json"
-            if [ -f "$config_file" ]; then
-                echo -e "${CYAN}$(basename $config_file)${NC}"
-                found=1
-            else
-                echo -e "${YELLOW}No config file found${NC}"
-            fi
-            ;;
     esac
 }
 

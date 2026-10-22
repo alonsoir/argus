@@ -37,7 +37,6 @@ DESCRIPTION:
     - sniffer/Makefile
     - ml-detector/CMakeLists.txt
     - firewall-acl-agent/CMakeLists.txt
-    - rag-security/CMakeLists.txt
 
 IMPORTANT:
     Los flags estarán DESACTIVADOS por defecto.
@@ -84,13 +83,6 @@ check_status() {
     else
         echo -e "firewall/CMakeLists.txt: ${RED}❌ Not prepared${NC}"
     fi
-
-    # rag
-    if grep -q "ENABLE_HARDENING" "$PROJECT_ROOT/rag/CMakeLists.txt" 2>/dev/null; then
-        echo -e "rag/CMakeLists.txt: ${YELLOW}⚙️ Prepared (OFF by default)${NC}"
-    else
-        echo -e "rag/CMakeLists.txt: ${RED}❌ Not prepared${NC}"
-    fi
 }
 
 dry_run() {
@@ -100,7 +92,6 @@ dry_run() {
     echo "  - sniffer/Makefile"
     echo "  - ml-detector/CMakeLists.txt"
     echo "  - firewall-acl-agent/CMakeLists.txt"
-    echo "  - rag-security/CMakeLists.txt"
     echo ""
     echo "All flags would be DISABLED by default."
     echo "See README_HARDENING.md for activation instructions."

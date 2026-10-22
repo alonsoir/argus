@@ -196,9 +196,8 @@ if [ "$FAISS_OK" == "true" ] && [ "$ONNX_OK" == "true" ]; then
     echo "✅ All libraries ready for Phase 2A development!"
     echo ""
     echo "Next steps:"
-    echo "  1. Create test programs in /vagrant/rag/tests/"
-    echo "  2. Update CMakeLists.txt to link FAISS"
-    echo "  3. Start implementing ChunkCoordinator"
+    echo "  1. Update CMakeLists.txt to link FAISS"
+    echo "  2. Start implementing ChunkCoordinator"
     exit 0
 else
     echo ""
