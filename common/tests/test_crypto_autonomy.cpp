@@ -116,7 +116,7 @@ void test_tamper_degraded() {
 
     // Desde RECONCILING
     {
-        CryptoAutonomy sm{"rag-security"};
+        CryptoAutonomy sm{"ml-detector"};
         sm.on_vault_unreachable();
         sm.on_vault_restored();
         sm.on_tamper_detected();
