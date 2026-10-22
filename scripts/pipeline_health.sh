@@ -6,7 +6,6 @@
 
 COMPONENTS=(
     "etcd-server:etcd-server/build-active/etcd-server"
-    "rag-ingester:rag-ingester/build-active/rag-ingester"
     "ml-detector:ml-detector/build-active/ml-detector"
     "sniffer:sniffer/build-active/sniffer"
     "firewall:firewall-acl-agent/build-active/firewall-acl-agent"
@@ -51,7 +50,6 @@ for entry in "${COMPONENTS[@]}"; do
     logfile=""
     case "$name" in
         etcd-server)    logfile="$LOG_DIR/etcd-server.log" ;;
-        rag-ingester)   logfile="$LOG_DIR/rag-ingester.log" ;;
         ml-detector)    logfile="$LOG_DIR/ml-detector.log" ;;
         sniffer)        logfile="$LOG_DIR/sniffer.log" ;;
         firewall)       logfile="$LOG_DIR/firewall-agent.log" ;;

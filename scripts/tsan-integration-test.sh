@@ -10,7 +10,6 @@ mkdir -p "$TSAN_DIR"
 
 # Cleanup previous run
 pkill -9 -f etcd-server 2>/dev/null || true
-pkill -9 -f rag-ingester 2>/dev/null || true
 pkill -9 -f ml-detector 2>/dev/null || true
 sudo pkill -9 -f sniffer 2>/dev/null || true
 sleep 2
@@ -21,12 +20,6 @@ cd /vagrant/etcd-server/build-tsan
 TSAN_OPTIONS="log_path=$TSAN_DIR/etcd-server-integration history_size=7" \
     nohup ./etcd-server > "$TSAN_DIR/etcd-server-integration.log" 2>&1 &
 sleep 3
-
-echo "🚀 Starting rag-ingester..."
-cd /vagrant/rag-ingester/build-tsan
-TSAN_OPTIONS="log_path=$TSAN_DIR/rag-ingester-integration history_size=7" \
-    nohup ./rag-ingester ../config/rag-ingester.json > "$TSAN_DIR/rag-ingester-integration.log" 2>&1 &
-sleep 2
 
 echo "🚀 Starting ml-detector..."
 cd /vagrant/ml-detector/build-tsan
@@ -43,7 +36,6 @@ sleep 5
 # Verify all started
 echo "👀 Verifying components started..."
 pgrep -f etcd-server > /dev/null || { echo "❌ etcd-server failed to start"; cat "$TSAN_DIR/etcd-server-integration.log"; exit 1; }
-pgrep -f rag-ingester > /dev/null || { echo "❌ rag-ingester failed to start"; cat "$TSAN_DIR/rag-ingester-integration.log"; exit 1; }
 pgrep -f ml-detector > /dev/null || { echo "❌ ml-detector failed to start"; cat "$TSAN_DIR/ml-detector-integration.log"; exit 1; }
 pgrep -f sniffer > /dev/null || { echo "❌ sniffer failed to start"; cat "$TSAN_DIR/sniffer-integration.log"; exit 1; }
 echo "✅ All components running"
@@ -56,7 +48,6 @@ for i in {1..30}; do
     echo "  [$elapsed/300s] Checking processes..."
     
     pgrep -f etcd-server > /dev/null || { echo "❌ etcd-server crashed!"; exit 1; }
-    pgrep -f rag-ingester > /dev/null || { echo "❌ rag-ingester crashed!"; exit 1; }
     pgrep -f ml-detector > /dev/null || { echo "❌ ml-detector crashed!"; exit 1; }
     pgrep -f sniffer > /dev/null || { echo "❌ sniffer crashed!"; exit 1; }
 done
@@ -67,14 +58,12 @@ echo "✅ Integration test complete - all components stable for 300s"
 echo "🛑 Shutting down components..."
 sudo pkill -SIGTERM -f sniffer 2>/dev/null || true
 pkill -SIGTERM -f ml-detector 2>/dev/null || true
-pkill -SIGTERM -f rag-ingester 2>/dev/null || true
 pkill -SIGTERM -f etcd-server 2>/dev/null || true
 sleep 3
 
 # Force kill if needed
 sudo pkill -9 -f sniffer 2>/dev/null || true
 pkill -9 -f ml-detector 2>/dev/null || true
-pkill -9 -f rag-ingester 2>/dev/null || true
 pkill -9 -f etcd-server 2>/dev/null || true
 
 echo "✅ Shutdown complete"

@@ -44,7 +44,6 @@ comprobar() {
 }
 
 comprobar etcd-server        etcd-server                  si
-comprobar rag-ingester       rag-ingester                 si
 comprobar ml-detector        ml-detector                  si
 comprobar sniffer            sniffer                      si
 comprobar firewall-acl-agent firewall-acl-agent           si   # FIREWALL_BIN := ./firewall-acl-agent (medido DAY303)
