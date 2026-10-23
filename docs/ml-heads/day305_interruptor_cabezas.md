@@ -2,97 +2,71 @@
 
 Rama `feat/heads-switch` (desde main `a0ba1d62`). Decisiones de Alonso: DAY300 (BACKLOG) y DAY305.
 
-## Decisiones DAY305 (Alonso)
+## Modelo resultante (decisión de Alonso, DAY305)
 
-- UNA sola PR: cada cabeza se enciende o apaga según su JSON, de verdad, leído al arrancar. "Nice and easy".
-- La administración remota de la instalación a través de etcd-server (admin autorizado → etcd-server modifica esa
-  parte del JSON del componente y le avisa) SALE de esta rama: es un diseño propio, que va más allá de las cabezas
-  (primer caso de uso de la administración remota) y se hace bien, no con prisa. Va al BACKLOG.
-- Modelo de autoridad (para ese diseño futuro): el JSON de cada componente da los valores por defecto; quien manda
-  es el mensaje del etcd-server de la instalación, que conoce todos sus componentes. Un proceso superior podría
-  hablar con varias instalaciones. Apagar cabezas es una acción de seguridad crítica: mensaje firmado, registrado
-  en el log del receptor y visible en el resumen [HEADS].
-- Laboratorio (decisión DAY300): mientras se trabaja DDoS, todo lo que no sea DDoS apagado en el JSON del lab
-  (ddos_v2 ON; level1, ransomware, traffic, internal y fast-path OFF). Defecto en el código si falta el campo: ON
-  con [CONFIG-DEFAULT], para que un JSON incompleto no apague nada en silencio.
-- El DDoS viejo (`level2.ddos`, `DDoSDetector`, `ddos_trees_inline.hpp`) se RETIRA en su propia rama, sin mezclar.
-  En el bloque A no se toca su flag (`level2.ddos.enabled` ya funciona).
+- **El sniffer recoge rasgos siempre y su única cabeza es el fast-path** (`fast_detector.enabled`): capa 1, la
+  alerta rápida por paquete, y capa 2, las ventanas de ransomware con su puntuación. En el sniffer no hay ninguna
+  otra cabeza activable, para que un admin no pueda duplicar trabajo por error.
+- **La inferencia de las cabezas vive en el ml-detector**, cada una con su `enabled`. Hoy solo ddos_v2 está
+  certificada; las demás se entrenarán una a una.
+- **Regla de `enabled`** (todos los componentes): booleano JSON o texto `"true"`/`"false"` sin distinguir
+  mayúsculas. Si falta o tiene otro valor, `false` (apagada) con `[CONFIG-DEFAULT]`, y el proceso arranca igual.
+- **Enteros de configuración:** si faltan, no son enteros (`60.0` y `"60"` tampoco valen) o están fuera de rango,
+  se aplica el defecto con `[CONFIG-DEFAULT]`, que nombra el campo, el formato y los límites. Los valores efectivos
+  se registran al arrancar.
+- **Laboratorio** (DAY300, mientras se trabaja DDoS): ddos_v2 encendida; level1, ddos_v1, ransomware, traffic,
+  internal y fast-path apagados.
+- **Autoridad futura:** el JSON da los valores por defecto. El que manda será el mensaje del etcd-server de la
+  instalación, enviado por un admin autorizado: es la administración remota (DEBT-ETCD-REMOTE-ADMIN-001), que se
+  diseña aparte y con calma. Apagar cabezas es una acción de seguridad crítica: el mensaje irá firmado y quedará
+  registrado.
 
-## Inventario medido (DAY305, main a0ba1d62)
+## Inventario medido (antes de tocar nada)
 
-| Cabeza | Proceso | Flag hoy | ¿Funciona? | Lectura |
-|---|---|---|---|---|
-| fast-path (FastDetector) | sniffer | `fast_detector.enabled` | NO: `ring_consumer.cpp:620` ingiere siempre | arranque |
-| ransomware (procesador + agregador) | sniffer | ninguno | `ring_consumer.cpp:202` se inicializa siempre | — |
-| rasgos embebidos ddos/ransomware/traffic/internal | sniffer | ninguno | `populate_ml_defender_features` los calcula siempre | — |
-| level1 | ml-detector | `level1.enabled` | apagarlo hace `return 1` (`main.cpp` ~275) | arranque |
-| DDoS viejo | ml-detector | `level2.ddos.enabled` | sí (se retira en otra rama) | arranque |
-| ransomware | ml-detector | `level2.ransomware.enabled` | sí | arranque |
-| traffic | ml-detector | `level3.web.enabled` | sí | arranque |
-| internal | ml-detector | `level3.internal.enabled` | sí | arranque |
-| ddos_v2 | ml-detector | `ml.ddos_v2.enabled` | sí | CADA evento (`zmq_handler.cpp:488`) |
+| Pieza | Proceso | Antes de la rama |
+|---|---|---|
+| fast-path (FastDetector) | sniffer | `fast_detector.enabled` decorativo: ingería siempre |
+| procesador de ransomware | sniffer | se creaba siempre; dos intervalos de 30 s escritos a fuego |
+| `run_ml_detection` | sniffer | ejecutaba en cada evento las 4 cabezas del ml-detector (mismas fuentes) y su resultado se sobrescribía antes de enviar |
+| level1 | ml-detector | `enabled=false` hacía `return 1` |
+| ddos_v1, ransomware, traffic, internal | ml-detector | flags obligatorios, solo al arrancar |
+| ddos_v2 | ml-detector | flag por evento, defecto `true` |
+| firewall | firewall | solo actúa con `final_decision == "DROP"` (ddos_v2) |
 
-- Firewall: solo actúa con `final_decision == "DROP"` (`zmq_subscriber.cpp:716`) + `ddos_shadow.enabled` + evento
-  de flujo; la mitigación real tiene doble llave (`dry_run` + `ddos_mitigacion.habilitada`).
-  `final_decision = ddos_v2_attack ? DROP : ALLOW` (`zmq_handler.cpp:623`). Con ddos_v2 apagada, el firewall no hace nada.
-- ddos_v2 NO depende del agregador de ransomware: sus rasgos salen de la foto del anillo (`ring_consumer.cpp:937,
-  962-966`) y del kernel (`1417-1438`).
-- Dependen del agregador de ransomware: `source_ip_dispersion` (DDoS viejo), 4 rasgos de traffic y 4 de internal.
-  Los 9 llamadores de `window_stats_30s()` están protegidos por `if (!aggregator_)`. La función no lo está.
+## Hecho (commits en `feat/heads-switch`)
 
-## Lista de cierre (cada punto con su predicción ANTES de medir)
+| Commit | Qué |
+|---|---|
+| `57466e12` | ml-detector: level1 apagada no mata el proceso (`l1_on` gobierna rasgos, inferencia, predicción, veredicto, `ml_score` y autoridad); 5 `enabled` con defecto y aviso; línea `[HEADS]` |
+| `802b000a` | JSON del laboratorio: solo ddos_v2 encendida |
+| `12883c0a` | `monitoring.heads_log_interval_seconds` ([10, 3600], 60), con temporizador propio |
+| `030c78bf` | Regla de Alonso: `enabled` ausente o inválido → apagada (también ddos_v2) |
+| `ec0f3c4e` | Retirada la inferencia duplicada del sniffer: `run_ml_detection`, 4 detectores, umbrales `ml_defender`, 5 scripts d283/d284 (−715 líneas) |
+| `01bcadb8` | Sniffer: el fast-path es su única cabeza; procesador de ransomware siempre (recogida de rasgos), emisión de ventanas solo con el fast-path; `fast_detector.ransomware.window_interval_seconds` ([5, 3600], 30); `[HEADS]`; parada ordenada (cierra DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001) |
+| `70e1c23b` | `heads_config.hpp` en cada componente y `test_heads_config` (71 comprobaciones por componente) |
 
-**A1. Sniffer: interruptores reales.**
-`fast_detector.enabled` corta de verdad la línea 620. Flags nuevos para ransomware, ddos, traffic e internal en
-sniffer.json, cada uno con `_doc`, defecto validado, `[CONFIG-DEFAULT]` si falta o es inválido, y registro del
-valor efectivo. Con ransomware apagado no se crea el procesador ni el agregador. `populate` se salta los
-extractores de las cabezas apagadas y deja en sus campos el centinela, nunca un 0 ambiguo.
-Si traffic o internal van encendidas con ransomware apagado, aviso `[HEADS-DEP]` (4 rasgos irán a centinela).
-`window_stats_30s()` lleva la guardia dentro, con prueba unitaria sobre el agregador nulo.
-Predicción: los rasgos base (PARTE 2, 102+ campos) y la foto DDoS v2 no dependen de ningún extractor apagado.
-El bronce y el grafo reciben lo mismo que hoy.
+## Medido
 
-**A2. ml-detector: level1 apagada no mata el proceso.**
-MEDIDO: `zmq_handler.cpp:454` solo comprueba `is_flow_event` y llama a `level1_model_->predict(...)` sin mirar si
-el modelo existe → quitar el `return 1` haría caer el proceso en el primer evento de flujo. Además, sin inferencia
-`label_l1` queda en -1, y las líneas 476 y 593 (`label_l1 == 0 ? BENIGN : ATTACK`) lo publicarían como "ATTACK".
-Hoy NO pasa: esas líneas ya van dentro de `if (is_flow_event)` (corregido tras leer el fichero entero; la primera
-lectura DAY305 lo daba por ocurrido). Pasaría con level1 apagada si solo se quitara el `return 1`.
-Solución (`d305_mld_heads.py`): `l1_on = is_flow_event && level1_model_` gobierna extracción, inferencia,
-predicción y veredicto de level1, `ml_score` y la fuente de autoridad. Los 5 `enabled` de cabeza pasan de
-obligatorios a defecto true + [CONFIG-DEFAULT]. Línea `[HEADS]` con el estado EFECTIVO al arrancar y en cada
-informe de estadísticas. Con level1 apagada, ddos_v1/ransomware/traffic/internal no se evalúan (siguen detrás de
-la compuerta de level1, salvo FORCE_ALL_HEADS); `[HEADS]` lo avisa.
-Con TODAS las cabezas apagadas: cero inferencias, el bronce correlation_v1 se sigue escribiendo, `final_decision`
-siempre ALLOW y `overall_threat_score` 0.
+- **Coste retirado del sniffer:** unos 20 µs por evento de flujo (`[ML-TIME] calls=553 sum_ns=11188840`, máximo
+  875 µs), que se iban en un resultado que se tiraba.
+- **En vivo:**
+  - ml-detector: `[HEADS] level1=OFF ddos_v2=ON …`, `inf:0`.
+  - sniffer: `[HEADS] fast_path=OFF ventanas_ransomware=OFF procesador_ransomware=INICIALIZADO recogida_rasgos=SIEMPRE`,
+    sin alertas ni ventanas; parada limpia, y las estadísticas finales ya no dicen "DISABLED".
+- **Regresión de ddos_v2** (`make lab-e2e-protegidos LAB_E2E_DIA=day305`): PASA 5/5. DROP del FIN 10 770 (99,7 %),
+  solo de .50; 5384 alertas de .61 protegido; identidad exacta (16 154 = 10 770 + 5384); 0 DROP del inocente .51;
+  INICIO 2 s tras el primer DROP; secuencia sin huecos. DAY300 dio 10 742 / 5371.
+- **Pruebas:** `test-components PROFILE=production` al 100 % en las cinco suites, con las dos `test_heads_config`
+  nuevas.
 
-**A3. Estado en el log, siempre visible (sin verbose).**
-Línea `[HEADS]` por proceso al arrancar, con el estado efectivo de cada cabeza, y repetida en el resumen
-periódico. Se corrige el «Ransomware Detection: DISABLED» que hoy no dice la verdad.
+## Pendiente antes de la PR
 
-**A4. Ransomware (asignado a esta rama en DAY300).**
-Los intervalos fijos (30 s) pasan al JSON del bloque de la cabeza, con la constante como respaldo y
-`[CONFIG-DEFAULT]`. Se arregla DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001.
+- **EMECAS+++ `PROFILE=production` desde cero.** Incluye los cinco E2E del laboratorio.
+- **Medida de herramienta** (no bloquea la PR): CPU de sniffer y ml-detector con todo apagado frente a solo
+  ddos_v2, coste de `populate` por evento y tamaño del protobuf. Alimenta la decisión de la recogida selectiva
+  de rasgos.
 
-**A5. Pruebas: la PR se explica con tests.**
-- Unitarias: lectura de flags (falta, tipo erróneo → defecto + aviso) y agregador nulo.
-- E2E-1, todo apagado: el sniffer captura, el bronce crece, el ml-detector hace 0 inferencias y el firewall 0 DROP.
-- E2E-2, solo ddos_v2: flood ntp 60 pps → INICIO y FIN de la sombra como en DAY294, 0 del inocente .51.
-- Medida de herramienta: CPU de sniffer y ml-detector con todo apagado / solo ddos_v2 / todo encendido (línea base).
+## Deudas que salen de esta rama (en el BACKLOG, sección "Cierre DAY305")
 
-**A6. EMECAS+++ production desde cero → PR.**
-
-## Deudas a registrar en el BACKLOG (fuera de esta rama)
-
-- DEBT-ETCD-REMOTE-ADMIN-001 (diseño): administración remota de una instalación a través de etcd-server. Primer
-  caso de uso: encender/apagar cabezas. Hoy etcd-server es propio (httplib: /register, /unregister, /components,
-  /seed, /validate, /health, /info, /secrets/keys; config bajo /config/<componente>), sin *watch*, y los
-  componentes no vuelven a leer su config tras registrarse. Abierto: canal de aviso (consulta larga desde el
-  componente, sin puertos de escucha), firma y autorización del admin, registro, interfaz (junto a la del grafo).
-
-- DEBT-DDOS-V1-RETIRE-001: retirar el DDoS viejo (detector, header, flag, rasgos viejos del sniffer y bloque
-  `level2.ddos` del JSON, que aún declara 10 rasgos con geo).
-- DEBT-FW-MITIGACION-ATADA-A-SOMBRA-001: la mitigación real solo corre con `ddos_shadow.enabled`; apagar la sombra
-  apaga la mitigación.
-- DEBT-REPO-RESIDUOS-001 (ampliar): `etcd-server/src/*.backup*` (4), `sniffer/src/userspace/ml_defender_features.cpp.bak.day79`,
-  `sniffer/include/payload_analyzer.hpp.v1.0`.
+DEBT-ETCD-REMOTE-ADMIN-001, DEBT-DDOS-V1-RETIRE-001 (rama siguiente), DEBT-FW-MITIGACION-ATADA-A-SOMBRA-001,
+DEBT-SNIFFER-RANSOMWARE-PARAMS-001 y DEBT-SNIFFER-STOP-PROCESSING-QUEUE-001. Se amplía DEBT-REPO-RESIDUOS-001.
