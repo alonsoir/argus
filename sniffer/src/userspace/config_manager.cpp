@@ -143,7 +143,6 @@ std::unique_ptr<SnifferConfig> ConfigManager::load_from_file(const std::string& 
     config->security = parse_security(root.get("security", Json::Value{}));
     config->backpressure = parse_backpressure(root.get("backpressure", Json::Value{}));
 
-    config->ml_defender = parse_ml_defender(root.get("ml_defender", Json::Value{}));
     // Apply profile overrides
     config->apply_profile_overrides();
 
@@ -629,68 +628,6 @@ BackpressureConfig ConfigManager::parse_backpressure(const Json::Value& backpres
     backpressure.circuit_breaker.recovery_timeout = circuit_breaker.get("recovery_timeout", 30).asInt();
 
     return backpressure;
-}
-
-// ============================================================================
-// ML Defender Configuration Parser (Phase 1, Day 5 - No hardcoding)
-// ============================================================================
-
-MLDefenderConfig ConfigManager::parse_ml_defender(const Json::Value& ml_defender_json) {
-    MLDefenderConfig config;
-
-    // Parse thresholds with fallback defaults
-    if (ml_defender_json.isMember("thresholds")) {
-        const auto& thresholds = ml_defender_json["thresholds"];
-        config.thresholds.ddos = thresholds.get("ddos", 0.85).asFloat();
-        config.thresholds.ransomware = thresholds.get("ransomware", 0.90).asFloat();
-        config.thresholds.traffic = thresholds.get("traffic", 0.80).asFloat();
-        config.thresholds.internal = thresholds.get("internal", 0.85).asFloat();
-    } else {
-        // Fallback to conservative defaults if JSON missing
-        config.thresholds.ddos = 0.85f;
-        config.thresholds.ransomware = 0.90f;
-        config.thresholds.traffic = 0.80f;
-        config.thresholds.internal = 0.85f;
-    }
-
-    // Parse validation rules
-    if (ml_defender_json.isMember("validation")) {
-        const auto& validation = ml_defender_json["validation"];
-        config.validation.min_threshold = validation.get("min_threshold", 0.5).asFloat();
-        config.validation.max_threshold = validation.get("max_threshold", 0.99).asFloat();
-        config.validation.fallback_threshold = validation.get("fallback_threshold", 0.75).asFloat();
-    } else {
-        config.validation.min_threshold = 0.5f;
-        config.validation.max_threshold = 0.99f;
-        config.validation.fallback_threshold = 0.75f;
-    }
-
-    // Validate thresholds are within acceptable range [0.5, 0.99]
-    auto validate_threshold = [&](float threshold, const std::string& name) -> float {
-        if (threshold < config.validation.min_threshold ||
-            threshold > config.validation.max_threshold) {
-            std::cerr << "[WARNING] ML Defender threshold '" << name
-                      << "' (" << threshold << ") out of range ["
-                      << config.validation.min_threshold << ", "
-                      << config.validation.max_threshold << "]. "
-                      << "Using fallback: " << config.validation.fallback_threshold << std::endl;
-            return config.validation.fallback_threshold;
-        }
-        return threshold;
-    };
-
-    config.thresholds.ddos = validate_threshold(config.thresholds.ddos, "ddos");
-    config.thresholds.ransomware = validate_threshold(config.thresholds.ransomware, "ransomware");
-    config.thresholds.traffic = validate_threshold(config.thresholds.traffic, "traffic");
-    config.thresholds.internal = validate_threshold(config.thresholds.internal, "internal");
-
-    std::cout << "[Config] ML Defender thresholds loaded: "
-              << "DDoS=" << config.thresholds.ddos << ", "
-              << "Ransomware=" << config.thresholds.ransomware << ", "
-              << "Traffic=" << config.thresholds.traffic << ", "
-              << "Internal=" << config.thresholds.internal << std::endl;
-
-    return config;
 }
 
 AutoTunerConfig ConfigManager::parse_auto_tuner(const Json::Value& auto_tuner_json) {

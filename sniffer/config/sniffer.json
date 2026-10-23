@@ -515,23 +515,6 @@
       "recovery_timeout": 30
     }
   },
-  "ml_defender": {
-    "_comment": "ML Defender Embedded C++20 Detectors - Day 11 Conservative Thresholds",
-    "_source": "Single source of truth for ML Tricapa detection thresholds",
-    "_calibration": "Conservative values for PCAP replay validation",
-    "_day11_goal": "Validate models with real-world traffic (CTU-13, tcpreplay samples)",
-    "thresholds": {
-      "ddos": 0.85,
-      "ransomware": 0.9,
-      "traffic": 0.8,
-      "internal": 0.85
-    },
-    "validation": {
-      "min_threshold": 0.5,
-      "max_threshold": 0.99,
-      "fallback_threshold": 0.75
-    }
-  },
   "fast_detector": {
     "_comment": "Fast Path Heuristic Detection (Sniffer-side) - Day 12 Externalized Config",
     "_philosophy": "Via Appia Quality: No hardcoded thresholds, JSON is the law",

@@ -316,14 +316,6 @@ while [ $(date +%s) -lt ${END_TIME} ]; do
 
         echo "⏱️  [$(date +%H:%M:%S)] Progress: ${HOURS}h ${MINUTES}m elapsed | ${REMAINING_HOURS}h ${REMAINING_MINUTES}m remaining"
 
-        # Show last detection stats
-        if [ -f "${LOGS_DIR}/sniffer.log" ]; then
-            LAST_STATS=$(grep "ML Defender Embedded Detectors:" "${LOGS_DIR}/sniffer.log" -A 5 | tail -6 || echo "")
-            if [ -n "${LAST_STATS}" ]; then
-                echo "   Last ML stats:"
-                echo "${LAST_STATS}" | sed 's/^/     /'
-            fi
-        fi
 
         LAST_CHECK=${CURRENT}
     fi

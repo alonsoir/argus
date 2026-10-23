@@ -12,11 +12,6 @@
 #include "ddos_victim_board.hpp"  // [DDOS-VWIN-D279:RC-INC]
 #include "timebase.hpp"  // [TIMEBASE-D295]
 #include "payload_analyzer.hpp"
-// ML Defender embedded detectors
-#include "ml_defender/ddos_detector.hpp"
-#include "ml_defender/ransomware_detector.hpp"
-#include "ml_defender/traffic_detector.hpp"
-#include "ml_defender/internal_detector.hpp"
 // ADR-013 PHASE 2 — DAY 98: CryptoTransport via SeedClient (sustituye CryptoManager)
 // DEPRECATED DAY 98 — #include <crypto_transport/crypto_manager.hpp>
 #include <seed_client/seed_client.hpp>
@@ -60,12 +55,6 @@ struct RingConsumerStats {
     std::atomic<uint64_t> ransomware_feature_extractions{0}; // Layer 2 extractions
     std::atomic<uint64_t> ransomware_confirmed_threats{0};  // High-confidence detections
     std::atomic<uint64_t> ransomware_processing_time_us{0}; // Time spent on ransomware
-
-    std::atomic<uint64_t> ddos_attacks_detected{0};
-    std::atomic<uint64_t> ransomware_attacks_detected{0};
-    std::atomic<uint64_t> suspicious_traffic_detected{0};
-    std::atomic<uint64_t> internal_anomalies_detected{0};
-    std::atomic<uint64_t> ml_detection_time_us{0};
 };
 
 // Snapshot for reading stats (non-atomic copy)
@@ -85,12 +74,6 @@ struct RingConsumerStatsSnapshot {
     uint64_t ransomware_feature_extractions;
     uint64_t ransomware_confirmed_threats;
     uint64_t ransomware_processing_time_us;
-    // embebbed models
-    uint64_t ddos_attacks_detected;
-    uint64_t ransomware_attacks_detected;
-    uint64_t suspicious_traffic_detected;
-    uint64_t internal_anomalies_detected;
-    uint64_t ml_detection_time_us;
 };
 
 // [DDOS-SNAP-D290] Lo que viaja del hilo del anillo al hilo de rasgos: el paquete y la foto de
@@ -247,12 +230,6 @@ private:
     uint64_t tb_start_mono_ns_{0};
     std::string tb_boot_id_;
 
-    // Layer 3 - ML Defender Embedded Detectors (thread-local, zero-lock)
-    thread_local static ml_defender::DDoSDetector ddos_detector_;
-    thread_local static ml_defender::RansomwareDetector ransomware_detector_;
-    thread_local static ml_defender::TrafficDetector traffic_detector_;
-    thread_local static ml_defender::InternalDetector internal_detector_;
-
     // Queues
     std::queue<QueuedEvent> processing_queue_;  // [DDOS-SNAP-D290]
     mutable std::atomic<uint64_t> ddos_snap_invalid_{0};  // [DDOS-SNAP-D290] fotos sin flujo
@@ -306,15 +283,6 @@ private:
     void send_ransomware_features(const protobuf::RansomwareFeatures& features);
     bool initialize_ransomware_detection();
     void shutdown_ransomware_detection();
-
-    // ML Defender feature extraction
-    ml_defender::DDoSDetector::Features extract_ddos_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-    ml_defender::RansomwareDetector::Features extract_ransomware_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-    ml_defender::TrafficDetector::Features extract_traffic_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-    ml_defender::InternalDetector::Features extract_internal_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-
-    // ML Defender inference
-    void run_ml_detection(protobuf::NetworkSecurityEvent& proto_event);
 };
 
 } // namespace sniffer

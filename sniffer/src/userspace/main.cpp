@@ -719,13 +719,6 @@ if (encryption_seed.empty()) {
     return 1;
 }
 
-// DAY 80 ✅ ml_defender thresholds — JSON is the LAW (Phase1-Day4-CRITICAL CERRADO)
-        // DAY 80 ✅ mapeo explícito (MLDefenderConfig.thresholds vs StrictConfig.ml_defender)
-        sniffer_config.ml_defender.thresholds.ddos       = g_config.ml_defender.ddos;
-        sniffer_config.ml_defender.thresholds.ransomware = g_config.ml_defender.ransomware;
-        sniffer_config.ml_defender.thresholds.traffic    = g_config.ml_defender.traffic;
-        sniffer_config.ml_defender.thresholds.internal   = g_config.ml_defender.internal;
-
         ring_consumer_ptr = new sniffer::RingBufferConsumer(sniffer_config, fast_detector_config, encryption_seed);
         auto& ring_consumer = *ring_consumer_ptr;
         ring_consumer.set_victim_board(g_ddos_victim_board);  // [DDOS-VWIN-D279:MAIN-RC]

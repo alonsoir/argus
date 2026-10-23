@@ -207,19 +207,6 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
                     config.fast_detector.performance.track_activation_rate = perf.get("track_activation_rate", true).asBool();
                 }
 
-    // DAY 80 ✅ ml_defender thresholds desde JSON (Phase1-Day4-CRITICAL CERRADO)
-    if (root.isMember("ml_defender") && root["ml_defender"].isMember("thresholds")) {
-        const auto& t = root["ml_defender"]["thresholds"];
-        config.ml_defender.ddos       = t.get("ddos",       0.85).asFloat();
-        config.ml_defender.ransomware = t.get("ransomware", 0.90).asFloat();
-        config.ml_defender.traffic    = t.get("traffic",    0.80).asFloat();
-        config.ml_defender.internal   = t.get("internal",   0.85).asFloat();
-    }
-    std::cout << "[Config] ML Defender thresholds (StrictConfig): "
-              << "DDoS=" << config.ml_defender.ddos
-              << " Ransomware=" << config.ml_defender.ransomware
-              << " Traffic=" << config.ml_defender.traffic
-              << " Internal=" << config.ml_defender.internal << std::endl;
 
                 if (verbose) {
                     std::cout << "✅ Fast Detector configuration loaded:" << std::endl;

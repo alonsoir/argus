@@ -254,13 +254,9 @@ set(PROTO_HEADERS ${CMAKE_BINARY_DIR}/proto/network_security.pb.h)
 # ============================================================================
 # ML DEFENDER SOURCES
 # ============================================================================
-# ML Defender Phase 1 sources
+# ML Defender Phase 1 sources: solo extraccion de rasgos. [SNIFFER-NO-INFER-D305] el sniffer ya no compila los detectores
 set(ML_DEFENDER_SOURCES
         src/userspace/ml_defender_features.cpp
-        ../ml-detector/src/ddos_detector.cpp
-        ../ml-detector/src/ransomware_detector.cpp
-        ../ml-detector/src/traffic_detector.cpp
-        ../ml-detector/src/internal_detector.cpp
 )
 
 # ============================================================================

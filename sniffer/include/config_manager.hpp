@@ -363,22 +363,6 @@ struct AutoTunerConfig {
     std::string feature_placement_strategy;
 };
 
-// ML Defender configuration (Phase 1, Day 5)
-struct MLDefenderConfig {
-    struct Thresholds {
-        float ddos;
-        float ransomware;
-        float traffic;
-        float internal;
-    } thresholds;
-
-    struct Validation {
-        float min_threshold;
-        float max_threshold;
-        float fallback_threshold;
-    } validation;
-};
-
 // Main configuration structure
 struct SnifferConfig {
     // Component info
@@ -412,7 +396,6 @@ struct SnifferConfig {
     ProtobufConfig protobuf;
     SecurityConfig security;
     BackpressureConfig backpressure;
-    MLDefenderConfig ml_defender;
     ::argus::timebase::TimebaseParams timebase{};  // [TIMEBASE-D295]
 
     // Validation methods
@@ -463,7 +446,6 @@ private:
     static SecurityConfig parse_security(const Json::Value& security_json);
     static BackpressureConfig parse_backpressure(const Json::Value& backpressure_json);
     static AutoTunerConfig parse_auto_tuner(const Json::Value& auto_tuner_json);
-    static MLDefenderConfig parse_ml_defender(const Json::Value& ml_defender_json);
     // Validation helpers
     static std::vector<int> parse_int_array(const Json::Value& array_json);
     static std::vector<std::string> parse_string_array(const Json::Value& array_json);
