@@ -405,6 +405,22 @@ DetectorConfig ConfigLoader::load() {
     {
         auto& mon = json_["monitoring"];
         config.monitoring.stats_interval_seconds = get_required<int>(mon, "stats_interval_seconds", "monitoring");
+        {   // [HEADS-INTERVALO-D305] el JSON manda; ausente, no entero o fuera de rango -> defecto validado + [CONFIG-DEFAULT]
+            constexpr int kDef = 60, kMin = 10, kMax = 3600;
+            config.monitoring.heads_log_interval_seconds = kDef;
+            if (!mon.contains("heads_log_interval_seconds")) {
+                std::cerr << "[CONFIG-DEFAULT] monitoring.heads_log_interval_seconds ausente (entero en [" << kMin
+                          << ", " << kMax << "] segundos): se usa " << kDef << "\n";
+            } else if (!mon["heads_log_interval_seconds"].is_number_integer() ||
+                       mon["heads_log_interval_seconds"].get<long long>() < kMin ||
+                       mon["heads_log_interval_seconds"].get<long long>() > kMax) {
+                std::cerr << "[CONFIG-DEFAULT] monitoring.heads_log_interval_seconds invalido ("
+                          << mon["heads_log_interval_seconds"].dump() << "; entero en [" << kMin << ", " << kMax
+                          << "] segundos): se usa " << kDef << "\n";
+            } else {
+                config.monitoring.heads_log_interval_seconds = mon["heads_log_interval_seconds"].get<int>();
+            }
+        }
         config.monitoring.performance_tracking = get_required<bool>(mon, "performance_tracking", "monitoring");
         
         auto& ml_met = mon["ml_metrics"];

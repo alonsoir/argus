@@ -344,6 +344,8 @@
     }
   },
   "monitoring": {
+    "_doc_heads_log_interval_seconds": "[HEADS-INTERVALO-D305] heads_log_interval_seconds: cada cuantos segundos escribe el ml-detector la linea [HEADS] con el estado EFECTIVO de cada cabeza (siempre visible, sin verbose). Entero en [10, 3600]; defecto 60. Si falta, no es entero o esta fuera de rango se usa 60 con [CONFIG-DEFAULT] y el ml-detector arranca igual. El maximo de 1 h garantiza que el estado siga viendose periodicamente.",
+    "heads_log_interval_seconds": 60,
     "stats_interval_seconds": 60,
     "performance_tracking": true,
     "ml_metrics": {

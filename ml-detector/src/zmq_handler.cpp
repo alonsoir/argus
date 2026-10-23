@@ -68,6 +68,8 @@ ZMQHandler::ZMQHandler(
         logger_->info("   Level 1: General Attack (ONNX)");
     }
     log_heads_state("arranque");  // [HEADS-SWITCH-D305]
+    logger_->info("[HEADS] resumen periodico cada {} s (monitoring.heads_log_interval_seconds)",  // [HEADS-INTERVALO-D305]
+                  config_.monitoring.heads_log_interval_seconds);
     logger_->info("[DDOS-V2] cabeza factorizada {}: modelo {} ({}), {} árboles, {} rasgos de flujo, k_ratio={}",  // [DDOS-V2-D293]
                   config_.ml.ddos_v2.enabled ? "ACTIVA" : "DESACTIVADA", ml_defender::ddos_v2::kModelName,
                   ml_defender::ddos_v2::kModelVersion, ml_defender::ddos_v2::kNumTrees,
@@ -265,6 +267,9 @@ void ZMQHandler::run() {
     logger_->info("📥 ZMQ Handler loop started");
 
     auto stats_interval = std::chrono::seconds(config_.monitoring.stats_interval_seconds);
+    // [HEADS-INTERVALO-D305] resumen [HEADS] con temporizador propio (monitoring.heads_log_interval_seconds)
+    const auto heads_interval = std::chrono::seconds(config_.monitoring.heads_log_interval_seconds);
+    auto heads_last = std::chrono::steady_clock::now();
     // [SUMMARY-D285] resumenes siempre visibles cada 10 s (intervalo fijo, independiente de stats_interval)
     constexpr auto kSummaryInterval = std::chrono::seconds(10);
     auto summary_last = std::chrono::steady_clock::now();
@@ -337,8 +342,12 @@ void ZMQHandler::run() {
                              stats.events_received, stats.events_processed, stats.events_sent,
                              stats.attacks_detected, stats.deserialization_errors,
                              stats.feature_extraction_errors, stats.inference_errors);
-                log_heads_state("estadisticas");  // [HEADS-SWITCH-D305]
                 last_stats_report_ = now;
+            }
+
+            if (now - heads_last >= heads_interval) {  // [HEADS-INTERVALO-D305]
+                log_heads_state("periodico");
+                heads_last = now;
             }
 
             // [SUMMARY-D285] solo se imprime si hay algo que contar
