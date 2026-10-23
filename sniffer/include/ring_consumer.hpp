@@ -121,6 +121,11 @@ public:
     // Configuration
     void set_event_callback(EventCallback callback);
     void set_stats_interval(int seconds) { stats_interval_seconds_ = seconds; }
+    // [HEADS-SNIFFER-D305] intervalo de la linea [HEADS] y estado del agregador del kernel (solo para informar)
+    void set_heads_log(int interval_s, bool kernel_agg) {
+        heads_log_interval_seconds_ = interval_s;
+        kernel_agg_enabled_ = kernel_agg;
+    }
 #ifdef PLUGIN_LOADER_ENABLED
 #endif
 #ifdef PLUGIN_LOADER_ENABLED
@@ -138,8 +143,7 @@ private:
     static constexpr double EMA_SMOOTHING_FACTOR = 0.9;  // Exponential Moving Average weight
     static constexpr double EMA_NEW_SAMPLE_WEIGHT = 0.1;  // Weight for new samples
 
-    // CONSTANTS - Ransomware detection
-    static constexpr int RANSOMWARE_EXTRACTION_INTERVAL_SEC = 30;  // Deep analysis interval
+    // [HEADS-SNIFFER-D305] el intervalo de ventanas de ransomware vive en el JSON (fast_detector.ransomware.window_interval_seconds)
 
     // Core functionality
     bool initialize_zmq();
@@ -201,6 +205,8 @@ private:
     ml_defender::PluginLoader* plugin_loader_ = nullptr;  // PHASE 2c — set via set_plugin_loader()
 #endif  // Day 12 - Externalized thresholds
     int stats_interval_seconds_{30};  // Default 30 seconds todo esto hay que cambiarlo, quitar números mágicos
+    int heads_log_interval_seconds_{60};  // [HEADS-SNIFFER-D305]
+    bool kernel_agg_enabled_{false};  // [HEADS-SNIFFER-D305]
 
     // Ring buffer
     ring_buffer* ring_buf_;
@@ -219,6 +225,10 @@ private:
     bool espera_o_parada(std::chrono::seconds s) {
         std::unique_lock<std::mutex> lk(parada_mtx_);
         return parada_cv_.wait_for(lk, s, [this] { return should_stop_.load(); });
+    }
+    bool espera_o_parada_ms(std::chrono::milliseconds ms) {  // [HEADS-SNIFFER-D305] varios plazos en un mismo hilo
+        std::unique_lock<std::mutex> lk(parada_mtx_);
+        return parada_cv_.wait_for(lk, ms, [this] { return should_stop_.load(); });
     }
     std::atomic<bool> initialized_{false};
     // [TIMEBASE-D295] contrato temporal v1: el hilo del reloj escribe tb_state_; el resto lee atomicos.
@@ -283,6 +293,9 @@ private:
     void send_ransomware_features(const protobuf::RansomwareFeatures& features);
     bool initialize_ransomware_detection();
     void shutdown_ransomware_detection();
+    void log_heads_state(const char* momento) const;  // [HEADS-SNIFFER-D305]
+    void emitir_ventana_ransomware_pendiente();  // [HEADS-SNIFFER-D305]
+    void vaciar_cola_envio();  // [HEADS-SNIFFER-D305]
 };
 
 } // namespace sniffer

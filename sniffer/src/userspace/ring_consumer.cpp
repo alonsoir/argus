@@ -194,10 +194,9 @@ bool RingBufferConsumer::initialize(int ring_fd, std::shared_ptr<ThreadManager> 
     }
 
     // Initialize ransomware detection
-    if (!initialize_ransomware_detection()) {
-        std::cerr << "[WARNING] Ransomware detection disabled" << std::endl;
-    }else{
-        std::cout << "[INFO] Ransomware detection initialized successfully" << std::endl;
+    if (!initialize_ransomware_detection()) {  // [HEADS-SNIFFER-D305]
+        std::cerr << "[WARNING] procesador ransomware NO inicializado: 8 rasgos de traffic/internal iran a centinela y "
+                     "no habra ventanas de ransomware aunque el fast-path este encendido" << std::endl;
     }
 
     // Initialize batching
@@ -275,11 +274,14 @@ bool RingBufferConsumer::start() {
         consumer_threads_.emplace_back(&RingBufferConsumer::zmq_sender_loop, this);
     }
 
-    // Start ransomware processor thread
+    // [HEADS-SNIFFER-D305] el procesador arranca siempre (recogida de rasgos); su hilo de emision de ventanas, solo con fast-path
     if (ransomware_enabled_) {
         ransomware_processor_->start();
-        consumer_threads_.emplace_back(&RingBufferConsumer::ransomware_processor_loop, this);
-        std::cout << "[INFO] + 1 ransomware detection thread (30s aggregation)" << std::endl;
+        if (fast_detector_config_.enabled) {
+            consumer_threads_.emplace_back(&RingBufferConsumer::ransomware_processor_loop, this);
+            std::cout << "[INFO] + 1 hilo de emision de ventanas de ransomware (cada "
+                      << fast_detector_config_.ransomware.window_interval_seconds << " s)" << std::endl;
+        }
     }
 
     // [TIMEBASE-D295] hilo del reloj (ancla, CLOCK_STEP, CLOCK_SLEW)
@@ -298,6 +300,7 @@ bool RingBufferConsumer::start() {
               << " ZMQ sender threads" << std::endl;
     std::cout << "[INFO] + 1 statistics display thread" << std::endl;
     std::cout << "[INFO] Multi-threaded protobuf pipeline active" << std::endl;
+    log_heads_state("arranque");  // [HEADS-SNIFFER-D305]
 
     return true;
 }
@@ -314,8 +317,8 @@ bool RingBufferConsumer::start() {
 
     // ORDEN CORRECTO DE PARADA:
 
-    // 1️⃣ Parar ransomware detection PRIMERO (más costoso, tiene timer threads)
-    shutdown_ransomware_detection();
+    // 1️⃣ [HEADS-SNIFFER-D305] el procesador de ransomware ya NO se libera aqui: lo usan los hilos que aun no se han unido
+    // (DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001). Se libera tras shutdown_consumers().
 
     // 2️⃣ Notificar a todos los threads que deben parar
     processing_queue_cv_.notify_all();
@@ -326,6 +329,11 @@ bool RingBufferConsumer::start() {
 
     // 4️⃣ Parar consumer threads (ya no recibirán eventos)
     shutdown_consumers();
+
+    // 4b [HEADS-SNIFFER-D305] con todos los hilos unidos: ventana pendiente, cola de envio y despues liberar el procesador
+    emitir_ventana_ransomware_pendiente();
+    vaciar_cola_envio();
+    shutdown_ransomware_detection();
 
     // 5️⃣ Parar ZMQ AL FINAL (flush final de colas)
     shutdown_zmq();
@@ -556,10 +564,23 @@ void RingBufferConsumer::stats_display_loop() {
     std::cout << "[INFO] Statistics display thread started (interval: "
               << stats_interval_seconds_ << "s)" << std::endl;
 
+    // [HEADS-SNIFFER-D305] dos plazos en el mismo hilo: ESTADISTICAS (stats_interval_seconds) y [HEADS] (heads_log_interval_seconds)
+    auto prox_stats = std::chrono::steady_clock::now() + std::chrono::seconds(stats_interval_seconds_);
+    auto prox_heads = std::chrono::steady_clock::now() + std::chrono::seconds(heads_log_interval_seconds_);
     while (!should_stop_) {
-        if (espera_o_parada(std::chrono::seconds(stats_interval_seconds_))) break;  // [PARADA-INMEDIATA-D300]
+        const auto ahora0 = std::chrono::steady_clock::now();
+        const auto prox = (prox_stats < prox_heads) ? prox_stats : prox_heads;
+        if (prox > ahora0 &&
+            espera_o_parada_ms(std::chrono::ceil<std::chrono::milliseconds>(prox - ahora0))) break;  // [PARADA-INMEDIATA-D300]
 
         if (should_stop_) break;
+        const auto ahora1 = std::chrono::steady_clock::now();
+        if (ahora1 >= prox_heads) {
+            log_heads_state("periodico");
+            prox_heads = ahora1 + std::chrono::seconds(heads_log_interval_seconds_);
+        }
+        if (ahora1 < prox_stats) continue;
+        prox_stats = ahora1 + std::chrono::seconds(stats_interval_seconds_);
 
         // Calculate runtime and rates
         auto now = std::chrono::steady_clock::now();
@@ -605,10 +626,12 @@ int RingBufferConsumer::handle_event(void* ctx, void* data, size_t data_sz) {
 void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unused]] int consumer_id) {
     auto start_time = std::chrono::steady_clock::now();
 
-    // Fast Detection (thread-local, O(1))
-    fast_detector_.ingest(event);
-    if (fast_detector_.is_suspicious()) {
-        send_fast_alert(event);
+    // Fast Detection (thread-local, O(1)). [HEADS-SNIFFER-D305] solo con el fast-path encendido (fast_detector.enabled)
+    if (fast_detector_config_.enabled) {
+        fast_detector_.ingest(event);
+        if (fast_detector_.is_suspicious()) {
+            send_fast_alert(event);
+        }
     }
 
     // ===== ML DEFENDER: Flow Tracking (Phase 1, Day 3) =====
@@ -1290,6 +1313,8 @@ void RingBufferConsumer::update_processing_time(std::chrono::microseconds durati
 bool RingBufferConsumer::initialize_ransomware_detection() {
     try {
         ransomware_processor_ = std::make_unique<RansomwareFeatureProcessor>();
+        ransomware_processor_->set_extraction_interval_seconds(  // [HEADS-SNIFFER-D305]
+            static_cast<uint32_t>(fast_detector_config_.ransomware.window_interval_seconds));
 
         if (!ransomware_processor_->initialize()) {
             std::cerr << "[ERROR] Failed to initialize RansomwareFeatureProcessor" << std::endl;
@@ -1297,9 +1322,10 @@ bool RingBufferConsumer::initialize_ransomware_detection() {
         }
 
         ransomware_enabled_ = true;
-        std::cout << "[INFO] ✅ Ransomware detection initialized (2-layer system)" << std::endl;
-        std::cout << "       Layer 1: FastDetector (10s window, heuristics)" << std::endl;
-        std::cout << "       Layer 2: FeatureProcessor (30s aggregation)" << std::endl;
+        std::cout << "[INFO] procesador ransomware INICIALIZADO: agregador de ventana para la recogida de rasgos "  // [HEADS-SNIFFER-D305]
+                     "(siempre); emision de ventanas de ransomware: "
+                  << (fast_detector_config_.enabled ? "SI" : "NO (fast-path apagado)") << ", cada "
+                  << fast_detector_config_.ransomware.window_interval_seconds << " s" << std::endl;
         return true;
 
     } catch (const std::exception& e) {
@@ -1311,10 +1337,10 @@ bool RingBufferConsumer::initialize_ransomware_detection() {
 
 void RingBufferConsumer::ransomware_processor_loop() {
     std::cout << "[INFO] Ransomware processor thread started ("
-              << RANSOMWARE_EXTRACTION_INTERVAL_SEC << "s extraction)" << std::endl;
+              << fast_detector_config_.ransomware.window_interval_seconds << "s extraction)" << std::endl;  // [HEADS-SNIFFER-D305]
 
     while (!should_stop_) {
-        if (espera_o_parada(std::chrono::seconds(RANSOMWARE_EXTRACTION_INTERVAL_SEC))) break;  // [PARADA-INMEDIATA-D300]
+        if (espera_o_parada(std::chrono::seconds(fast_detector_config_.ransomware.window_interval_seconds))) break;  // [PARADA-INMEDIATA-D300] [HEADS-SNIFFER-D305]
 
         if (should_stop_) break;
 
@@ -1642,6 +1668,48 @@ void RingBufferConsumer::shutdown_ransomware_detection() {
         ransomware_processor_->stop();
         ransomware_processor_.reset();
     }
-    ransomware_enabled_ = false;
+    // [HEADS-SNIFFER-D305] ransomware_enabled_ NO se toca: dice si el procesador estuvo inicializado (estadisticas finales veraces)
+}
+
+// [HEADS-SNIFFER-D305] estado EFECTIVO: en el sniffer la unica cabeza es el fast-path; lo demas es recogida de rasgos.
+void RingBufferConsumer::log_heads_state(const char* momento) const {
+    std::cout << "[HEADS] (" << momento << ") fast_path=" << (fast_detector_config_.enabled ? "ON" : "OFF")
+              << " ventanas_ransomware=" << ((fast_detector_config_.enabled && ransomware_enabled_) ? "ON" : "OFF")
+              << " (cada " << fast_detector_config_.ransomware.window_interval_seconds << " s)"
+              << " procesador_ransomware=" << (ransomware_enabled_ ? "INICIALIZADO" : "NO_INICIALIZADO")
+              << " recogida_rasgos=SIEMPRE agregador_kernel=" << (kernel_agg_enabled_ ? "ON" : "OFF")
+              << " | la inferencia de las cabezas vive en el ml-detector" << std::endl;
+}
+
+// [HEADS-SNIFFER-D305] parada: la ultima ventana calculada y no enviada se emite antes de liberar el procesador.
+void RingBufferConsumer::emitir_ventana_ransomware_pendiente() {
+    if (!fast_detector_config_.enabled || !ransomware_enabled_ || !ransomware_processor_) {
+        return;
+    }
+    protobuf::RansomwareFeatures f;
+    if (ransomware_processor_->get_features_if_ready(f)) {
+        send_ransomware_features(f);
+        std::cout << "[PARADA] ventana de ransomware pendiente emitida" << std::endl;
+    } else {
+        std::cout << "[PARADA] sin ventana de ransomware pendiente" << std::endl;
+    }
+}
+
+// [HEADS-SNIFFER-D305] parada: los hilos de envio ya estan unidos; lo que quede en la cola se envia aqui, antes de cerrar ZMQ.
+void RingBufferConsumer::vaciar_cola_envio() {
+    std::queue<std::vector<uint8_t>> pendientes;
+    {
+        std::lock_guard<std::mutex> lk(send_queue_mutex_);
+        pendientes.swap(send_queue_);
+    }
+    const size_t n = pendientes.size();
+    size_t ok = 0;
+    while (!pendientes.empty()) {
+        if (send_protobuf_message(pendientes.front())) {
+            ++ok;
+        }
+        pendientes.pop();
+    }
+    std::cout << "[PARADA] cola de envio vaciada: " << ok << " de " << n << " mensajes enviados" << std::endl;
 }
 } // namespace sniffer

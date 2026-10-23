@@ -4,6 +4,54 @@
 #include "config_manager.hpp"
 #include <fstream>
 #include <iostream>
+#include <cctype>  // [HEADS-SNIFFER-D305]
+#include <string>  // [HEADS-SNIFFER-D305]
+
+// [HEADS-SNIFFER-D305] reglas de Alonso: el JSON manda y ningun campo se lee en silencio.
+namespace {
+// 'enabled': booleano o texto "true"/"false" sin distinguir mayusculas; ausente o invalido -> false + aviso.
+bool leer_enabled(const Json::Value& blk, const std::string& ctx) {
+    if (blk.isObject() && blk.isMember("enabled")) {
+        const Json::Value& v = blk["enabled"];
+        if (v.isBool()) {
+            return v.asBool();
+        }
+        if (v.isString()) {
+            std::string s = v.asString();
+            for (auto& c : s) {
+                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            }
+            if (s == "true") {
+                return true;
+            }
+            if (s == "false") {
+                return false;
+            }
+        }
+        std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled invalido (formato true|false, tambien como texto sin "
+                     "distinguir mayusculas): se usa false (APAGADO)" << std::endl;
+        return false;
+    }
+    std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled ausente (formato true|false): se usa false (APAGADO)"
+              << std::endl;
+    return false;
+}
+// entero en [mn, mx]; ausente, no entero o fuera de rango -> defecto + aviso con campo, formato y limites.
+int leer_entero(const Json::Value& blk, const char* clave, const std::string& ctx, int def, int mn, int mx) {
+    if (!blk.isObject() || !blk.isMember(clave)) {
+        std::cerr << "[CONFIG-DEFAULT] " << ctx << "." << clave << " ausente (entero en [" << mn << ", " << mx
+                  << "]): se usa " << def << std::endl;
+        return def;
+    }
+    const Json::Value& v = blk[clave];
+    if (!v.isInt() || v.asInt() < mn || v.asInt() > mx) {
+        std::cerr << "[CONFIG-DEFAULT] " << ctx << "." << clave << " invalido (entero en [" << mn << ", " << mx
+                  << "]): se usa " << def << std::endl;
+        return def;
+    }
+    return v.asInt();
+}
+}  // namespace
 
 bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig& config, bool verbose) {
     try {
@@ -156,12 +204,17 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
         if (config_file.is_open()) {
             config_file >> root;
             config_file.close();
+            config.monitoring.heads_log_interval_seconds = leer_entero(  // [HEADS-SNIFFER-D305]
+                root.get("monitoring", Json::Value()), "heads_log_interval_seconds", "monitoring", 60, 10, 3600);
 
             if (root.isMember("fast_detector")) {
                 const auto& fd = root["fast_detector"];
 
                 // Main settings
-                config.fast_detector.enabled = fd.get("enabled", true).asBool();
+                config.fast_detector.enabled = leer_enabled(fd, "fast_detector");  // [HEADS-SNIFFER-D305]
+                config.fast_detector.ransomware.window_interval_seconds = leer_entero(
+                    fd.get("ransomware", Json::Value()), "window_interval_seconds", "fast_detector.ransomware",
+                    30, 5, 3600);
 
                 // Ransomware scores
                 if (fd.isMember("ransomware") && fd["ransomware"].isMember("scores")) {
@@ -216,12 +269,18 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
                     std::cout << "   - SMB diversity threshold: " << config.fast_detector.ransomware.activation_thresholds.smb_diversity << std::endl;
                 }
             } else {
-                // Set defaults if section missing
+                // [HEADS-SNIFFER-D305] seccion ausente: fast-path APAGADO, siempre avisado (no solo con verbose)
                 config.fast_detector.enabled = false;
-                if (verbose) {
-                    std::cout << "⚠️  Fast Detector section not found, disabled by default" << std::endl;
-                }
+                config.fast_detector.ransomware.window_interval_seconds = 30;
+                std::cerr << "[CONFIG-DEFAULT] seccion fast_detector ausente: fast-path APAGADO (enabled=false), "
+                             "ransomware.window_interval_seconds=30" << std::endl;
             }
+            std::cout << "[Config] [HEADS] efectivo: fast_detector.enabled="  // [HEADS-SNIFFER-D305]
+                      << (config.fast_detector.enabled ? "true" : "false")
+                      << " fast_detector.ransomware.window_interval_seconds="
+                      << config.fast_detector.ransomware.window_interval_seconds
+                      << " monitoring.heads_log_interval_seconds=" << config.monitoring.heads_log_interval_seconds
+                      << std::endl;
         }
 
         if (verbose) {
