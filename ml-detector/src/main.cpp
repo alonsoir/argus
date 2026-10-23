@@ -271,9 +271,9 @@ int main(int argc, char* argv[]) {
 
                 log->info("✅ Model warmup complete");
             }
-        } else {
-            log->error("❌ Level 1 model is not enabled in configuration");
-            return 1;
+        } else {  // [HEADS-SWITCH-D305] level1 apagada: el ml-detector arranca igual, sin rasgos ni inferencia level1
+            log->warn("[HEADS] level1 DESACTIVADA por configuracion (ml.level1.enabled=false): el ml-detector "
+                      "arranca sin extraccion ni inferencia level1");
         }
 
         // ═══════════════════════════════════════════════════════════════════════
@@ -456,7 +456,9 @@ int main(int argc, char* argv[]) {
         // ═══════════════════════════════════════════════════════════════════════
         log->info("🔌 Initializing ZMQ Handler...");
         log->info("   Detectors loaded:");
-        log->info("     Level 1: General Attack (ONNX)");
+        if (model) {  // [HEADS-SWITCH-D305]
+            log->info("     Level 1: General Attack (ONNX)");
+        }
         if (ddos_detector) {
             log->info("     Level 2: DDoS (C++20 - {} trees)", ddos_detector->num_trees());
         }

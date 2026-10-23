@@ -278,6 +278,7 @@ struct StrictSnifferConfig {
     // Monitoring - TODOS REQUERIDOS
     struct {
         int stats_interval_seconds;
+        int heads_log_interval_seconds = 60;  // [HEADS-SNIFFER-D305] [10, 3600] s
         std::string metrics_format;
         bool enable_prometheus;
         int prometheus_port;
@@ -324,7 +325,7 @@ struct StrictSnifferConfig {
     } backpressure;
     // Fast Detector - Day 12 Externalized Thresholds (TODOS REQUERIDOS)
     struct {
-        bool enabled;
+        bool enabled = false;  // [HEADS-SNIFFER-D305] ausente o invalido -> APAGADO
 
         struct {
             struct {
@@ -342,6 +343,7 @@ struct StrictSnifferConfig {
                 int burst_connections;
                 int unique_destinations_30s;
             } activation_thresholds;
+            int window_interval_seconds = 30;  // [HEADS-SNIFFER-D305] [5, 3600] s
         } ransomware;
 
         struct {
@@ -357,13 +359,6 @@ struct StrictSnifferConfig {
             bool track_activation_rate;
         } performance;
     } fast_detector;
-    // ML Defender thresholds — DAY 80 (Phase1-Day4-CRITICAL CERRADO)
-    struct {
-        float ddos       = 0.85f;
-        float ransomware = 0.90f;
-        float traffic    = 0.80f;
-        float internal   = 0.85f;
-    } ml_defender;
 
 };
 

@@ -4,6 +4,14 @@
 #include "config_manager.hpp"
 #include <fstream>
 #include <iostream>
+#include <cctype>  // [HEADS-SNIFFER-D305]
+#include <string>  // [HEADS-SNIFFER-D305]
+
+// [HEADS-SNIFFER-D305] [HEADS-TESTS-D305] reglas de Alonso (el JSON manda y ningun campo se lee en silencio) en
+// heads_config.hpp, probadas en tests/test_heads_config.cpp.
+#include "heads_config.hpp"  // [HEADS-TESTS-D305]
+using sniffer::heads::leer_enabled;
+using sniffer::heads::leer_entero;
 
 bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig& config, bool verbose) {
     try {
@@ -156,12 +164,17 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
         if (config_file.is_open()) {
             config_file >> root;
             config_file.close();
+            config.monitoring.heads_log_interval_seconds = leer_entero(  // [HEADS-SNIFFER-D305]
+                root.get("monitoring", Json::Value()), "heads_log_interval_seconds", "monitoring", 60, 10, 3600);
 
             if (root.isMember("fast_detector")) {
                 const auto& fd = root["fast_detector"];
 
                 // Main settings
-                config.fast_detector.enabled = fd.get("enabled", true).asBool();
+                config.fast_detector.enabled = leer_enabled(fd, "fast_detector");  // [HEADS-SNIFFER-D305]
+                config.fast_detector.ransomware.window_interval_seconds = leer_entero(
+                    fd.get("ransomware", Json::Value()), "window_interval_seconds", "fast_detector.ransomware",
+                    30, 5, 3600);
 
                 // Ransomware scores
                 if (fd.isMember("ransomware") && fd["ransomware"].isMember("scores")) {
@@ -207,19 +220,6 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
                     config.fast_detector.performance.track_activation_rate = perf.get("track_activation_rate", true).asBool();
                 }
 
-    // DAY 80 ✅ ml_defender thresholds desde JSON (Phase1-Day4-CRITICAL CERRADO)
-    if (root.isMember("ml_defender") && root["ml_defender"].isMember("thresholds")) {
-        const auto& t = root["ml_defender"]["thresholds"];
-        config.ml_defender.ddos       = t.get("ddos",       0.85).asFloat();
-        config.ml_defender.ransomware = t.get("ransomware", 0.90).asFloat();
-        config.ml_defender.traffic    = t.get("traffic",    0.80).asFloat();
-        config.ml_defender.internal   = t.get("internal",   0.85).asFloat();
-    }
-    std::cout << "[Config] ML Defender thresholds (StrictConfig): "
-              << "DDoS=" << config.ml_defender.ddos
-              << " Ransomware=" << config.ml_defender.ransomware
-              << " Traffic=" << config.ml_defender.traffic
-              << " Internal=" << config.ml_defender.internal << std::endl;
 
                 if (verbose) {
                     std::cout << "✅ Fast Detector configuration loaded:" << std::endl;
@@ -229,12 +229,18 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
                     std::cout << "   - SMB diversity threshold: " << config.fast_detector.ransomware.activation_thresholds.smb_diversity << std::endl;
                 }
             } else {
-                // Set defaults if section missing
+                // [HEADS-SNIFFER-D305] seccion ausente: fast-path APAGADO, siempre avisado (no solo con verbose)
                 config.fast_detector.enabled = false;
-                if (verbose) {
-                    std::cout << "⚠️  Fast Detector section not found, disabled by default" << std::endl;
-                }
+                config.fast_detector.ransomware.window_interval_seconds = 30;
+                std::cerr << "[CONFIG-DEFAULT] seccion fast_detector ausente: fast-path APAGADO (enabled=false), "
+                             "ransomware.window_interval_seconds=30" << std::endl;
             }
+            std::cout << "[Config] [HEADS] efectivo: fast_detector.enabled="  // [HEADS-SNIFFER-D305]
+                      << (config.fast_detector.enabled ? "true" : "false")
+                      << " fast_detector.ransomware.window_interval_seconds="
+                      << config.fast_detector.ransomware.window_interval_seconds
+                      << " monitoring.heads_log_interval_seconds=" << config.monitoring.heads_log_interval_seconds
+                      << std::endl;
         }
 
         if (verbose) {

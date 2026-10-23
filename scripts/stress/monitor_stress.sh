@@ -51,14 +51,6 @@ while true; do
     fi
     echo ""
     
-    # Últimas detecciones
-    echo "🛡️  Last ML Detections:"
-    if [ -f "${TEST_DIR}/logs/sniffer.log" ]; then
-        grep "ML Defender Embedded Detectors:" "${TEST_DIR}/logs/sniffer.log" -A 5 | tail -6 | sed 's/^/   /'
-    else
-        echo "   Waiting for data..."
-    fi
-    echo ""
     
     # Stats generales
     echo "📊 Sniffer Stats:"

@@ -35,6 +35,8 @@ namespace sniffer {
         void force_extraction_for_testing();
 
         TimeWindowAggregator* get_aggregator() { return aggregator_.get(); }
+        // [HEADS-SNIFFER-D305] intervalo de extraccion = fast_detector.ransomware.window_interval_seconds (JSON)
+        void set_extraction_interval_seconds(uint32_t s) { extraction_interval_seconds_ = s; }
 
     private:
         // Components

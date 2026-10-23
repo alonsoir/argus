@@ -153,12 +153,13 @@
       "level3_internal": 0.65
     },
     "ddos_v2": {
-      "_doc": "[DDOS-V2-D293] Cabeza DDoS v2 factorizada (docs/ml-heads/bloque1_day293.md). enabled: true|false, defecto true. k_ratio: número en [1.5, 50], defecto 3.0 = umbral de la etapa 1 sobre victim_rate_ratio (alineado con k_in de la histéresis del sniffer). [DDOS-ETAPA1-D298] La etapa 1 usa victim_state del sniffer: BAJO_PRESION pasa siempre, FRIO nunca, NORMAL con ratio >= k_ratio; un evento sin estado aplica la regla antigua y se avisa en el resumen [DDOS-V2] sin_estado. Si un campo falta o es inválido se aplica el defecto con [CONFIG-DEFAULT] y el ml-detector arranca igual. Valores de LABORATORIO: en un despliegue real se consensúan con el personal de la instalación.",
+      "_doc": "[DDOS-V2-D293] Cabeza DDoS v2 factorizada (docs/ml-heads/bloque1_day293.md). enabled: true|false (tambien como texto, sin distinguir mayusculas); si falta o tiene otro valor, false (cabeza APAGADA) con [CONFIG-DEFAULT] [HEADS-DEFAULT-OFF-D305]. k_ratio: número en [1.5, 50], defecto 3.0 = umbral de la etapa 1 sobre victim_rate_ratio (alineado con k_in de la histéresis del sniffer). [DDOS-ETAPA1-D298] La etapa 1 usa victim_state del sniffer: BAJO_PRESION pasa siempre, FRIO nunca, NORMAL con ratio >= k_ratio; un evento sin estado aplica la regla antigua y se avisa en el resumen [DDOS-V2] sin_estado. Si un campo falta o es inválido se aplica el defecto con [CONFIG-DEFAULT] y el ml-detector arranca igual. Valores de LABORATORIO: en un despliegue real se consensúan con el personal de la instalación.",
       "enabled": true,
       "k_ratio": 3.0
     },
     "level1": {
-      "enabled": true,
+      "_doc": "[HEADS-SWITCH-D305] level1 (ONNX, 23 rasgos). Apagada: ni rasgos ni inferencia level1, no se publica su prediccion ni su veredicto, ml_score=0. Ademas ddos_v1/ransomware/traffic/internal dejan de evaluarse (corren solo tras level1=ATTACK, salvo FORCE_ALL_HEADS). enabled: true|false; [HEADS-DEFAULT-OFF-D305] acepta true|false, tambien como texto sin distinguir mayusculas; si falta o tiene otro valor se usa false (cabeza APAGADA) con [CONFIG-DEFAULT] y el ml-detector arranca igual. El estado EFECTIVO sale en el log con [HEADS] al arrancar y en cada informe de estadisticas. Valor de LABORATORIO (DAY300: mientras se trabaja DDoS, todo lo que no sea ddos_v2 apagado).",
+      "enabled": false,
       "name": "attack_detector",
       "model_file": "level1/level1_attack_detector.onnx",
       "scaler_file": "level1/scaler.json",
@@ -170,7 +171,8 @@
     },
     "level2": {
       "ddos": {
-        "enabled": true,
+        "_doc": "[HEADS-SWITCH-D305] DDoS v1 (9 rasgos, detras de level1). Sustituida por ml.ddos_v2; se retira en su propia rama (DEBT-DDOS-V1-RETIRE-001). enabled: true|false; [HEADS-DEFAULT-OFF-D305] acepta true|false, tambien como texto sin distinguir mayusculas; si falta o tiene otro valor se usa false (cabeza APAGADA) con [CONFIG-DEFAULT] y el ml-detector arranca igual. El estado EFECTIVO sale en el log con [HEADS] al arrancar y en cada informe de estadisticas. Valor de LABORATORIO (DAY300: mientras se trabaja DDoS, todo lo que no sea ddos_v2 apagado).",
+        "enabled": false,
         "name": "ddos_binary_detector",
         "model_file": "",
         "features_count": 10,
@@ -193,7 +195,8 @@
         ]
       },
       "ransomware": {
-        "enabled": true,
+        "_doc": "[HEADS-SWITCH-D305] ransomware (detras de level1). Sin certificar. enabled: true|false; [HEADS-DEFAULT-OFF-D305] acepta true|false, tambien como texto sin distinguir mayusculas; si falta o tiene otro valor se usa false (cabeza APAGADA) con [CONFIG-DEFAULT] y el ml-detector arranca igual. El estado EFECTIVO sale en el log con [HEADS] al arrancar y en cada informe de estadisticas. Valor de LABORATORIO (DAY300: mientras se trabaja DDoS, todo lo que no sea ddos_v2 apagado).",
+        "enabled": false,
         "name": "ransomware_detector_embedded",
         "model_file": "",
         "features_count": 10,
@@ -219,7 +222,8 @@
     },
     "level3": {
       "web": {
-        "enabled": true,
+        "_doc": "[HEADS-SWITCH-D305] traffic, Internet vs interno (detras de level1; nombre historico 'web'). Sin certificar. enabled: true|false; [HEADS-DEFAULT-OFF-D305] acepta true|false, tambien como texto sin distinguir mayusculas; si falta o tiene otro valor se usa false (cabeza APAGADA) con [CONFIG-DEFAULT] y el ml-detector arranca igual. El estado EFECTIVO sale en el log con [HEADS] al arrancar y en cada informe de estadisticas. Valor de LABORATORIO (DAY300: mientras se trabaja DDoS, todo lo que no sea ddos_v2 apagado).",
+        "enabled": false,
         "name": "traffic_detector_embedded",
         "model_file": "",
         "features_count": 10,
@@ -242,7 +246,8 @@
         ]
       },
       "internal": {
-        "enabled": true,
+        "_doc": "[HEADS-SWITCH-D305] internal, movimiento lateral y exfiltracion (detras de traffic). Sin certificar. enabled: true|false; [HEADS-DEFAULT-OFF-D305] acepta true|false, tambien como texto sin distinguir mayusculas; si falta o tiene otro valor se usa false (cabeza APAGADA) con [CONFIG-DEFAULT] y el ml-detector arranca igual. El estado EFECTIVO sale en el log con [HEADS] al arrancar y en cada informe de estadisticas. Valor de LABORATORIO (DAY300: mientras se trabaja DDoS, todo lo que no sea ddos_v2 apagado).",
+        "enabled": false,
         "name": "internal_detector_embedded",
         "model_file": "",
         "features_count": 10,
@@ -339,6 +344,8 @@
     }
   },
   "monitoring": {
+    "_doc_heads_log_interval_seconds": "[HEADS-INTERVALO-D305] heads_log_interval_seconds: cada cuantos segundos escribe el ml-detector la linea [HEADS] con el estado EFECTIVO de cada cabeza (siempre visible, sin verbose). Entero en [10, 3600]; defecto 60. Si falta, no es entero o esta fuera de rango se usa 60 con [CONFIG-DEFAULT] y el ml-detector arranca igual. El maximo de 1 h garantiza que el estado siga viendose periodicamente.",
+    "heads_log_interval_seconds": 60,
     "stats_interval_seconds": 60,
     "performance_tracking": true,
     "ml_metrics": {

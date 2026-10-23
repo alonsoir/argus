@@ -382,6 +382,8 @@ int main(int argc, char* argv[]) {
             g_config.fast_detector.ransomware.activation_thresholds.burst_connections;
         fast_detector_config.ransomware.activation_thresholds.unique_destinations_30s =
             g_config.fast_detector.ransomware.activation_thresholds.unique_destinations_30s;
+        fast_detector_config.ransomware.window_interval_seconds =
+            g_config.fast_detector.ransomware.window_interval_seconds;  // [HEADS-SNIFFER-D305]
 
         // Logging
         fast_detector_config.logging.log_activations =
@@ -719,19 +721,14 @@ if (encryption_seed.empty()) {
     return 1;
 }
 
-// DAY 80 ✅ ml_defender thresholds — JSON is the LAW (Phase1-Day4-CRITICAL CERRADO)
-        // DAY 80 ✅ mapeo explícito (MLDefenderConfig.thresholds vs StrictConfig.ml_defender)
-        sniffer_config.ml_defender.thresholds.ddos       = g_config.ml_defender.ddos;
-        sniffer_config.ml_defender.thresholds.ransomware = g_config.ml_defender.ransomware;
-        sniffer_config.ml_defender.thresholds.traffic    = g_config.ml_defender.traffic;
-        sniffer_config.ml_defender.thresholds.internal   = g_config.ml_defender.internal;
-
         ring_consumer_ptr = new sniffer::RingBufferConsumer(sniffer_config, fast_detector_config, encryption_seed);
         auto& ring_consumer = *ring_consumer_ptr;
         ring_consumer.set_victim_board(g_ddos_victim_board);  // [DDOS-VWIN-D279:MAIN-RC]
 
         // Configure stats interval from monitoring config
         ring_consumer.set_stats_interval(g_config.monitoring.stats_interval_seconds);
+        ring_consumer.set_heads_log(g_config.monitoring.heads_log_interval_seconds,  // [HEADS-SNIFFER-D305]
+                                    g_config.kernel_space.ddos_kernel_agg_enabled);
 #ifdef PLUGIN_LOADER_ENABLED
         ring_consumer.set_plugin_loader(&plugin_loader_);
         std::cout << "✅ [PHASE 2c] plugin_loader conectado a RingBufferConsumer" << std::endl;

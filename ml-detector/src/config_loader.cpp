@@ -3,6 +3,8 @@
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
+#include <cctype>  // [HEADS-DEFAULT-OFF-D305]
+#include "heads_config.hpp"  // [HEADS-TESTS-D305]
 
 namespace ml_detector {
 
@@ -42,6 +44,14 @@ T ConfigLoader::get_optional(const nlohmann::json& j, const std::string& key, co
         return default_value;
     }
 }
+
+// [HEADS-SWITCH-D305] [HEADS-DEFAULT-OFF-D305] [HEADS-TESTS-D305] la regla de 'enabled' vive en heads_config.hpp (probada en
+// tests/unit/test_heads_config.cpp). El estado EFECTIVO de cada cabeza se registra con [HEADS] (zmq_handler).
+namespace {
+bool read_head_enabled(const nlohmann::json& block, const std::string& ctx) {
+    return heads::read_enabled(block, ctx);
+}
+}  // namespace
 
 DetectorConfig ConfigLoader::load() {
     // Abrir archivo JSON
@@ -239,18 +249,14 @@ DetectorConfig ConfigLoader::load() {
             constexpr double kDefK = 3.0;
             constexpr double kMinK = 1.5;
             constexpr double kMaxK = 50.0;
-            config.ml.ddos_v2.enabled = true;
+            config.ml.ddos_v2.enabled = false;  // [HEADS-DEFAULT-OFF-D305]
             config.ml.ddos_v2.k_ratio = kDefK;
             if (!ml.contains("ddos_v2") || !ml["ddos_v2"].is_object()) {
-                std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2 ausente o no es un objeto: enabled=true, k_ratio=" << kDefK
+                std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2 ausente o no es un objeto: enabled=false (cabeza APAGADA), k_ratio=" << kDefK
                           << " (número en [" << kMinK << ", " << kMaxK << "])\n";
             } else {
                 const auto& d2 = ml["ddos_v2"];
-                if (d2.contains("enabled") && d2["enabled"].is_boolean()) {
-                    config.ml.ddos_v2.enabled = d2["enabled"].get<bool>();
-                } else {
-                    std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2.enabled ausente o no booleano (formato true|false): se usa true\n";
-                }
+                config.ml.ddos_v2.enabled = read_head_enabled(d2, "ml.ddos_v2");  // [HEADS-DEFAULT-OFF-D305]
                 if (d2.contains("k_ratio") && d2["k_ratio"].is_number() &&
                     d2["k_ratio"].get<double>() >= kMinK && d2["k_ratio"].get<double>() <= kMaxK) {
                     config.ml.ddos_v2.k_ratio = d2["k_ratio"].get<double>();
@@ -263,7 +269,7 @@ DetectorConfig ConfigLoader::load() {
         
         // Level 1
         auto& l1 = ml["level1"];
-        config.ml.level1.enabled = get_required<bool>(l1, "enabled", "ml.level1");
+        config.ml.level1.enabled = read_head_enabled(l1, "ml.level1");  // [HEADS-SWITCH-D305]
         config.ml.level1.name = get_required<std::string>(l1, "name", "ml.level1");
         config.ml.level1.model_file = get_required<std::string>(l1, "model_file", "ml.level1");
         config.ml.level1.scaler_file = get_optional<std::string>(l1, "scaler_file", "");
@@ -277,7 +283,7 @@ DetectorConfig ConfigLoader::load() {
         auto& l2 = ml["level2"];
         
         auto& l2ddos = l2["ddos"];
-        config.ml.level2.ddos.enabled = get_required<bool>(l2ddos, "enabled", "ml.level2.ddos");
+        config.ml.level2.ddos.enabled = read_head_enabled(l2ddos, "ml.level2.ddos");  // [HEADS-SWITCH-D305]
         config.ml.level2.ddos.name = get_required<std::string>(l2ddos, "name", "ml.level2.ddos");
         config.ml.level2.ddos.model_file = get_required<std::string>(l2ddos, "model_file", "ml.level2.ddos");
         config.ml.level2.ddos.features_count = get_required<int>(l2ddos, "features_count", "ml.level2.ddos");
@@ -288,7 +294,7 @@ DetectorConfig ConfigLoader::load() {
         config.ml.level2.ddos.scaler_file = "";
         
         auto& l2ransom = l2["ransomware"];
-        config.ml.level2.ransomware.enabled = get_required<bool>(l2ransom, "enabled", "ml.level2.ransomware");
+        config.ml.level2.ransomware.enabled = read_head_enabled(l2ransom, "ml.level2.ransomware");  // [HEADS-SWITCH-D305]
         config.ml.level2.ransomware.name = get_required<std::string>(l2ransom, "name", "ml.level2.ransomware");
         config.ml.level2.ransomware.model_file = get_required<std::string>(l2ransom, "model_file", "ml.level2.ransomware");
         config.ml.level2.ransomware.features_count = get_required<int>(l2ransom, "features_count", "ml.level2.ransomware");
@@ -302,7 +308,7 @@ DetectorConfig ConfigLoader::load() {
         auto& l3 = ml["level3"];
         
         auto& l3int = l3["internal"];
-        config.ml.level3.internal.enabled = get_required<bool>(l3int, "enabled", "ml.level3.internal");
+        config.ml.level3.internal.enabled = read_head_enabled(l3int, "ml.level3.internal");  // [HEADS-SWITCH-D305]
         config.ml.level3.internal.name = get_required<std::string>(l3int, "name", "ml.level3.internal");
         config.ml.level3.internal.model_file = get_required<std::string>(l3int, "model_file", "ml.level3.internal");
         config.ml.level3.internal.features_count = get_required<int>(l3int, "features_count", "ml.level3.internal");
@@ -313,7 +319,7 @@ DetectorConfig ConfigLoader::load() {
         config.ml.level3.internal.scaler_file = "";
         
         auto& l3web = l3["web"];
-        config.ml.level3.web.enabled = get_required<bool>(l3web, "enabled", "ml.level3.web");
+        config.ml.level3.web.enabled = read_head_enabled(l3web, "ml.level3.web");  // [HEADS-SWITCH-D305]
         config.ml.level3.web.name = get_required<std::string>(l3web, "name", "ml.level3.web");
         config.ml.level3.web.model_file = get_required<std::string>(l3web, "model_file", "ml.level3.web");
         config.ml.level3.web.features_count = get_required<int>(l3web, "features_count", "ml.level3.web");
@@ -392,6 +398,9 @@ DetectorConfig ConfigLoader::load() {
     {
         auto& mon = json_["monitoring"];
         config.monitoring.stats_interval_seconds = get_required<int>(mon, "stats_interval_seconds", "monitoring");
+        // [HEADS-INTERVALO-D305] [HEADS-TESTS-D305] entero en [10, 3600], defecto 60; regla en heads_config.hpp
+        config.monitoring.heads_log_interval_seconds = heads::read_int_in_range(
+            mon, "heads_log_interval_seconds", "monitoring", 60, 10, 3600);
         config.monitoring.performance_tracking = get_required<bool>(mon, "performance_tracking", "monitoring");
         
         auto& ml_met = mon["ml_metrics"];

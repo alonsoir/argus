@@ -24,6 +24,7 @@ namespace sniffer {
     struct FastDetectorRansomware {
         FastDetectorRansomwareScores scores;
         FastDetectorRansomwareThresholds activation_thresholds;
+        int window_interval_seconds = 30;  // [HEADS-SNIFFER-D305] emision de ventanas (capa 2), [5, 3600] s
     };
 
     struct FastDetectorLogging {
@@ -40,7 +41,7 @@ namespace sniffer {
     };
 
     struct FastDetectorConfig {
-        bool enabled = true;
+        bool enabled = false;  // [HEADS-SNIFFER-D305] el JSON decide; apagado si no se dice lo contrario
         FastDetectorRansomware ransomware;
         FastDetectorLogging logging;
         FastDetectorPerformance performance;

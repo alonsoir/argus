@@ -361,3 +361,15 @@ if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_ddos_v2_parity.cpp")
     )
     add_test(NAME test_ddos_v2_parity COMMAND test_ddos_v2_parity)
 endif()
+# ── test_heads_config — DAY305 [HEADS-TESTS-D305] lectores de configuracion de las cabezas (heads_config.hpp) ──
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_heads_config.cpp")
+    add_executable(test_heads_config
+            unit/test_heads_config.cpp
+    )
+    target_include_directories(test_heads_config PRIVATE
+            ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    )
+    target_compile_features(test_heads_config PRIVATE cxx_std_20)
+    ml_link_nlohmann(test_heads_config)
+    add_test(NAME test_heads_config COMMAND test_heads_config)
+endif()

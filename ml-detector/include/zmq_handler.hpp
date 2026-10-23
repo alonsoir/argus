@@ -98,6 +98,8 @@ private:
     void log_periodic_stats();
     void periodic_health_check();
     void memory_monitor_loop();
+    // [HEADS-SWITCH-D305] estado EFECTIVO de cada cabeza; siempre visible (arranque + informe de estadisticas)
+    void log_heads_state(const char* momento) const;
 
     // Config & Models
     DetectorConfig config_;

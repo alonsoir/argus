@@ -94,11 +94,6 @@ namespace sniffer {
 
 	// ML Defender: Feature extractor (thread-local, stateless)
 	thread_local MLDefenderExtractor RingBufferConsumer::ml_extractor_;
-	// ML Defender embedded detectors (thread-local, zero-lock architecture)
-	thread_local ml_defender::DDoSDetector RingBufferConsumer::ddos_detector_;
-	thread_local ml_defender::RansomwareDetector RingBufferConsumer::ransomware_detector_;
-	thread_local ml_defender::TrafficDetector RingBufferConsumer::traffic_detector_;
-	thread_local ml_defender::InternalDetector RingBufferConsumer::internal_detector_;
 
     // ============================================================================
     // CONSTRUCTOR
@@ -199,21 +194,14 @@ bool RingBufferConsumer::initialize(int ring_fd, std::shared_ptr<ThreadManager> 
     }
 
     // Initialize ransomware detection
-    if (!initialize_ransomware_detection()) {
-        std::cerr << "[WARNING] Ransomware detection disabled" << std::endl;
-    }else{
-        std::cout << "[INFO] Ransomware detection initialized successfully" << std::endl;
+    if (!initialize_ransomware_detection()) {  // [HEADS-SNIFFER-D305]
+        std::cerr << "[WARNING] procesador ransomware NO inicializado: 8 rasgos de traffic/internal iran a centinela y "
+                     "no habra ventanas de ransomware aunque el fast-path este encendido" << std::endl;
     }
 
     // Initialize batching
     current_batch_ = std::make_unique<EventBatch>(get_optimal_batch_size());
 
-    std::cout << "[ML Defender] Thresholds (JSON): "
-              << "DDoS=" << config_.ml_defender.thresholds.ddos
-              << " Ransomware=" << config_.ml_defender.thresholds.ransomware
-              << " Traffic=" << config_.ml_defender.thresholds.traffic
-              << " Internal=" << config_.ml_defender.thresholds.internal
-              << std::endl;
     initialized_ = true;
     std::cout << "[INFO] Enhanced RingBufferConsumer initialized successfully" << std::endl;
     std::cout << "  - Ring buffer FD: " << ring_fd_ << std::endl;
@@ -286,11 +274,14 @@ bool RingBufferConsumer::start() {
         consumer_threads_.emplace_back(&RingBufferConsumer::zmq_sender_loop, this);
     }
 
-    // Start ransomware processor thread
+    // [HEADS-SNIFFER-D305] el procesador arranca siempre (recogida de rasgos); su hilo de emision de ventanas, solo con fast-path
     if (ransomware_enabled_) {
         ransomware_processor_->start();
-        consumer_threads_.emplace_back(&RingBufferConsumer::ransomware_processor_loop, this);
-        std::cout << "[INFO] + 1 ransomware detection thread (30s aggregation)" << std::endl;
+        if (fast_detector_config_.enabled) {
+            consumer_threads_.emplace_back(&RingBufferConsumer::ransomware_processor_loop, this);
+            std::cout << "[INFO] + 1 hilo de emision de ventanas de ransomware (cada "
+                      << fast_detector_config_.ransomware.window_interval_seconds << " s)" << std::endl;
+        }
     }
 
     // [TIMEBASE-D295] hilo del reloj (ancla, CLOCK_STEP, CLOCK_SLEW)
@@ -309,6 +300,7 @@ bool RingBufferConsumer::start() {
               << " ZMQ sender threads" << std::endl;
     std::cout << "[INFO] + 1 statistics display thread" << std::endl;
     std::cout << "[INFO] Multi-threaded protobuf pipeline active" << std::endl;
+    log_heads_state("arranque");  // [HEADS-SNIFFER-D305]
 
     return true;
 }
@@ -325,8 +317,8 @@ bool RingBufferConsumer::start() {
 
     // ORDEN CORRECTO DE PARADA:
 
-    // 1️⃣ Parar ransomware detection PRIMERO (más costoso, tiene timer threads)
-    shutdown_ransomware_detection();
+    // 1️⃣ [HEADS-SNIFFER-D305] el procesador de ransomware ya NO se libera aqui: lo usan los hilos que aun no se han unido
+    // (DEBT-SNIFFER-RANSOMWARE-STOP-RACE-001). Se libera tras shutdown_consumers().
 
     // 2️⃣ Notificar a todos los threads que deben parar
     processing_queue_cv_.notify_all();
@@ -337,6 +329,11 @@ bool RingBufferConsumer::start() {
 
     // 4️⃣ Parar consumer threads (ya no recibirán eventos)
     shutdown_consumers();
+
+    // 4b [HEADS-SNIFFER-D305] con todos los hilos unidos: ventana pendiente, cola de envio y despues liberar el procesador
+    emitir_ventana_ransomware_pendiente();
+    vaciar_cola_envio();
+    shutdown_ransomware_detection();
 
     // 5️⃣ Parar ZMQ AL FINAL (flush final de colas)
     shutdown_zmq();
@@ -567,10 +564,23 @@ void RingBufferConsumer::stats_display_loop() {
     std::cout << "[INFO] Statistics display thread started (interval: "
               << stats_interval_seconds_ << "s)" << std::endl;
 
+    // [HEADS-SNIFFER-D305] dos plazos en el mismo hilo: ESTADISTICAS (stats_interval_seconds) y [HEADS] (heads_log_interval_seconds)
+    auto prox_stats = std::chrono::steady_clock::now() + std::chrono::seconds(stats_interval_seconds_);
+    auto prox_heads = std::chrono::steady_clock::now() + std::chrono::seconds(heads_log_interval_seconds_);
     while (!should_stop_) {
-        if (espera_o_parada(std::chrono::seconds(stats_interval_seconds_))) break;  // [PARADA-INMEDIATA-D300]
+        const auto ahora0 = std::chrono::steady_clock::now();
+        const auto prox = (prox_stats < prox_heads) ? prox_stats : prox_heads;
+        if (prox > ahora0 &&
+            espera_o_parada_ms(std::chrono::ceil<std::chrono::milliseconds>(prox - ahora0))) break;  // [PARADA-INMEDIATA-D300]
 
         if (should_stop_) break;
+        const auto ahora1 = std::chrono::steady_clock::now();
+        if (ahora1 >= prox_heads) {
+            log_heads_state("periodico");
+            prox_heads = ahora1 + std::chrono::seconds(heads_log_interval_seconds_);
+        }
+        if (ahora1 < prox_stats) continue;
+        prox_stats = ahora1 + std::chrono::seconds(stats_interval_seconds_);
 
         // Calculate runtime and rates
         auto now = std::chrono::steady_clock::now();
@@ -616,10 +626,12 @@ int RingBufferConsumer::handle_event(void* ctx, void* data, size_t data_sz) {
 void RingBufferConsumer::process_raw_event(const SimpleEvent& event, [[maybe_unused]] int consumer_id) {
     auto start_time = std::chrono::steady_clock::now();
 
-    // Fast Detection (thread-local, O(1))
-    fast_detector_.ingest(event);
-    if (fast_detector_.is_suspicious()) {
-        send_fast_alert(event);
+    // Fast Detection (thread-local, O(1)). [HEADS-SNIFFER-D305] solo con el fast-path encendido (fast_detector.enabled)
+    if (fast_detector_config_.enabled) {
+        fast_detector_.ingest(event);
+        if (fast_detector_.is_suspicious()) {
+            send_fast_alert(event);
+        }
     }
 
     // ===== ML DEFENDER: Flow Tracking (Phase 1, Day 3) =====
@@ -906,7 +918,7 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
                                                  int buffer_index,
                                                  const QueuedEvent* queued) const {  // [DDOS-SNAP-D290]
     // ============================================================================
-    // DAY 77: NaN-first — orden correcto: NaN -> populate(reales) -> run_ml_detection
+    // DAY 77: NaN-first — orden correcto: NaN -> populate(reales). [SNIFFER-NO-INFER-D305] sin inferencia en el sniffer
     init_embedded_sentinels(proto_event.mutable_network_features());
 
     // ML DEFENDER: Feature Extraction (Phase 1, Day 3)
@@ -952,7 +964,7 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
         }
     }
 	// ============================================================================
-    // ML DEFENDER: Embedded Detectors Inference (Phase 1, Day 4)
+    // [SNIFFER-NO-INFER-D305] el sniffer solo recoge rasgos; la inferencia de las cabezas vive en el ml-detector
     // ============================================================================
     // [DDOS-SNAP-D290] Rasgos DDoS v2 de flujo desde la foto del hilo del anillo (instante del
     // paquete), nunca desde la copia tomada con retraso en este hilo. Foto invalida -> centinela.
@@ -976,7 +988,6 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
             }
         }
     }
-    const_cast<RingBufferConsumer*>(this)->run_ml_detection(proto_event);
     // ============================================================================
     // END ML DEFENDER Integration
     // ============================================================================
@@ -1136,13 +1147,6 @@ RingConsumerStatsSnapshot RingBufferConsumer::get_stats() const {
     snapshot.ransomware_confirmed_threats = stats_.ransomware_confirmed_threats.load();
     snapshot.ransomware_processing_time_us = stats_.ransomware_processing_time_us.load();
 
-	// ML Defender embedded detection stats
-    snapshot.ddos_attacks_detected = stats_.ddos_attacks_detected.load();
-    snapshot.ransomware_attacks_detected = stats_.ransomware_attacks_detected.load();
-    snapshot.suspicious_traffic_detected = stats_.suspicious_traffic_detected.load();
-    snapshot.internal_anomalies_detected = stats_.internal_anomalies_detected.load();
-    snapshot.ml_detection_time_us = stats_.ml_detection_time_us.load();
-
 	return snapshot;
 }
 
@@ -1205,20 +1209,6 @@ void RingBufferConsumer::print_stats() const {
         std::cout << "\n🚨 Ransomware Detection: DISABLED\n";
     }
 
-	// ML Defender embedded detectors statistics
-    std::cout << "\n🛡️  ML Defender Embedded Detectors:\n";
-    std::cout << "  DDoS attacks detected: " << stats_.ddos_attacks_detected << "\n";
-    std::cout << "  Ransomware attacks detected: " << stats_.ransomware_attacks_detected << "\n";
-    std::cout << "  Suspicious traffic detected: " << stats_.suspicious_traffic_detected << "\n";
-    std::cout << "  Internal anomalies detected: " << stats_.internal_anomalies_detected << "\n";
-
-    uint64_t ml_time = stats_.ml_detection_time_us.load();
-    if (ml_time > 0 && stats_.events_processed.load() > 0) {
-        double avg_ml_time = static_cast<double>(ml_time) / stats_.events_processed.load();
-        std::cout << "  Avg ML detection time: " << std::fixed << std::setprecision(2)
-                  << avg_ml_time << " μs\n";
-    }
-
     std::cout << "\n⚙️  System Status:\n";
     std::cout << "  Active consumers: " << active_consumers_ << "\n";
     std::cout << "  Processing queue size: " << processing_queue_.size() << "\n";
@@ -1243,12 +1233,6 @@ void RingBufferConsumer::reset_stats() {
     stats_.ransomware_feature_extractions = 0;
     stats_.ransomware_confirmed_threats = 0;
     stats_.ransomware_processing_time_us = 0;
-
-    stats_.ddos_attacks_detected = 0;
-    stats_.ransomware_attacks_detected = 0;
-    stats_.suspicious_traffic_detected = 0;
-    stats_.internal_anomalies_detected = 0;
-    stats_.ml_detection_time_us = 0;
 
     stats_.start_time = std::chrono::steady_clock::now();
 }
@@ -1329,6 +1313,8 @@ void RingBufferConsumer::update_processing_time(std::chrono::microseconds durati
 bool RingBufferConsumer::initialize_ransomware_detection() {
     try {
         ransomware_processor_ = std::make_unique<RansomwareFeatureProcessor>();
+        ransomware_processor_->set_extraction_interval_seconds(  // [HEADS-SNIFFER-D305]
+            static_cast<uint32_t>(fast_detector_config_.ransomware.window_interval_seconds));
 
         if (!ransomware_processor_->initialize()) {
             std::cerr << "[ERROR] Failed to initialize RansomwareFeatureProcessor" << std::endl;
@@ -1336,9 +1322,10 @@ bool RingBufferConsumer::initialize_ransomware_detection() {
         }
 
         ransomware_enabled_ = true;
-        std::cout << "[INFO] ✅ Ransomware detection initialized (2-layer system)" << std::endl;
-        std::cout << "       Layer 1: FastDetector (10s window, heuristics)" << std::endl;
-        std::cout << "       Layer 2: FeatureProcessor (30s aggregation)" << std::endl;
+        std::cout << "[INFO] procesador ransomware INICIALIZADO: agregador de ventana para la recogida de rasgos "  // [HEADS-SNIFFER-D305]
+                     "(siempre); emision de ventanas de ransomware: "
+                  << (fast_detector_config_.enabled ? "SI" : "NO (fast-path apagado)") << ", cada "
+                  << fast_detector_config_.ransomware.window_interval_seconds << " s" << std::endl;
         return true;
 
     } catch (const std::exception& e) {
@@ -1350,10 +1337,10 @@ bool RingBufferConsumer::initialize_ransomware_detection() {
 
 void RingBufferConsumer::ransomware_processor_loop() {
     std::cout << "[INFO] Ransomware processor thread started ("
-              << RANSOMWARE_EXTRACTION_INTERVAL_SEC << "s extraction)" << std::endl;
+              << fast_detector_config_.ransomware.window_interval_seconds << "s extraction)" << std::endl;  // [HEADS-SNIFFER-D305]
 
     while (!should_stop_) {
-        if (espera_o_parada(std::chrono::seconds(RANSOMWARE_EXTRACTION_INTERVAL_SEC))) break;  // [PARADA-INMEDIATA-D300]
+        if (espera_o_parada(std::chrono::seconds(fast_detector_config_.ransomware.window_interval_seconds))) break;  // [PARADA-INMEDIATA-D300] [HEADS-SNIFFER-D305]
 
         if (should_stop_) break;
 
@@ -1681,293 +1668,48 @@ void RingBufferConsumer::shutdown_ransomware_detection() {
         ransomware_processor_->stop();
         ransomware_processor_.reset();
     }
-    ransomware_enabled_ = false;
-}
-// ============================================================================
-// ML DEFENDER: Feature Extraction Functions (Phase 1, Day 4)
-// ============================================================================
-
-ml_defender::DDoSDetector::Features
-RingBufferConsumer::extract_ddos_features(
-    const protobuf::NetworkSecurityEvent& proto_event) const {
-
-    const auto& ddos = proto_event.network_features().ddos_embedded();
-
-    return ml_defender::DDoSDetector::Features{
-        .syn_ack_ratio = ddos.syn_ack_ratio(),
-        .packet_symmetry = ddos.packet_symmetry(),
-        .source_ip_dispersion = ddos.source_ip_dispersion(),
-        .protocol_anomaly_score = ddos.protocol_anomaly_score(),
-        .packet_size_entropy = ddos.packet_size_entropy(),
-        .traffic_amplification_factor = ddos.traffic_amplification_factor(),
-        .flow_completion_rate = ddos.flow_completion_rate(),
-        .traffic_escalation_rate = ddos.traffic_escalation_rate(),
-        .resource_saturation_score = ddos.resource_saturation_score()
-    };
+    // [HEADS-SNIFFER-D305] ransomware_enabled_ NO se toca: dice si el procesador estuvo inicializado (estadisticas finales veraces)
 }
 
-ml_defender::RansomwareDetector::Features
-RingBufferConsumer::extract_ransomware_features(
-    const protobuf::NetworkSecurityEvent& proto_event) const {
-
-    const auto& ransom = proto_event.network_features().ransomware_embedded();
-
-    return ml_defender::RansomwareDetector::Features{
-        .io_intensity = ransom.io_intensity(),
-        .entropy = ransom.entropy(),
-        .resource_usage = ransom.resource_usage(),
-        .network_activity = ransom.network_activity(),
-        .file_operations = ransom.file_operations(),
-        .process_anomaly = ransom.process_anomaly(),
-        .temporal_pattern = ransom.temporal_pattern(),
-        .access_frequency = ransom.access_frequency(),
-        .data_volume = ransom.data_volume(),
-        .behavior_consistency = ransom.behavior_consistency()
-    };
+// [HEADS-SNIFFER-D305] estado EFECTIVO: en el sniffer la unica cabeza es el fast-path; lo demas es recogida de rasgos.
+void RingBufferConsumer::log_heads_state(const char* momento) const {
+    std::cout << "[HEADS] (" << momento << ") fast_path=" << (fast_detector_config_.enabled ? "ON" : "OFF")
+              << " ventanas_ransomware=" << ((fast_detector_config_.enabled && ransomware_enabled_) ? "ON" : "OFF")
+              << " (cada " << fast_detector_config_.ransomware.window_interval_seconds << " s)"
+              << " procesador_ransomware=" << (ransomware_enabled_ ? "INICIALIZADO" : "NO_INICIALIZADO")
+              << " recogida_rasgos=SIEMPRE agregador_kernel=" << (kernel_agg_enabled_ ? "ON" : "OFF")
+              << " | la inferencia de las cabezas vive en el ml-detector" << std::endl;
 }
 
-ml_defender::TrafficDetector::Features
-RingBufferConsumer::extract_traffic_features(
-    const protobuf::NetworkSecurityEvent& proto_event) const {
-
-    const auto& traffic = proto_event.network_features().traffic_classification();
-
-    return ml_defender::TrafficDetector::Features{
-        .packet_rate = traffic.packet_rate(),
-        .connection_rate = traffic.connection_rate(),
-        .tcp_udp_ratio = traffic.tcp_udp_ratio(),
-        .avg_packet_size = traffic.avg_packet_size(),
-        .port_entropy = traffic.port_entropy(),
-        .flow_duration_std = traffic.flow_duration_std(),
-        .src_ip_entropy = traffic.src_ip_entropy(),
-        .dst_ip_concentration = traffic.dst_ip_concentration(),
-        .protocol_variety = traffic.protocol_variety(),
-        .temporal_consistency = traffic.temporal_consistency()
-    };
+// [HEADS-SNIFFER-D305] parada: la ultima ventana calculada y no enviada se emite antes de liberar el procesador.
+void RingBufferConsumer::emitir_ventana_ransomware_pendiente() {
+    if (!fast_detector_config_.enabled || !ransomware_enabled_ || !ransomware_processor_) {
+        return;
+    }
+    protobuf::RansomwareFeatures f;
+    if (ransomware_processor_->get_features_if_ready(f)) {
+        send_ransomware_features(f);
+        std::cout << "[PARADA] ventana de ransomware pendiente emitida" << std::endl;
+    } else {
+        std::cout << "[PARADA] sin ventana de ransomware pendiente" << std::endl;
+    }
 }
 
-ml_defender::InternalDetector::Features
-RingBufferConsumer::extract_internal_features(
-    const protobuf::NetworkSecurityEvent& proto_event) const {
-
-    const auto& internal = proto_event.network_features().internal_anomaly();
-
-    return ml_defender::InternalDetector::Features{
-        .internal_connection_rate = internal.internal_connection_rate(),
-        .service_port_consistency = internal.service_port_consistency(),
-        .protocol_regularity = internal.protocol_regularity(),
-        .packet_size_consistency = internal.packet_size_consistency(),
-        .connection_duration_std = internal.connection_duration_std(),
-        .lateral_movement_score = internal.lateral_movement_score(),
-        .service_discovery_patterns = internal.service_discovery_patterns(),
-        .data_exfiltration_indicators = internal.data_exfiltration_indicators(),
-        .temporal_anomaly_score = internal.temporal_anomaly_score(),
-        .access_pattern_entropy = internal.access_pattern_entropy()
-    };
-}
-
-
-
-// ============================================================================
-// ML DEFENDER: Embedded Detectors Inference Engine
-// ============================================================================
-
-void RingBufferConsumer::run_ml_detection(protobuf::NetworkSecurityEvent& proto_event) {
-    // DAY 77 STATUS: Inferencia funciona, scores NO se escriben al proto.
-    // DAY 78 TODO: implementar PHASE 3/4 — escribir scores con sentinel -1.0f
-    //   proto_event.set_ddos_score(-1.0f)       // -1.0f = no inferido ([0,1] = valido)
-    //   proto_event.set_ransomware_score(-1.0f)
-    //   proto_event.set_final_classification("PENDING")
-    // DAY 80 ✅ thresholds leídos desde JSON vía config_.ml_defender (Phase1-Day4-CRITICAL CERRADO)
-
-    auto start = std::chrono::high_resolution_clock::now();
-
-    // ========================================================================
-    // PHASE 1: Feature Extraction
-    // ========================================================================
-    auto ddos_features = extract_ddos_features(proto_event);
-    auto ransomware_features = extract_ransomware_features(proto_event);
-    auto traffic_features = extract_traffic_features(proto_event);
-    auto internal_features = extract_internal_features(proto_event);
-    auto mlt_t1 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
-
-    // ========================================================================
-    // PHASE 2: Model Inference (Thread-local, <100μs per detector)
-    // ========================================================================
-    auto ddos_pred = ddos_detector_.predict(ddos_features);
-    auto mlt_t2 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
-    auto ransomware_pred = ransomware_detector_.predict(ransomware_features);
-    auto mlt_t3 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
-    auto traffic_pred = traffic_detector_.predict(traffic_features);
-    auto mlt_t4 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
-    auto internal_pred = internal_detector_.predict(internal_features);
-    auto mlt_t5 = std::chrono::high_resolution_clock::now();  // DAY283 ML-PHASE
-
-    // ========================================================================
-    // PHASE 3: Threshold Application & Classification
-    // DAY 78: scores escritos al proto con sentinel -1.0f para no inferido
-    // DAY 80 ✅ thresholds leídos desde config_.ml_defender.thresholds (JSON is the LAW)
-    // ========================================================================
-    double threat_score = -1.0;
-    std::string classification = "BENIGN";
-    std::string category = "NORMAL";
-
-    // DDoS
-    if (ddos_pred.is_ddos(config_.ml_defender.thresholds.ddos)) {
-        stats_.ddos_attacks_detected++;
-        threat_score = ddos_pred.ddos_prob;
-        classification = "MALICIOUS";
-        category = "DDOS";
-        proto_event.mutable_ml_analysis()->set_final_threat_classification("DDOS");
-    }
-
-    // Ransomware (solo si no hay DDoS ya clasificado)
-    if (ransomware_pred.is_ransomware(config_.ml_defender.thresholds.ransomware)) {
-        stats_.ransomware_attacks_detected++;
-        if (classification != "MALICIOUS") {
-            threat_score = ransomware_pred.ransomware_prob;
-            classification = "MALICIOUS";
-            category = "RANSOMWARE";
-            proto_event.mutable_ml_analysis()->set_final_threat_classification("RANSOMWARE");
-        }
-    }
-
-    // Traffic context (siempre)
-    proto_event.mutable_ml_analysis()->set_traffic_context(
-        traffic_pred.probability >= 0.5f ? "INTERNAL" : "EXTERNAL"
-    );
-    if (traffic_pred.probability >= config_.ml_defender.thresholds.traffic) {
-        stats_.suspicious_traffic_detected++;
-        if (classification == "BENIGN") {
-            threat_score = traffic_pred.probability;
-            classification = "SUSPICIOUS";
-            category = "SUSPICIOUS_TRAFFIC";
-        }
-    }
-
-    // Internal anomaly
-    if (internal_pred.is_suspicious(config_.ml_defender.thresholds.internal)) {
-        stats_.internal_anomalies_detected++;
-        if (classification == "BENIGN") {
-            threat_score = internal_pred.suspicious_prob;
-            classification = "SUSPICIOUS";
-            category = "INTERNAL_ANOMALY";
-        }
-    }
-
-    // ========================================================================
-    // PHASE 4: Write to proto
-    // ========================================================================
-    if (threat_score >= 0.0) {
-        proto_event.set_overall_threat_score(threat_score);
-    }
-    proto_event.set_final_classification(classification);
-    proto_event.set_threat_category(category);
-
-    // ========================================================================
-    // PHASE 5: Performance Metrics
-    // ========================================================================
-    auto end = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    stats_.ml_detection_time_us += duration.count();
-
-    // DAY283 D2 — [ML-PHASE] (solo observacion): extract | ddos | ransom | traffic | internal | post
+// [HEADS-SNIFFER-D305] parada: los hilos de envio ya estan unidos; lo que quede en la cola se envia aqui, antes de cerrar ZMQ.
+void RingBufferConsumer::vaciar_cola_envio() {
+    std::queue<std::vector<uint8_t>> pendientes;
     {
-        static std::atomic<uint64_t> mph_calls{0};
-        static std::atomic<uint64_t> mph_sum[6];
-        static std::atomic<uint64_t> mph_hist[6][40];
-        static std::atomic<int64_t>  mph_last_print_ns{0};
-        static const char* const mph_names[6] =
-            {"extract", "ddos", "ransom", "traffic", "internal", "post"};
-        const std::chrono::high_resolution_clock::time_point mph_t[7] =
-            {start, mlt_t1, mlt_t2, mlt_t3, mlt_t4, mlt_t5, end};
-
-        mph_calls.fetch_add(1, std::memory_order_relaxed);
-        for (int k = 0; k < 6; ++k) {
-            const uint64_t ns = static_cast<uint64_t>(
-                std::chrono::duration_cast<std::chrono::nanoseconds>(mph_t[k + 1] - mph_t[k]).count());
-            mph_sum[k].fetch_add(ns, std::memory_order_relaxed);
-            int b = 0; uint64_t v = ns;
-            while (v > 1 && b < 39) { v >>= 1; ++b; }
-            mph_hist[k][b].fetch_add(1, std::memory_order_relaxed);
-        }
-
-        const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        int64_t last = mph_last_print_ns.load(std::memory_order_relaxed);
-        if (now_ns - last >= 10000000000LL &&
-            mph_last_print_ns.compare_exchange_strong(last, now_ns)) {
-            std::ostringstream os;
-            os << "[ML-PHASE] calls=" << mph_calls.load();
-            for (int k = 0; k < 6; ++k) {
-                os << " " << mph_names[k] << "=" << mph_sum[k].load() << "|";
-                bool first = true;
-                for (int i = 0; i < 40; ++i) {
-                    const uint64_t c = mph_hist[k][i].load(std::memory_order_relaxed);
-                    if (c == 0) continue;
-                    os << (first ? "" : ",") << i << ":" << c;
-                    first = false;
-                }
-            }
-            std::cout << os.str() << std::endl;
-        }
+        std::lock_guard<std::mutex> lk(send_queue_mutex_);
+        pendientes.swap(send_queue_);
     }
-
-    // DAY283 D2 — [ML-TIME] (solo observacion): llamadas, ns, max, histograma log2
-    {
-        static std::atomic<uint64_t> mlt_calls{0};
-        static std::atomic<uint64_t> mlt_sum_ns{0};
-        static std::atomic<uint64_t> mlt_max_ns{0};
-        static std::atomic<uint64_t> mlt_hist[40];
-        static std::atomic<int64_t>  mlt_last_print_ns{0};
-
-        const uint64_t ns = static_cast<uint64_t>(
-            std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
-        mlt_calls.fetch_add(1, std::memory_order_relaxed);
-        mlt_sum_ns.fetch_add(ns, std::memory_order_relaxed);
-        uint64_t prev_max = mlt_max_ns.load(std::memory_order_relaxed);
-        while (ns > prev_max &&
-               !mlt_max_ns.compare_exchange_weak(prev_max, ns, std::memory_order_relaxed)) {}
-        int b = 0; uint64_t v = ns;
-        while (v > 1 && b < 39) { v >>= 1; ++b; }
-        mlt_hist[b].fetch_add(1, std::memory_order_relaxed);
-
-        const int64_t now_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(
-            std::chrono::steady_clock::now().time_since_epoch()).count();
-        int64_t last = mlt_last_print_ns.load(std::memory_order_relaxed);
-        if (now_ns - last >= 10000000000LL &&
-            mlt_last_print_ns.compare_exchange_strong(last, now_ns)) {
-            std::ostringstream os;
-            os << "[ML-TIME] calls=" << mlt_calls.load()
-               << " sum_ns=" << mlt_sum_ns.load()
-               << " max_ns=" << mlt_max_ns.load() << " hist=";
-            bool first = true;
-            for (int i = 0; i < 40; ++i) {
-                const uint64_t c = mlt_hist[i].load(std::memory_order_relaxed);
-                if (c == 0) continue;
-                os << (first ? "" : ",") << i << ":" << c;
-                first = false;
-            }
-            std::cout << os.str() << std::endl;
+    const size_t n = pendientes.size();
+    size_t ok = 0;
+    while (!pendientes.empty()) {
+        if (send_protobuf_message(pendientes.front())) {
+            ++ok;
         }
+        pendientes.pop();
     }
-
-    // Optional: Log detections if verbosity enabled
-    if (g_verbosity >= FeatureLogger::VerbosityLevel::GROUPED) {
-        bool any_detection = (ddos_pred.is_ddos(config_.ml_defender.thresholds.ddos) ||
-                             ransomware_pred.is_ransomware(config_.ml_defender.thresholds.ransomware) ||
-                             traffic_pred.probability >= config_.ml_defender.thresholds.traffic ||
-                             internal_pred.is_suspicious(config_.ml_defender.thresholds.internal));
-
-        if (any_detection) {
-            std::cout << "[ML Defender] Detection: "
-                      << "DDoS=" << ddos_pred.ddos_prob << " "
-                      << "Ransom=" << ransomware_pred.ransomware_prob << " "
-                      << "Traffic=" << traffic_pred.probability << " "
-                      << "Internal=" << internal_pred.suspicious_prob << " "
-                      << "(" << duration.count() << "μs)"
-                      << std::endl;
-        }
-    }
+    std::cout << "[PARADA] cola de envio vaciada: " << ok << " de " << n << " mensajes enviados" << std::endl;
 }
 } // namespace sniffer

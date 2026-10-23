@@ -234,6 +234,7 @@ struct DetectorConfig {
     // Monitoring
     struct {
         int stats_interval_seconds;
+        int heads_log_interval_seconds = 60;  // [HEADS-INTERVALO-D305] resumen [HEADS]; [10, 3600] s, defecto 60
         bool performance_tracking;
         struct {
             bool inference_time;

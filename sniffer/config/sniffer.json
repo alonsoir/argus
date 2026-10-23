@@ -449,6 +449,8 @@
   "monitoring": {
     "_doc_stats_interval_seconds": "entero, rango [1, 3600], defecto 30. [PARADA-INMEDIATA-D300] Cada cuantos segundos escribe el sniffer el bloque ESTADISTICAS en su log. No afecta a la deteccion ni a la parada (la espera es interrumpible). Si falta, no es entero o esta fuera de rango: defecto con [CONFIG-DEFAULT].",
     "stats_interval_seconds": 30,
+    "_doc_heads_log_interval_seconds": "[HEADS-SNIFFER-D305] heads_log_interval_seconds: cada cuantos segundos escribe el sniffer la linea [HEADS] (estado del fast-path, de las ventanas de ransomware y de la recogida de rasgos), siempre visible. Entero en [10, 3600]; defecto 60. Si falta, no es entero o esta fuera de rango: 60 con [CONFIG-DEFAULT].",
+    "heads_log_interval_seconds": 60,
     "performance_tracking": true,
     "kernel_metrics": {
       "ebpf_program_stats": true,
@@ -515,32 +517,18 @@
       "recovery_timeout": 30
     }
   },
-  "ml_defender": {
-    "_comment": "ML Defender Embedded C++20 Detectors - Day 11 Conservative Thresholds",
-    "_source": "Single source of truth for ML Tricapa detection thresholds",
-    "_calibration": "Conservative values for PCAP replay validation",
-    "_day11_goal": "Validate models with real-world traffic (CTU-13, tcpreplay samples)",
-    "thresholds": {
-      "ddos": 0.85,
-      "ransomware": 0.9,
-      "traffic": 0.8,
-      "internal": 0.85
-    },
-    "validation": {
-      "min_threshold": 0.5,
-      "max_threshold": 0.99,
-      "fallback_threshold": 0.75
-    }
-  },
   "fast_detector": {
     "_comment": "Fast Path Heuristic Detection (Sniffer-side) - Day 12 Externalized Config",
     "_philosophy": "Via Appia Quality: No hardcoded thresholds, JSON is the law",
     "_performance": "Sub-microsecond heuristics for obvious threats (C&C, lateral movement)",
     "_activation": "Triggers on specific ransomware/C&C patterns detected by TimeWindowAggregator",
     "_scope": "Selective detection - only activates when suspicious patterns exceed thresholds",
-    "enabled": true,
+    "_doc_enabled": "[HEADS-SNIFFER-D305] enabled: el fast-path es la UNICA cabeza que vive en el sniffer (capa 1: alerta rapida por paquete; capa 2: ventanas de ransomware con su puntuacion). true|false, tambien como texto sin distinguir mayusculas; si falta o tiene otro valor: false (APAGADO) con [CONFIG-DEFAULT]. Apagado no calcula ni emite nada; la recogida de rasgos sigue siempre. Valor de LABORATORIO false (DAY300: mientras se trabaja DDoS, todo lo que no sea ddos_v2 apagado).",
+    "enabled": false,
     "ransomware": {
       "_description": "Ransomware-specific heuristics (C&C communication, lateral movement, exfiltration)",
+      "_doc_window_interval_seconds": "[HEADS-SNIFFER-D305] window_interval_seconds: cada cuantos segundos se calcula y emite una ventana de ransomware (capa 2 del fast-path). Entero en [5, 3600]; defecto 30. Si falta, no es entero o esta fuera de rango: 30 con [CONFIG-DEFAULT].",
+      "window_interval_seconds": 30,
       "scores": {
         "high_threat": 0.95,
         "suspicious": 0.7,

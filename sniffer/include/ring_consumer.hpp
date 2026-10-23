@@ -12,11 +12,6 @@
 #include "ddos_victim_board.hpp"  // [DDOS-VWIN-D279:RC-INC]
 #include "timebase.hpp"  // [TIMEBASE-D295]
 #include "payload_analyzer.hpp"
-// ML Defender embedded detectors
-#include "ml_defender/ddos_detector.hpp"
-#include "ml_defender/ransomware_detector.hpp"
-#include "ml_defender/traffic_detector.hpp"
-#include "ml_defender/internal_detector.hpp"
 // ADR-013 PHASE 2 — DAY 98: CryptoTransport via SeedClient (sustituye CryptoManager)
 // DEPRECATED DAY 98 — #include <crypto_transport/crypto_manager.hpp>
 #include <seed_client/seed_client.hpp>
@@ -60,12 +55,6 @@ struct RingConsumerStats {
     std::atomic<uint64_t> ransomware_feature_extractions{0}; // Layer 2 extractions
     std::atomic<uint64_t> ransomware_confirmed_threats{0};  // High-confidence detections
     std::atomic<uint64_t> ransomware_processing_time_us{0}; // Time spent on ransomware
-
-    std::atomic<uint64_t> ddos_attacks_detected{0};
-    std::atomic<uint64_t> ransomware_attacks_detected{0};
-    std::atomic<uint64_t> suspicious_traffic_detected{0};
-    std::atomic<uint64_t> internal_anomalies_detected{0};
-    std::atomic<uint64_t> ml_detection_time_us{0};
 };
 
 // Snapshot for reading stats (non-atomic copy)
@@ -85,12 +74,6 @@ struct RingConsumerStatsSnapshot {
     uint64_t ransomware_feature_extractions;
     uint64_t ransomware_confirmed_threats;
     uint64_t ransomware_processing_time_us;
-    // embebbed models
-    uint64_t ddos_attacks_detected;
-    uint64_t ransomware_attacks_detected;
-    uint64_t suspicious_traffic_detected;
-    uint64_t internal_anomalies_detected;
-    uint64_t ml_detection_time_us;
 };
 
 // [DDOS-SNAP-D290] Lo que viaja del hilo del anillo al hilo de rasgos: el paquete y la foto de
@@ -138,6 +121,11 @@ public:
     // Configuration
     void set_event_callback(EventCallback callback);
     void set_stats_interval(int seconds) { stats_interval_seconds_ = seconds; }
+    // [HEADS-SNIFFER-D305] intervalo de la linea [HEADS] y estado del agregador del kernel (solo para informar)
+    void set_heads_log(int interval_s, bool kernel_agg) {
+        heads_log_interval_seconds_ = interval_s;
+        kernel_agg_enabled_ = kernel_agg;
+    }
 #ifdef PLUGIN_LOADER_ENABLED
 #endif
 #ifdef PLUGIN_LOADER_ENABLED
@@ -155,8 +143,7 @@ private:
     static constexpr double EMA_SMOOTHING_FACTOR = 0.9;  // Exponential Moving Average weight
     static constexpr double EMA_NEW_SAMPLE_WEIGHT = 0.1;  // Weight for new samples
 
-    // CONSTANTS - Ransomware detection
-    static constexpr int RANSOMWARE_EXTRACTION_INTERVAL_SEC = 30;  // Deep analysis interval
+    // [HEADS-SNIFFER-D305] el intervalo de ventanas de ransomware vive en el JSON (fast_detector.ransomware.window_interval_seconds)
 
     // Core functionality
     bool initialize_zmq();
@@ -218,6 +205,8 @@ private:
     ml_defender::PluginLoader* plugin_loader_ = nullptr;  // PHASE 2c — set via set_plugin_loader()
 #endif  // Day 12 - Externalized thresholds
     int stats_interval_seconds_{30};  // Default 30 seconds todo esto hay que cambiarlo, quitar números mágicos
+    int heads_log_interval_seconds_{60};  // [HEADS-SNIFFER-D305]
+    bool kernel_agg_enabled_{false};  // [HEADS-SNIFFER-D305]
 
     // Ring buffer
     ring_buffer* ring_buf_;
@@ -237,6 +226,10 @@ private:
         std::unique_lock<std::mutex> lk(parada_mtx_);
         return parada_cv_.wait_for(lk, s, [this] { return should_stop_.load(); });
     }
+    bool espera_o_parada_ms(std::chrono::milliseconds ms) {  // [HEADS-SNIFFER-D305] varios plazos en un mismo hilo
+        std::unique_lock<std::mutex> lk(parada_mtx_);
+        return parada_cv_.wait_for(lk, ms, [this] { return should_stop_.load(); });
+    }
     std::atomic<bool> initialized_{false};
     // [TIMEBASE-D295] contrato temporal v1: el hilo del reloj escribe tb_state_; el resto lee atomicos.
     // tb_start_mono_ns_ y tb_boot_id_ se fijan en start() antes de lanzar ningun hilo.
@@ -246,12 +239,6 @@ private:
     std::atomic<uint64_t> tb_seq_{0};
     uint64_t tb_start_mono_ns_{0};
     std::string tb_boot_id_;
-
-    // Layer 3 - ML Defender Embedded Detectors (thread-local, zero-lock)
-    thread_local static ml_defender::DDoSDetector ddos_detector_;
-    thread_local static ml_defender::RansomwareDetector ransomware_detector_;
-    thread_local static ml_defender::TrafficDetector traffic_detector_;
-    thread_local static ml_defender::InternalDetector internal_detector_;
 
     // Queues
     std::queue<QueuedEvent> processing_queue_;  // [DDOS-SNAP-D290]
@@ -306,15 +293,9 @@ private:
     void send_ransomware_features(const protobuf::RansomwareFeatures& features);
     bool initialize_ransomware_detection();
     void shutdown_ransomware_detection();
-
-    // ML Defender feature extraction
-    ml_defender::DDoSDetector::Features extract_ddos_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-    ml_defender::RansomwareDetector::Features extract_ransomware_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-    ml_defender::TrafficDetector::Features extract_traffic_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-    ml_defender::InternalDetector::Features extract_internal_features(const protobuf::NetworkSecurityEvent& proto_event) const;
-
-    // ML Defender inference
-    void run_ml_detection(protobuf::NetworkSecurityEvent& proto_event);
+    void log_heads_state(const char* momento) const;  // [HEADS-SNIFFER-D305]
+    void emitir_ventana_ransomware_pendiente();  // [HEADS-SNIFFER-D305]
+    void vaciar_cola_envio();  // [HEADS-SNIFFER-D305]
 };
 
 } // namespace sniffer
