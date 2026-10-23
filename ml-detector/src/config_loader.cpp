@@ -4,6 +4,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cctype>  // [HEADS-DEFAULT-OFF-D305]
+#include "heads_config.hpp"  // [HEADS-TESTS-D305]
 
 namespace ml_detector {
 
@@ -44,34 +45,11 @@ T ConfigLoader::get_optional(const nlohmann::json& j, const std::string& key, co
     }
 }
 
-// [HEADS-SWITCH-D305] interruptor de cabeza: el JSON manda. [HEADS-DEFAULT-OFF-D305] 'enabled' acepta booleano JSON o texto
-// "true"/"false" sin distinguir mayusculas; si falta o tiene cualquier otro valor la cabeza queda APAGADA (false)
-// y se avisa con [CONFIG-DEFAULT]. El estado EFECTIVO de cada cabeza se registra en el log con [HEADS] (zmq_handler).
+// [HEADS-SWITCH-D305] [HEADS-DEFAULT-OFF-D305] [HEADS-TESTS-D305] la regla de 'enabled' vive en heads_config.hpp (probada en
+// tests/unit/test_heads_config.cpp). El estado EFECTIVO de cada cabeza se registra con [HEADS] (zmq_handler).
 namespace {
 bool read_head_enabled(const nlohmann::json& block, const std::string& ctx) {
-    if (block.is_object() && block.contains("enabled")) {
-        const auto& v = block["enabled"];
-        if (v.is_boolean()) {
-            return v.get<bool>();
-        }
-        if (v.is_string()) {
-            std::string s = v.get<std::string>();
-            for (auto& c : s) {
-                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-            }
-            if (s == "true") {
-                return true;
-            }
-            if (s == "false") {
-                return false;
-            }
-        }
-        std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled invalido (" << v.dump()
-                  << "; formato true|false, tambien como texto sin distinguir mayusculas): se usa false (cabeza APAGADA)\n";
-        return false;
-    }
-    std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled ausente (formato true|false): se usa false (cabeza APAGADA)\n";
-    return false;
+    return heads::read_enabled(block, ctx);
 }
 }  // namespace
 
@@ -420,22 +398,9 @@ DetectorConfig ConfigLoader::load() {
     {
         auto& mon = json_["monitoring"];
         config.monitoring.stats_interval_seconds = get_required<int>(mon, "stats_interval_seconds", "monitoring");
-        {   // [HEADS-INTERVALO-D305] el JSON manda; ausente, no entero o fuera de rango -> defecto validado + [CONFIG-DEFAULT]
-            constexpr int kDef = 60, kMin = 10, kMax = 3600;
-            config.monitoring.heads_log_interval_seconds = kDef;
-            if (!mon.contains("heads_log_interval_seconds")) {
-                std::cerr << "[CONFIG-DEFAULT] monitoring.heads_log_interval_seconds ausente (entero en [" << kMin
-                          << ", " << kMax << "] segundos): se usa " << kDef << "\n";
-            } else if (!mon["heads_log_interval_seconds"].is_number_integer() ||
-                       mon["heads_log_interval_seconds"].get<long long>() < kMin ||
-                       mon["heads_log_interval_seconds"].get<long long>() > kMax) {
-                std::cerr << "[CONFIG-DEFAULT] monitoring.heads_log_interval_seconds invalido ("
-                          << mon["heads_log_interval_seconds"].dump() << "; entero en [" << kMin << ", " << kMax
-                          << "] segundos): se usa " << kDef << "\n";
-            } else {
-                config.monitoring.heads_log_interval_seconds = mon["heads_log_interval_seconds"].get<int>();
-            }
-        }
+        // [HEADS-INTERVALO-D305] [HEADS-TESTS-D305] entero en [10, 3600], defecto 60; regla en heads_config.hpp
+        config.monitoring.heads_log_interval_seconds = heads::read_int_in_range(
+            mon, "heads_log_interval_seconds", "monitoring", 60, 10, 3600);
         config.monitoring.performance_tracking = get_required<bool>(mon, "performance_tracking", "monitoring");
         
         auto& ml_met = mon["ml_metrics"];

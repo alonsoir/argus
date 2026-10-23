@@ -7,51 +7,11 @@
 #include <cctype>  // [HEADS-SNIFFER-D305]
 #include <string>  // [HEADS-SNIFFER-D305]
 
-// [HEADS-SNIFFER-D305] reglas de Alonso: el JSON manda y ningun campo se lee en silencio.
-namespace {
-// 'enabled': booleano o texto "true"/"false" sin distinguir mayusculas; ausente o invalido -> false + aviso.
-bool leer_enabled(const Json::Value& blk, const std::string& ctx) {
-    if (blk.isObject() && blk.isMember("enabled")) {
-        const Json::Value& v = blk["enabled"];
-        if (v.isBool()) {
-            return v.asBool();
-        }
-        if (v.isString()) {
-            std::string s = v.asString();
-            for (auto& c : s) {
-                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
-            }
-            if (s == "true") {
-                return true;
-            }
-            if (s == "false") {
-                return false;
-            }
-        }
-        std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled invalido (formato true|false, tambien como texto sin "
-                     "distinguir mayusculas): se usa false (APAGADO)" << std::endl;
-        return false;
-    }
-    std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled ausente (formato true|false): se usa false (APAGADO)"
-              << std::endl;
-    return false;
-}
-// entero en [mn, mx]; ausente, no entero o fuera de rango -> defecto + aviso con campo, formato y limites.
-int leer_entero(const Json::Value& blk, const char* clave, const std::string& ctx, int def, int mn, int mx) {
-    if (!blk.isObject() || !blk.isMember(clave)) {
-        std::cerr << "[CONFIG-DEFAULT] " << ctx << "." << clave << " ausente (entero en [" << mn << ", " << mx
-                  << "]): se usa " << def << std::endl;
-        return def;
-    }
-    const Json::Value& v = blk[clave];
-    if (!v.isInt() || v.asInt() < mn || v.asInt() > mx) {
-        std::cerr << "[CONFIG-DEFAULT] " << ctx << "." << clave << " invalido (entero en [" << mn << ", " << mx
-                  << "]): se usa " << def << std::endl;
-        return def;
-    }
-    return v.asInt();
-}
-}  // namespace
+// [HEADS-SNIFFER-D305] [HEADS-TESTS-D305] reglas de Alonso (el JSON manda y ningun campo se lee en silencio) en
+// heads_config.hpp, probadas en tests/test_heads_config.cpp.
+#include "heads_config.hpp"  // [HEADS-TESTS-D305]
+using sniffer::heads::leer_enabled;
+using sniffer::heads::leer_entero;
 
 bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig& config, bool verbose) {
     try {

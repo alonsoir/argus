@@ -1035,6 +1035,21 @@ target_include_directories(test_ip_format PRIVATE
 add_test(NAME test_ip_format COMMAND test_ip_format)
 message(STATUS "🧪 Unit Test: test_ip_format configured (DAY 229 - DEBT-SNIFFER-IP-BYTE-ORDER-001)")
 
+# DAY305 [HEADS-TESTS-D305] lectores de configuracion del fast-path y de los intervalos (heads_config.hpp)
+add_executable(test_heads_config
+        tests/test_heads_config.cpp
+)
+target_include_directories(test_heads_config PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${JSONCPP_INCLUDE_DIRS}
+)
+target_link_directories(test_heads_config PRIVATE ${JSONCPP_LIBRARY_DIRS})
+target_link_libraries(test_heads_config
+        ${JSONCPP_LIBRARIES}
+)
+add_test(NAME test_heads_config COMMAND test_heads_config)
+message(STATUS "🧪 Unit Test: test_heads_config configured (DAY 305 - [HEADS-TESTS-D305])")
+
 # ============================================================================
 # DDOS-KAGG-D273:CMAKE  Agregador DDoS en-kernel: lector userspace (DAY 273)
 # Parte pura (compute_delta, ip_to_string): ctest, sin root ni kernel.
