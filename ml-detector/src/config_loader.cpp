@@ -43,6 +43,19 @@ T ConfigLoader::get_optional(const nlohmann::json& j, const std::string& key, co
     }
 }
 
+// [HEADS-SWITCH-D305] interruptor de cabeza: el JSON manda; si 'enabled' falta o no es booleano se usa true
+// (comportamiento historico, un JSON incompleto no apaga nada en silencio) y se avisa con [CONFIG-DEFAULT].
+// El estado EFECTIVO de cada cabeza se registra en el log con [HEADS] (zmq_handler).
+namespace {
+bool read_head_enabled(const nlohmann::json& block, const std::string& ctx) {
+    if (block.is_object() && block.contains("enabled") && block["enabled"].is_boolean()) {
+        return block["enabled"].get<bool>();
+    }
+    std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled ausente o no booleano (formato true|false): se usa true\n";
+    return true;
+}
+}  // namespace
+
 DetectorConfig ConfigLoader::load() {
     // Abrir archivo JSON
     std::ifstream file(config_path_);
@@ -263,7 +276,7 @@ DetectorConfig ConfigLoader::load() {
         
         // Level 1
         auto& l1 = ml["level1"];
-        config.ml.level1.enabled = get_required<bool>(l1, "enabled", "ml.level1");
+        config.ml.level1.enabled = read_head_enabled(l1, "ml.level1");  // [HEADS-SWITCH-D305]
         config.ml.level1.name = get_required<std::string>(l1, "name", "ml.level1");
         config.ml.level1.model_file = get_required<std::string>(l1, "model_file", "ml.level1");
         config.ml.level1.scaler_file = get_optional<std::string>(l1, "scaler_file", "");
@@ -277,7 +290,7 @@ DetectorConfig ConfigLoader::load() {
         auto& l2 = ml["level2"];
         
         auto& l2ddos = l2["ddos"];
-        config.ml.level2.ddos.enabled = get_required<bool>(l2ddos, "enabled", "ml.level2.ddos");
+        config.ml.level2.ddos.enabled = read_head_enabled(l2ddos, "ml.level2.ddos");  // [HEADS-SWITCH-D305]
         config.ml.level2.ddos.name = get_required<std::string>(l2ddos, "name", "ml.level2.ddos");
         config.ml.level2.ddos.model_file = get_required<std::string>(l2ddos, "model_file", "ml.level2.ddos");
         config.ml.level2.ddos.features_count = get_required<int>(l2ddos, "features_count", "ml.level2.ddos");
@@ -288,7 +301,7 @@ DetectorConfig ConfigLoader::load() {
         config.ml.level2.ddos.scaler_file = "";
         
         auto& l2ransom = l2["ransomware"];
-        config.ml.level2.ransomware.enabled = get_required<bool>(l2ransom, "enabled", "ml.level2.ransomware");
+        config.ml.level2.ransomware.enabled = read_head_enabled(l2ransom, "ml.level2.ransomware");  // [HEADS-SWITCH-D305]
         config.ml.level2.ransomware.name = get_required<std::string>(l2ransom, "name", "ml.level2.ransomware");
         config.ml.level2.ransomware.model_file = get_required<std::string>(l2ransom, "model_file", "ml.level2.ransomware");
         config.ml.level2.ransomware.features_count = get_required<int>(l2ransom, "features_count", "ml.level2.ransomware");
@@ -302,7 +315,7 @@ DetectorConfig ConfigLoader::load() {
         auto& l3 = ml["level3"];
         
         auto& l3int = l3["internal"];
-        config.ml.level3.internal.enabled = get_required<bool>(l3int, "enabled", "ml.level3.internal");
+        config.ml.level3.internal.enabled = read_head_enabled(l3int, "ml.level3.internal");  // [HEADS-SWITCH-D305]
         config.ml.level3.internal.name = get_required<std::string>(l3int, "name", "ml.level3.internal");
         config.ml.level3.internal.model_file = get_required<std::string>(l3int, "model_file", "ml.level3.internal");
         config.ml.level3.internal.features_count = get_required<int>(l3int, "features_count", "ml.level3.internal");
@@ -313,7 +326,7 @@ DetectorConfig ConfigLoader::load() {
         config.ml.level3.internal.scaler_file = "";
         
         auto& l3web = l3["web"];
-        config.ml.level3.web.enabled = get_required<bool>(l3web, "enabled", "ml.level3.web");
+        config.ml.level3.web.enabled = read_head_enabled(l3web, "ml.level3.web");  // [HEADS-SWITCH-D305]
         config.ml.level3.web.name = get_required<std::string>(l3web, "name", "ml.level3.web");
         config.ml.level3.web.model_file = get_required<std::string>(l3web, "model_file", "ml.level3.web");
         config.ml.level3.web.features_count = get_required<int>(l3web, "features_count", "ml.level3.web");

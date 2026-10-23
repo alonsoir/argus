@@ -64,7 +64,10 @@ ZMQHandler::ZMQHandler(
 
     // Log detector status
     logger_->info("📊 ML Detectors loaded:");
-    logger_->info("   Level 1: General Attack (ONNX)");
+    if (level1_model_) {  // [HEADS-SWITCH-D305]
+        logger_->info("   Level 1: General Attack (ONNX)");
+    }
+    log_heads_state("arranque");  // [HEADS-SWITCH-D305]
     logger_->info("[DDOS-V2] cabeza factorizada {}: modelo {} ({}), {} árboles, {} rasgos de flujo, k_ratio={}",  // [DDOS-V2-D293]
                   config_.ml.ddos_v2.enabled ? "ACTIVA" : "DESACTIVADA", ml_defender::ddos_v2::kModelName,
                   ml_defender::ddos_v2::kModelVersion, ml_defender::ddos_v2::kNumTrees,
@@ -334,6 +337,7 @@ void ZMQHandler::run() {
                              stats.events_received, stats.events_processed, stats.events_sent,
                              stats.attacks_detected, stats.deserialization_errors,
                              stats.feature_extraction_errors, stats.inference_errors);
+                log_heads_state("estadisticas");  // [HEADS-SWITCH-D305]
                 last_stats_report_ = now;
             }
 
@@ -430,10 +434,13 @@ void ZMQHandler::process_event(const std::string& message) {
         // [EVENT-KIND-D285] Solo los eventos de flujo traen rasgos; fast alert y ventana
         // ransomware llegan con centinelas y no pasan por level1 ni por las cabezas.
         const bool is_flow_event = (event.event_kind() == protobuf::EVENT_KIND_FLOW);
+        // [HEADS-SWITCH-D305] level1 solo si su modelo existe (ml.level1.enabled); apagada: ni rasgos, ni inferencia, ni
+        // prediccion/veredicto level1 publicados (antes un label -1 se habria publicado como "ATTACK").
+        const bool l1_on = is_flow_event && level1_model_ != nullptr;
 
         // Level 1: General Attack Detection (ONNX)
         std::vector<float> features_l1;
-        if (is_flow_event) try {  // [EVENT-KIND-D285] level1 solo sobre flujo
+        if (l1_on) try {  // [EVENT-KIND-D285] level1 solo sobre flujo; [HEADS-SWITCH-D305] y encendida
             features_l1 = extractor_->extract_level1_features(event);
             if (!extractor_->validate_features(features_l1)) {
                 logger_->error("Feature validation failed for event {}", event.event_id());
@@ -451,7 +458,7 @@ void ZMQHandler::process_event(const std::string& message) {
         int64_t label_l1      = -1;
         float confidence_l1   = 0.0f;
 
-        if (is_flow_event) try {  // [EVENT-KIND-D285]
+        if (l1_on) try {  // [EVENT-KIND-D285] [HEADS-SWITCH-D305]
             auto [pred_label, pred_confidence] = level1_model_->predict(features_l1);
             label_l1      = pred_label;
             confidence_l1 = pred_confidence;
@@ -468,7 +475,7 @@ void ZMQHandler::process_event(const std::string& message) {
 
         // Enrich with Level 1
         auto* ml_analysis  = event.mutable_ml_analysis();
-        if (is_flow_event) {  // [EVENT-KIND-D285] sin level1, sin enriquecer
+        if (l1_on) {  // [EVENT-KIND-D285] sin level1, sin enriquecer; [HEADS-SWITCH-D305]
             auto* level1_pred  = ml_analysis->mutable_level1_general_detection();
             level1_pred->set_model_name("level1_attack_detector");
             level1_pred->set_model_version("1.0.0");
@@ -526,7 +533,7 @@ void ZMQHandler::process_event(const std::string& message) {
 
         // Dual-Score Architecture
         // [EVENT-KIND-D285] sin rasgos de flujo el ML no se evalua: 0 (no 1 - 0 = 1)
-        double ml_score    = !is_flow_event ? 0.0
+        double ml_score    = !l1_on ? 0.0  // [HEADS-SWITCH-D305] level1 apagada: tampoco hay ML que puntuar
                            : (label_l1 == 1 ? confidence_l1 : (1.0 - confidence_l1));
         event.set_ml_detector_score(ml_score);
 
@@ -537,7 +544,7 @@ void ZMQHandler::process_event(const std::string& message) {
 
         double score_divergence = std::abs(fast_score - ml_score);
 
-        if (!is_flow_event) {  // [EVENT-KIND-D285] sin ML que comparar: autoridad del fast
+        if (!l1_on) {  // [EVENT-KIND-D285] sin ML que comparar: autoridad del fast; [HEADS-SWITCH-D305] idem con level1 apagada
             event.set_authoritative_source(protobuf::DETECTOR_SOURCE_FAST_ONLY);
         } else if (score_divergence > config_.scoring.divergence_warn_threshold) {
             event.set_authoritative_source(protobuf::DETECTOR_SOURCE_DIVERGENCE);
@@ -587,7 +594,7 @@ void ZMQHandler::process_event(const std::string& message) {
             logger_->debug("📊 Provenance: Sniffer verdict exists, adding ML verdict");
         }
 
-        if (is_flow_event) {  // [EVENT-KIND-D285] sin level1, sin veredicto RF
+        if (l1_on) {  // [EVENT-KIND-D285] sin level1, sin veredicto RF; [HEADS-SWITCH-D305]
             auto* rf_verdict = provenance->add_verdicts();
             rf_verdict->set_engine_name("random-forest-level1");
             rf_verdict->set_classification(label_l1 == 0 ? "Benign" : "Attack");
@@ -1201,6 +1208,26 @@ void ZMQHandler::memory_monitor_loop() {
         }
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
+}
+
+// [HEADS-SWITCH-D305] estado EFECTIVO de cada cabeza (no solo el JSON: una cabeza encendida cuyo detector no se pudo
+// construir sale OFF). Siempre visible, sin verbose: al arrancar y en cada informe de estadisticas.
+void ZMQHandler::log_heads_state(const char* momento) const {
+    const bool l1 = level1_model_ != nullptr;
+    const bool v2 = config_.ml.ddos_v2.enabled;
+    const bool d1 = ddos_detector_ && config_.ml.level2.ddos.enabled;
+    const bool rw = ransomware_detector_ && config_.ml.level2.ransomware.enabled;
+    const bool tr = traffic_detector_ && config_.ml.level3.web.enabled;
+    const bool in = internal_detector_ && config_.ml.level3.internal.enabled;
+    auto s = [](bool b) { return b ? "ON" : "OFF"; };
+    std::string nota;
+    if (!l1 && !v2 && !(force_all_heads_ && (d1 || rw || tr || in))) {
+        nota = " | TODAS APAGADAS: sin clasificacion, final_decision=ALLOW (el bronce se sigue escribiendo)";
+    } else if (!l1 && !force_all_heads_ && (d1 || rw || tr || in)) {
+        nota = " | AVISO: ddos_v1/ransomware/traffic/internal solo corren tras level1=ATTACK; con level1 OFF no se evaluan";
+    }
+    logger_->warn("[HEADS] ({}) level1={} ddos_v2={} ddos_v1={} ransomware={} traffic={} internal={} force_all_heads={}{}",
+                  momento, s(l1), s(v2), s(d1), s(rw), s(tr), s(in), s(force_all_heads_), nota);
 }
 
 double ZMQHandler::get_memory_usage_mb() {
