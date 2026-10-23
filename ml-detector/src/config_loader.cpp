@@ -3,6 +3,7 @@
 #include <stdexcept>
 #include <iostream>
 #include <iomanip>
+#include <cctype>  // [HEADS-DEFAULT-OFF-D305]
 
 namespace ml_detector {
 
@@ -43,16 +44,34 @@ T ConfigLoader::get_optional(const nlohmann::json& j, const std::string& key, co
     }
 }
 
-// [HEADS-SWITCH-D305] interruptor de cabeza: el JSON manda; si 'enabled' falta o no es booleano se usa true
-// (comportamiento historico, un JSON incompleto no apaga nada en silencio) y se avisa con [CONFIG-DEFAULT].
-// El estado EFECTIVO de cada cabeza se registra en el log con [HEADS] (zmq_handler).
+// [HEADS-SWITCH-D305] interruptor de cabeza: el JSON manda. [HEADS-DEFAULT-OFF-D305] 'enabled' acepta booleano JSON o texto
+// "true"/"false" sin distinguir mayusculas; si falta o tiene cualquier otro valor la cabeza queda APAGADA (false)
+// y se avisa con [CONFIG-DEFAULT]. El estado EFECTIVO de cada cabeza se registra en el log con [HEADS] (zmq_handler).
 namespace {
 bool read_head_enabled(const nlohmann::json& block, const std::string& ctx) {
-    if (block.is_object() && block.contains("enabled") && block["enabled"].is_boolean()) {
-        return block["enabled"].get<bool>();
+    if (block.is_object() && block.contains("enabled")) {
+        const auto& v = block["enabled"];
+        if (v.is_boolean()) {
+            return v.get<bool>();
+        }
+        if (v.is_string()) {
+            std::string s = v.get<std::string>();
+            for (auto& c : s) {
+                c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+            }
+            if (s == "true") {
+                return true;
+            }
+            if (s == "false") {
+                return false;
+            }
+        }
+        std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled invalido (" << v.dump()
+                  << "; formato true|false, tambien como texto sin distinguir mayusculas): se usa false (cabeza APAGADA)\n";
+        return false;
     }
-    std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled ausente o no booleano (formato true|false): se usa true\n";
-    return true;
+    std::cerr << "[CONFIG-DEFAULT] " << ctx << ".enabled ausente (formato true|false): se usa false (cabeza APAGADA)\n";
+    return false;
 }
 }  // namespace
 
@@ -252,18 +271,14 @@ DetectorConfig ConfigLoader::load() {
             constexpr double kDefK = 3.0;
             constexpr double kMinK = 1.5;
             constexpr double kMaxK = 50.0;
-            config.ml.ddos_v2.enabled = true;
+            config.ml.ddos_v2.enabled = false;  // [HEADS-DEFAULT-OFF-D305]
             config.ml.ddos_v2.k_ratio = kDefK;
             if (!ml.contains("ddos_v2") || !ml["ddos_v2"].is_object()) {
-                std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2 ausente o no es un objeto: enabled=true, k_ratio=" << kDefK
+                std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2 ausente o no es un objeto: enabled=false (cabeza APAGADA), k_ratio=" << kDefK
                           << " (número en [" << kMinK << ", " << kMaxK << "])\n";
             } else {
                 const auto& d2 = ml["ddos_v2"];
-                if (d2.contains("enabled") && d2["enabled"].is_boolean()) {
-                    config.ml.ddos_v2.enabled = d2["enabled"].get<bool>();
-                } else {
-                    std::cerr << "[CONFIG-DEFAULT] ml.ddos_v2.enabled ausente o no booleano (formato true|false): se usa true\n";
-                }
+                config.ml.ddos_v2.enabled = read_head_enabled(d2, "ml.ddos_v2");  // [HEADS-DEFAULT-OFF-D305]
                 if (d2.contains("k_ratio") && d2["k_ratio"].is_number() &&
                     d2["k_ratio"].get<double>() >= kMinK && d2["k_ratio"].get<double>() <= kMaxK) {
                     config.ml.ddos_v2.k_ratio = d2["k_ratio"].get<double>();
