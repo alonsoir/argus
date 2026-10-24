@@ -556,19 +556,6 @@
         ]
       }
     },
-    "ddos": {
-      "_description": "DDoS-specific heuristics (future - currently not implemented)",
-      "_status": "PLANNED",
-      "scores": {
-        "high_threat": 0.95,
-        "suspicious": 0.7
-      },
-      "activation_thresholds": {
-        "syn_flood_rate": 10000,
-        "udp_flood_rate": 50000,
-        "icmp_flood_rate": 5000
-      }
-    },
     "logging": {
       "_comment": "Detailed logging for F1-score validation",
       "log_activations": true,
