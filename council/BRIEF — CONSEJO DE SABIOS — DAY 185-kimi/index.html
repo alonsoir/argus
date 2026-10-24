@@ -1,0 +1,1085 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/BRIEF%20%E2%80%94%20CONSEJO%20DE%20SABIOS%20%E2%80%94%20DAY%20185-kimi/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Consejo de Sabios — Day 185: Peer Review Adversarial (Kimi) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-day-185-peer-review-adversarial-kimi" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — Day 185: Peer Review Adversarial (Kimi)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#f1-basta-un-golden-de-27-vectores-como-red-permanente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F1 — ¿Basta un golden de 27 vectores como red PERMANENTE?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#f2-locale-inmunidad-probada-o-asuncion-no-verificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F2 — Locale: ¿inmunidad probada o asunción no verificada?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#f3-d-d-diferido-legitimo-o-aplazamiento-indefinido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F3 — D-D diferido: ¿legítimo o aplazamiento indefinido?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#f4-debt-bronze-embedded-newline-001-bloqueante-o-post-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F4 — DEBT-BRONZE-EMBEDDED-NEWLINE-001: ¿bloqueante o post-FEDER?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#f5-reescritura-del-claim" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        F5 — Reescritura del claim
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#transversal-el-plan-de-b4-es-seguro-y-suficiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transversal: ¿El plan de B4 es seguro y suficiente?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-condiciones-de-merge-kimi" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de condiciones de merge (Kimi)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-day-185-peer-review-adversarial-kimi">Consejo de Sabios — Day 185: Peer Review Adversarial (Kimi)</h1>
+<p>Aplico el mandato del brief: <strong>no validar, atacar</strong>. Mi objetivo es encontrar el agujero, no aplaudir la arquitectura.</p>
+<hr />
+<h2 id="f1-basta-un-golden-de-27-vectores-como-red-permanente">F1 — ¿Basta un golden de 27 vectores como red PERMANENTE?</h2>
+<p><strong>Veredicto: NO basta. Exigiría más, pero con una estrategia específica.</strong></p>
+<p>El problema no es el número (27 es razonable para un espacio enumerado), sino la <strong>naturaleza del espacio de entrada</strong>. Los 24 vectores "rincon" fueron diseñados por un humano (Alonso+Claude) con sesgos de quien ya conoce la implementación. Esto es <strong>test por enumeración de sospechas</strong>, no por exploración sistemática del espacio.</p>
+<p><strong>Ataque concreto:</strong> El espacio de <code>CorrelationV1Row</code> tiene campos de tipos heterogéneos (strings, doubles, enums, timestamps). La interacción combinatoria entre:
+- Strings con delimitadores CSV (<code>,</code>, <code>"</code>, <code>\n</code>, <code>\r</code>, <code>\t</code>)
+- Doubles en fronteras de precisión (epsilon, max, min, subnormal, NaN, ±Inf)
+- Timestamps en fronteras de epoch y overflow
+- Combinaciones de campos opcionales/vacíos</p>
+<p>...no está cubierta exhaustivamente. Un vector que pase <code>to_row</code> pero produzca una fila que <code>serialize</code> formatee diferente al oráculo podría existir en la intersección de dos rincones no considerados.</p>
+<p><strong>Lo que exijo como condición de merge:</strong></p>
+<ol>
+<li>
+<p><strong>Fuzzing estructurado de la struct <code>CorrelationV1Row</code></strong> (no del protobuf): generar structs aleatorias válidas, serializar con <code>libcorrelation_v1</code>, y verificar que <code>validate</code> las acepta y que la serialización es determinista. Esto no requiere oráculo de bytes — prueba coherencia interna.</p>
+</li>
+<li>
+<p><strong>Mutación del golden</strong>: tomar los 27 vectores golden y aplicar mutaciones sistemáticas (cambiar un byte, cambiar un campo, permutar columnas) para verificar que <code>validate</code> rechaza lo que debe rechazar. Esto prueba la <strong>frontera de validez</strong>.</p>
+</li>
+<li>
+<p><strong>Propiedad adicional a probar</strong>: para cualquier <code>Row</code> que pase <code>validate</code>, <code>serialize(row) == serialize(deserialize(serialize(row)))</code> (si existe deserialización en la lib; si no, es deuda).</p>
+</li>
+</ol>
+<p><strong>Sobre "¿contra qué oráculo si build_row ya no existe?":</strong> El oráculo de B4 no es <code>build_row</code>, es el <strong>golden congelado</strong>. El fuzzing no compara contra oráculo de bytes, compara contra invariantes (determinismo, validez, no-crash). Eso es suficiente para una red permanente complementaria.</p>
+<hr />
+<h2 id="f2-locale-inmunidad-probada-o-asuncion-no-verificada">F2 — Locale: ¿inmunidad probada o asunción no verificada?</h2>
+<p><strong>Veredicto: La inmunidad está parcialmente probada; la asunción sobre producción es NO verificada. Este frente es el más peligroso del brief.</strong></p>
+<p><strong>Ataque en tres capas:</strong></p>
+<p><strong>Capa A — El test actual es insuficiente.</strong> <code>es_ES</code> como único locale hostil es un caso de conveniencia (el del autor), no de diseño. Los locales problemáticos para CSV numérico incluyen:
+- <code>de_DE</code> (coma decimal, punto como separador de millares)
+- <code>fr_FR</code> (espacio como separador de millares)
+- <code>ar_SA</code> (dígitos arábigos orientales, RTL potencial)
+- <code>ja_JP</code> (dígitos de ancho completo en algunos contextos)
+- <code>C</code> vs <code>POSIX</code> vs <code>en_US.UTF-8</code> (diferencias sutiles en grouping)</p>
+<p>Una matriz de CI con al menos estos 5 locales debe ser <strong>gate de merge</strong>, no nice-to-have.</p>
+<p><strong>Capa B — La pregunta de producción es crítica y no respondida.</strong> El brief dice: "No se ha verificado bajo qué locale arranca el daemon en producción." Esto es <strong>un bug activo potencial</strong>, no una hipótesis. Si el daemon de aRGus arranca bajo <code>es_ES</code> (lo cual es plausible en un hospital de Badajoz), el bronce viejo <strong>está emitiendo comas decimales ahora mismo</strong>. Eso significa:
+- El grafo Kuzu downstream recibe <code>0,910000</code> en lugar de <code>0.910000</code>
+- El HMAC se computa sobre bytes con coma, no punto
+- Cualquier adaptador futuro que fuerce <code>classic</code> producirá bronce <strong>incompatible</strong> con el histórico</p>
+<p><strong>Esto es una ruptura de contrato silenciosa.</strong> El D-E no es una mejora, es una corrección de bug. Y como corrección de bug, debe documentarse como <strong>breaking change</strong> para cualquier consumidor del bronce histórico.</p>
+<p><strong>Capa C — El imbue por stream es correcto pero frágil.</strong> <code>std::ostringstream</code> con <code>imbue</code> es locale-safe, pero cualquier código futuro que use <code>std::to_string</code>, <code>printf</code>, <code>fmt::format</code> sin locale explícito romperá la invariante. Recomendaría encapsular la formateación numérica en una función interna de la lib que <strong>nunca</strong> use <code>operator&lt;&lt;</code> directamente, sino una implementación locale-agnóstica propia (ej: <code>snprintf</code> con <code>"%.6f"</code> o <code>std::to_chars</code> si C++17+).</p>
+<p><strong>Condición de merge:</strong>
+1. Matriz de CI con mínimo 5 locales hostiles como gate.
+2. <strong>Investigación documentada</strong> del locale de arranque del daemon en producción (systemd service, contenedor, init script). Si es <code>es_ES</code>, el bronce histórico está corrupto y debe documentarse como known issue.
+3. Encapsular formateo numérico en función interna de la lib, no depender de <code>operator&lt;&lt;</code> con <code>imbue</code>.</p>
+<hr />
+<h2 id="f3-d-d-diferido-legitimo-o-aplazamiento-indefinido">F3 — D-D diferido: ¿legítimo o aplazamiento indefinido?</h2>
+<p><strong>Veredicto: LEGÍTIMO como no-bloqueante, pero con condiciones estrictas de cierre.</strong></p>
+<p><strong>Análisis:</strong> El argumento del autor es sólido. El <code>write_record</code> actual emite <code>""</code> para enum desconocido (preservado byte a byte en el golden, vector <code>rincon_16</code>). Diferir D-D no introduce regresión porque:
+- El comportamiento observable no cambia
+- El golden lo captura
+- Es un endurecimiento (rechazar en lugar de aceptar silenciosamente), no una corrección</p>
+<p><strong>Pero el peligro está en la semántica del enum desconocido.</strong> Si col 17 es <code>DetectorSource</code> (7 valores conocidos), un enum desconocido en producción significa:
+- Un nodo con versión más nueva de protobuf recibe un valor que un nodo más viejo no conoce
+- El nodo viejo serializa <code>""</code> (el bronce pierde información)
+- El grafo Kuzu no puede correlacionar por <code>source_sensor</code> porque el campo está vacío</p>
+<p>Esto no es un bug del refactor, es una <strong>limitación del contrato bronce v1</strong>. D-D debería ser parte del diseño de <code>correlation_v2</code>, no un parche sobre v1.</p>
+<p><strong>Condición de merge:</strong>
+1. <strong>DEBT ticket con criterio de cierre explícito:</strong> "Implementar guard de enum en col 17 con política de rechazo + logging; evaluar si el rechazo debe ser Error (fila descartada) o Warning (fila escrita con valor vacío pero trazable)". No "ya lo haré", sino "se hará en el sprint X con este criterio".
+2. <strong>Documentar en el contrato</strong> que col 17 acepta valores fuera del enum conocido y los normaliza a <code>""</code>. Esto es honestidad científica: el claim actual debe reflejar que el contrato es permisivo, no estricto.</p>
+<hr />
+<h2 id="f4-debt-bronze-embedded-newline-001-bloqueante-o-post-feder">F4 — DEBT-BRONZE-EMBEDDED-NEWLINE-001: ¿bloqueante o post-FEDER?</h2>
+<p><strong>Veredicto: POST-FEDER, pero con una salvedad crítica que el brief no menciona.</strong></p>
+<p><strong>Análisis:</strong> El vector con <code>\n</code> embebido produce una "línea" bronce que ocupa dos líneas físicas. El <code>parse_and_verify</code> basado en <code>getline</code> partirá el registro. Esto es una debilidad del <strong>formato CSV</strong>, no del refactor.</p>
+<p><strong>PERO — y aquí está el ataque — el brief dice que el golden "lo captura bien leyendo el fichero entero".</strong> Eso esconde una suposición: el reader downstream <strong>también</strong> lee el fichero entero. Si <code>parse_and_verify</code> usa <code>getline</code>, está roto. Si el reader de producción usa <code>getline</code>, está roto. La pregunta no es si el formato es débil (lo es), sino si <strong>la producción actual ya está rota</strong> para este caso.</p>
+<p><strong>Investigación requerida antes de FEDER:</strong>
+1. ¿El reader downstream en producción usa <code>getline</code> o un parser CSV real?
+2. ¿Ha habido eventos con <code>\n</code> embebido en campos string en el último mes? (query al bronce histórico)
+3. Si la respuesta a (1) es <code>getline</code> y a (2) es "sí", entonces el bronce histórico tiene registros partidos y el HMAC no valida para ellos. Eso es un <strong>bug de integridad de datos activo</strong>.</p>
+<p><strong>Si la producción usa un parser CSV real (que maneja comillas correctamente):</strong> post-FEDER, con ticket de deuda para evaluar formatos alternativos (JSON Lines, Parquet, etc.) para <code>correlation_v2</code>.</p>
+<p><strong>Si la producción usa <code>getline</code>:</strong> esto es un bug activo que debe documentarse como known issue con workaround (escapar <code>\n</code> como <code>\n</code> literal o rechazar filas con <code>\n</code> embebido).</p>
+<hr />
+<h2 id="f5-reescritura-del-claim">F5 — Reescritura del claim</h2>
+<p><strong>Claim propuesto por el autor:</strong></p>
+<blockquote>
+<p>"Refactor de la capa de serialización a una librería compartida, probado byte-idéntico contra un golden congelado y contra el oráculo en vivo, sobre 27 vectores incluidos los rincones del serializador, bajo locale classic, con el guard de enum desconocido (D-D) diferido a commit aparte sin regresión."</p>
+</blockquote>
+<p><strong>Claim corregido (honesto):</strong></p>
+<blockquote>
+<p>"Refactor de la capa de serialización a una librería compartida, probado byte-idéntico contra un golden congelado de 27 vectores (3 realistas + 24 rincones del serializador) y contra el oráculo en vivo bajo <code>std::locale::classic</code>, con cobertura de casos adversariales <strong>acotada pero no exhaustiva</strong> (D-B). El guard de enum desconocido (D-D) se preserva byte-idéntico al comportamiento permisivo existente (emisión de <code>""</code>) y se diferencia a commit posterior. La inmunidad a locale se verifica bajo <code>es_ES</code>; <strong>no se ha verificado el locale de arranque del daemon en producción</strong>. El formato bronce v1 tiene una debilidad conocida con newlines embebidos en campos string que afecta a readers basados en <code>getline</code>."</p>
+</blockquote>
+<p><strong>Diferencias clave:</strong>
+- "acotada pero no exhaustiva" en lugar de implícitamente exhaustiva
+- "preserva byte-idéntico al comportamiento permisivo existente" en lugar de "sin regresión" (que suena a mejora)
+- "no se ha verificado el locale de arranque" como salvedad explícita
+- "debilidad conocida con newlines embebidos" como parte del claim, no como deuda escondida</p>
+<hr />
+<h2 id="transversal-el-plan-de-b4-es-seguro-y-suficiente">Transversal: ¿El plan de B4 es seguro y suficiente?</h2>
+<p><strong>Veredicto: El plan de B4 es lógicamente correcto pero tiene un riesgo no mencionado.</strong></p>
+<p><strong>Riesgo identificado — El golden captura <code>build_row</code> bajo <code>locale::classic</code>, pero <code>build_row</code> original NO forzaba <code>classic</code>.</strong> Esto significa que el golden <strong>no es byte-idéntico al oráculo histórico</strong> si el oráculo histórico corría bajo <code>es_ES</code>. El golden captura "lo que debería haber sido", no "lo que fue".</p>
+<p><strong>Consecuencia:</strong> Tras B4, <code>write_record</code> emitirá bytes que coinciden con el golden, pero si el bronce histórico en producción tiene comas decimales (por <code>es_ES</code>), el nuevo <code>write_record</code> producirá <strong>bronce incompatible con el histórico</strong>. Esto es una ruptura silenciosa de compatibilidad hacia atrás.</p>
+<p><strong>Mitigación requerida:</strong>
+1. Antes de B4, verificar una muestra del bronce histórico en producción. Si contiene comas decimales, el D-E es una <strong>corrección de bug con breaking change</strong>, no un refactor transparente.
+2. Si hay comas decimales en producción, documentar el cambio de formato como breaking change y coordinar con el equipo del grafo Kuzu.</p>
+<p><strong>Segundo riesgo (menor):</strong> El rewire B4 elimina <code>build_row</code> y <code>compute_hmac</code>. Si algún otro módulo (test, herramienta de diagnóstico, script de migración) depende de ellos indirectamente, B4 romperá compilación. Recomendaría una búsqueda de símbolos (<code>grep -r build_row</code>) antes del commit.</p>
+<hr />
+<h2 id="resumen-de-condiciones-de-merge-kimi">Resumen de condiciones de merge (Kimi)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Condición</th>
+<th>Prioridad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Fuzzing estructurado de <code>CorrelationV1Row</code> + mutación del golden</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Matriz de CI con 5+ locales hostiles como gate</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Investigación documentada del locale de arranque en producción</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Encapsular formateo numérico en función interna locale-agnóstica</td>
+<td>Media</td>
+</tr>
+<tr>
+<td>5</td>
+<td>DEBT ticket D-D con criterio de cierre explícito (no "ya lo haré")</td>
+<td>Media</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Verificar si bronce histórico tiene comas decimales (breaking change D-E)</td>
+<td>Alta</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Documentar DEBT-BRONZE-EMBEDDED-NEWLINE-001 con investigación de reader downstream</td>
+<td>Media</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Búsqueda de dependencias de <code>build_row</code>/<code>compute_hmac</code> antes de B4</td>
+<td>Baja</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Reescribir claim con salvedades de F5</td>
+<td>Media</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Señal vs ruido:</strong> La señal más fuerte está en F2 (locale de producción) y en el riesgo transversal de B4 (breaking change silencioso por D-E). El ruido sería pedir más vectores golden sin estrategia, o bloquear por D-D sin argumento de regresión.</p>
+<hr />
+<p><em>Metodología aplicada: ataque sistemático a cada frente, distinción entre "no probado" y "probado insuficientemente", y búsqueda de interacciones no consideradas (D-E + bronce histórico).</em></p>
+<p>FDO</p>
+<p>KIMI</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1193 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-040%20ML%20PLUGIN%20RETRAINING%20CONTRACT-respuesta-QWEN/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>🏛️ CONSEJO DE SABIOS — REVISIÓN ADR-040 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-adr-040" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              🏛️ CONSEJO DE SABIOS — REVISIÓN ADR-040
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-ejecutivo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🎯 Veredicto Ejecutivo
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-a-pregunta-abierta-pipeline-de-evaluacion-interno-o-cicd-externo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ❓ Respuesta a Pregunta Abierta: ¿Pipeline de evaluación interno o CI/CD externo?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analisis-y-refinamientos-por-regla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🔍 Análisis y Refinamientos por Regla
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="🔍 Análisis y Refinamientos por Regla">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#regla-1-walk-forward-obligatorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 1 — Walk-forward obligatorio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-2-golden-set-inmutable-versionado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 2 — Golden Set inmutable, versionado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-3-guardrail-automatico-del-2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 3 — Guardrail automático del −2%
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-4-ipw-5-de-exploracion-forzada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 4 — IPW + 5% de exploración forzada
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#checklist-de-aprobacion-condicionada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        📋 Checklist de Aprobación Condicionada
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#palabras-finales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🏁 Palabras Finales
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-adr-040">🏛️ CONSEJO DE SABIOS — REVISIÓN ADR-040</h1>
+<p><em>Feedback riguroso, basado en evidencia científica y centrado en la integridad del ciclo de vida ML para aRGus NDR</em></p>
+<hr />
+<h2 id="veredicto-ejecutivo">🎯 Veredicto Ejecutivo</h2>
+<p><strong>APROBADO CON REFINAMIENTOS CRÍTICOS.</strong></p>
+<p>El ADR-040 formaliza un contrato de reentrenamiento ML que es <strong>necesario, verificable y publicable</strong>. Las cinco reglas abordan riesgos sistémicos reales (catastrophic forgetting, feedback loop, regresión silenciosa) con mecanismos concretos. Sin embargo, tres refinamientos son esenciales antes de la implementación: (1) clarificar el manejo de concept drift en el golden set, (2) definir métricas de diversidad para IPW, y (3) resolver la arquitectura del pipeline de evaluación con un enfoque híbrido.</p>
+<blockquote>
+<p><em>"Un modelo que no se valida contra el pasado no puede proteger el futuro."</em></p>
+</blockquote>
+<hr />
+<h2 id="respuesta-a-pregunta-abierta-pipeline-de-evaluacion-interno-o-cicd-externo">❓ Respuesta a Pregunta Abierta: ¿Pipeline de evaluación interno o CI/CD externo?</h2>
+<p><strong>Veredicto:</strong> <strong>ENFOQUE HÍBRIDO: núcleo reproducible en repo + ejecución flexible (local/CI).</strong></p>
+<p><strong>Recomendación concreta:</strong></p>
+<pre><code>┌─────────────────────────────────────────┐
+│ eval-pipeline/ (en repo aRGus)          │
+│ ├── walk_forward_split.py               │
+│ ├── evaluate_against_golden.py          │
+│ ├── check_guardrails.py                 │
+│ ├── compute_ipw_weights.py              │
+│ └── run_algorithm_competition.py        │
+└─────────────────────────────────────────┘
+       ↓
+Ejecución flexible:
+• Local: `make eval-plugin PLUGIN=candidate_v3.ubj` (Vagrant)
+• CI: GitHub Actions workflow que llama a los mismos scripts
+• Producción: Hook pre-firma en provision.sh
+</code></pre>
+<p><strong>Justificación técnica:</strong>
+- <strong>Reproducibilidad científica</strong>: Los scripts de evaluación deben estar versionados con el código que evalúan. Si viven solo en CI externo, se pierde trazabilidad entre modelo y criterio de evaluación.
+- <strong>Flexibilidad operacional</strong>: El mismo núcleo debe ejecutarse en desarrollo local (Vagrant), en CI (GitHub Actions) y como hook pre-despliegue.
+- <strong>Separación de responsabilidades</strong>: El pipeline de evaluación es <em>lógica de negocio</em> (qué métricas, qué umbrales), no <em>infraestructura de CI</em> (dónde se ejecuta).</p>
+<p><strong>Riesgo identificado:</strong>
+- Si el pipeline vive solo en CI externo, un cambio en la configuración de GitHub Actions podría alterar criterios de evaluación sin revisión de código.
+- Si vive solo en local, se pierde el histórico auditable de decisiones de promoción/rechazo.</p>
+<p><strong>Test mínimo reproducible:</strong></p>
+<pre><code class="language-bash"># scripts/verify-eval-pipeline.sh
+#!/bin/bash
+# Verifica que el pipeline de evaluación da resultados idénticos en local y CI
+
+# 1. Ejecutar localmente
+make eval-plugin PLUGIN=test-candidate.ubj OUTPUT=local-results.json
+
+# 2. Ejecutar en CI simulado (contenedor Docker idéntico a GH Actions)
+docker run --rm -v $(pwd):/workspace argus-eval:latest \
+    bash -c &quot;cd /workspace &amp;&amp; make eval-plugin PLUGIN=test-candidate.ubj OUTPUT=ci-results.json&quot;
+
+# 3. Comparar resultados (deben ser bit-a-bit idénticos para mismos inputs)
+if ! diff local-results.json ci-results.json &gt;/dev/null; then
+    echo &quot;❌ Evaluation pipeline non-deterministic: local vs CI mismatch&quot;
+    exit 1
+fi
+echo &quot;✅ Evaluation pipeline reproducible across environments&quot;
+</code></pre>
+<hr />
+<h2 id="analisis-y-refinamientos-por-regla">🔍 Análisis y Refinamientos por Regla</h2>
+<h3 id="regla-1-walk-forward-obligatorio">Regla 1 — Walk-forward obligatorio</h3>
+<p><strong>Veredicto:</strong> <strong>CORRECTA, PERO AÑADIR MANEJO EXPLÍCITO DE CONCEPT DRIFT.</strong></p>
+<p><strong>Refinamiento recomendado:</strong></p>
+<pre><code class="language-python"># walk_forward_split.py — extensión para concept drift
+def detect_concept_drift(train_data, val_data, threshold=0.15):
+    &quot;&quot;&quot;
+    Detecta si la distribución de features cambia significativamente
+    entre train y validation (indicador de concept drift).
+    Usa KS-test por feature + corrección de Bonferroni.
+    &quot;&quot;&quot;
+    from scipy.stats import ks_2samp
+    p_values = [ks_2samp(train_data[f], val_data[f]).pvalue 
+                for f in FEATURE_COLUMNS]
+    # Bonferroni correction for multiple testing
+    significant_drifts = sum(p &lt; 0.05/len(FEATURE_COLUMNS) for p in p_values)
+    return significant_drifts / len(FEATURE_COLUMNS) &gt; threshold
+
+# Si se detecta drift &gt; threshold:
+# 1. Log warning con métricas de drift por feature
+# 2. Permitir evaluación pero marcar resultado como &quot;DRIFT_DETECTED&quot;
+# 3. Requerir revisión manual antes de promoción
+</code></pre>
+<p><strong>Justificación:</strong> En tráfico de red real, los patrones de ataque evolucionan (nuevas variantes de ransomware, técnicas de evasión). El walk-forward valida generalización temporal, pero no detecta si el <em>concepto</em> mismo ha cambiado. Un modelo puede tener F1 estable mientras el entorno evoluciona hacia amenazas no representadas en el golden set.</p>
+<p><strong>Riesgo si se ignora</strong>: Un modelo validado con walk-forward pero sin detección de drift podría desplegarse en un entorno donde las amenazas han cambiado fundamentalmente, dando falsa confianza.</p>
+<hr />
+<h3 id="regla-2-golden-set-inmutable-versionado">Regla 2 — Golden Set inmutable, versionado</h3>
+<p><strong>Veredicto:</strong> <strong>CORRECTA, PERO DEFINIR PROCESO DE EVOLUCIÓN CONTROLADA.</strong></p>
+<p><strong>Refinamiento recomendado:</strong></p>
+<pre><code class="language-markdown">## Golden Set Lifecycle (ADR-040 §2.3)
+
+### Inmutabilidad operativa
+- El golden set activo (`golden/v1/`) es de solo-lectura para evaluación.
+- Ningún proceso de reentrenamiento puede modificarlo.
+
+### Evolución controlada (v1 → v2)
+1. Propuesta: Nuevo golden set candidato en `golden/v2-candidate/`
+2. Revisión: Consejo de Sabios valida cobertura de ataques + representatividad
+3. Deprecación: `golden/v1/` marcado como deprecated con fecha límite (ej. 6 meses)
+4. Migración: Todos los plugins en producción re-evaluados contra v2
+5. Activación: `golden/v2/` se convierte en activo; v1 se archiva
+
+### Criterios para nueva versión
+- Nuevos vectores de ataque documentados en literatura (ej. MITRE ATT&amp;CK T1566.001)
+- Cambios en distribución de tráfico benigno (ej. adopción de nuevo protocolo médico)
+- Degradación detectada en plugins existentes al evaluar contra tráfico real post-deploy
+
+### Hash de verificación
+Cada versión tiene SHA-256 registrado en `docs/GOLDEN-SET-REGISTRY.md`:
+</code></pre>
+<p>v1: a3f8c2d1... (2026-04-28) — CTU-13 Neris baseline
+v2: b7e9f1a4... (2026-10-15) — +Ransomware variants +DICOM traffic patterns</p>
+<pre><code></code></pre>
+<p><strong>Justificación:</strong> La inmutabilidad absoluta es ideal pero insostenible a largo plazo: nuevos ataques emergen, los protocolos médicos evolucionan, y el golden set debe reflejar la realidad operativa. El proceso de evolución controlada preserva la trazabilidad científica mientras permite adaptación.</p>
+<p><strong>Riesgo si se ignora</strong>: Un golden set obsoleto convierte el guardrail del −2% en una ilusión: un plugin podría pasar el guardrail contra datos antiguos mientras falla catastróficamente contra amenazas modernas.</p>
+<hr />
+<h3 id="regla-3-guardrail-automatico-del-2">Regla 3 — Guardrail automático del −2%</h3>
+<p><strong>Veredicto:</strong> <strong>CORRECTA, PERO AÑADIR MÉTRICA COMPUESTA PARA DECISIÓN BINARIA.</strong></p>
+<p><strong>Refinamiento recomendado:</strong></p>
+<pre><code class="language-python"># check_guardrails.py — métrica compuesta para decisión PROMOTE/REJECT
+def compute_promotion_score(metrics_new, metrics_current, weights=None):
+    &quot;&quot;&quot;
+    Calcula score compuesto para decisión de promoción.
+    Recall tiene peso 2× por criticidad en ciberseguridad.
+    &quot;&quot;&quot;
+    if weights is None:
+        weights = {'f1': 1.0, 'recall': 2.0, 'fpr': -1.0}  # FPR negativo: menor es mejor
+
+    deltas = {
+        'f1': metrics_new['f1'] - metrics_current['f1'],
+        'recall': metrics_new['recall'] - metrics_current['recall'],
+        'fpr': metrics_current['fpr'] - metrics_new['fpr']  # invertido: reducción es positiva
+    }
+
+    score = sum(weights[k] * deltas[k] for k in weights)
+
+    # Hard constraints: ningún umbral individual puede violarse
+    if deltas['recall'] &lt; -0.01 or deltas['f1'] &lt; -0.02 or deltas['fpr'] &lt; -0.02:
+        return None, &quot;HARD_CONSTRAINT_VIOLATED&quot;
+
+    return score, &quot;OK&quot;
+
+# Decisión:
+score, status = compute_promotion_score(new_metrics, current_metrics)
+if status != &quot;OK&quot; or score &lt; 0:
+    sys.exit(1)  # No firmar
+</code></pre>
+<p><strong>Justificación:</strong> Las tres métricas (F1, Recall, FPR) pueden moverse en direcciones opuestas. Un plugin con +3% F1 pero −1.5% Recall podría aprobar el guardrail individual pero degradar la detección de ataques. La métrica compuesta con peso elevado en Recall refleja la prioridad de seguridad: <strong>es mejor un falso positivo que un falso negativo en infraestructura crítica</strong>.</p>
+<p><strong>Riesgo si se ignora</strong>: Un plugin que mejora F1 a costa de Recall podría aprobar el guardrail mientras deja pasar más ataques, contradiciendo la misión de protección.</p>
+<hr />
+<h3 id="regla-4-ipw-5-de-exploracion-forzada">Regla 4 — IPW + 5% de exploración forzada</h3>
+<p><strong>Veredicto:</strong> <strong>CORRECTA, PERO ESPECIFICAR MÉTRICAS DE DIVERSIDAD Y UMBRAL DE REVISIÓN MANUAL.</strong></p>
+<p><strong>Refinamiento recomendado:</strong></p>
+<pre><code class="language-markdown">## IPW + Exploración: Especificación Operativa (ADR-040 §4.2)
+
+### Cálculo de propensiones
+- Modelo de propensión: Logistic Regression sobre features de flujo
+- Target: P(flow es etiquetado como &quot;ataque&quot; | features)
+- IPW weight = 1 / P(etiqueta actual | features) para flujos &quot;benignos&quot;
+
+### Métricas de diversidad obligatorias por ciclo
+El informe de diversidad debe incluir:
+1. **Entropy de distribución de clases**: H = −Σ p(c) log p(c)
+2. **Coverage de técnicas MITRE ATT&amp;CK**: % de técnicas representadas en el ciclo
+3. **Novelty score**: % de flujos con features fuera del 95% percentil del histórico
+
+### Umbral de revisión manual
+- Si Novelty score &gt; 15%: activar revisión manual del 10% (no 5%) de flujos &quot;benignos&quot;
+- Si Coverage ATT&amp;CK &lt; 80%: priorizar captura de tráfico que cubra técnicas faltantes
+- Si Entropy cae &gt;20% vs ciclo anterior: investigar sesgo de selección
+
+### Integración con rag-ingester
+El 5% de exploración se implementa como:
+```python
+# rag-ingester/src/labeling/exploration_sampler.py
+def sample_for_review(flows_benign, rate=0.05, novelty_threshold=0.15):
+    # Priorizar flujos con alta incertidumbre del modelo actual
+    uncertainties = model.predict_proba(flows_benign)[:, 1]  # P(ataque)
+    # Muestreo estratificado: 50% alta incertidumbre, 50% aleatorio
+    high_uncertainty = flows_benign[uncertainties &gt; 0.3]
+    random_sample = np.random.choice(flows_benign, size=int(rate*len(flows_benign)/2))
+    return np.concatenate([high_uncertainty[:len(random_sample)], random_sample])
+</code></pre>
+<pre><code>
+**Justificación:** IPW sin métricas de diversidad es una caja negra: no se puede auditar si la corrección de sesgo está funcionando. Las métricas propuestas (entropy, coverage, novelty) son cuantificables, reproducibles y publicables. El umbral dinámico de revisión manual adapta el esfuerzo operativo al nivel de incertidumbre del entorno.
+
+**Riesgo si se ignora**: Sin métricas de diversidad, el pipeline podría &quot;cumplir&quot; IPW técnicamente mientras perpetúa sesgos no detectados, erosionando gradualmente la capacidad de detección.
+
+---
+
+### Regla 5 — Competición de algoritmos
+
+**Veredicto:** **CORRECTA, PERO AÑADIR CRITERIO DE PARIDAD OPERACIONAL (LATENCIA + MEMORIA).**
+
+**Refinamiento recomendado:**
+```markdown
+## Competición de Algoritmos: Criterios de Evaluación (ADR-040 §5.3)
+
+### Métricas de rendimiento ML (peso 70%)
+- F1, Recall, FPR sobre golden set (walk-forward split)
+- Robustez a ruido: añadir Gaussian noise σ=0.01 a features, medir degradación
+
+### Métricas operacionales (peso 30%) — críticas para despliegue
+| Métrica | Umbral máximo | Justificación |
+|---------|--------------|--------------|
+| Latencia inferencia p99 | ≤5 ms | No puede degradar throughput del pipeline |
+| Memoria en inference | ≤50 MB | Compatible con RPi 4/5 con 2 GB RAM total |
+| Tamaño modelo en disco | ≤10 MB | Despliegue en entornos con almacenamiento limitado |
+| Tiempo de carga inicial | ≤200 ms | Arranque rápido para reinicios de emergencia |
+
+### Decisión final
+El algoritmo ganador debe:
+1. Superar a RandomForest baseline en ≥1 métrica ML sin degradar las otras dos
+2. Cumplir todos los umbrales operacionales
+3. Tener documentación de hiperparámetros y seed de entrenamiento para reproducibilidad
+
+Si ningún algoritmo cumple (1)+(2): mantener RandomForest y documentar gap para investigación futura.
+</code></pre>
+<p><strong>Justificación:</strong> En infraestructura crítica, un modelo con F1=0.999 pero latencia=50 ms es inútil si satura el pipeline bajo carga. Los criterios operacionales aseguran que la competición evalúe "mejor para aRGus", no solo "mejor en papel".</p>
+<p><strong>Riesgo si se ignora</strong>: Seleccionar un algoritmo por métricas ML puras podría llevar a un despliegue que degrada el rendimiento del sistema completo, anulando las mejoras de detección.</p>
+<hr />
+<h2 id="checklist-de-aprobacion-condicionada">📋 Checklist de Aprobación Condicionada</h2>
+<pre><code class="language-markdown">- [x] Regla 1: Walk-forward obligatorio — aprobado con extensión de concept drift
+- [x] Regla 2: Golden set inmutable — aprobado con proceso de evolución controlada
+- [x] Regla 3: Guardrail −2% — aprobado con métrica compuesta ponderada
+- [x] Regla 4: IPW + exploración — aprobado con métricas de diversidad explícitas
+- [x] Regla 5: Competición de algoritmos — aprobado con criterios operacionales
+- [x] Pregunta abierta: Pipeline híbrido (repo + ejecución flexible) — aprobado
+- [ ] Crear docs/GOLDEN-SET-REGISTRY.md con hash v1 y proceso de evolución
+- [ ] Implementar detect_concept_drift() en walk_forward_split.py
+- [ ] Añadir métrica compuesta a check_guardrails.py con peso 2× en Recall
+- [ ] Definir informe de diversidad mínimo en compute_ipw_weights.py
+- [ ] Documentar umbrales operacionales en docs/ML-OPERATIONAL-SLOS.md
+</code></pre>
+<hr />
+<h2 id="palabras-finales">🏁 Palabras Finales</h2>
+<p>Alonso:</p>
+<p>ADR-040 representa un salto de madurez en el tratamiento del ciclo de vida ML dentro de un sistema de seguridad crítica. No es solo un conjunto de reglas: es un <strong>marco de gobernanza verificable</strong> que transforma el reentrenamiento de una operación riesgosa en un proceso auditable.</p>
+<p>Las cinco reglas, con los refinamientos propuestos, equilibran rigor científico (walk-forward, golden set), seguridad operacional (guardrail ponderado, diversidad medible) y viabilidad práctica (competición con criterios operacionales, pipeline híbrido).</p>
+<blockquote>
+<p><em>"En ciberseguridad médica, un modelo no se mide por su F1 en papel. Se mide por su capacidad de proteger vidas bajo presión, día tras día, año tras año."</em></p>
+</blockquote>
+<p>Proceded con la implementación post-FEDER. El Consejo revisará el primer golden set versionado y la competición de algoritmos con el mismo rigor con el que evaluamos cada línea de este pipeline.</p>
+<p><em>Via Appia Quality · Un escudo que aprende de su propia sombra.</em></p>
+<p><strong>— Consejo de Sabios, DAY 135</strong> 🛡️</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

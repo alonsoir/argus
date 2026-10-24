@@ -1,0 +1,1030 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Sintesis%20-%20ADR-057%20Fase%200%20%C2%B7%20Decisi%C3%B3n%20Vela%20%C2%B7%20Estrategia%20de%20escritura%20Kuzu-claude/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>RÉPLICA — Claude (Anthropic) · 2ª ronda - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#replica-claude-anthropic-2a-ronda" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              RÉPLICA — Claude (Anthropic) · 2ª ronda
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#adr-057-fase-0-respondiendo-a-los-siete-no-a-las-preguntas-day-182" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ADR-057 Fase 0 · respondiendo a los siete, no a las preguntas · DAY 182
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#0-la-tesis-que-sostengo-contra-los-ocho-yo-incluido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0. La tesis que sostengo contra los ocho (yo incluido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-concesiones-con-nombre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Concesiones (con nombre)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-pushback-con-nombre-y-numero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Pushback (con nombre y número)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Pushback (con nombre y número)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#a-chatgpt-q1-no-puede-bloquear-d2-conflas-direccion-con-magnitud" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A ChatGPT — Q1 NO puede bloquear D2. Conflas dirección con magnitud.
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-los-cinco-del-8-gb-lineal-chatgpt-deepseek-grok-mistral-qwen-votasteis-no-medisteis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A los cinco del "8 GB lineal" (ChatGPT, DeepSeek, Grok, Mistral, Qwen) — votasteis, no medisteis.
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-geminigrokchatgptmistralqwenkimideepseek-q2-acordais-el-mecanismo-y-votais-el-numero" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Gemini/Grok/ChatGPT/Mistral/Qwen/Kimi/DeepSeek — Q2: acordáis el mecanismo y votáis el número.
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#a-mistralkimiqwendeepseekgemini-q5-validar-primero-no-bisecar-primero-y-el-blast-radius-es-mas-estrecho-de-lo-que-decis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A Mistral/Kimi/Qwen/DeepSeek/Gemini — Q5: validar-primero, no bisecar-primero; y el blast radius es más estrecho de lo que decís.
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-afilados-que-solo-salen-leyendoos-juntos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Afilados que solo salen leyéndoos juntos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-lo-que-mantengo-de-la-1a-ronda-sobrevivio-al-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Lo que mantengo de la 1ª ronda (sobrevivió al Consejo)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-veredicto-de-mi-2a-ronda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Veredicto de mi 2ª ronda
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="replica-claude-anthropic-2a-ronda">RÉPLICA — Claude (Anthropic) · 2ª ronda</h1>
+<h2 id="adr-057-fase-0-respondiendo-a-los-siete-no-a-las-preguntas-day-182">ADR-057 Fase 0 · respondiendo a los siete, no a las preguntas · DAY 182</h2>
+<blockquote>
+<p>Misma regla, ahora contra vosotros: cada objeción y cada concesión termina en un criterio
+falsable. Donde me ganasteis, lo digo con nombre. Donde votasteis en vez de medir, también.</p>
+</blockquote>
+<hr />
+<h2 id="0-la-tesis-que-sostengo-contra-los-ocho-yo-incluido">0. La tesis que sostengo contra los ocho (yo incluido)</h2>
+<p>Tratasteis los cinco bloqueantes como cinco problemas. <strong>Son uno.</strong> Kuzu tiene <strong>exactamente un writer</strong> (invariante de software, no de VM — lo dijo el motor por escrito en run3). Ese writer es un <strong>consumidor de tasa fija</strong> (~10k/s en VM, a medir en metal). Entonces:</p>
+<ul>
+<li><strong>Q2 (flush-by-time)</strong>, <strong>Q5 (bisección)</strong>, <strong>Q10 (backpressure)</strong> son la <strong>misma</strong> pregunta: cómo gestionar una <strong>cola hacia un único consumidor de tasa fija</strong>.</li>
+<li><strong>Q6 (batch)</strong> dimensiona el lote de ESA cola. <strong>Q3 (reader)</strong> mide qué le roba al consumidor. <strong>Q4 (memoria)</strong> es dónde vive la cola+grafo.</li>
+</ul>
+<p>Nadie lo enmarcó como un <strong>problema de presupuesto único</strong>: "tengo un writer a N upserts/s; todo lo de arriba (cola, batch, flush, drop-policy) se diseña contra ese presupuesto." Si lo enmarcáis así, los cinco bloqueantes dejan de ser una lista y se vuelven <strong>un solo subsistema: el <code>IngestQueue</code> de un solo consumidor.</strong> Ese es el diseño que falta, y es uno, no cinco.</p>
+<hr />
+<h2 id="1-concesiones-con-nombre">1. Concesiones (con nombre)</h2>
+<ul>
+<li><strong>ChatGPT — Q9 registry &gt; singleton. Tienes razón y retiro mi "lanzar en 2ª construcción".</strong> Un singleton ciego asume <em>un</em> path para siempre y <strong>mataría el sharding de Q8</strong>. Tu <code>DatabaseRegistry</code> (path→<code>weak_ptr</code>) impone "1 path = 1 Database" Y permite N paths. Q9 y Q8 se cierran con tu pieza. Mejor que la mía.</li>
+<li><strong>ChatGPT — Q10 backpressure. Hueco real que no vi.</strong> Lo integro abajo y lo afilo.</li>
+<li><strong>Todo el Consejo — el gate.</strong> Mi "nada bloquea Fase 0" estaba mal escrito por mí. El gate del <em>sink production-ready</em> sí carga los cinco. Concedido.</li>
+</ul>
+<hr />
+<h2 id="2-pushback-con-nombre-y-numero">2. Pushback (con nombre y número)</h2>
+<h3 id="a-chatgpt-q1-no-puede-bloquear-d2-conflas-direccion-con-magnitud">A ChatGPT — Q1 NO puede bloquear D2. Conflas dirección con magnitud.</h3>
+<p>Escribiste: <em>"Q1 bloqueante porque D2 depende directamente de ello."</em> <strong>Falso, y es demostrable.</strong> D2 = "Vela no". El único valor de Vela era multi-writer. run3 mostró que multi-writer no escala (373k rechazos) por la <strong>única write-tx</strong>, que es un invariante de Kuzu, <strong>no un artefacto de VM</strong>. El ×61 (Q1) mide single-writer batcheado-vs-no — no toca si multi-writer escala. <strong>Aunque ×61→×1 en metal, Vela sigue sin aportar nada</strong>, porque lo que aportaría (writers paralelos) sigue sin escalar. → Q1 es <strong>calibración del número</strong>, jamás gate de D2. Criterio: nombra UN experimento cuyo resultado revierta D2 sin contradecir run3. No existe.</p>
+<h3 id="a-los-cinco-del-8-gb-lineal-chatgpt-deepseek-grok-mistral-qwen-votasteis-no-medisteis">A los cinco del "8 GB lineal" (ChatGPT, DeepSeek, Grok, Mistral, Qwen) — votasteis, no medisteis.</h3>
+<p>Qwen: <em>"8.2 KB/nodo → 8.2 GB a 1M"</em>. Kimi: <em>"822/100k×1M = 8.22 GB, OOM garantizado"</em>. <strong>Dividisteis un buffer pool de tamaño fijo entre el número de nodos y llamasteis al cociente "coste por nodo".</strong> Es un error de categoría: los 822 MB son el <strong>pool por defecto + 4 hilos + materialización del UNWIND</strong>, no datos de nodo (100k nodos en disco son ~10 MB). Kuzu es <strong>disco con buffer manager configurable</strong> (lo confirma Gemini, lo medio-admite Kimi). <strong>Criterio que os refuta:</strong> correr 100k Y 1M con <code>bufferPoolSize</code> FIJO a 2 GB. Si RSS es ~igual en ambos → la extrapolación lineal está muerta. En la sesión de "medir, no votar", el "8 GB lineal" <strong>es el voto más puro del expediente.</strong></p>
+<p>…<strong>pero</strong> —y aquí me corrijo a mí mismo también— el riesgo real de Q4 <strong>no es OOM, es thrashing</strong>: cuando el working set excede el pool, Kuzu pagina a disco, y en una <strong>RPi5 con microSD</strong> eso es latencia de lectura por las nubes. Apuntasteis al blanco equivocado (OOM) y fallasteis el real (latencia de paginación en almacenamiento lento). El experimento correcto mide <strong>latencia de query con pool constreñido</strong>, no RSS.</p>
+<h3 id="a-geminigrokchatgptmistralqwenkimideepseek-q2-acordais-el-mecanismo-y-votais-el-numero">A Gemini/Grok/ChatGPT/Mistral/Qwen/Kimi/DeepSeek — Q2: acordáis el mecanismo y votáis el número.</h3>
+<p>SLOs propuestos: 100 ms (Gemini crítico) · 500 ms (Grok) · 1 s (Mistral) · 2 s (ChatGPT/Kimi) · 5 s (Qwen/DeepSeek) · 10 s (Kimi normal). <strong>Un rango de 100×.</strong> Coincidís en <code>flush(size OR time)</code> y luego cada uno saca un SLO del sombrero. <strong>El SLO de staleness no es un voto del Consejo — se deriva del modelo de amenaza:</strong> ¿cuál es la ventana accionable más rápida para los ataques que aRGus debe cazar (intervalo de beacon C2, velocidad de movimiento lateral)? Criterio: dad el SLO como función de un TTD objetivo del NDR, no como número favorito. Hasta entonces, "1000 ms" es un placeholder honesto, no una decisión.</p>
+<h3 id="a-mistralkimiqwendeepseekgemini-q5-validar-primero-no-bisecar-primero-y-el-blast-radius-es-mas-estrecho-de-lo-que-decis">A Mistral/Kimi/Qwen/DeepSeek/Gemini — Q5: validar-primero, no bisecar-primero; y el blast radius es más estrecho de lo que decís.</h3>
+<p>Liderasteis con bisección recursiva. La bisección es el <strong>fallback raro</strong>, no el fix primario. El fix primario es <strong>validación tipada en el borde</strong> (rechaza antes del UNWIND), que ya medio existe por tu patch <strong>H-1</strong>. Y un matiz que nadie hizo: si el "veneno" es un <code>flow_uid</code> duplicado, <strong>MERGE lo absorbe sin error</strong> — el vector real no es "cualquier fila malformada", es <strong>violación de tipo/constraint</strong>, que el tipado en el borde cierra casi del todo. → El "1 paquete DoSea el NDR" está sobredimensionado. Criterio: medir la tasa de fallo de batch con validación-en-borde ACTIVA; predicción: cae a ~0 sin necesidad de bisección en el caso común.</p>
+<hr />
+<h2 id="3-afilados-que-solo-salen-leyendoos-juntos">3. Afilados que solo salen leyéndoos juntos</h2>
+<ul>
+<li><strong>Q3 ⊕ Q4 se acoplan.</strong> La contención de lectura en Kuzu es <strong>indirecta</strong> (snapshot MVCC, no locks): una traversal larga <strong>fija un snapshot</strong> → Kuzu retiene más versiones → crece memoria y coste de lookup. Por tanto un reader pesado (Q3) <strong>empeora Q4</strong>. No son dos pruebas: el smoke de Q3 debe medir RSS a la vez (un reader lento es un coste de memoria, no solo de latencia).</li>
+<li><strong>Q6 después de Q2, o el sweep no significa nada.</strong> Con time-flush activo, a batch pequeño el lote se cierra <strong>por tiempo</strong> antes de llenarse → el "batch efectivo" depende del caudal. Barrer <code>batch</code> sin fijar <code>flush_interval</code> primero mide ruido. Orden: Q2 → Q6.</li>
+<li><strong>Q10 ⊕ Q2 ⊕ Q5 son el <code>IngestQueue</code> (la tesis del §0).</strong> Y un matiz de seguridad que ChatGPT no hizo: la <strong>política de drop</strong> bajo backpressure es <strong>superficie de ataque</strong> en un NDR. Si bajo flood tiras eventos (drop-oldest), un atacante <strong>inunda para inducir drops y esconderse en el hueco</strong>. "Backpressure" no es solo estabilidad — es un vector. Criterio: la política de saturación debe preferir <strong>degradar resolución antes que cegar</strong> (p.ej. agregación/sampling con marca, no descarte silencioso), y medirse contra un adversario que floodea a propósito.</li>
+</ul>
+<hr />
+<h2 id="4-lo-que-mantengo-de-la-1a-ronda-sobrevivio-al-consejo">4. Lo que mantengo de la 1ª ronda (sobrevivió al Consejo)</h2>
+<ul>
+<li><strong>Q7: el <code>unordered_map::at</code> fue auto-infligido.</strong> Los siete lo tomasteis como evidencia de un bug de recuperación de Kuzu. <strong>No lo es</strong> — borramos el <code>.kuzu</code> y dejamos el <code>.wal</code> huérfano. Concedo que Q7 <strong>es bloqueante</strong> (la recuperación está sin validar), pero por la razón correcta: <strong>"sin probar", no "roto".</strong> No metáis en el ADR que la recuperación de Kuzu falla; eso es una afirmación sin prueba. Criterio: SIGKILL con AMBOS ficheros intactos, ≥100 iter, 0 commits ackeados perdidos.</li>
+<li><strong>Q1: descomposición <code>E≈88 µs/fila, P+S≈5.93 ms</code></strong> desde tus dos runs. Sigue en pie y es el único número duro de Q1 en todo el expediente.</li>
+</ul>
+<hr />
+<h2 id="5-veredicto-de-mi-2a-ronda">5. Veredicto de mi 2ª ronda</h2>
+<p>Los cinco bloqueantes se sostienen <strong>como diseño de un subsistema, no como cinco parches</strong>: el <code>IngestQueue</code> de un único consumidor (Q2+Q5+Q10), dimensionado (Q6), con su guarda de instancia (Q9), validado en lectura real (Q3) y durabilidad real (Q7). Las tres "contestadas" (Q1/Q4/Q6) son calibración con experimento, no gates de dirección. Q8 ya está casi resuelta porque <code>community_id</code> existe.</p>
+<p>Y la corrección que me debo a mí mismo: <strong>en Q4 yo tenía razón sobre el OOM (no es lineal) y me faltaba el blanco real (thrashing en microSD).</strong> El Consejo y yo nos equivocamos de blanco en direcciones opuestas; la medida correcta los reconcilia.</p>
+<blockquote>
+<p><em>Acordar el mecanismo y votar el número es votar. El número se deriva o se mide.
+Un writer, una cola, un presupuesto.</em> — Claude, 2ª ronda, DAY 182</p>
+<p>FDO · CLAUDE</p>
+</blockquote>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

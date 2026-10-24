@@ -1,0 +1,1159 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-052%20Respuesta%20V3%20CHATGPT/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 052 Respuesta V3 CHATGPT - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#valoracion-global" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 052 Respuesta V3 CHATGPT
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>Mi valoración general de la V3 es que está mucho más madura que la V2. La mayoría de las observaciones críticas de las pasadas anteriores han sido resueltas correctamente y, lo más importante, ahora existe una línea argumental coherente desde la misión (§0) hasta las decisiones técnicas concretas (§3).</p>
+<p>Veo muy pocas cuestiones que puedan bloquear una ratificación.</p>
+<h1 id="valoracion-global">Valoración global</h1>
+<p>Estado que le daría:</p>
+<table>
+<thead>
+<tr>
+<th>Área</th>
+<th>Valoración</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Modelo de identidad <code>flow_uid</code></td>
+<td>✅ Sólido</td>
+</tr>
+<tr>
+<td>Multi-nodo</td>
+<td>✅ Correcto</td>
+</tr>
+<tr>
+<td>Correlación host↔red</td>
+<td>✅ Correcto</td>
+</tr>
+<tr>
+<td>Integridad del corpus</td>
+<td>✅ Muy fuerte</td>
+</tr>
+<tr>
+<td>Trazabilidad forense</td>
+<td>✅ Muy fuerte</td>
+</tr>
+<tr>
+<td>Resistencia conceptual al poisoning</td>
+<td>✅ Muy buena</td>
+</tr>
+<tr>
+<td>Riesgo de migración futura</td>
+<td>⚠️ Moderado</td>
+</tr>
+<tr>
+<td>Complejidad operacional</td>
+<td>⚠️ Moderada-Alta</td>
+</tr>
+<tr>
+<td>Bloqueantes para ratificar</td>
+<td>Ninguno crítico</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h1 id="pregunta-principal-ha-quedado-resuelto-el-problema-original">Pregunta principal: ¿ha quedado resuelto el problema original?</h1>
+<p>Mi respuesta es:</p>
+<p><strong>Sí.</strong></p>
+<p>El problema original era:</p>
+<blockquote>
+<p>"¿Cómo identificamos observaciones de flujo en un entorno multi-nodo sin fundir evidencia distinta y manteniendo reconstrucción offline?"</p>
+</blockquote>
+<p>La V3 lo resuelve.</p>
+<p>La clave es que:</p>
+<pre><code class="language-text">flow_uid
+=
+node_id
++
+community_id
++
+flow_start_window
++
+seq_in_window
+</code></pre>
+<p>ya no intenta representar:</p>
+<blockquote>
+<p>"el flujo físico global"</p>
+</blockquote>
+<p>sino</p>
+<blockquote>
+<p>"la observación de un flujo desde un sensor concreto".</p>
+</blockquote>
+<p>Ese cambio conceptual es correcto.</p>
+<p>La mayoría de sistemas fallan precisamente porque intentan convertir una observación local en una identidad global.</p>
+<p>Vosotros habéis separado:</p>
+<ul>
+<li>identidad</li>
+<li>correlación</li>
+</ul>
+<p>que era exactamente lo que faltaba en V1.</p>
+<hr />
+<h1 id="pregunta-1-node_id-ha-quedado-correctamente-resuelto">Pregunta 1 — ¿<code>node_id</code> ha quedado correctamente resuelto?</h1>
+<p>Mi respuesta:</p>
+<p><strong>Sí, casi perfectamente.</strong></p>
+<p>La corrección introducida en §3.1.2 era necesaria.</p>
+<p>La V2 tenía un problema real:</p>
+<pre><code class="language-text">node_id = hash(public_key)
+</code></pre>
+<p>y simultáneamente:</p>
+<pre><code class="language-text">destroy + up
+→ keypair nuevo
+</code></pre>
+<p>lo cual hacía imposible reconstruir corpus históricos.</p>
+<p>Eso era una contradicción interna.</p>
+<p>La V3 elimina la contradicción.</p>
+<p>Separar:</p>
+<pre><code class="language-text">identidad de corpus
+</code></pre>
+<p>de</p>
+<pre><code class="language-text">identidad criptográfica
+</code></pre>
+<p>es exactamente lo que hacen los sistemas grandes.</p>
+<p>Por ejemplo:</p>
+<ul>
+<li>Kubernetes</li>
+<li>Kafka</li>
+<li>Cassandra</li>
+<li>Ceph</li>
+</ul>
+<p>todos distinguen:</p>
+<ul>
+<li>identidad lógica</li>
+<li>credencial de autenticación</li>
+</ul>
+<hr />
+<h2 id="unica-observacion">Única observación</h2>
+<p>Yo documentaría explícitamente:</p>
+<pre><code class="language-text">declared_sensor_id
+</code></pre>
+<p>como:</p>
+<pre><code class="language-text">immutable once deployed
+</code></pre>
+<p>porque si alguien lo cambia manualmente:</p>
+<pre><code class="language-text">argus-sensor-gw-lan-01
+→
+argus-sensor-gw-lan-A
+</code></pre>
+<p>habréis creado otro sensor para el corpus.</p>
+<p>No es un problema técnico.</p>
+<p>Es un problema de gobernanza.</p>
+<hr />
+<h1 id="pregunta-2-seq_in_window-transportado-es-una-buena-decision">Pregunta 2 — ¿<code>seq_in_window</code> transportado es una buena decisión?</h1>
+<p>Respuesta:</p>
+<p><strong>Sí.</strong></p>
+<p>Coincido con Kimi.</p>
+<p>Recomputarlo offline habría introducido una dependencia imposible de garantizar:</p>
+<pre><code class="language-text">orden de llegada
+</code></pre>
+<p>que cambia con:</p>
+<ul>
+<li>drops</li>
+<li>replay</li>
+<li>buffering</li>
+<li>paralelismo</li>
+</ul>
+<p>La V3 ahora dice:</p>
+<pre><code class="language-text">sensor decide
+sensor serializa
+pipeline consume
+</code></pre>
+<p>Eso preserva determinismo.</p>
+<hr />
+<h2 id="pero-aparece-una-deuda-real">Pero aparece una deuda real</h2>
+<p>La propia V3 la menciona:</p>
+<blockquote>
+<p>"persistencia del contador tras crash"</p>
+</blockquote>
+<p>Ésta sí es una deuda importante.</p>
+<p>Porque si un sensor reinicia:</p>
+<pre><code class="language-text">community_id = X
+window = Y
+seq = 0
+</code></pre>
+<p>otra vez,</p>
+<p>podríais generar colisiones locales.</p>
+<p>Mi recomendación:</p>
+<p>persistencia WAL ligera en el sensor.</p>
+<p>No bloquearía ADR-052 por ello.</p>
+<p>Pero sí abriría un DEBT específico.</p>
+<hr />
+<h1 id="pregunta-3-el-wal-externo-para-etiquetas-es-suficiente">Pregunta 3 — ¿El WAL externo para etiquetas es suficiente?</h1>
+<p>Respuesta:</p>
+<p><strong>Sí.</strong></p>
+<p>De hecho era una de las correcciones más importantes.</p>
+<p>Coincido completamente con abandonar:</p>
+<pre><code class="language-text">Neo4j = verdad
+</code></pre>
+<p>y pasar a:</p>
+<pre><code class="language-text">WAL = verdad
+Neo4j = materialización
+</code></pre>
+<p>Porque si un atacante compromete Neo4j:</p>
+<ul>
+<li>modifica nodos</li>
+<li>borra aristas</li>
+<li>cambia etiquetas</li>
+</ul>
+<p>y la evidencia desaparece.</p>
+<p>Con hash-chain:</p>
+<pre><code class="language-text">Entry N
+hash(previous)
+</code></pre>
+<p>la alteración deja huella.</p>
+<hr />
+<h2 id="lo-unico-que-echo-en-falta">Lo único que echo en falta</h2>
+<p>Rotación y archivado.</p>
+<p>No bloquearía el ADR.</p>
+<p>Pero abriría:</p>
+<pre><code class="language-text">DEBT-WAL-RETENTION-001
+</code></pre>
+<p>para definir:</p>
+<ul>
+<li>tamaño máximo</li>
+<li>snapshots</li>
+<li>compactación</li>
+<li>recuperación</li>
+</ul>
+<p>porque un corpus de años puede crecer enormemente.</p>
+<hr />
+<h1 id="pregunta-4-la-incorporacion-de-senales-tcptls-en-adr-052-fue-una-buena-decision">Pregunta 4 — ¿La incorporación de señales TCP/TLS en ADR-052 fue una buena decisión?</h1>
+<p>Aquí probablemente discrepo de parte del Consejo.</p>
+<p>Mi respuesta:</p>
+<p><strong>Sí, fue correcta.</strong></p>
+<p>No porque las señales estén completas.</p>
+<p>No lo están.</p>
+<p>Sino porque el threat model de §3.3 ya había ampliado el vector A.</p>
+<p>Una vez escribes:</p>
+<pre><code class="language-text">rogue gateway
+DNS poisoning
+BGP hijack
+TCP hijack
+</code></pre>
+<p>entonces:</p>
+<pre><code class="language-text">ARP/NDP
+</code></pre>
+<p>ya no basta.</p>
+<p>Necesitas al menos una familia de señales L4/L7.</p>
+<hr />
+<h2 id="lo-que-si-vigilaria">Lo que sí vigilaría</h2>
+<p>Que ADR-052 no se convierta en ADR-053.</p>
+<p>Es decir:</p>
+<p>esto:</p>
+<pre><code class="language-text">RST inesperado
+seq_num anómalo
+TLS mismatch
+</code></pre>
+<p>me parece razonable.</p>
+<p>Pero:</p>
+<pre><code class="language-text">JA3
+JA4
+fingerprinting TLS
+BGP analytics
+</code></pre>
+<p>ya son otro ADR.</p>
+<p>La frontera actual me parece bien dibujada.</p>
+<hr />
+<h1 id="pregunta-5-hay-algun-punto-tecnicamente-debil">Pregunta 5 — ¿Hay algún punto técnicamente débil?</h1>
+<p>Veo dos.</p>
+<h2 id="a-dependencia-de-version-de-libsodium">A. Dependencia de versión de libsodium</h2>
+<p>Esta frase:</p>
+<blockquote>
+<p>"la función de hash es la que provea la versión congelada de libsodium"</p>
+</blockquote>
+<p>funciona hoy.</p>
+<p>Pero me preocupa dentro de tres años.</p>
+<p>Porque el significado de:</p>
+<pre><code class="language-text">flow_uid
+</code></pre>
+<p>termina dependiendo de:</p>
+<pre><code class="language-text">libsodium 1.0.19
+</code></pre>
+<p>y no del algoritmo.</p>
+<p>Yo preferiría documentar:</p>
+<pre><code class="language-text">flow_uid_hash_algorithm = BLAKE2b
+</code></pre>
+<p>como invariante explícito.</p>
+<p>Aunque siga implementándose mediante libsodium.</p>
+<p>Es más robusto para arqueología futura del corpus.</p>
+<p>No es bloqueante.</p>
+<hr />
+<h2 id="b-deployment_epoch">B. <code>deployment_epoch</code></h2>
+<p>Necesita definición más estricta.</p>
+<p>Actualmente leo:</p>
+<pre><code class="language-text">deployment_epoch cambia deliberadamente
+</code></pre>
+<p>pero no queda definido:</p>
+<ul>
+<li>quién lo cambia</li>
+<li>cuándo</li>
+<li>por qué</li>
+</ul>
+<p>Yo añadiría:</p>
+<pre><code class="language-text">deployment_epoch
+=
+identificador de generación del sensor
+</code></pre>
+<p>y establecería reglas formales.</p>
+<p>Porque si dos operadores distintos lo usan de forma distinta, aparecerán bifurcaciones de identidad.</p>
+<hr />
+<h1 id="pregunta-6-ratificaria-la-v3">Pregunta 6 — ¿Ratificaría la V3?</h1>
+<p>Mi respuesta es:</p>
+<p><strong>Sí.</strong></p>
+<p>No veo defectos arquitectónicos graves.</p>
+<p>Las observaciones que quedan son de endurecimiento y gobernanza, no de diseño fundamental.</p>
+<p>Si estuviera en el Consejo, mi voto sería:</p>
+<pre><code class="language-text">ADR-052 v3
+→ APROBADO
+
+Con recomendaciones:
+  - Formalizar gobernanza de declared_sensor_id.
+  - Formalizar gobernanza de deployment_epoch.
+  - Abrir deuda de persistencia de seq_in_window tras crash.
+  - Abrir deuda de retención/compactación del WAL.
+  - Considerar fijar explícitamente BLAKE2b como algoritmo canónico.
+</code></pre>
+<p>Lo más importante es que la V3 ya cumple el criterio que aparece repetidamente en §0:</p>
+<blockquote>
+<p>"¿Mejora la calidad, trazabilidad y reproducibilidad del corpus?"</p>
+</blockquote>
+<p>A mi juicio, sí. Y además lo hace sin introducir estado distribuido complejo ni sacrificar la correlación multi-nodo. Eso era la parte difícil del problema, y la V3 la resuelve de forma convincente.
+FDO</p>
+<p>ChatGPT</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

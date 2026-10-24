@@ -1,0 +1,1114 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/operaciones/GUIA_OPERACIONES/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Guía de operaciones de aRGus NDR - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#guia-de-operaciones-de-argus-ndr" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Guía de operaciones de aRGus NDR
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ddos-v2-anomalia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DDOS-V2-ANOMALIA
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="DDOS-V2-ANOMALIA">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#el-mensaje" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El mensaje
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#que-significa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qué significa
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#impacto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Impacto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#diagnostico-y-accion-en-orden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diagnóstico y acción, en orden
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#cuando-deja-de-ser-urgente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Cuándo deja de ser urgente
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencias
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ddos-arranque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DDOS-ARRANQUE
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ddos-estado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DDOS-ESTADO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ddos-protegidos-protegidos-d300" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DDOS-PROTEGIDOS [PROTEGIDOS-D300]
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="guia-de-operaciones-de-argus-ndr">Guía de operaciones de aRGus NDR</h1>
+<p>Para el administrador de una instalación. Cada aviso que aRGus escribe en sus logs para el
+administrador tiene aquí una sección con el mismo nombre: qué significa, qué impacto tiene,
+cómo se diagnostica y qué hacer. Si un aviso de los logs no está en esta guía, es un fallo de la
+guía: abrir una incidencia.</p>
+<p>Convenciones:
+- <code>[ETIQUETA]</code> al principio de la línea del log es el nombre de la sección.
+- Las rutas de ejemplo son las del laboratorio (<code>/vagrant/...</code>). En una instalación real, las del
+  despliegue.
+- Ningún aviso de esta guía detiene el pipeline: aRGus sigue protegiendo con lo que funciona
+  mientras el administrador actúa.</p>
+<hr />
+<h2 id="ddos-v2-anomalia">DDOS-V2-ANOMALIA</h2>
+<h3 id="el-mensaje">El mensaje</h3>
+<p>En <code>ml-detector.log</code>, cada 10 s mientras dure:</p>
+<pre><code>[DDOS-V2-ANOMALIA] estado_victima_ausente=N en los últimos 10 s: eventos sin victim_state ...
+</code></pre>
+<h3 id="que-significa">Qué significa</h3>
+<p>La cabeza DDoS recibe del sniffer, en cada evento, el estado de la víctima (frío, normal, bajo
+presión). Ese estado lo calcula el agregador por víctima del kernel. N eventos llegaron <strong>sin</strong>
+ese estado.</p>
+<h3 id="impacto">Impacto</h3>
+<p><strong>La cabeza DDoS no puede marcar ataques en esos eventos.</strong> Si el aviso es continuo, la
+instalación está sin detección DDoS. El resto del pipeline sigue funcionando.</p>
+<p>No es normal en ningún arranque. Durante los primeros segundos (el plazo de arranque,
+<code>ddos_victim_arranque_ventanas</code>) el sniffer marca las víctimas como frías y este aviso no salta.</p>
+<h3 id="diagnostico-y-accion-en-orden">Diagnóstico y acción, en orden</h3>
+<p>Primero, buscar en <code>sniffer.log</code> las líneas <code>[DDOS-ARRANQUE]</code>, <code>[DDOS-HYST]</code> y <code>[WARNING]</code> del
+último arranque.</p>
+<ol>
+<li><strong>Agregador apagado en la configuración.</strong></li>
+<li>Síntoma: <code>sniffer.log</code> dice <code>[DDOS-ARRANQUE] AVISO agregador del kernel desactivado</code>.</li>
+<li>Comprobar: <code>kernel_space.ddos_kernel_agg_enabled</code> en <code>sniffer.json</code>.</li>
+<li>Acción: ponerlo a <code>true</code> y reiniciar el sniffer.</li>
+<li><strong>Objeto eBPF sin el mapa del agregador.</strong></li>
+<li>Síntoma: <code>sniffer.log</code> dice que el mapa no está disponible ("objeto eBPF anterior al
+     parche; lector DDoS desactivado").</li>
+<li>Acción: el binario y el objeto eBPF no son de la misma versión. Reinstalar la versión
+     completa del pipeline (en el laboratorio, <code>make pipeline-build PROFILE=production</code>) y
+     reiniciar.</li>
+<li><strong>El lector del agregador no arrancó.</strong></li>
+<li>Síntoma: <code>[WARNING] no se pudo arrancar el lector DDoS; sigo sin el</code>.</li>
+<li>Causa habitual: no se puede abrir el fichero <code>ddos_kernel_agg_csv_path</code> (permisos, disco
+     lleno, directorio inexistente).</li>
+<li>Acción: corregirlo, o dejar la ruta vacía si no se necesita el CSV, y reiniciar el sniffer.</li>
+<li><strong>El lector arrancó pero no entregó ninguna foto en el plazo.</strong></li>
+<li>Síntoma: <code>[DDOS-ARRANQUE] ERROR sin foto del agregador tras el plazo de arranque</code>.</li>
+<li>Si la máquina va muy cargada al arrancar, el plazo puede quedarse corto. Comparar con la
+     línea <code>[DDOS-ARRANQUE] primera foto ... a X ms</code> de arranques anteriores. Si X se acerca al
+     plazo, subir <code>ddos_victim_arranque_ventanas</code> en <code>sniffer.json</code> (rango 2-60).</li>
+<li>Si no hay foto nunca: el lector está bloqueado. Reiniciar el sniffer y, si se repite, abrir
+     incidencia con el <code>sniffer.log</code> completo.</li>
+<li><strong>Sniffer de versión anterior al ml-detector.</strong></li>
+<li>Síntoma: no hay ningún problema en <code>sniffer.log</code>, pero el aviso sigue.</li>
+<li>Causa: el sniffer no envía el campo <code>victim_state</code> (versión anterior a DAY298).</li>
+<li>Acción: desplegar sniffer y ml-detector de la misma versión.</li>
+</ol>
+<h3 id="cuando-deja-de-ser-urgente">Cuándo deja de ser urgente</h3>
+<p>Si aparece una sola vez justo después de un arranque, con N pequeño, y no se repite, el plazo
+de arranque es algo corto para esa máquina. No hay pérdida sostenida de detección. Aplicar el
+punto 4 con calma.</p>
+<h3 id="referencias">Referencias</h3>
+<p>DEBT-DDOS-ESTADO-ARRANQUE-001 (docs/BACKLOG.md); docs/ml-heads/day298_etapa1_resultados.md.</p>
+<hr />
+<h2 id="ddos-arranque">DDOS-ARRANQUE</h2>
+<p>Líneas de <code>sniffer.log</code> sobre el arranque de la cabeza DDoS.</p>
+<ul>
+<li><code>[DDOS-ARRANQUE] primera foto del agregador a X ms del arranque (Y ventanas ...); eventos sellados FRIO sin foto: N</code>.
+  Informativa, una por arranque. X es lo que tarda el agregador del kernel en dar su primera tasa (en el
+  laboratorio, ~1,0 s). Durante ese tiempo la cabeza DDoS no puede ver un ataque: es la ceguera física de
+  arranque, que ninguna configuración elimina. N cuenta los eventos del sniffer de ese intervalo, fast alerts
+  incluidas (a 300 pps, unos 2 por paquete). Si X se acerca a <code>ddos_victim_arranque_ventanas</code> ×
+  <code>ddos_kernel_agg_interval_ms</code>, subir <code>ddos_victim_arranque_ventanas</code>.</li>
+<li><code>[DDOS-ARRANQUE] AVISO agregador del kernel desactivado ...</code>. La configuración apaga el agregador: ver
+  DDOS-V2-ANOMALIA, punto 1.</li>
+<li><code>[DDOS-ARRANQUE] ERROR sin foto del agregador tras el plazo de arranque ...</code>. Ver DDOS-V2-ANOMALIA, punto 4.</li>
+</ul>
+<hr />
+<h2 id="ddos-estado">DDOS-ESTADO</h2>
+<p>El sniffer guarda el estado de cada víctima de la cabeza DDoS (su tráfico de base, cuántas ventanas lleva
+vista y si está bajo presión) en <code>ddos_victim_estado_ruta</code> (por defecto
+<code>/var/lib/argus/sniffer/ddos_victim_estado.csv</code>): cada <code>ddos_victim_estado_volcado_ventanas</code> ventanas y
+al parar. Al arrancar lo restaura, para que un reinicio en mitad de un ataque no lo olvide. Sin ese
+estado, todas las víctimas arrancan en frío y un ataque por debajo de <code>ddos_victim_ewma_abs_pps</code> se
+aprendería como tráfico normal.</p>
+<p>Líneas de <code>sniffer.log</code>:</p>
+<ul>
+<li><code>[DDOS-ESTADO] restauradas N víctimas (M bajo presión) ..., volcado de hace X s</code>: normal.</li>
+<li><code>[DDOS-ESTADO] sin estado previo ...</code>: normal en la primera ejecución. Si aparece en un reinicio
+  normal, el volcado no está funcionando: buscar el AVISO de volcado.</li>
+<li><code>[DDOS-ESTADO] primer volcado: ...</code> y <code>volcado de parada: ...</code>: normales.</li>
+<li><code>[DDOS-ESTADO] AVISO no se pudo volcar ...</code>: se repite en cada intento fallido. Causas: permisos o disco
+  lleno en el directorio de <code>ddos_victim_estado_ruta</code>. Corregirlo; el sniffer sigue protegiendo, pero un
+  reinicio dejaría las víctimas en frío.</li>
+<li><code>[DDOS-ESTADO] AVISO estado previo descartado (motivo)</code>: el sniffer arranca en frío. Según el motivo:</li>
+<li><code>caducado</code>: el sniffer estuvo parado más de <code>ddos_victim_estado_max_edad_ventanas</code>. Normal tras una
+    parada larga.</li>
+<li><code>fecha del volcado en el futuro</code>: el reloj de la máquina va atrasado. Revisar la sincronización
+    horaria (chrony; en el laboratorio, <code>make lab-clock-step</code>).</li>
+<li><code>interval_ms del volcado distinto del actual</code>: se cambió <code>ddos_kernel_agg_interval_ms</code>. Esperado una
+    vez tras el cambio.</li>
+<li><code>cabecera desconocida</code>, <code>columnas desconocidas</code>, <code>fila N mal formada</code>, <code>filas leídas distintas</code>: el
+    fichero está dañado o lo ha modificado alguien. <strong>Guardar una copia para investigarlo</strong> y abrir
+    incidencia: un fichero manipulado podría intentar cegar la detección (la firma del fichero está
+    pendiente, DEBT-DDOS-STATE-HMAC-001). El sniffer ya lo ha descartado y sigue en frío.</li>
+</ul>
+<p>El fichero queda con permisos 600 (solo su dueño lo lee y escribe).</p>
+<h2 id="ddos-protegidos-protegidos-d300">DDOS-PROTEGIDOS [PROTEGIDOS-D300]</h2>
+<p>Rangos protegidos de la cabeza DDoS (<code>firewall.json</code>, bloque <code>ddos_protegidos</code>: <code>dmz</code>, <code>intranet</code>,
+<code>externos_criticos</code>). Un DROP de la cabeza DDoS cuyo ORIGEN cae en uno de ellos nunca se convierte en bloqueo
+automatico.</p>
+<table>
+<thead>
+<tr>
+<th>Linea en el log del firewall</th>
+<th>Que significa</th>
+<th>Que hacer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[SOMBRA-DDOS] rangos protegidos (JSON): ...</code></td>
+<td>Rangos efectivos al arrancar</td>
+<td>Comprobar que son los de esta instalacion</td>
+</tr>
+<tr>
+<td><code>[SOMBRA-DDOS] rangos protegidos (DEFECTO RFC 1918 + fc00::/7)</code> y <code>[CONFIG-DEFAULT] ddos_protegidos: rigen los rangos privados por defecto</code> en cada resumen</td>
+<td>El JSON no tiene ningun rango valido; se protege todo el espacio privado</td>
+<td>Configurar <code>dmz</code>, <code>intranet</code> y <code>externos_criticos</code> reales y reiniciar el firewall-acl-agent. Mientras tanto ningun origen privado se bloquea</td>
+</tr>
+<tr>
+<td><code>[CONFIG-DEFAULT] ddos_protegidos.&lt;lista&gt;: entrada '...' descartada</code></td>
+<td>Entrada mal formada; el resto sigue protegiendo</td>
+<td>Corregir el formato (CIDR IPv4 o IPv6, p. ej. <code>10.20.0.0/16</code>)</td>
+</tr>
+<tr>
+<td><code>[SOMBRA-DDOS] ALERTA_PROTEGIDO origen=... categoria=...</code></td>
+<td>Un host protegido se comporta como origen de un ataque segun la cabeza DDoS. No se bloquea</td>
+<td>Investigar ese host con el evento y la victima: comprometido (bot interno, posible movimiento lateral), reflector legitimo mal configurado (DNS/NTP propio o de un proveedor critico) o error del modelo. Si es un externo critico, avisar al proveedor</td>
+</tr>
+<tr>
+<td><code>[SOMBRA-DDOS] protegidos: alertas=N dmz=.. intranet=.. externos_criticos=.. por_defecto=0/1</code></td>
+<td>Contadores acumulados en cada resumen</td>
+<td>Una cifra que crece de forma sostenida merece investigacion aunque no haya bloqueo</td>
+</tr>
+</tbody>
+</table>
+<p>El detalle <code>ALERTA_PROTEGIDO</code> se limita a <code>ddos_shadow.anomalias_detalle_max</code> lineas por periodo de resumen; el
+resto se cuenta en la linea <code>protegidos:</code>.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

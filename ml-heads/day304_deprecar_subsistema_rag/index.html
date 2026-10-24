@@ -1,0 +1,1286 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-heads/day304_deprecar_subsistema_rag/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>DAY304 — Deprecar el subsistema RAG (lista de cierre con predicción) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day304-deprecar-el-subsistema-rag-lista-de-cierre-con-prediccion" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY304 — Deprecar el subsistema RAG (lista de cierre con predicción)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#alcance-sin-cambios-respecto-a-v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alcance (sin cambios respecto a v1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day304" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY304)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commits-17-sobre-4feb3900" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commits (17, sobre 4feb3900)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#criterio-de-hecho" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Criterio de HECHO
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predicciones-del-emecas-escritas-antes-de-lanzarlo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predicciones del EMECAS (escritas antes de lanzarlo)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#medidas-de-partida-y-resultados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medidas de partida y resultados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#predicciones-que-fallaron-hoy-y-que-se-aprendio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predicciones que fallaron hoy (y qué se aprendió)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#hallazgo-de-seguridad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hallazgo de seguridad
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deuda-anotada-durante-la-rama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deuda anotada durante la rama
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#despues-de-esta-rama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Después de esta rama
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="day304-deprecar-el-subsistema-rag-lista-de-cierre-con-prediccion">DAY304 — Deprecar el subsistema RAG (lista de cierre con predicción)</h1>
+<p>Rama: <code>chore/deprecar-rag-security</code> (desde main <code>4feb3900</code>). Una rama, dos bloques de commits, UN solo EMECAS al final.
+Historia de git intacta: solo commits nuevos que borran; nada se reescribe (ni <code>--amend</code>).</p>
+<p>v4 (CERTIFICADA): EMECAS+++ production VERDE el 2026-10-22 (<code>emecas_20261022_101530.log</code>, rc=0, 28/28 hitos, 2h16m).
+Primera corrida (<code>emecas_20261022_093547.log</code>) cayó a los 28 min en <code>post-up-verify</code> (seeds <code>^6$</code>); arreglado en B6.</p>
+<h2 id="alcance-sin-cambios-respecto-a-v1">Alcance (sin cambios respecto a v1)</h2>
+<p><strong>Muere:</strong> <code>rag/</code> (rag-security), <code>rag-ingester/</code>, <code>common-rag-ingester/</code>, submódulo <code>third_party/llama.cpp</code>,
+<code>ml-training/scripts/rag_shield/</code>, <code>contrib/*/pca_pipeline/</code> (7 IAs), <code>shared/indices/</code>, <code>tools/legacy/test_reducer.cpp</code>,
+y todo lo que los nombra fuera de los históricos. En el <code>vagrant up</code>: llama.cpp, TinyLlama, FAISS (+BLAS/LAPACK) y la
+provisión SQLite del día 40.</p>
+<p><strong>Sobrevive (lógica intacta):</strong> <code>plugin-loader/</code> y <code>plugins/</code> (usuarios vivos: sniffer, ml-detector, firewall-acl-agent;
+<code>PLUGIN_MODE_READONLY</code>, TEST-INTEG-4b/4e/SIGN), ONNX Runtime (ml-detector), XGBoost.</p>
+<p><strong>Fuera, rama RAG Logger de ml-detector:</strong> RAG Logger (<code>rag_logger.enabled=false</code>), <code>rag_logger_config.json</code>,
+<code>CTX_RAG_ARTIFACTS</code>, <code>/vagrant/logs/rag</code>, clave HMAC <code>/secrets/rag/log_hmac_key</code> (<code>etcd-server.json</code> + su test de
+etcd-client), <code>scripts/explore_rag_logs.sh</code> (habla de "FAISS readiness"), <code>day15_automated_test.sh</code>, <code>test_rag_logger.sh</code>,
+<code>tsan/run_tsan_test.sh</code>, <code>.PHONY</code> muertos <code>rag-log-*</code>/<code>test-rag-*</code> del Makefile (líneas 21-23, 27).</p>
+<p><strong>Fuera, DEBT-REPO-RESIDUOS-001:</strong> <code>site/</code>, <code>emecas*.md</code>, <code>.md</code> de cierre sueltos en la raíz (<code>Cierre day255 …</code>),
+<code>scripts/test_rag_logger.sh.backup</code> trackeado, <code>.gitignore</code> con líneas pegadas (<code>logs/# ONNX models…</code>) y una línea
+<code>rm --cached ml-detector/build-asan/ml-detector</code> usada como patrón.</p>
+<h2 id="decisiones-de-alonso-day304">Decisiones de Alonso (DAY304)</h2>
+<ol>
+<li><code>contrib/*/pca_pipeline/</code>: se borran (dependían de <code>common-rag-ingester</code>).</li>
+<li>Scripts de parche históricos: se quedan, excluidos del criterio.</li>
+<li><code>DEBT-COMPILER-WARNINGS-CLEANUP-001.md</code>, <code>contract-validation/day48/</code>, <code>tsan-reports/day48/</code>: históricos, excluidos.</li>
+<li><code>.git/modules/third_party</code>: se borra (no es historia de aRGus).</li>
+<li><code>ml-training/scripts/rag_shield/</code> (lista blanca de comandos RAG): se borra. "Mantener código deprecado para
+   recordarlo es absurdo."</li>
+</ol>
+<h2 id="commits-17-sobre-4feb3900">Commits (17, sobre <code>4feb3900</code>)</h2>
+<table>
+<thead>
+<tr>
+<th>Commit</th>
+<th>Hash</th>
+<th>Contenido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A0</td>
+<td><code>0a3f9028</code></td>
+<td>esta lista (v1)</td>
+</tr>
+<tr>
+<td>A1</td>
+<td><code>45aa5244</code></td>
+<td>Makefile sin rag-security: pipeline 4/4, E2E umbral 4 (3429 → 3379 líneas)</td>
+</tr>
+<tr>
+<td>A2</td>
+<td><code>a2d0f79a</code></td>
+<td>fuera llama.cpp (submódulo, build en <code>vagrant up</code>, TinyLlama), alias, <code>.gitignore</code>, README</td>
+</tr>
+<tr>
+<td>A3</td>
+<td><code>d268d55d</code></td>
+<td>systemd y <code>set-build-profile</code> sin rag-security</td>
+</tr>
+<tr>
+<td>A4</td>
+<td><code>995d5c6a</code></td>
+<td>AppArmor, Falco, filesystem x86/arm64, <code>tools/prod</code>, <code>provision.sh</code></td>
+</tr>
+<tr>
+<td>A5</td>
+<td><code>a8553729</code></td>
+<td>scripts (frescura EMECAS, <code>pipeline_health</code>, <code>apply_hardening_flags</code>…); fuera <code>verify_rag_*</code></td>
+</tr>
+<tr>
+<td>A5b</td>
+<td><code>2995826d</code></td>
+<td><code>monitor_lab.sh</code> sin la sección RAG (A5 dejó una llamada huérfana)</td>
+</tr>
+<tr>
+<td>A6</td>
+<td><code>c7cc8544</code></td>
+<td>tests y CI (lógica de TEST-INTEG-4e intacta)</td>
+</tr>
+<tr>
+<td>A7</td>
+<td><code>14c5a3f9</code></td>
+<td><code>git rm -r rag/</code> y <code>rag_shield/</code>; CLAUDE.md; comentario de ml-detector</td>
+</tr>
+<tr>
+<td>B1</td>
+<td><code>9867a6a4</code></td>
+<td>Makefile sin rag-ingester (3378 → 3313); <strong>test-provision-1 CHECK 5: 6 → 4 units</strong></td>
+</tr>
+<tr>
+<td>B2</td>
+<td><code>d3f3e73b</code></td>
+<td>systemd, hardening, <code>tools/prod</code>, <code>provision.sh</code>; resto <code>${vagrant_root}/rag/config</code></td>
+</tr>
+<tr>
+<td>B2v</td>
+<td><code>740fb7c1</code></td>
+<td>Vagrantfile sin FAISS/BLAS/LAPACK ni SQLite; fuera "RAG Security System" de la cabecera</td>
+</tr>
+<tr>
+<td>B3</td>
+<td><code>aca8b17b</code></td>
+<td>scripts sin rag-ingester; fuera <code>verify_libraries.sh</code>, <code>install_faiss_*.sh</code></td>
+</tr>
+<tr>
+<td>B4</td>
+<td><code>be08df34</code></td>
+<td>componentes vivos: solo comentarios, textos y nombre de ejemplo en tests (<code>log-consumer</code>); CI</td>
+</tr>
+<tr>
+<td>B5</td>
+<td><code>ded541eb</code></td>
+<td><code>git rm</code> de rag-ingester, common-rag-ingester, <code>shared/indices</code>, 7 <code>pca_pipeline</code>, <code>test_reducer</code></td>
+</tr>
+<tr>
+<td>v3</td>
+<td><code>fb5faa4a</code></td>
+<td>esta lista, v3, con las predicciones del EMECAS escritas antes de lanzarlo</td>
+</tr>
+<tr>
+<td>B6</td>
+<td>(ver <code>git log</code>)</td>
+<td><code>post-up-verify</code> espera 4 <code>seed.bin</code> (la 1.ª corrida cayó ahí)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="criterio-de-hecho">Criterio de HECHO</h2>
+<ol>
+<li><strong><code>git grep</code> vacío — CUMPLIDO</strong> (<code>rc=1</code>, DAY304 09:26), patrón ampliado (sin distinguir mayúsculas):
+   <code>git grep -c -i -E 'rag-security|rag_security|rag-start|rag-build|RAG_BUILD_DIR|/vagrant/rag/|(^|[^-_a-zA-Z/])rag/|[}"]/rag/|third_party/llama|libllama|rag-ingester|rag_ingester|RAG_INGESTER|common-rag-ingester|pca_pipeline|faiss|shared/indices|CsvEventLoader' -- . \
+     ':!docs' ':!site' ':!emecas*.md' ':!scripts/timebase' ':!tsan-reports' ':!contract-validation/day48' \
+     ':!DEBT-COMPILER-WARNINGS-CLEANUP-001.md' ':!scripts/d284_patch_rag_ingester_off.py' ':!scripts/higiene-adr-day198.sh' \
+     ':!tools/update-day158-docs.sh' ':!tools/update_day156.py' ':!scripts/explore_rag_logs.sh' ':!Cierre day255 reparacion ddos.md'</code></li>
+<li><strong>EMECAS+++ <code>production</code> desde cero, rc=0 — CUMPLIDO</strong> (<code>emecas_20261022_101530.log</code>), medido en el log:</li>
+<li><code>test-provision-1</code> PASSED ×3 (Check 4/8 y 5/8 OK ×3);</li>
+<li><code>pipeline-status</code>: etcd-server, ml-detector, sniffer (Variant A), firewall RUNNING; 0 menciones de
+     rag-security/rag-ingester en todo el log;</li>
+<li>TEST-INTEG-4b, 4e y SIGN PASSED (0 failures) ×3 — plugin-loader intacto;</li>
+<li><code>test_hmac_integration</code> Passed (cadena <code>log-consumer</code>);</li>
+<li><code>[LAB-E2E] restaurado: 4 de 4 componentes RUNNING</code> y <code>PASA los cinco E2E del lab</code>;</li>
+<li><code>[CLEAN-HOST] PASA: 0 directorios de build en el Mac</code>;</li>
+<li><code>[FRESCURA] comprobados=6 fallos=0</code> y <code>PASA</code>;</li>
+<li>ctest: 100 % en las 8 suites (17, 14, 3, 82, 1, 1, 23, 2 tests).</li>
+<li><strong>Limitación declarada:</strong> <code>vagrant/hardened-*</code> y <code>tools/prod/</code> no los ejecuta EMECAS: verificados con <code>bash -n</code> y grep.</li>
+</ol>
+<h2 id="predicciones-del-emecas-escritas-antes-de-lanzarlo">Predicciones del EMECAS (escritas antes de lanzarlo)</h2>
+<ul>
+<li>Verde a la primera: sí. → <strong>FALLÓ</strong>: la 1.ª corrida cayó en <code>post-up-verify</code> (predicción fallada n.º 20).</li>
+<li>Duración: ≈ 2h10m (±15 min), frente a 2h33m de DAY303. → <strong>2h16m</strong>, dentro del margen (17 min menos que DAY303).</li>
+<li>Hitos: 28/28 en la corrida verde.</li>
+</ul>
+<h2 id="medidas-de-partida-y-resultados">Medidas de partida y resultados</h2>
+<table>
+<thead>
+<tr>
+<th>Medida</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Makefile, patrón rag-security</td>
+<td>35 → 0 (A1); 30 en main^1 + 5 de PR #145</td>
+</tr>
+<tr>
+<td>Makefile, rag-ingester/SQLite/<code>shared/indices</code></td>
+<td>61 → 0 (B1) (la v1 decía 41: era otro patrón)</td>
+</tr>
+<tr>
+<td>Ficheros trackeados borrados</td>
+<td>81 (A7) + 94 (B5) + sueltos (unidades, perfiles, scripts, instaladores)</td>
+</tr>
+<tr>
+<td>Disco recuperado en el Mac</td>
+<td>rag 616 MB + llama.cpp 350 MB + <code>.git/modules</code> 205 MB + rag-ingester 33 MB + <code>contrib/claude</code> 75 MB + <code>shared</code> 135 MB + rag_shield 4,5 MB ≈ 1,4 GB</td>
+</tr>
+</tbody>
+</table>
+<h2 id="predicciones-que-fallaron-hoy-y-que-se-aprendio">Predicciones que fallaron hoy (y qué se aprendió)</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Predicción</th>
+<th>Medido</th>
+<th>Lección</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>contexts.hpp</code> tiene contexto HKDF de rag-ingester</td>
+<td>solo un comentario</td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Los tests HMAC usan config en memoria</td>
+<td>test de integración contra etcd-server real → clave fuera de alcance</td>
+<td>—</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Vagrantfile: 6 líneas de rag</td>
+<td>13 (compilación de llama.cpp en <code>vagrant up</code>)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Grep de llama limpio</td>
+<td>"llama" casa con "llamada"</td>
+<td>buscar <code>llama\.cpp|libllama|tinyllama</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td>Informe de <code>provision.sh</code> solo con mis líneas</td>
+<td>2 cuentas más ("6 componentes")</td>
+<td>—</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Inventario A5 completo</td>
+<td><code>rag/CMakeLists.txt</code> suelto, sin barra delante</td>
+<td>usar el patrón del criterio, no uno parcial</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Informe de <code>monitor_lab</code> vacío</td>
+<td>sección RAG entera; llamada huérfana (A5b)</td>
+<td>buscar también la palabra suelta <code>rag</code></td>
+</tr>
+<tr>
+<td>8</td>
+<td>Restos sin trackear de <code>rag_shield</code> vacíos</td>
+<td>4,5 MB, que el <code>.gitignore</code> excluía</td>
+<td>al quitar líneas del <code>.gitignore</code>, mirar lo que aparece</td>
+</tr>
+<tr>
+<td>9</td>
+<td>Exclusión <code>contrib/*/pca_pipeline</code></td>
+<td>git exige <code>contrib/*/pca_pipeline/*</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>10</td>
+<td>(A3) cambiar el instalador de systemd basta</td>
+<td><strong>CHECK 5 de test-provision-1 contaba 6 units</strong>: el EMECAS habría caído</td>
+<td><strong>medir quién CUENTA, no solo quién nombra</strong></td>
+</tr>
+<tr>
+<td>11</td>
+<td>SQLite lo usa algo vivo</td>
+<td>solo rag-ingester</td>
+<td>—</td>
+</tr>
+<tr>
+<td>12</td>
+<td>(A4) patrón de HECHO cubre todo</td>
+<td>punto ciego <code>${vagrant_root}/rag/config</code></td>
+<td>pasada extra <code>[}"]/rag/</code></td>
+</tr>
+<tr>
+<td>13</td>
+<td>Textos de cuenta de systemd/AppArmor</td>
+<td>3 más con "6" (A3/A4)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>14</td>
+<td><code>explore_rag_logs.sh</code> nombra rag-ingester</td>
+<td>habla de FAISS; es del RAG Logger</td>
+<td>—</td>
+</tr>
+<tr>
+<td>15</td>
+<td><code>rag-security/</code> en la raíz no existe</td>
+<td><code>config/</code> vacío creado por <code>provision.sh</code> (ruta inexistente + <code>mkdir -p</code>)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>16</td>
+<td>6 IAs en <code>contrib</code></td>
+<td>7 (<code>chatgpt5</code>)</td>
+<td>medir con glob, no con lista de memoria</td>
+</tr>
+<tr>
+<td>17</td>
+<td><code>shared/</code> sin trackear</td>
+<td>2 <code>.faiss</code> trackeados, 135 MB</td>
+<td>—</td>
+</tr>
+<tr>
+<td>18</td>
+<td><code>rc</code> del criterio con <code>| cut</code></td>
+<td><code>$?</code> era el de <code>cut</code></td>
+<td>sin tubería cuando importa el <code>rc</code></td>
+</tr>
+<tr>
+<td>19</td>
+<td>17 commits en la rama</td>
+<td>15 (error aritmético mío)</td>
+<td>—</td>
+</tr>
+<tr>
+<td>20</td>
+<td>EMECAS verde a la primera</td>
+<td>cayó en <code>post-up-verify</code>: <code>grep -q '^6$$'</code> de seeds</td>
+<td>la búsqueda de cuentas debe cubrir <code>^N$</code>, <code>-eq N</code>, <code>grep -q N</code> y textos «esperados N»; mejor aún, medir el target en la VM viva antes de relanzar</td>
+</tr>
+</tbody>
+</table>
+<p>Hueco sin explicar: DAY303 midió 27 líneas en el Makefile y main^1 da 30 (no afecta: se parte de main).</p>
+<h2 id="hallazgo-de-seguridad">Hallazgo de seguridad</h2>
+<p><code>rag-ingester/config/etcd_encryption.key</code> estaba trackeado. B5 lo borra del árbol, pero <strong>sigue en la historia de git</strong>
+(no se reescribe). Si esa clave, o una derivada, la usa algún componente vivo o algún entorno, hay que rotarla.
+Comprobación pendiente: que ningún JSON/fichero vivo tenga el mismo contenido.</p>
+<h2 id="deuda-anotada-durante-la-rama">Deuda anotada durante la rama</h2>
+<ul>
+<li>Vagrantfile, bloque «Build components»: compila firewall-acl-agent durante el provisionado, antes de que exista
+  <code>libcrypto_transport</code> → <code>CMake Error at CMakeLists.txt:103</code> en cada <code>vagrant up</code> (ya estaba en DAY303). El
+  bootstrap lo recompila después, en orden: es ruido, pero confunde al leer el log.</li>
+</ul>
+<h2 id="despues-de-esta-rama">Después de esta rama</h2>
+<ul>
+<li>DEBT-PIPELINE-STATUS-LIVENESS-001 (estado por registro/heartbeat, no solo proceso).</li>
+<li>Rama RAG Logger de ml-detector (lista de "Fuera, rama RAG Logger" arriba).</li>
+<li>DEBT-REPO-RESIDUOS-001 (lista de arriba).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

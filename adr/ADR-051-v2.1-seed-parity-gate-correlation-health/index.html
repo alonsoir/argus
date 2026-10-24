@@ -1,0 +1,1483 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-051-v2.1-seed-parity-gate-correlation-health/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-051 — Community ID Parity Gate & Correlation Health - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-051-community-id-parity-gate-correlation-health" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-051 — Community ID Parity Gate &amp; Correlation Health
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto-problema" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto / Problema
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decisión
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Decisión">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-principio-data-plane-y-alcance-del-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Principio data-plane y alcance del gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-resolucion-de-las-preguntas-abiertas-de-v1-consenso-88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Resolución de las preguntas abiertas de v1 (consenso 8/8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-mecanismos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Mecanismos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Mecanismos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-community-id-parity-gate-arranque-bloqueante-fail-closed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Community ID Parity Gate (arranque) — BLOQUEANTE, fail-closed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-oraculo-en-dos-niveles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Oráculo en dos niveles
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-maquina-de-estados-del-resultado-del-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Máquina de estados del resultado del gate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-correlation-health-continuo-orphan_rate-per-sensor-maquina-de-confianza" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Correlation Health (continuo) — orphan_rate PER-SENSOR + máquina de confianza
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-huerfano-vs-pendiente-el-problema-del-timestamp-hallazgo-day-172" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Huérfano vs. pendiente — el problema del timestamp (hallazgo DAY 172)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-bateria-de-vectores-de-referencia-artefacto-compartido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 Batería de vectores de referencia (artefacto compartido)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#37-mapa-de-cobertura-sensorsegmento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.7 Mapa de cobertura sensor↔segmento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#38-inyeccion-sintetica-sin-contaminacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.8 Inyección sintética sin contaminación
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-despliegue-por-fases" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Despliegue por fases
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-consecuencias-y-prerequisitos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Consecuencias y prerequisitos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Consecuencias y prerequisitos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-riesgo-conocido-documentado-latencia-de-deteccion-del-orphan_rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Riesgo conocido documentado — latencia de detección del orphan_rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-prerequisitos-explicitos-bloqueos-honestos-no-nice-to-haves" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 Prerequisitos explícitos (bloqueos honestos, no nice-to-haves)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-inputs-trasladados-a-b-no-son-de-adr-051" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Inputs trasladados a B (no son de ADR-051)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-backlog-de-debts" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Backlog de DEBTs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Backlog de DEBTs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p1-bloquean-v20-del-gate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P1 (bloquean v2.0 del gate)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#p3-diferida-opcional" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P3 (diferida / opcional)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aditivos-menores-no-debt-propia" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aditivos menores (no DEBT propia)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#corte-camino-critico-vs-diferible-para-el-plan-del-mes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Corte camino-crítico vs. diferible (para el plan del mes)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-ruta-de-ratificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Ruta de ratificación
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-051-community-id-parity-gate-correlation-health">ADR-051 — Community ID Parity Gate &amp; Correlation Health</h1>
+<ul>
+<li><strong>Estado:</strong> BORRADOR v2.1 (pendiente de CONFIRMACIÓN DE FIDELIDAD del Consejo — no re-deliberación)</li>
+<li><strong>Día:</strong> DAY 173</li>
+<li><strong>Título anterior (v1):</strong> "Seed Parity Gate &amp; Correlation Health". Renombrado en v2 (ver §2.1). El identificador de DEBT <code>DEBT-CORRELATION-SEED-GATE-001</code> se <strong>conserva</strong> por trazabilidad histórica.</li>
+<li><strong>Recoge:</strong> Consenso P2 del Consejo DAY 170 + dos rondas de deliberación sobre v1 (deliberación inicial 8/8 + respuestas a síntesis 8/8).</li>
+<li><strong>Relacionado:</strong> ADR-046 v4 (<code>source_wait_timeout</code>), ADR-052 v3.2 (identidad de flujo — consumida, no redefinida), DEBT-ARGUSPP-NTP-001 (gate de arranque precedente).</li>
+<li><strong>Evidencia empírica de referencia:</strong> cross-check E2E <code>community_id</code> DAY 171/172 (<code>make crosscheck-up</code> / <code>make crosscheck-run</code>).</li>
+<li><strong>Resolución de ruta:</strong> APROBADO 8/8 con condiciones. Sin 3ª deliberación. Precedente ADR-052 v3.2.</li>
+</ul>
+<blockquote>
+<p><strong>NOTA DE ALCANCE (DAY 173).</strong> Este ADR es <strong>diseño ratificado para archivar</strong>, no un mandato de implementación inmediata. El objetivo del próximo mes es la cadena de valor científico: <strong>correlation-engine → ingesta al grafo con relaciones → sesiones MITRE → datasets → plugins ensemble</strong> (curva F1 multi-fuente, ADR-048). De todo este ADR, lo único en <strong>camino crítico</strong> para esa cadena es el <strong>gate de arranque mínimo</strong> (ya esencialmente hecho: el cross-check DAY 171/172 formalizado). El resto — máquinas de estado de cuarentena, sonda activa, oracle quorum, chaos test, métricas de salud — es <strong>operación de un sistema en producción</strong>, no construcción del engine, y duerme como backlog ratificado hasta que exista un engine que proteger. La identidad de flujo que el engine necesita para el esquema Neo4j la fija <strong>ADR-052</strong> (<code>flow_uid</code>/<code>node_id</code>), no este ADR. Ver §6 para el corte camino-crítico vs. diferible.</p>
+</blockquote>
+<hr />
+<h2 id="1-contexto-problema">1. Contexto / Problema</h2>
+<p>La correlación cross-sensor del pipeline aRGus++ se apoya en <code>community_id</code> como clave de join determinista entre Suricata, Zeek y aRGus. El <code>community_id</code> es función del flujo canónico <strong>y de un seed compartido</strong>. Si dos sensores producen <code>community_id</code> divergentes para el mismo flujo físico, el join falla <strong>silenciosamente</strong>: sin excepción, sin log de error, sin alerta. El grafo se puebla con nodos-flujo que nunca se unen. El sistema <em>parece</em> operativo pero su función esencial — correlacionar señales multi-paradigma sobre el mismo flujo — está rota.</p>
+<p>En infraestructura hospitalaria esto es peor que un fallo ruidoso: ofrece una <strong>falsa sensación de cobertura</strong>. El operador cree tener correlación multi-fuente cuando tiene tres silos desconectados.</p>
+<p><strong>Por qué la validación por configuración no basta.</strong> Leer <code>suricata.yaml</code>, <code>node.cfg</code> o la provisión de aRGus valida <em>intención</em>, no <em>comportamiento</em>. Entre config y binario puede haber un override, un default no documentado, una versión distinta o un build que ignora el campo. La lección de DAY 172 (el VERDE de DAY 171 no era reproducible porque el entorno divergía de lo documentado en tres sitios) es la prueba viva de esa brecha.</p>
+<p><strong>El seed es una causa, no la única.</strong> Con seed idéntico, la paridad de <code>community_id</code> puede romperse igual por: bug en plugin Zeek, cambio de versión de Suricata, normalización IPv6 distinta, o implementación defectuosa. Por eso v2 valida <strong>paridad de <code>community_id</code> emitido</strong>, de la cual el drift de seed es la causa-raíz más común pero no exclusiva. De ahí el renombrado (§2.1).</p>
+<hr />
+<h2 id="2-decision">2. Decisión</h2>
+<h3 id="21-principio-data-plane-y-alcance-del-gate">2.1 Principio data-plane y alcance del gate</h3>
+<p>El gate y el health-check <strong>no leen configuración</strong>. Operan exclusivamente sobre el <code>community_id</code> que cada sensor <strong>EMITE en runtime</strong> sobre tráfico de referencia conocido, y verifican paridad (a) entre sensores y (b) contra el oráculo <code>pycommunityid</code>. La verdad está en el data-plane, no en el control-plane.</p>
+<p>El mecanismo se denomina <strong>Community ID Parity Gate</strong> (no "Seed Parity Gate"): valida que todos los sensores producen el mismo identificador, sea cual sea la causa de una eventual divergencia.</p>
+<h3 id="22-resolucion-de-las-preguntas-abiertas-de-v1-consenso-88">2.2 Resolución de las preguntas abiertas de v1 (consenso 8/8)</h3>
+<ol>
+<li><strong>Flujo-diana:</strong> inyección sintética determinista. No espera pasiva.</li>
+<li><strong>Gate periódico bloqueante:</strong> NO. El <code>orphan_rate</code> per-sensor cubre el drift post-arranque. La sonda activa no bloqueante se difiere (§5, DEBT-SEED-ACTIVE-PROBE-001).</li>
+<li><strong>Degradación en runtime:</strong> degradar a N-1 con anotación explícita en el grafo. Nunca apagón total, nunca silencioso. Excepción: caída por debajo del mínimo correlacionable (§3.4).</li>
+</ol>
+<hr />
+<h2 id="3-mecanismos">3. Mecanismos</h2>
+<h3 id="31-community-id-parity-gate-arranque-bloqueante-fail-closed">3.1 Community ID Parity Gate (arranque) — BLOQUEANTE, fail-closed</h3>
+<p><strong>Mecánica:</strong>
+1. Se inyecta la <strong>batería de vectores de referencia</strong> (§3.6) en el segmento que los N sensores observan (eth1/intnet, nunca gestión).
+2. Cada sensor activo emite su <code>community_id</code> para cada vector.
+3. Se evalúan dos niveles de paridad (§3.2) y se resuelve la máquina de estados del gate (§3.3).
+4. El correlation-engine arranca solo en estado <strong>Correlation Safe</strong>.</p>
+<p><strong>Justificación del fail-closed.</strong> En entorno hospitalario, un NDR que correla basura silenciosamente es estrictamente peor que uno que no arranca. Coherente con el sniffer, que aborta sin etcd (<em>"hardcoded keys NOT acceptable"</em>): aquí, <em>unaligned sensors NOT acceptable</em>.</p>
+<p><strong>Diagnóstico en el fallo (no opcional — definición de listo).</strong> El mensaje de fallo DEBE volcar, por cada sensor que rompió paridad:
+- identidad del sensor,
+- <code>community_id</code> esperado (oráculo) y <code>community_id</code> emitido,
+- seed con que el oráculo generó el valor esperado (para comparar con el declarado del sensor),
+- hash SHA-256 del config que el sensor reporta tener cargado <strong>(solo diagnóstico — NUNCA criterio del gate; introducirlo como criterio violaría el principio data-plane)</strong>,
+- acción sugerida + referencia al runbook de recuperación.</p>
+<p>Plantilla de referencia:</p>
+<pre><code class="language-text">COMMUNITY_ID_PARITY_GATE_FAILED  [vector: V3 (TCP IPv6)]
+Sensor: zeek-01
+  community_id esperado (pycommunityid, seed=0): 1:AAAA...
+  community_id emitido:                          1:BBBB...
+  config_sha256 reportado: 9f2c...   (control-plane, informativo)
+Acción: ver runbook §&quot;Recuperación de fallo de paridad&quot; -&gt; realinear y redeploy zeek
+</code></pre>
+<h3 id="32-oraculo-en-dos-niveles">3.2 Oráculo en dos niveles</h3>
+<ul>
+<li><strong>Nivel 1 — paridad entre sensores:</strong> ¿todos los sensores activos coinciden ENTRE SÍ para el vector?</li>
+<li><strong>Nivel 2 — paridad con oráculo:</strong> ¿coinciden con <code>pycommunityid</code>?</li>
+</ul>
+<p>El versionado del oráculo (su hash/versión) se registra en el diagnóstico.</p>
+<p><strong>Resolución del caso Nivel-1-TRUE / Nivel-2-FALSE (sensores coinciden, oráculo discrepa):</strong> el gate <strong>APRUEBA el arranque</strong> y emite WARNING crítico, NO fail-closed.</p>
+<p><em>Justificación (argumento N-version):</em> Suricata, Zeek y aRGus son tres implementaciones independientes. Que tres codebases independientes coincidan es evidencia fuerte de corrección; un único oráculo Python discrepante es más probablemente un problema de versión/bug del oráculo. Además, si los sensores emiten el mismo valor, el join funciona aunque ese valor difiera del RFC: la correlación es internamente consistente.</p>
+<p><em>Salvedad obligatoria a documentar:</em> este razonamiento vale <strong>porque los sensores son heterogéneos</strong>. No aplicaría a despliegues homogéneos (N instancias del mismo binario). El WARNING debe disparar investigación humana: una divergencia con oráculo significa que algo cambió (versión, oráculo, interpretación RFC) y un sensor futuro de implementación correcta podría romper el consenso. El consenso-de-error sigue siendo un riesgo residual que se mitiga, NO por el oráculo en arranque, sino por la batería de vectores (§3.6) y el <code>orphan_rate</code> continuo (§3.4).</p>
+<p><em>Quórum:</em> significativo solo con N≥3. Con 2 sensores no hay quórum posible; en ese caso Nivel-2-FALSE con Nivel-1-TRUE eleva el WARNING a severidad mayor (no hay tercer testigo independiente).</p>
+<h3 id="33-maquina-de-estados-del-resultado-del-gate">3.3 Máquina de estados del resultado del gate</h3>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Condición</th>
+<th>Acción en arranque</th>
+<th>Acción en runtime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Correlation Safe</strong></td>
+<td>Nivel 1 TRUE + Nivel 2 TRUE</td>
+<td>Arranca</td>
+<td>Normal</td>
+</tr>
+<tr>
+<td><strong>Oracle Divergence</strong></td>
+<td>Nivel 1 TRUE + Nivel 2 FALSE</td>
+<td>Arranca + WARNING crítico (§3.2)</td>
+<td>WARNING</td>
+</tr>
+<tr>
+<td><strong>Correlation Broken</strong></td>
+<td>Nivel 1 FALSE (sensores no coinciden entre sí)</td>
+<td><strong>FAIL-CLOSED</strong> + diagnóstico verbose</td>
+<td>Degradación N-1 / split-brain (§3.4)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Split-brain (sin mayoría):</strong> caso <code>Suricata=A, Zeek=B, aRGus=C</code> — no hay valor mayoritario, no hay sensor de referencia. Es un subcaso de <strong>Correlation Broken</strong>:
+- <strong>Arranque:</strong> fail-closed.
+- <strong>Runtime:</strong> cuarentena de todos los sensores implicados; el sistema cae a observabilidad sin correlación (single-source por sensor), anotado explícitamente. Es la condición límite de §3.4.</p>
+<h3 id="34-correlation-health-continuo-orphan_rate-per-sensor-maquina-de-confianza">3.4 Correlation Health (continuo) — <code>orphan_rate</code> PER-SENSOR + máquina de confianza</h3>
+<p><code>orphan_rate</code> por sensor = fracción de flujos que ese sensor emite y que ningún otro corrobora dentro de la ventana de correlación. <strong>Per-sensor</strong>, no global: identifica <em>cuál</em> sensor drifta para realinearlo.</p>
+<p>Tres causas de <code>orphan_rate</code> alto, distinguibles solo con el mapa de cobertura (§3.7): drift de seed/identidad; cobertura asimétrica legítima; pérdida real.</p>
+<p><strong>Máquina de estados de confianza del sensor.</strong> Disparadores de naturaleza distinta para cada transición — esto es deliberado:</p>
+<table>
+<thead>
+<tr>
+<th>Estado</th>
+<th>Disparador</th>
+<th>Naturaleza del disparador</th>
+<th>Efecto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>TRUSTED</strong></td>
+<td><code>orphan_rate</code> normal</td>
+<td>—</td>
+<td>Participa en correlación</td>
+</tr>
+<tr>
+<td><strong>DEGRADED</strong></td>
+<td><code>orphan_rate</code> sostenido sobre umbral provisional</td>
+<td><strong>Estadístico</strong> (probabilístico, ruidoso, dependiente del volumen)</td>
+<td>Sigue participando; alerta; marca de confianza reducida en grafo</td>
+</tr>
+<tr>
+<td><strong>QUARANTINED</strong></td>
+<td>Divergencia de <code>community_id</code> <strong>confirmada</strong> (re-verificación contra la batería §3.6 o contra un flujo corroborable: el sensor emite un cid que no joinea, verificable contra los demás)</td>
+<td><strong>Binario</strong> (hecho verificable, no estadística)</td>
+<td>Excluido de correlación; correlación continúa con N-1; anotado en grafo</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Por qué dos disparadores y no uno (decisión de diseño).</strong> Un <code>orphan_rate</code> alto es <em>evidencia</em> de posible drift, no prueba de él: un pico transitorio por una ráfaga de tráfico asimétrico lo dispara sin que haya divergencia real. Poner un sensor en cuarentena directamente por <code>orphan_rate</code> significaría excluir un sensor potencialmente sano por un falso positivo estadístico — en un hospital, tirar una fuente buena. Por eso DEGRADED (sospecha, sigue participando, solo alerta) NO escala a QUARANTINED por más <code>orphan_rate</code>; QUARANTINED exige <strong>confirmación binaria</strong> de que el sensor emite un cid que no joinea. La sospecha estadística motiva la verificación; solo la verificación confirma la cuarentena.</p>
+<p><strong>Anotación en grafo (QUARANTINED/DEGRADED):</strong> todo nodo/relación que dependa del sensor afectado durante el estado degradado inyecta metadatos:</p>
+<pre><code>correlation_confidence: LOW
+degradation_source: &lt;sensor_id&gt;
+evidence_orphan_rate: &lt;valor&gt;
+timestamp_monotonic: &lt;wall_clock&gt;
+</code></pre>
+<p>El nodo <code>Sensor</code> cambia <code>status</code> a <code>DEGRADED</code> / <code>QUARANTINED</code>. Coherente con "anotar método y confianza, nunca fallo silencioso".</p>
+<p><strong>Mínimo correlacionable (condición de crisis):</strong> si la cuarentena deja <strong>un solo</strong> sensor válido (N=1), ya no hay correlación cross-source posible — solo detección single-source. Esto NO es "degradación N-1 normal"; es condición de crisis distinta, anotada como tal.</p>
+<p><strong>Reintegración (QUARANTINED → TRUSTED):</strong>
+- Automática: <code>orphan_rate</code> vuelve bajo umbral durante <strong>≥2 ventanas consecutivas</strong> (guarda anti-oscilación), o
+- Manual: re-gate iniciado por el operador.
+- (Si en el futuro se implementa la sonda activa diferida, esta puede actuar como tercer disparador.)</p>
+<p><strong>Umbrales provisionales — PLACEHOLDER, no autoritativos.</strong> Como punto de partida para implementar la lógica: <code>&gt;5%</code> sostenido 5 min → DEGRADED (warning); <code>&gt;15%</code> → QUARANTINED (critical). <strong>Estos números están sin medir y DEBEN recalibrarse desde la primera semana de baseline.</strong> No son una decisión arquitectónica; son un placeholder para no bloquear la implementación. Hardcodearlos como definitivos contradice la filosofía Via Appia.</p>
+<h3 id="35-huerfano-vs-pendiente-el-problema-del-timestamp-hallazgo-day-172">3.5 Huérfano vs. pendiente — el problema del timestamp (hallazgo DAY 172)</h3>
+<p>El health-check <strong>no puede</strong> marcar huérfano un flujo no corroborado sin descartar que esté <strong>pendiente</strong> (dentro de la ventana <code>source_wait_timeout</code> de un sensor más lento).</p>
+<p>Los timestamps internos <strong>no son comparables</strong>: Suricata ancla a fin-de-flujo (<code>flow.timeout</code>); Zeek a inicio-de-conexión; aRGus usa reloj sintético. Spreads medidos 9.7 ms → ~116 s. Consecuencias:
+1. Los <code>source_wait_timeout</code> de ADR-046 v4 (5/10/20/90 s) son casi con seguridad bajos, sobre todo para Suricata en flujos largos.
+2. La distinción huérfano/pendiente DEBE medirse por <strong>wall-clock de aparición</strong> (<code>time.monotonic</code> en el host de correlación), nunca por ts interno.</p>
+<p>El gate (§3.1) es definitivo (paridad booleana contra oráculo); el <strong>umbral</strong> del health-check es <strong>provisional</strong> hasta la calibración de B (DEBT-CORRELATION-TIMEOUT-CALIB-001). Valor conservador inicial: 120 s para la ventana "pendiente".</p>
+<h3 id="36-bateria-de-vectores-de-referencia-artefacto-compartido">3.6 Batería de vectores de referencia (artefacto compartido)</h3>
+<p>Un único flujo TCP/IPv4 deja pasar bugs que solo aparecen en otros protocolos o en canonicalización. Batería mínima:</p>
+<table>
+<thead>
+<tr>
+<th>Vector</th>
+<th>Capa</th>
+<th>Flujo</th>
+<th>Propósito</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>V1 (Neris)</strong></td>
+<td>TCP IPv4</td>
+<td><code>147.32.84.165:1027 → 74.125.232.195:80</code></td>
+<td>Regresión DAY 171/172. <code>community_id</code> = <code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code> (seed 0, verificado por Kimi contra <code>pycommunityid</code>)</td>
+</tr>
+<tr>
+<td><strong>V2 (mDNS)</strong></td>
+<td>UDP IPv4</td>
+<td><code>…:5353 → 224.0.0.251:5353</code></td>
+<td>Canonicalización UDP + multicast</td>
+</tr>
+<tr>
+<td><strong>V3</strong></td>
+<td>TCP IPv6</td>
+<td><code>[2001:db8::1]:443 → [2001:db8::2]:…</code></td>
+<td>Ordenamiento de bytes en direcciones 128-bit</td>
+</tr>
+<tr>
+<td><strong>V4 (inverso)</strong></td>
+<td>según protocolo</td>
+<td>A→B y B→A</td>
+<td>Canonicidad: ambos deben dar el MISMO <code>community_id</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Salvedades (a documentar en la DEBT):</strong>
+- La canonicalización de dirección invertida (V4) tiene reglas distintas por protocolo (TCP vs UDP vs ICMP). Verificar <strong>por protocolo</strong>, no asumir un razonamiento único.
+- V3 valida la <em>implementación</em> IPv6, no la <em>cobertura operacional</em> IPv6 (que el lab genere tráfico IPv6 real es harina de otro costal — riesgo conocido, no resuelto por el vector).
+- La batería es <strong>fixture compartido</strong> con <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code> (ADR-052): ataca las mismas aristas de canonicalización. No duplicar.</p>
+<h3 id="37-mapa-de-cobertura-sensorsegmento">3.7 Mapa de cobertura sensor↔segmento</h3>
+<p>Distinguir asimetría legítima de pérdida real (§3.4) requiere saber qué sensor debería ver qué: DEBT-SENSOR-COVERAGE-MAP-001 (ADR-052 §3.8). Es <strong>prerequisito de interpretabilidad</strong> del <code>orphan_rate</code>. El gate de arranque (§3.1) NO depende del mapa (opera sobre vectores que todos deben ver); el health-check continuo SÍ.</p>
+<h3 id="38-inyeccion-sintetica-sin-contaminacion">3.8 Inyección sintética sin contaminación</h3>
+<p><strong>Orden crítico (los sensores DEBEN procesar el flujo; el descarte ocurre aguas abajo):</strong> el gate necesita que cada sensor <em>vea y procese</em> el flujo sintético para que emita su <code>community_id</code> — si se filtrara a nivel de captura del sensor, el gate no tendría nada que medir. Por tanto el descarte NO es en el sensor: es en el <strong>correlation-engine</strong>, que identifica el flujo por su marca y lo descarta tras validar la paridad, antes de la persistencia en Neo4j. Regla: <em>sensores procesan → engine valida paridad → engine descarta por marca → nada llega a Neo4j</em>.</p>
+<ul>
+<li>Inyectar en el segmento observado por todos los sensores (eth1/intnet), no en gestión.</li>
+<li>Marca inconfundible: SNI/User-Agent identificable (p.ej. <code>seed-probe.argus.local</code> / <code>ARGUS-SEED-PROBE</code>) o puerto fuera de rango efímero.</li>
+<li><strong>Punto de descarte = correlation-engine</strong> (capa de correlación/persistencia), nunca el filtro de captura del sensor. Criterio de aceptación de la DEBT de inyección: verificar que (a) los N sensores emitieron cid para el flujo de prueba Y (b) ningún nodo/relación derivado del flujo de prueba quedó en Neo4j.</li>
+<li>El flujo de referencia se inyecta una vez durante el gate y se descarta antes de aceptar tráfico productivo.</li>
+</ul>
+<hr />
+<h2 id="4-despliegue-por-fases">4. Despliegue por fases</h2>
+<p><code>DEBT-ARGUSPP-COUNTER-DUMP-001</code> bloquea el <code>orphan_rate</code> de aRGus (sin volcado de contadores, no hay denominador). Por tanto:</p>
+<p><strong>Fase 1 (inmediata):</strong>
+- <strong>Gate de arranque completo</strong> sobre los sensores que emiten (los 3, ya que DAY 171/172 probó que aRGus emite <code>community_id</code>). Bloqueante por <strong>divergencia</strong>; ausencia ≠ divergencia (ver abajo).
+- <strong>Health-check <code>orphan_rate</code> solo Suricata↔Zeek.</strong>
+- <strong>aRGus en Fase 1 vive honestamente sin <code>orphan_rate</code>.</strong> El gate de arranque ya garantiza que aRGus arrancó con paridad; su <code>orphan_rate</code> espera a Fase 2. La métrica heurística provisional propuesta por DeepSeek (flujos que Suricata+Zeek ven y que aRGus debería corroborar según el mapa de cobertura y no aparecen) se rebaja a <strong>opcional de depuración, NO alerta operativa</strong>: arrastra el mapa de cobertura (P1, no cerrado) y es explícitamente aproximada. Una métrica aproximada que dispara falsas alarmas en un entorno hospitalario es peor que ninguna métrica. Si se implementa, solo como señal de depuración para el desarrollador, jamás como alerta que llegue al operador. Recomendación: no implementarla hasta que el mapa de cobertura esté cerrado y, aun así, solo si demuestra valor sobre el silencio honesto.</p>
+<p><strong>Fase 2 (post COUNTER-DUMP-001):</strong>
+- <code>orphan_rate</code> de aRGus pasa a métrica determinista de primer nivel.</p>
+<p><strong>Regla ausencia ≠ divergencia (Fase 1, evita Catch-22):</strong> si un sensor <em>presente</em> emite un <code>community_id</code> distinto → divergencia → Correlation Broken → fail-closed. Si un sensor está <em>ausente</em> (esperado por el mapa pero sin emitir, p.ej. métrica aún no desarrollada) → NO fail-closed: WARNING "cobertura parcial esperada" y validar paridad entre los sensores activos. El gate no debe bloquear el arranque esperando una métrica que aún estamos construyendo.</p>
+<hr />
+<h2 id="5-consecuencias-y-prerequisitos">5. Consecuencias y prerequisitos</h2>
+<h3 id="51-riesgo-conocido-documentado-latencia-de-deteccion-del-orphan_rate">5.1 Riesgo conocido documentado — latencia de detección del <code>orphan_rate</code></h3>
+<p>El <code>orphan_rate</code> tiene latencia de detección <strong>dependiente del volumen de tráfico</strong>: en valles (hospital a las 04:00), tarda en acumular evidencia de un drift, y un sensor desincronizado puede pasar desapercibido durante esa ventana. La sonda activa periódica (diferida, §6) lo mitigaría. <strong>Se difiere conscientemente; el agujero queda nombrado como riesgo conocido, no omitido.</strong></p>
+<h3 id="52-prerequisitos-explicitos-bloqueos-honestos-no-nice-to-haves">5.2 Prerequisitos explícitos (bloqueos honestos, no nice-to-haves)</h3>
+<ul>
+<li><strong>DEBT-ARGUSPP-COUNTER-DUMP-001 (P1):</strong> prerequisito duro del health-check de aRGus (Fase 2). Razón del reorden de prioridad 2→3 del plan DAY 173.</li>
+<li><strong>DEBT-CORRELATION-TIMEOUT-CALIB-001 (P1, "B"):</strong> umbral huérfano/pendiente provisional hasta su cierre.</li>
+<li><strong>DEBT-SENSOR-COVERAGE-MAP-001 (P1):</strong> prerequisito de interpretabilidad del <code>orphan_rate</code> y de la métrica provisional de aRGus.</li>
+</ul>
+<h3 id="53-inputs-trasladados-a-b-no-son-de-adr-051">5.3 Inputs trasladados a B (no son de ADR-051)</h3>
+<p>Requisitos de diseño de DEBT-CORRELATION-TIMEOUT-CALIB-001:
+- <code>Timeout = max(Δts_sensores) + jitter_pipeline + margen_ε</code> (Qwen) — no ignorar el jitter interno (colas, GC, escritura Neo4j) o habrá falsos huérfanos bajo carga.
+- Matriz de timeout indexada por protocolo/duración, no valor estático (Gemini).
+- Umbrales por percentil/variación relativa, no absolutos (Mistral/DeepSeek).
+- 120 s conservador como punto de partida (Grok).</p>
+<hr />
+<h2 id="6-backlog-de-debts">6. Backlog de DEBTs</h2>
+<h3 id="p1-bloquean-v20-del-gate">P1 (bloquean v2.0 del gate)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+<th>Notas</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-CORRELATION-SEED-GATE-001</code></td>
+<td>El gate es su especificación (cierra diseño). Identificador conservado pese al renombrado del ADR.</td>
+<td>Spec = este ADR</td>
+</tr>
+<tr>
+<td><code>DEBT-SEED-GATE-DIAGNOSTIC-001</code></td>
+<td>Diagnóstico verbose + seed oráculo + SHA-256 config (solo diagnóstico) + <strong>runbook de recuperación</strong>. Inferencia de seed = enhancement opcional <strong>acotado a set enumerado</strong> (0 + defaults), nunca barrido ciego.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>DEBT-CID-TEST-VECTORS-001</code></td>
+<td>Batería V1–V4 (TCP/UDP/IPv6/inverso). <strong>Fixture compartido con <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>.</strong> Canonicidad inversa verificada por protocolo.</td>
+<td>Renombrado desde <code>DEBT-CID-PARITY-VECTORS-001</code> (Qwen)</td>
+</tr>
+<tr>
+<td><code>DEBT-CID-STATE-MACHINE-001</code></td>
+<td>Formaliza máquina de estados del gate (Safe/Divergence/Broken) + confianza del sensor (TRUSTED/DEGRADED/QUARANTINED) + transiciones (gate_fail, orphan_rate_high, recovery, operator_override, split_brain).</td>
+<td>ChatGPT. Estados del gate = Fase 1; estados de sensor = con health-check</td>
+</tr>
+<tr>
+<td><code>DEBT-CID-CROSSCHECK-CI-001</code></td>
+<td><code>make crosscheck-up/run</code> obligatorio en CI para cambios que toquen sensores o <code>community_id</code>.</td>
+<td></td>
+</tr>
+<tr>
+<td><code>DEBT-ARGUSPP-COUNTER-DUMP-001</code></td>
+<td>Volcado de contadores aRGus. Bloquea Fase 2.</td>
+<td>Prerequisito</td>
+</tr>
+<tr>
+<td><code>DEBT-SENSOR-COVERAGE-MAP-001</code></td>
+<td>Mapa declarativo sensor↔segmento.</td>
+<td>Prerequisito interpretabilidad</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p2">P2</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-CID-ORACLE-QUORUM-001</code></td>
+<td>Oráculo dos niveles + lógica de quórum (N≥3) + versionado del oráculo en diagnóstico.</td>
+</tr>
+<tr>
+<td><code>DEBT-CORRELATION-TIMEOUT-CALIB-001</code></td>
+<td>"B": wall-clock de aparición, refactor one-shot→poll, inputs de §5.3.</td>
+</tr>
+<tr>
+<td><code>DEBT-SEED-CHAOS-TEST-001</code></td>
+<td>Pruebas de caos: forzar drift y verificar gate-fail en arranque, <code>orphan_rate</code> sube, degradación N-1 anotada.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="p3-diferida-opcional">P3 (diferida / opcional)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-SEED-ACTIVE-PROBE-001</code></td>
+<td>Sonda activa periódica NO bloqueante, configurable, off por defecto. Mitiga §5.1. Si se implementa, actúa como disparador de reintegración.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="aditivos-menores-no-debt-propia">Aditivos menores (no DEBT propia)</h3>
+<ul>
+<li><code>match_rate = 1 − orphan_rate</code> para dashboards/SLOs; <code>expected_orphan_rate</code> derivado del mapa de cobertura cuando cierre.</li>
+<li>Umbrales de alerta: placeholder provisional, recalibrar desde baseline (§3.4).</li>
+</ul>
+<h3 id="corte-camino-critico-vs-diferible-para-el-plan-del-mes">Corte camino-crítico vs. diferible (para el plan del mes)</h3>
+<p>La finalidad del mes es correlation-engine → grafo → MITRE → datasets → ensemble. Contra eso:</p>
+<ul>
+<li><strong>CAMINO CRÍTICO (hacer pronto):</strong> el <strong>gate de arranque mínimo</strong> ya está esencialmente hecho (cross-check DAY 171/172 + targets <code>crosscheck-up</code>/<code>crosscheck-run</code>). Formalizarlo es barato. Lo que de verdad desbloquea el engine es <strong>DEBT-NEO4J-FLOW-KEY-001</strong> (P0 esquema, de ADR-052) — esa es la siguiente piedra real, no una DEBT de este ADR.</li>
+<li><strong>DIFERIBLE (backlog ratificado, duerme):</strong> <code>DEBT-CID-STATE-MACHINE-001</code>, <code>DEBT-SEED-ACTIVE-PROBE-001</code>, <code>DEBT-CID-ORACLE-QUORUM-001</code>, <code>DEBT-SEED-CHAOS-TEST-001</code>, y la máquina de cuarentena/reintegración. Son operación de producción; sin un engine en marcha no protegen nada. Se implementan cuando el engine exista, no antes.</li>
+<li><strong>PREREQUISITOS QUE SÍ TOCAN PRONTO pero por la cadena de valor, no por 051:</strong> <code>DEBT-ARGUSPP-COUNTER-DUMP-001</code> y <code>DEBT-SENSOR-COVERAGE-MAP-001</code> los necesita el health-check, pero su urgencia real la marca el engine, no este ADR.</li>
+</ul>
+<hr />
+<h2 id="7-ruta-de-ratificacion">7. Ruta de ratificación</h2>
+<ol>
+<li>Circular esta v2 para <strong>confirmación de fidelidad</strong> (¿recoge fielmente lo deliberado en las dos rondas?), no re-deliberación. Plazo sugerido: 24–48 h.</li>
+<li>Punto a validar conscientemente en la confirmación: la resolución del <strong>Oracle Divergence</strong> (§3.2/§3.3) refleja un cambio de postura respecto a la primera ronda (el gate NO es fail-closed contra el oráculo; sí lo es contra disparidad entre sensores). Que el Consejo confirme que esta es la lectura correcta.</li>
+<li>Tras 8/8, extraer el backlog (§6) y asignar responsables.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,984 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PROPUESTA%20--%20Flujo%20B%2C%20parquet_to_kuzu_loader%20%28DAY%20207%29-respuesta-claude/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>PROPUESTA Flujo B, parquet to kuzu loader (DAY 207) respuesta claude - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#objeciones-a-la-propuesta-flujo-b-parquet_to_kuzu_loader-day-207" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PROPUESTA    Flujo B, parquet to kuzu loader (DAY 207) respuesta claude
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#objeciones-a-la-propuesta-flujo-b-parquet_to_kuzu_loader-day-207" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Objeciones a la propuesta "Flujo B — parquet_to_kuzu_loader" (DAY 207)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Objeciones a la propuesta &#34;Flujo B — parquet_to_kuzu_loader&#34; (DAY 207)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#1-la-tabla-de-mapeo-de-columnas-tiene-un-hueco-silencioso-cols-18-20-desaparecen-sin-explicacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. La tabla de mapeo de columnas tiene un hueco silencioso — cols 18-20 desaparecen sin explicación
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#2-afirmacion-no-verificada-recompute-stored-para-flow_start_window" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Afirmación no verificada: "recompute == stored" para flow_start_window
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#3-pregunta-de-arquitectura-que-la-propuesta-evita-por-completo-flujo-b-corre-contra-el-mismo-kuzu-que-camino-0-o-contra-uno-de-test-aislado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Pregunta de arquitectura que la propuesta evita por completo: ¿Flujo B corre contra el MISMO Kuzu que Camino 0, o contra uno de test aislado?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4-sin-plan-de-test-para-el-propio-loader" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Sin plan de test para el propio loader
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5-integridad-del-parquet-en-si-se-re-verifica-algo-al-entrar-a-flujo-b-o-se-confia-ciegamente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Integridad del Parquet en sí — ¿se re-verifica algo al entrar a Flujo B, o se confía ciegamente?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6-el-limite-de-un-solo-chunk-esta-bien-declarado-pero-la-verificacion-que-lo-sostiene-es-de-una-sola-muestra" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. El límite de "un solo chunk" está bien declarado — pero la verificación que lo sostiene es de una sola muestra
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#veredicto-adversarial-sobre-las-peticiones-a-d-del-documento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto adversarial sobre las peticiones (a)-(d) del documento
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>PROPUESTA    Flujo B, parquet to kuzu loader (DAY 207) respuesta claude</h1>
+
+<p>Me pongo en el papel del Consejo, pero en su función crítica — la misma que ejercieron DeepSeek/GLM/Qwen contra el ADR-058 v2. No voy a ratificar la propuesta tal cual está escrita; voy a atacarla punto por punto, igual que le harían a cualquier propuesta nueva antes de dejarla pasar.</p>
+<hr />
+<h2 id="objeciones-a-la-propuesta-flujo-b-parquet_to_kuzu_loader-day-207">Objeciones a la propuesta "Flujo B — parquet_to_kuzu_loader" (DAY 207)</h2>
+<h3 id="1-la-tabla-de-mapeo-de-columnas-tiene-un-hueco-silencioso-cols-18-20-desaparecen-sin-explicacion">1. La tabla de mapeo de columnas tiene un hueco silencioso — cols 18-20 desaparecen sin explicación</h3>
+<p>La tabla de la sección 4 salta de "0-4, 7-8, 11-13, 17" directamente a "21 (flow_uid)". <strong>¿Y las columnas 18, 19 y 20?</strong></p>
+<ul>
+<li><strong>Col 18 = <code>hmac_row</code></strong>. No es parte de <code>CorrelationRecord</code> (el HMAC se valida y se descarta en <code>parse_and_verify</code>), así que no se reconstruye — correcto que no aparezca en el struct, pero la tabla debería decirlo explícitamente, no simplemente omitirlo. Un lector del documento (o del Consejo) puede interpretar el salto como un olvido, no como una decisión.</li>
+<li><strong>Cols 19-20 = <code>flow_start_window</code>, <code>seq_in_window</code></strong> (ya materializadas por Flujo A). La propuesta dice que <code>flow_uid</code> (col 21) "se usa directamente, sin recomputar" — pero <strong><code>sink.write(rec, flow_uid)</code> no acepta un <code>window</code> precomputado</strong>. <code>KuzuGraphSink</code>/<code>cypher_builder.hpp::make_bindings</code> recalcula <code>window_micros(r.flow_start_sec, r.flow_start_nano)</code> internamente, ignorando cols 19-20 del Parquet por completo. Eso significa: <strong>cols 19-20 se leen (si se leen) y no se usan para nada</strong>, o simplemente no hace falta leerlas en absoluto.</li>
+</ul>
+<p><strong>Pregunta real, no retórica:</strong> si no se van a usar, ¿por qué el diseño dice "cols 0-21" como si las 22 columnas fueran insumo del loader? Esto no es cosmético — es una inconsistencia entre lo que el documento afirma ("usa flow_uid directamente sin recomputar") y lo que implícitamente admite que sí recomputa (<code>window</code>). Corregir la tabla y ser explícito: <strong>cols 19-20 son redundantes para Flujo B tal como está diseñado; se leen solo si se quiere verificar cruzado contra el recálculo, no como fuente de verdad.</strong></p>
+<h3 id="2-afirmacion-no-verificada-recompute-stored-para-flow_start_window">2. Afirmación no verificada: "recompute == stored" para <code>flow_start_window</code></h3>
+<p>Directamente relacionado con el punto 1. La propuesta asume que recalcular <code>window_micros</code> desde <code>flow_start_sec</code>/<code>flow_start_nano</code> (cols 5-6) dará el mismo valor que ya está materializado en col 19. Es determinista y debería ser cierto — pero <strong>"debería" no es "medir, no votar"</strong>. Si Flujo B no verifica esto contra el propio Parquet (por ejemplo, con un <code>assert</code>/log de discrepancia si <code>window_micros(rec) != col19_leída</code>), estás introduciendo la primera verificación cruzada real del predicado §3.1 sin aprovecharla. Es gratis tenerla — el dato ya está en el Parquet, solo hay que comparar.</p>
+<p><strong>Objeción:</strong> el diseño debería incluir esta comprobación cruzada como parte del loader, no descartarla.</p>
+<h3 id="3-pregunta-de-arquitectura-que-la-propuesta-evita-por-completo-flujo-b-corre-contra-el-mismo-kuzu-que-camino-0-o-contra-uno-de-test-aislado">3. Pregunta de arquitectura que la propuesta evita por completo: ¿Flujo B corre contra el MISMO Kuzu que Camino 0, o contra uno de test aislado?</h3>
+<p>Esto es más grave que los dos anteriores. Si Camino 0 y Flujo A+B <strong>procesan el mismo segmento bronce en producción, contra el mismo Kuzu</strong>, el <code>MERGE ... ON CREATE SET</code> (sin <code>ON MATCH</code>) hace que <strong>el segundo escritor en llegar sea un no-op silencioso</strong> — no falla, pero tampoco actualiza nada. Esto tiene dos lecturas posibles, y la propuesta no elige ninguna:</p>
+<ul>
+<li><strong>(a)</strong> Si la intención es que ambos caminos coexistan en producción contra el mismo grafo (¿redundancia? ¿migración gradual?), el comportamiento MERGE-idempotente es correcto por diseño, pero <strong>nadie lo ha dicho explícitamente</strong> — y significa que el "test de equivalencia" nunca podría ejecutarse contra producción real, solo contra bases de datos Kuzu separadas y comparadas después.</li>
+<li><strong>(b)</strong> Si la intención es que Flujo B corra <strong>solo contra un Kuzu de test aislado</strong> (para el propio test de equivalencia, no para producción), eso también hay que decirlo — porque cambia completamente el propósito de este componente: ¿es infraestructura de test, o es un camino de producción alternativo?</li>
+</ul>
+<p><strong>Objeción de bloqueo real:</strong> sin responder esto, no se puede evaluar si el diseño es correcto, porque el propósito del componente no está definido. Esto debería ser la primera pregunta al Consejo, no una nota al margen.</p>
+<h3 id="4-sin-plan-de-test-para-el-propio-loader">4. Sin plan de test para el propio loader</h3>
+<p><code>bronze_to_gold_converter.cpp</code> tuvo un README, un smoke test previo, y ahora un test de equivalencia parcial verificado hoy. <strong>Flujo B no tiene ningún test propuesto</strong> — ni unitario ni de integración. Dado el patrón ya establecido (<code>test_bronze_to_kuzu_circuit.cpp</code> para Camino 0), lo mínimo exigible antes de escribir código de producción sería un test equivalente: escribir Parquet con el converter real → leer con el loader real → <code>MATCH</code> en Kuzu confirma nodos/aristas — mismo patrón, mismo espíritu "cero reimplementación en el test".</p>
+<p><strong>Objeción:</strong> la propuesta pide ratificación de un diseño sin comprometerse a cómo se prueba. Eso no debería pasar el gate.</p>
+<h3 id="5-integridad-del-parquet-en-si-se-re-verifica-algo-al-entrar-a-flujo-b-o-se-confia-ciegamente">5. Integridad del Parquet en sí — ¿se re-verifica algo al entrar a Flujo B, o se confía ciegamente?</h3>
+<p>El HMAC por fila ya se verificó cuando Flujo A leyó el bronce (<code>parse_and_verify</code>). Pero el propio ADR-058 v3 dice que el HMAC en el oro se reubicó como <strong>"control de integridad bronce↔oro-ledger"</strong> (<code>DEBT-GOLD-INTEGRITY-HMAC-001</code>) — es decir, se reconoce que hace falta verificar que el oro no se corrompió/manipuló <em>después</em> de escribirse. La propuesta no dice si Flujo B participa en esa verificación o si asume que el Parquet es confiable por el simple hecho de estar en el filesystem de gold.</p>
+<p><strong>Pregunta sin responder:</strong> ¿un atacante con acceso de escritura al directorio de gold (pero no al bronce) podría inyectar filas falsas que Flujo B escribiría a Kuzu sin detectarlo? Si la respuesta es "sí, pero es un problema de otra capa (permisos de filesystem, no de este componente)", hay que decirlo explícitamente como límite de responsabilidad, no dejarlo implícito.</p>
+<h3 id="6-el-limite-de-un-solo-chunk-esta-bien-declarado-pero-la-verificacion-que-lo-sostiene-es-de-una-sola-muestra">6. El límite de "un solo chunk" está bien declarado — pero la verificación que lo sostiene es de una sola muestra</h3>
+<p>Este es el punto que la propuesta ya reconoce, pero vale la pena presionar más: <strong>24 filas en un fichero es la única muestra medida.</strong> No sabemos si <code>num_chunks() == 1</code> es un contrato garantizado por la API de Arrow 24.0.0-1 para cualquier fichero de un row-group, o si es simplemente lo que pasó a ocurrir con <code>row_group_size=1024</code> (el converter usa ese tamaño, y 24 &lt; 1024, así que cabe entero en un row-group — probablemente por eso sale 1 chunk). Si algún día el converter procesa un segmento con más de 1024 filas (más eventos por rotación de 30s bajo carga real), <strong>no tenemos evidencia de qué pasaría.</strong></p>
+<p><strong>Objeción moderada, no bloqueante:</strong> la propuesta debería decir esto con más precisión — no es "ficheros pequeños = 1 chunk" en general, es "ficheros con menos filas que <code>row_group_size</code> = previsiblemente 1 chunk, sin garantía documentada de la librería".</p>
+<hr />
+<h2 id="veredicto-adversarial-sobre-las-peticiones-a-d-del-documento">Veredicto adversarial sobre las peticiones (a)-(d) del documento</h2>
+<ul>
+<li><strong>(a) Componente lector-puro-reusa-sink:</strong> ratificable en principio, pero <strong>condicionado</strong> a resolver el punto 3 (¿contra qué Kuzu corre?) antes de escribir código.</li>
+<li><strong>(b) Límite de un-solo-chunk:</strong> <strong>no ratificable tal cual</strong> — exigiría o bien el bucle multi-chunk desde el primer commit (más seguro, poco coste extra), o una medición adicional con un segmento de &gt;1024 filas antes de aceptar el límite como está.</li>
+<li><strong>(c) <code>ingested_at</code>/<code>seq_in_window</code> sin tratamiento especial:</strong> ratificable — está bien fundamentado en la exclusión ya existente del predicado §3.1.</li>
+<li><strong>(d) Nombre/ubicación del componente:</strong> no se puede decidir con seriedad hasta que (3) esté resuelto — el nombre y la ubicación dependen de si esto es infraestructura de test o un camino de producción.</li>
+</ul>
+<p><strong>Recomendación:</strong> no llevar esto al Consejo real todavía. Antes, resolver el punto 3 (arquitectura: ¿mismo Kuzu o aislado?) porque es la pregunta que determina si el resto del diseño tiene sentido, y decidir si el bucle multi-chunk se implementa ya (punto 6) en vez de diferirlo. Los puntos 1, 2, 4 y 5 son correcciones de precisión y alcance que cualquier revisor serio (Qwen/DeepSeek en el patrón que ya habéis visto) señalaría en la primera pasada.</p>
+<p>¿Quieres que resolvamos primero la pregunta arquitectónica del punto 3 antes de tocar nada más del documento?</p>
+<p>fdo</p>
+<p>Claude</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

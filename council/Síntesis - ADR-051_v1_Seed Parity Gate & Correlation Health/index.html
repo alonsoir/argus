@@ -1,0 +1,1185 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/S%C3%ADntesis%20-%20ADR-051_v1_Seed%20Parity%20Gate%20%26%20Correlation%20Health/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Síntesis — Deliberación del Consejo sobre ADR-051 v1 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#sintesis-deliberacion-del-consejo-sobre-adr-051-v1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Síntesis — Deliberación del Consejo sobre ADR-051 v1
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-consenso-unanime-ratificable-sin-mas-debate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Consenso unánime — ratificable sin más debate
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Consenso unánime — ratificable sin más debate">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#11-las-tres-preguntas-abiertas-6-del-borrador-estan-resueltas-por-unanimidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.1 Las tres preguntas abiertas (§6 del borrador) están resueltas por unanimidad
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#12-principios-tecnicos-validados-por-todos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.2 Principios técnicos validados por todos
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#13-verificacion-independiente-del-oraculo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1.3 Verificación independiente del oráculo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-unico-punto-de-divergencia-real-la-sonda-activa-periodica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Único punto de divergencia real — la sonda activa periódica
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-enmiendas-convergentes-a-incorporar-en-v2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Enmiendas convergentes a incorporar en v2
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Enmiendas convergentes a incorporar en v2">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-estructurales-cambian-el-textoalcance-del-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Estructurales (cambian el texto/alcance del ADR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-diagnostico-enriquecido-31-del-adr" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Diagnóstico enriquecido (§3.1 del ADR)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#33-despliegue-por-fases-consecuencia-practica-de-los-prerequisitos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.3 Despliegue por fases (consecuencia práctica de los prerequisitos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#34-inputs-para-b-debt-correlation-timeout-calib-001-no-son-de-adr-051-pero-quedan-registrados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.4 Inputs para B (DEBT-CORRELATION-TIMEOUT-CALIB-001) — no son de ADR-051, pero quedan registrados
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#35-operacional-validacion-debts-ligeras-nuevas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.5 Operacional / validación (DEBTs ligeras nuevas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#36-cautela-de-inyeccion-refina-la-pregunta-1-ya-resuelta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.6 Cautela de inyección (refina la pregunta 1 ya resuelta)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-recomendacion-de-ruta" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Recomendación de ruta
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-backlog-preliminar-sale-de-v2-una-vez-ratificada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Backlog preliminar (sale de v2 una vez ratificada)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="sintesis-deliberacion-del-consejo-sobre-adr-051-v1">Síntesis — Deliberación del Consejo sobre ADR-051 v1</h1>
+<ul>
+<li><strong>ADR:</strong> ADR-051 — Seed Parity Gate &amp; Correlation Health</li>
+<li><strong>Día:</strong> DAY 173</li>
+<li><strong>Firmantes (8/8):</strong> Claude, ChatGPT, DeepSeek, Gemini, Grok, Kimi, Mistral, Qwen</li>
+<li><strong>Veredicto global:</strong> <strong>APROBADO con condiciones.</strong> Ningún sabio rechaza el ADR. Ninguno cuestiona el principio rector (data-plane &gt; config) ni el fail-closed en arranque. Las objeciones son refinamientos, no vetos.</li>
+</ul>
+<hr />
+<h2 id="1-consenso-unanime-ratificable-sin-mas-debate">1. Consenso unánime — ratificable sin más debate</h2>
+<h3 id="11-las-tres-preguntas-abiertas-6-del-borrador-estan-resueltas-por-unanimidad">1.1 Las tres preguntas abiertas (§6 del borrador) están resueltas por unanimidad</h3>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Resolución unánime</th>
+<th>Disidencias</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>1. Flujo-diana</strong></td>
+<td><strong>Inyección sintética determinista</strong> del flujo Neris-diana.</td>
+<td>Ninguna. 8/8.</td>
+</tr>
+<tr>
+<td><strong>2. Gate periódico BLOQUEANTE</strong></td>
+<td><strong>NO.</strong> Nadie quiere re-ejecutar un <em>gate bloqueante</em> en runtime.</td>
+<td>Ninguna sobre el bloqueo. (Ver §2 para el matiz).</td>
+</tr>
+<tr>
+<td><strong>3. Degradación en runtime</strong></td>
+<td><strong>Degradar a N-1 con anotación explícita en el grafo.</strong> Nunca apagón total, nunca silencioso.</td>
+<td>Ninguna. 8/8.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="12-principios-tecnicos-validados-por-todos">1.2 Principios técnicos validados por todos</h3>
+<ul>
+<li><strong>Data-plane como única verdad</strong> (se mide lo que el binario EMITE, no lo que declara el yaml). Confirmado por los 8.</li>
+<li><strong><code>orphan_rate</code> PER-SENSOR</strong>, no global. Confirmado por los 8 — "global es inaccionable" (Gemini, Grok, Kimi coinciden literalmente).</li>
+<li><strong>Wall-clock de aparición</strong> para la distinción huérfano/pendiente, nunca timestamps internos. El hallazgo DAY 172 (spreads 9.7ms→116s) se acepta como justificación. Confirmado por los 8.</li>
+<li><strong>Diagnóstico por-sensor en el fallo del gate</strong> (sensor / cid esperado / cid emitido) es parte de la <em>definición de listo</em>, no opcional. Kimi lo eleva a condición de cierre de DEBT-SEED-GATE-DIAGNOSTIC-001.</li>
+<li><strong>Prerequisitos honestos:</strong> COUNTER-DUMP-001 (bloquea health-check de aRGus), TIMEOUT-CALIB-001 (umbral provisional), COVERAGE-MAP-001 (interpretabilidad). Los 8 respaldan el reorden de prioridad 2→3.</li>
+</ul>
+<h3 id="13-verificacion-independiente-del-oraculo">1.3 Verificación independiente del oráculo</h3>
+<p>Kimi recomputó el flujo-diana contra <code>pycommunityid</code> y <strong>confirma</strong> <code>1:IN7uqVpMWxpmuhQTowSQB2XEe0E=</code> (seed 0, TCP, ordenamiento canónico por tupla). El oráculo es sólido.</p>
+<hr />
+<h2 id="2-unico-punto-de-divergencia-real-la-sonda-activa-periodica">2. Único punto de divergencia real — la sonda activa periódica</h2>
+<p>Aquí está la <strong>única</strong> discrepancia sustantiva, y es reconciliable. Todos rechazan un <em>gate bloqueante</em> periódico. La pregunta residual es si se añade una <strong>sonda activa NO bloqueante</strong> que complemente al <code>orphan_rate</code> pasivo:</p>
+<table>
+<thead>
+<tr>
+<th>Postura</th>
+<th>Sabios</th>
+<th>Argumento</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Solo arranque; <code>orphan_rate</code> cubre el drift</strong></td>
+<td>Claude, ChatGPT, Gemini, Grok, Kimi (5)</td>
+<td>El <code>orphan_rate</code> continuo ya detecta el drift post-arranque sobre tráfico real. Una sonda activa contamina el data-plane productivo. Dos mecanismos para la misma condición = deuda de diseño.</td>
+</tr>
+<tr>
+<td><strong>Sonda activa no bloqueante periódica</strong></td>
+<td>DeepSeek, Qwen (2)</td>
+<td>Detecta drift por recarga en caliente <em>antes</em> de que el <code>orphan_rate</code> acumule evidencia. No bloquea: eleva alerta CRÍTICA y marca el sensor "no confiable".</td>
+</tr>
+<tr>
+<td><strong>Configurable, off por defecto</strong></td>
+<td>Mistral (1)</td>
+<td>Solo en arranque por defecto; activable (p.ej. cada 6h) en entornos de alta criticidad.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Resolución propuesta (satisface a las tres posturas):</strong> la sonda activa periódica <strong>no entra en el núcleo</strong> de ADR-051 v2 — el <code>orphan_rate</code> per-sensor es el mecanismo continuo primario. La sonda se registra como <strong>DEBT diferida y opcional</strong> (<code>DEBT-SEED-ACTIVE-PROBE-001</code>, P3), activable por configuración, sin contaminar producción por defecto. Así el campo "solo arranque" (5) tiene su núcleo limpio, y el campo "sonda" (2+1) tiene el mecanismo disponible cuando la operación demuestre que el <code>orphan_rate</code> reacciona demasiado lento.</p>
+<blockquote>
+<p>Nota de acoplamiento: la <strong>reintegración automática</strong> que propone DeepSeek ("reintegrar el sensor cuando recupere paridad, verificado por el gate periódico") depende de tener un disparador de recuperación. Si la sonda activa se difiere, la reintegración se dispara por (a) <code>orphan_rate</code> que vuelve por debajo del umbral, o (b) re-gate iniciado por el operador. Esto debe quedar escrito en v2.</p>
+</blockquote>
+<hr />
+<h2 id="3-enmiendas-convergentes-a-incorporar-en-v2">3. Enmiendas convergentes a incorporar en v2</h2>
+<p>Todas estas son <strong>aditivas</strong> (refuerzan, no contradicen) y varias vienen propuestas por más de un sabio. Agrupadas por naturaleza:</p>
+<h3 id="31-estructurales-cambian-el-textoalcance-del-adr">3.1 Estructurales (cambian el texto/alcance del ADR)</h3>
+<ul>
+<li>
+<p><strong>[ADOPTAR] Renombrar el alcance del gate — ChatGPT.</strong> El gate no valida solo el <em>seed</em>; valida que todos los sensores producen el <strong>mismo <code>community_id</code></strong> para el mismo flujo. Con seed idéntico, la correlación puede romperse igual por: bug en plugin Zeek, cambio de versión de Suricata, normalización IPv6 distinta, implementación defectuosa. Propuesta: retitular a <strong>"Community ID Parity Gate"</strong>, manteniendo el <em>drift de seed</em> como la causa-raíz nombrada y más común, pero reconociendo la superficie de fallo más amplia. (El nombre de la DEBT <code>DEBT-CORRELATION-SEED-GATE-001</code> puede conservarse o ampliarse — decisión menor.)</p>
+</li>
+<li>
+<p><strong>[ADOPTAR] Batería mínima de vectores de referencia, no un único flujo — ChatGPT.</strong> Un solo flujo TCP/IPv4 deja pasar bugs que solo aparecen en IPv6 o en canonicalización de dirección invertida. Batería mínima propuesta:</p>
+<ul>
+<li>A: TCP IPv4 (<code>147.32.84.165:1027 → 74.125.232.195:80</code>) — la diana actual.</li>
+<li>B: UDP IPv4 (p.ej. mDNS <code>…:5353 → 224.0.0.251:5353</code>).</li>
+<li>C: TCP IPv6.</li>
+<li>D: dirección invertida (A→B y B→A deben producir el MISMO community_id — verifica canonicidad).</li>
+<li><em>Sinergia:</em> esto ataca exactamente las aristas que <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code> (ADR-052) ya identificó como peligrosas (paridad C++/Python, caso 2-sensores). Conviene que la batería de vectores sea compartida entre ambas DEBTs.</li>
+</ul>
+</li>
+<li>
+<p><strong>[ADOPTAR] Oráculo en dos niveles + quórum — ChatGPT, Mistral.</strong> Separar:</p>
+<ul>
+<li><strong>Nivel 1 — paridad entre sensores:</strong> ¿todos los sensores coinciden ENTRE SÍ?</li>
+<li><strong>Nivel 2 — paridad con oráculo:</strong> ¿coinciden con <code>pycommunityid</code>?</li>
+<li>Si todos los sensores coinciden entre sí pero NO con el oráculo → no es drift de sensor, es problema del oráculo (bug o cambio de versión). Mistral propone una regla de quórum que emite alerta <em>"posible error en oráculo"</em> (no bloqueante). Versionar el oráculo (incluir su hash en el diagnóstico).</li>
+</ul>
+</li>
+</ul>
+<h3 id="32-diagnostico-enriquecido-31-del-adr">3.2 Diagnóstico enriquecido (§3.1 del ADR)</h3>
+<p>Convergencia fuerte en hacer el mensaje de fallo del gate más accionable. Adoptar el núcleo, marcar lo caro como opcional:</p>
+<ul>
+<li><strong>[ADOPTAR] Plantilla verbose — Grok.</strong> <code>sensor / cid_esperado(oráculo) / cid_emitido / acción sugerida</code>.</li>
+<li><strong>[ADOPTAR] Hash SHA-256 del config cargado — Qwen.</strong> Cierra el ciclo data-plane↔control-plane: el operador ve si el binario está ignorando el config o si el config fue alterado. (Es info de control-plane usada SOLO para diagnóstico, no como criterio del gate — coherente con el principio.)</li>
+<li><strong>[ADOPTAR] Seed del oráculo en el volcado — DeepSeek.</strong> Imprimir el seed con que el oráculo generó el valor esperado, para comparar con el declarado de cada sensor.</li>
+<li><strong>[OPCIONAL/DIFERIR] Inferencia del seed efectivo por fuerza bruta — Mistral, Grok.</strong> Útil pero potencialmente caro/frágil. Nice-to-have, no núcleo. → enhancement dentro de <code>DEBT-SEED-GATE-DIAGNOSTIC-001</code>.</li>
+</ul>
+<h3 id="33-despliegue-por-fases-consecuencia-practica-de-los-prerequisitos">3.3 Despliegue por fases (consecuencia práctica de los prerequisitos)</h3>
+<ul>
+<li><strong>[ADOPTAR] Fase 1 vs Fase 2 — Gemini, DeepSeek, Qwen.</strong> Dado que COUNTER-DUMP-001 bloquea el <code>orphan_rate</code> de aRGus:<ul>
+<li><strong>Fase 1 (inmediata):</strong> desplegar el <strong>Gate de arranque</strong> completo + health-check en modo "degradado/pasivo" midiendo solo <strong>Suricata y Zeek</strong>.</li>
+<li><strong>Fase 2:</strong> incorporar aRGus al health-check cuando COUNTER-DUMP-001 cierre.</li>
+<li>DeepSeek añade una métrica parcial provisional: flujos que Suricata+Zeek ven y que aRGus <em>debería</em> corroborar (según mapa de cobertura) y no aparecen en su log. Aproximación imperfecta pero da visibilidad temprana.</li>
+</ul>
+</li>
+</ul>
+<h3 id="34-inputs-para-b-debt-correlation-timeout-calib-001-no-son-de-adr-051-pero-quedan-registrados">3.4 Inputs para B (DEBT-CORRELATION-TIMEOUT-CALIB-001) — no son de ADR-051, pero quedan registrados</h3>
+<p>Estos refinan la calibración, no el ADR. Se trasladan a B como requisitos de su diseño:</p>
+<ul>
+<li><strong>Qwen:</strong> <code>Timeout = max_diferencia_ts_sensores + jitter_pipeline + margen_ε</code>. Ignorar el jitter interno (colas, GC, escritura Neo4j) generará falsos huérfanos bajo carga.</li>
+<li><strong>Gemini:</strong> timeout como matriz dinámica indexada por protocolo/duración, no valor estático.</li>
+<li><strong>Mistral / DeepSeek:</strong> umbrales por percentil (P95) / variación relativa, no absolutos.</li>
+<li><strong>Grok:</strong> valor inicial conservador 120s para la ventana "pendiente" mientras B calibra.</li>
+</ul>
+<h3 id="35-operacional-validacion-debts-ligeras-nuevas">3.5 Operacional / validación (DEBTs ligeras nuevas)</h3>
+<ul>
+<li><strong>[ADOPTAR como DEBT] Regresión en CI — Grok.</strong> <code>make crosscheck-up/run</code> obligatorio en CI para cualquier cambio que toque sensores o <code>community_id</code>. → <code>DEBT-CID-CROSSCHECK-CI-001</code> (P1).</li>
+<li><strong>[ADOPTAR como DEBT] Pruebas de caos — Mistral.</strong> Forzar drift de seed en un sensor; verificar que (a) el gate falla en arranque, (b) <code>orphan_rate</code> sube en runtime, (c) la degradación N-1 funciona y anota. → <code>DEBT-SEED-CHAOS-TEST-001</code> (P2).</li>
+<li><strong>[ADOPTAR] Métrica secundaria <code>match_rate = 1 − orphan_rate</code> — ChatGPT.</strong> Más intuitiva para dashboards/SLOs. Trivial, cosmética. Y <code>expected_orphan_rate</code> derivada del mapa de cobertura (Grok) cuando COVERAGE-MAP cierre.</li>
+<li><strong>[ADOPTAR] Umbrales de alerta desde día 1 — Grok.</strong> Provisionales hasta calibración: <code>&gt;5%</code> sostenido 5 min → warning; <code>&gt;15%</code> → critical. Marcar como provisional (dependen de B).</li>
+<li><strong>[ADOPTAR] Sección "Cómo recuperar de un fallo de seed" — Grok.</strong> Runbook breve con pasos concretos.</li>
+</ul>
+<h3 id="36-cautela-de-inyeccion-refina-la-pregunta-1-ya-resuelta">3.6 Cautela de inyección (refina la pregunta 1 ya resuelta)</h3>
+<ul>
+<li><strong>[ADOPTAR] No contaminar el grafo de producción — DeepSeek, Qwen, Claude.</strong> La inyección sintética debe: (a) ir al segmento que los N sensores observan (eth1/intnet), no a gestión, o un sensor legítimamente no la verá y el gate fallará por la razón equivocada (Claude); y (b) llevar marca identificable (Qwen propone SNI/User-Agent <code>ARGUS-SEED-PROBE</code>) para que el correlation-engine la descarte tras validar, o usar interfaz dedicada (DeepSeek). El flujo de referencia se inyecta una vez y se descarta antes de aceptar tráfico productivo (Kimi).</li>
+</ul>
+<hr />
+<h2 id="4-recomendacion-de-ruta">4. Recomendación de ruta</h2>
+<p><strong>No procede 3ª deliberación.</strong> La convergencia es demasiado fuerte para justificarla:
+- Las tres preguntas abiertas están resueltas 8/8.
+- La única divergencia (sonda activa) se reconcilia sin contradicción haciéndola DEBT diferida opcional.
+- Todas las demás aportaciones son aditivas y mutuamente compatibles.</p>
+<p><strong>Ruta propuesta (precedente ADR-052 v3.2):</strong>
+1. Redactar <strong>ADR-051 v2</strong> incorporando §1 (consenso), §2 (resolución de la sonda como DEBT diferida), §3 (enmiendas adoptadas), con las opcionales/diferidas claramente marcadas como tales.
+2. Circular v2 para <strong>confirmación de fidelidad</strong> (¿recoge v2 fielmente lo deliberado?), NO para re-deliberar el fondo — igual que ADR-052 v3.2 se ratificó 8/8 "sin 3ª deliberación".
+3. Tras ratificación, <strong>extraer el backlog</strong> (§5).</p>
+<p>El único elemento que <em>podría</em> sorprender a alguien es el renombrado a "Community ID Parity Gate" (cambia el título). Pero refuerza el argumento de ChatGPT que nadie discutió; es clarificación, no cambio de rumbo. La confirmación de fidelidad lo cubre.</p>
+<hr />
+<h2 id="5-backlog-preliminar-sale-de-v2-una-vez-ratificada">5. Backlog preliminar (sale de v2 una vez ratificada)</h2>
+<p>DEBTs ya existentes que ADR-051 toca:
+- <code>DEBT-CORRELATION-SEED-GATE-001</code> — el ADR es su especificación (cierra diseño).
+- <code>DEBT-SEED-GATE-DIAGNOSTIC-001</code> (P1) — diagnóstico verbose + SHA-256 config + seed oráculo. (Inferencia de seed = enhancement opcional dentro.)
+- <code>DEBT-ARGUSPP-COUNTER-DUMP-001</code> (P1) — prerequisito duro del health-check de aRGus (Fase 2).
+- <code>DEBT-CORRELATION-TIMEOUT-CALIB-001</code> (P1, "B") — recibe los inputs de §3.4.
+- <code>DEBT-SENSOR-COVERAGE-MAP-001</code> (P1) — prerequisito de interpretabilidad de <code>orphan_rate</code>.</p>
+<p>DEBTs nuevas que generaría v2:
+- <code>DEBT-CID-PARITY-VECTORS-001</code> (P1) — batería de vectores TCP/UDP/IPv6/invertido, compartida con <code>DEBT-FLOWUID-CANONICAL-ENCODING-001</code>.
+- <code>DEBT-CID-ORACLE-QUORUM-001</code> (P2) — oráculo dos niveles + quórum + versionado del oráculo.
+- <code>DEBT-CID-CROSSCHECK-CI-001</code> (P1) — <code>crosscheck-up/run</code> como gate de CI.
+- <code>DEBT-SEED-CHAOS-TEST-001</code> (P2) — prueba de caos de drift.
+- <code>DEBT-SEED-ACTIVE-PROBE-001</code> (P3, DIFERIDA/OPCIONAL) — sonda activa no bloqueante configurable.</p>
+<hr />
+<p><em>Documento de síntesis para circulación al Consejo. Las posturas individuales se conservan en los ficheros <code>ADR-051_v1_*_&lt;MODELO&gt;.md</code>.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1193 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Brief%20para%20el%20Consejo%20de%20Sabios%20%E2%80%94%20DAY%20184%20%E2%86%92%20DAY%20185-chatgpt/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Consejo de Sabios — Revisión DAY 184 → DAY 185 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#consejo-de-sabios-revision-day-184-day-185" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Consejo de Sabios — Revisión DAY 184 → DAY 185
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="consejo-de-sabios-revision-day-184-day-185">Consejo de Sabios — Revisión DAY 184 → DAY 185</h1>
+<p>Voy a responder exclusivamente desde ingeniería de sistemas distribuidos, arquitectura de datos y metodología experimental.</p>
+<hr />
+<h1 id="veredicto-general">Veredicto general</h1>
+<p>La decisión más importante del DAY 184 no es Kuzu.</p>
+<p>Es haber empezado a convertir supuestos en invariantes medidos.</p>
+<p>El patrón que aparece repetidamente es:</p>
+<ol>
+<li>Se identifica una hipótesis.</li>
+<li>Se construye un mecanismo que impide violarla silenciosamente.</li>
+<li>Se mide.</li>
+<li>Solo después se construye encima.</li>
+</ol>
+<p>Ese patrón es científicamente correcto.</p>
+<p>Lo contrario sería construir capas enteras de arquitectura sobre supuestos no validados.</p>
+<hr />
+<h1 id="1-es-correcto-medir-primero">1. ¿Es correcto medir primero?</h1>
+<h2 id="respuesta-corta">Respuesta corta</h2>
+<p>Sí.</p>
+<p>La decisión es correcta.</p>
+<hr />
+<h2 id="razon">Razón</h2>
+<p>La primera pregunta que intenta responder el proyecto es:</p>
+<blockquote>
+<p>¿El pipeline pierde o corrompe información?</p>
+</blockquote>
+<p>No:</p>
+<blockquote>
+<p>¿Tenemos la arquitectura final perfecta?</p>
+</blockquote>
+<p>Son preguntas distintas.</p>
+<p>Si todavía no sabes si el camino actual preserva datos, introducir:</p>
+<ul>
+<li>Avro</li>
+<li>Arrow</li>
+<li>Parquet</li>
+<li>Iceberg</li>
+<li>Medallones</li>
+</ul>
+<p>añade miles de líneas de código y decenas de nuevos puntos de fallo.</p>
+<p>En experimentación eso es una mala práctica.</p>
+<p>Porque si aparece pérdida de datos no sabrás dónde.</p>
+<hr />
+<h2 id="principio-cientifico">Principio científico</h2>
+<p>Cuando se valida una cadena:</p>
+<pre><code class="language-text">A -&gt; B -&gt; C -&gt; D
+</code></pre>
+<p>primero se mide:</p>
+<pre><code class="language-text">A -&gt; D
+</code></pre>
+<p>con la menor cantidad posible de variables intermedias.</p>
+<p>Solo después se introducen:</p>
+<pre><code class="language-text">A -&gt; B -&gt; C -&gt; D
+</code></pre>
+<p>y se mide otra vez.</p>
+<hr />
+<h2 id="riesgo-del-falso-verde">Riesgo del falso verde</h2>
+<p>Existe.</p>
+<p>Pero no donde parece.</p>
+<p>El riesgo no es:</p>
+<blockquote>
+<p>"CSV no se parece a producción"</p>
+</blockquote>
+<p>El riesgo es:</p>
+<blockquote>
+<p>"CSV oculta un problema que aparecerá al añadir Avro."</p>
+</blockquote>
+<p>Eso es cierto.</p>
+<p>Pero ese problema pertenece a una capa futura.</p>
+<p>No invalida la medición actual.</p>
+<p>Simplemente significa que más adelante habrá que repetir la medición.</p>
+<hr />
+<h2 id="recomendacion">Recomendación</h2>
+<p>Definir explícitamente:</p>
+<pre><code class="language-text">FASE 1:
+CSV -&gt; Correlation Engine -&gt; Kuzu
+
+Objetivo:
+demostrar integridad
+
+FASE 2:
+CSV -&gt; Avro -&gt; Correlation Engine -&gt; Kuzu
+
+Objetivo:
+demostrar que Avro no altera integridad
+
+FASE 3:
+CSV -&gt; Avro -&gt; Parquet -&gt; Iceberg -&gt; ...
+
+Objetivo:
+demostrar que la arquitectura completa conserva integridad
+</code></pre>
+<p>Cada fase hereda la anterior.</p>
+<hr />
+<h1 id="2-opcion-b-vs-opcion-a">2. Opción B vs Opción A</h1>
+<h2 id="veredicto">Veredicto</h2>
+<p>B es superior.</p>
+<hr />
+<h2 id="razon-arquitectonica">Razón arquitectónica</h2>
+<p>Actualmente:</p>
+<pre><code class="language-text">ml-detector
+ ├─ clasificación
+ └─ serialización
+</code></pre>
+<p>Eso mezcla dos responsabilidades.</p>
+<p>La serialización no pertenece al detector.</p>
+<p>Pertenece al contrato.</p>
+<hr />
+<h2 id="modelo-correcto">Modelo correcto</h2>
+<pre><code class="language-text">NetworkSecurityEvent
+          |
+          v
+CorrelationV1Row
+          |
+          v
+CorrelationWriter
+</code></pre>
+<p>El contrato se convierte en el centro.</p>
+<p>No protobuf.</p>
+<hr />
+<h2 id="error-comun">Error común</h2>
+<p>Muchos equipos convierten:</p>
+<pre><code class="language-text">protobuf
+</code></pre>
+<p>en</p>
+<pre><code class="language-text">modelo de dominio
+</code></pre>
+<p>y terminan acoplando todo el sistema a protobuf.</p>
+<p>Eso suele convertirse en deuda técnica.</p>
+<hr />
+<h2 id="sobre-la-divergencia">Sobre la divergencia</h2>
+<p>La preocupación es legítima.</p>
+<p>Pero ya habéis identificado el mecanismo correcto.</p>
+<p>Si existe:</p>
+<pre><code class="language-cpp">old_path(event)
+</code></pre>
+<p>y</p>
+<pre><code class="language-cpp">new_path(event)
+</code></pre>
+<p>y ambos producen salida byte-idéntica en CI:</p>
+<pre><code class="language-text">old == new
+</code></pre>
+<p>entonces la divergencia deja de ser una opinión.</p>
+<p>Se vuelve una propiedad comprobada.</p>
+<hr />
+<h2 id="recomendacion-adicional">Recomendación adicional</h2>
+<p>Añadir fuzzing.</p>
+<p>No solo casos manuales.</p>
+<p>Generar eventos aleatorios.</p>
+<pre><code class="language-text">10000
+50000
+100000
+</code></pre>
+<p>comparaciones old/new.</p>
+<p>Eso suele descubrir conversiones raras:</p>
+<ul>
+<li>UTF-8</li>
+<li>NaN</li>
+<li>campos vacíos</li>
+<li>timestamps extremos</li>
+</ul>
+<hr />
+<h1 id="3-que-le-falta-al-injector-adversarial">3. ¿Qué le falta al injector adversarial?</h1>
+<p>Aquí es donde veo más trabajo pendiente.</p>
+<hr />
+<h2 id="a-campos-gigantes">A. Campos gigantes</h2>
+<p>Actualmente habláis de:</p>
+<ul>
+<li>comillas</li>
+<li>backslashes</li>
+</ul>
+<p>Pero no de tamaño.</p>
+<p>Probad:</p>
+<pre><code class="language-text">1 KB
+10 KB
+100 KB
+1 MB
+</code></pre>
+<p>en campos textuales.</p>
+<hr />
+<h2 id="b-utf-8-hostil">B. UTF-8 hostil</h2>
+<p>Probad:</p>
+<pre><code class="language-text">emoji
+árabe
+chino
+combinaciones Unicode
+caracteres inválidos
+</code></pre>
+<p>Muchos pipelines fallan aquí.</p>
+<hr />
+<h2 id="c-valores-nulos">C. Valores nulos</h2>
+<p>No solo vacíos.</p>
+<p>Verdaderos nulos semánticos.</p>
+<pre><code class="language-text">src_ip=&quot;&quot;
+dst_ip=&quot;&quot;
+timestamp=&quot;&quot;
+</code></pre>
+<hr />
+<h2 id="d-desorden-temporal">D. Desorden temporal</h2>
+<p>No solo anomalías.</p>
+<p>Eventos válidos pero fuera de orden.</p>
+<pre><code class="language-text">t=100
+t=50
+t=90
+t=120
+</code></pre>
+<hr />
+<h2 id="e-duplicados-exactos">E. Duplicados exactos</h2>
+<p>Muchos sistemas soportan:</p>
+<pre><code class="language-text">A
+B
+C
+</code></pre>
+<p>Pero fallan con:</p>
+<pre><code class="language-text">A
+A
+A
+A
+A
+</code></pre>
+<hr />
+<h2 id="f-reinicio-durante-flush">F. Reinicio durante flush</h2>
+<p>Para mí este es el caso más importante.</p>
+<p>Inyectar:</p>
+<pre><code class="language-text">write()
+write()
+write()
+flush()
+SIGKILL
+</code></pre>
+<p>y medir:</p>
+<pre><code class="language-text">filas esperadas
+vs
+filas persistidas
+</code></pre>
+<p>Ese escenario reproduce fallos reales.</p>
+<hr />
+<h2 id="g-corrupcion-parcial">G. Corrupción parcial</h2>
+<p>Simular:</p>
+<pre><code class="language-text">fila truncada
+HMAC correcto
+payload roto
+</code></pre>
+<p>o</p>
+<pre><code class="language-text">payload correcto
+HMAC roto
+</code></pre>
+<hr />
+<h1 id="4-injector-a-fichero-vs-tcpreplay">4. Injector a fichero vs tcpreplay</h1>
+<h2 id="veredicto_1">Veredicto</h2>
+<p>Injector a fichero primero.</p>
+<p>Sin duda.</p>
+<hr />
+<h2 id="razon_1">Razón</h2>
+<p>Queréis medir:</p>
+<pre><code class="language-text">pipeline
+</code></pre>
+<p>no</p>
+<pre><code class="language-text">VirtualBox
+</code></pre>
+<p>Actualmente ya existe evidencia previa de que VirtualBox introduce ruido experimental.</p>
+<p>Por tanto:</p>
+<pre><code class="language-text">NIC virtual
+</code></pre>
+<p>es una variable de confusión.</p>
+<hr />
+<h2 id="orden-correcto">Orden correcto</h2>
+<h3 id="etapa-1">Etapa 1</h3>
+<pre><code class="language-text">Injector -&gt; Bronze
+</code></pre>
+<p>Validación funcional.</p>
+<hr />
+<h3 id="etapa-2">Etapa 2</h3>
+<pre><code class="language-text">tcpreplay
+</code></pre>
+<p>Validación sistémica.</p>
+<hr />
+<h3 id="etapa-3">Etapa 3</h3>
+<pre><code class="language-text">sensores reales
+</code></pre>
+<p>Validación operacional.</p>
+<hr />
+<p>La secuencia es correcta.</p>
+<hr />
+<h1 id="5-es-correcto-extraer-correlationwriter">5. ¿Es correcto extraer CorrelationWriter?</h1>
+<h2 id="si">Sí.</h2>
+<p>Y además es exactamente el tipo de refactor que suele sobrevivir a cambios arquitectónicos.</p>
+<hr />
+<p>La operación fundamental que aparece en todos los escenarios es:</p>
+<pre><code class="language-text">producir correlation_v1
+</code></pre>
+<p>No:</p>
+<pre><code class="language-text">leer logs
+</code></pre>
+<p>No:</p>
+<pre><code class="language-text">usar ZMQ
+</code></pre>
+<p>No:</p>
+<pre><code class="language-text">usar protobuf
+</code></pre>
+<hr />
+<p>Si mañana cambiáis:</p>
+<pre><code class="language-text">CSV -&gt; Kafka
+</code></pre>
+<p>o</p>
+<pre><code class="language-text">ZMQ -&gt; NATS
+</code></pre>
+<p>seguiréis necesitando:</p>
+<pre><code class="language-text">CorrelationV1Row -&gt; correlation_v1
+</code></pre>
+<p>Por tanto el corte parece estable.</p>
+<hr />
+<h1 id="6-hmac-en-el-banco-de-tortura">6. HMAC en el banco de tortura</h1>
+<h2 id="estoy-de-acuerdo-con-vuestra-conclusion">Estoy de acuerdo con vuestra conclusión.</h2>
+<p>Aquí el HMAC no es una medida de seguridad.</p>
+<p>Es una condición de validez experimental.</p>
+<hr />
+<p>Sin HMAC correcto mediríais:</p>
+<pre><code class="language-text">rechazo esperado
+</code></pre>
+<p>y lo interpretaríais como:</p>
+<pre><code class="language-text">pérdida de datos
+</code></pre>
+<p>Eso contaminaría el experimento.</p>
+<hr />
+<h2 id="sobre-el-acoplamiento-a-claves">Sobre el acoplamiento a claves</h2>
+<p>Hay una solución sencilla.</p>
+<p>Definir:</p>
+<pre><code class="language-text">TestKeyProvider
+</code></pre>
+<p>para el injector.</p>
+<p>Por ejemplo:</p>
+<pre><code class="language-cpp">TEST_HMAC_KEY
+</code></pre>
+<p>inyectada desde entorno.</p>
+<p>El banco de tortura no necesita conocer:</p>
+<ul>
+<li>etcd</li>
+<li>rotación</li>
+<li>provisión real</li>
+</ul>
+<p>Solo necesita generar firmas válidas.</p>
+<hr />
+<h1 id="conclusion">Conclusión</h1>
+<p>Las dos decisiones que considero más sólidas del DAY 184 son:</p>
+<ol>
+<li><strong>No construir todavía Avro/Parquet/Iceberg y medir primero el camino mínimo.</strong></li>
+<li><strong>Elegir Opción B y convertir <code>CorrelationV1Row</code> en el contrato central.</strong></li>
+</ol>
+<p>La principal debilidad que todavía veo no está en la arquitectura, sino en el plan de tortura: aún faltan pruebas de reinicio abrupto, duplicados masivos, desorden temporal, tamaños extremos y corrupción parcial. Históricamente, esos escenarios descubren más defectos de integridad que los casos clásicos de comillas, escapes e inyección.</p>
+<p>FDO</p>
+<p>CHATGPT</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

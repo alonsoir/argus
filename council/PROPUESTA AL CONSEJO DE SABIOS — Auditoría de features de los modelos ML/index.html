@@ -1,0 +1,1179 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PROPUESTA%20AL%20CONSEJO%20DE%20SABIOS%20%E2%80%94%20Auditor%C3%ADa%20de%20features%20de%20los%20modelos%20ML/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>PROPUESTA AL CONSEJO DE SABIOS — Auditoría de features de los modelos ML - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#propuesta-al-consejo-de-sabios-auditoria-de-features-de-los-modelos-ml" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PROPUESTA AL CONSEJO DE SABIOS — Auditoría de features de los modelos ML
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-estado-del-sistema-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Estado del sistema (medido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-hallazgo-principal-el-detector-de-ransomware-pide-features-de-host" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Hallazgo principal: el detector de ransomware pide features de host
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-hallazgo-colateral-el-ddos-tiene-3-features-constantes-muertas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Hallazgo colateral: el DDoS tiene 3 features constantes muertas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-el-segundo-modelo-de-ransomware-proto_aligned-es-un-callejon-sin-salida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. El segundo modelo de ransomware (proto_aligned) es un callejón sin salida
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-el-contraste-es-la-prueba-y-la-frontera-es-el-resultado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. El contraste es la prueba, y la frontera es el resultado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-lo-que-no-medimos-honestidad-epistemica" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Lo que NO medimos (honestidad epistémica)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-propuesta-de-accion-linea-mitre-attck-atomic-red-team" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Propuesta de acción — línea MITRE ATT&amp;CK / Atomic Red Team
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-preguntas-concretas-al-consejo-para-deliberacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Preguntas concretas al Consejo (para deliberación)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="propuesta-al-consejo-de-sabios-auditoria-de-features-de-los-modelos-ml">PROPUESTA AL CONSEJO DE SABIOS — Auditoría de features de los modelos ML</h1>
+<p><strong>DAY 209 · Reconocimiento (no desarrollo)</strong>
+<strong>Disparador:</strong> línea de investigación MITRE ATT&amp;CK / Atomic Red Team para el
+detector de ransomware inerte (<code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code>).
+<strong>Resultado:</strong> el reconocimiento derivó en una auditoría del contrato de features
+de todos los modelos del ml-detector. El diagnóstico del ransomware inerte cambia
+respecto a lo que dicen los DEBT existentes, y aparece un hallazgo colateral en el DDoS.</p>
+<p><strong>Método:</strong> rastreo del codebase real (medir, no votar). Fuentes leídas:
+<code>ml-detector/config/ml_detector_config.json</code>,
+<code>ml-detector/include/feature_extractor.hpp</code>,
+<code>ml-detector/src/feature_extractor.cpp</code> (parcial — ver §6),
+<code>ml-detector/include/ml_defender/ransomware_detector.hpp</code>,
+<code>ml-detector/models/production/level3/ransomware/ransomware_network_detector_proto_aligned.json</code>.
+Nada aquí es de memoria; todo se traza a un fichero.</p>
+<hr />
+<h2 id="1-estado-del-sistema-medido">1. Estado del sistema (medido)</h2>
+<p>El ml-detector es tricapa. Todos los extractores de features reciben
+<code>protobuf::NetworkFeatures</code> — es decir, <strong>solo lo que el sniffer observa en el
+cable</strong> (<code>eth1</code>). Ningún extractor recibe telemetría de host.</p>
+<table>
+<thead>
+<tr>
+<th>Modelo</th>
+<th>Nivel</th>
+<th>Tipo</th>
+<th>Features</th>
+<th>Dominio de las features</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>attack_detector</td>
+<td>L1</td>
+<td>ONNX RandomForest (+scaler)</td>
+<td>23</td>
+<td>red</td>
+</tr>
+<tr>
+<td>ddos</td>
+<td>L2</td>
+<td>RandomForest embebido C++</td>
+<td>10</td>
+<td>red (con 3 constantes — §3)</td>
+</tr>
+<tr>
+<td><strong>ransomware</strong></td>
+<td>L2</td>
+<td>RandomForest embebido C++</td>
+<td>10</td>
+<td><strong>host (9 de 10) — §2</strong></td>
+</tr>
+<tr>
+<td>web/traffic</td>
+<td>L3</td>
+<td>RandomForest embebido C++</td>
+<td>10</td>
+<td>red</td>
+</tr>
+<tr>
+<td>internal</td>
+<td>L3</td>
+<td>RandomForest embebido C++</td>
+<td>10</td>
+<td>red (lateral, exfil, discovery)</td>
+</tr>
+</tbody>
+</table>
+<p>Los modelos migraron de ONNX a RandomForest embebido en C++ (árboles inline:
+<code>ddos_trees_inline.hpp</code>, <code>traffic_trees_inline.hpp</code>, <code>internal_trees_inline.hpp</code>);
+solo L1 sigue en ONNX. El detector de ransomware NO tiene su
+<code>ransomware_trees_inline.hpp</code> junto a sus hermanos — su arquitectura embebida vive
+en <code>src/ransomware_detector.cpp</code> / <code>libransomware_detector.a</code>.</p>
+<hr />
+<h2 id="2-hallazgo-principal-el-detector-de-ransomware-pide-features-de-host">2. Hallazgo principal: el detector de ransomware pide features de host</h2>
+<p><code>ransomware_detector.hpp</code> declara 10 features y su importancia. <strong>Nueve de las diez
+son de host</strong>, no de red:</p>
+<pre><code>entropy            36%  ← LA MÁS CRÍTICA
+resource_usage     25%
+io_intensity       24%
+network_activity    8%  ← única feature legítimamente de red
+file_operations     2%
+access_frequency    2%
+behavior_consistency 2%
+data_volume         1%
+process_anomaly    &lt;1%
+temporal_pattern   &lt;1%
+</code></pre>
+<p>El modelo fue entrenado sobre features de comportamiento de host: entropía de
+<strong>ficheros cifrados en disco</strong>, intensidad de <strong>I/O de disco</strong>, operaciones de
+<strong>fichero</strong>. Pero en producción recibe <code>NetworkFeatures</code>. El extractor
+(<code>extract_level2_ransomware_features</code>, líneas 272–312) resuelve el desajuste
+<strong>fabricando proxies de red sin correlación con lo que el modelo aprendió</strong>:</p>
+<pre><code class="language-cpp">// [1] entropy — ⭐ MOST IMPORTANT (36% feature importance)
+// Usar packet length variance como proxy de entropía
+features[1] = std::min(pkt_variance / 100000.0f, 2.0f);
+
+// [4] file_operations — Proxy: PSH flags
+// [5] process_anomaly — Proxy: ACK flag ratio
+</code></pre>
+<p>La feature que decide el 36% del modelo —entropía de ficheros— se aproxima con la
+<strong>varianza de longitud de paquete</strong>. No correlacionan. La única feature de red
+semánticamente correcta (<code>network_activity</code> = paquetes/s) pesa el 8%.</p>
+<p><strong>Diagnóstico (corrige los DEBT existentes):</strong> el detector de ransomware no está
+inerte por falta de señal de entrenamiento (<code>DEBT-RANSOMWARE-ML-HEAD-INERT-001</code>),
+sino por <strong>desajuste de dominio en el adaptador de features</strong>: un modelo de host
+enchufado a una fuente de red mediante proxies que no significan nada. Y no se
+arregla reentrenando con más tráfico de red, porque el fenómeno que el modelo
+detecta —cifrado de ficheros en disco— <strong>no cruza <code>eth1</code> por definición</strong>. Es
+irrescatable en su forma actual dentro de un NDR.</p>
+<p><em>Nota de alcance:</em> leímos features [0]–[5]. Las cuatro restantes
+(<code>temporal_pattern</code>, <code>access_frequency</code>, <code>data_volume</code>, <code>behavior_consistency</code>)
+no se inspeccionaron, pero son conceptos de host y presumiblemente más proxies.</p>
+<hr />
+<h2 id="3-hallazgo-colateral-el-ddos-tiene-3-features-constantes-muertas">3. Hallazgo colateral: el DDoS tiene 3 features constantes muertas</h2>
+<p>Misma arquitectura que el ransomware (RandomForest embebido, 10 features), pero el
+DDoS es un fenómeno de red puro, así que sus features <strong>pueden</strong> salir de datos
+reales. Y en su mayoría salen — pero tres no
+(<code>extract_level2_ddos_features</code>, líneas 224–264):</p>
+<pre><code class="language-cpp">// [2] Source IP Dispersion (using protocol variety as proxy)
+features[2] = normalize(1.0f, 0.0f, 10.0f);        // constante: siempre 0.1
+
+// [3] Protocol Anomaly Score
+float protocol_anomaly = (1.0f &gt; 5) ? 1.0f : 0.0f;  // (1.0&gt;5) es SIEMPRE false
+features[3] = protocol_anomaly;                      // constante: siempre 0.0
+
+// [7] Geographical Concentration (placeholder)
+features[7] = 0.5f;                                  // constante
+</code></pre>
+<p><code>feature[3]</code> es una comparación que el compilador resuelve a <code>false</code> en tiempo de
+compilación: esa feature vale <code>0.0</code> en toda inferencia, para siempre.</p>
+<p>Balance del DDoS: seis features reales confirmadas (0,1,4,5,6,8 — ratios de flags,
+simetría, amplificación, completación, escalación), tres constantes (2,3,7), una sin
+verificar (9, <code>resource_saturation</code>, cortada en línea 264). <strong>A diferencia del
+ransomware, el DDoS funciona en lo esencial</strong>: sus features de mayor peso
+(<code>syn_ack_ratio</code>, <code>packet_symmetry</code>) son legítimas, y un DDoS es detectable con red
+pura. Está <strong>degradado, no muerto</strong>. No es urgente; es deuda a registrar.</p>
+<hr />
+<h2 id="4-el-segundo-modelo-de-ransomware-proto_aligned-es-un-callejon-sin-salida">4. El segundo modelo de ransomware (<code>proto_aligned</code>) es un callejón sin salida</h2>
+<p>En <code>models/production/level3/ransomware/</code> conviven artefactos de un intento
+anterior: un XGBoost de red, <code>ransomware_network_detector_proto_aligned</code>. El nombre
+sugería una versión de red reconectable. <strong>No lo es:</strong></p>
+<pre><code class="language-json">&quot;input_shape&quot;: [1, 45],
+&quot;feature_names&quot;: [&quot;feature_0&quot;, &quot;feature_1&quot;, ... &quot;feature_44&quot;],
+&quot;conversion_method&quot;: &quot;direct_conversion&quot;
+</code></pre>
+<p>45 features <strong>anónimas</strong>, sin contrato documentado, convertidas "a pelo" desde algún
+notebook. No se puede alimentar 45 ranuras que nadie sabe qué son. Es un artefacto
+muerto: candidato a borrado, pero <strong>con DEBT que documente por qué existió y por qué
+se abandona antes de eliminarlo</strong> (principio: las discrepancias afloran como DEBT, no
+se resuelven en silencio; y <code>git rm</code>, no <code>rm</code>, para preservar el historial).</p>
+<hr />
+<h2 id="5-el-contraste-es-la-prueba-y-la-frontera-es-el-resultado">5. El contraste es la prueba, y la frontera es el resultado</h2>
+<p><strong>Misma arquitectura de modelado, resultados opuestos.</strong> DDoS y ransomware son ambos
+RandomForest embebido de 10 features. El DDoS funciona (fenómeno de red, features de
+red); el ransomware no (fenómeno de host, features de host fabricadas desde red). Esto
+demuestra que el problema <strong>no es la técnica de modelado</strong> (los RandomForest embebidos
+son sanos), sino <strong>el dominio de las features</strong>. Es un diagnóstico limpio y defendible.</p>
+<p>De ahí la frontera arquitectónica, que no es un bug sino un hecho a medir y publicar:</p>
+<ul>
+<li>aRGus es un <strong>NDR</strong>. Ve las <strong>fases de red</strong> del ciclo de vida de un ransomware
+  —C2/beaconing, network discovery (T1046), lateral movement (T1021), exfiltración
+  (T1048)— a través de los detectores <code>internal</code>, <code>web</code>, <code>level1</code>, que sí consumen
+  <code>NetworkFeatures</code> reales.</li>
+<li>aRGus <strong>NO</strong> ve el <strong>acto de cifrado</strong> en sí (T1486): es un fenómeno de host
+  (entropía en disco) que no cruza el cable. Ningún NDR lo ve —ni aRGus, ni Suricata,
+  ni Zeek— por construcción.</li>
+<li><strong>Wazuh (HIDS) sí lo ve</strong>: mira ficheros, syscalls, procesos. Las nueve features de
+  host que el detector de ransomware pide son, casi una a una, lo que un HIDS observa.</li>
+</ul>
+<p>Esto reencuadra la pregunta de Andrés: no es "¿aRGus detecta ransomware?" (binario
+engañoso), sino <strong>"¿qué capa de la defensa ve qué fase del ataque?"</strong> — una matriz con
+huecos honestos, más fuerte científicamente que cualquier número inflado.</p>
+<hr />
+<h2 id="6-lo-que-no-medimos-honestidad-epistemica">6. Lo que NO medimos (honestidad epistémica)</h2>
+<ul>
+<li>Features [6]–[9] del ransomware y [9] del DDoS: no inspeccionadas (código no leído).</li>
+<li><strong>Comportamiento en runtime</strong>: qué modelo carga de verdad el binario vs lo que
+  declara el config. Verificable con una ejecución instrumentada; no hecho hoy.</li>
+<li>Los árboles embebidos y los datos de entrenamiento originales: no auditados.</li>
+<li>Ninguna de estas lagunas cambia el diagnóstico de §2 (el desajuste de dominio es
+  estructural, visible en las firmas de tipo y en los proxies leídos), pero acotan
+  qué afirmamos con certeza.</li>
+</ul>
+<hr />
+<h2 id="7-propuesta-de-accion-linea-mitre-attck-atomic-red-team">7. Propuesta de acción — línea MITRE ATT&amp;CK / Atomic Red Team</h2>
+<p>Para generar datos comportamentales <strong>reales, legales y publicables</strong> sin malware ni
+laboratorio de contención: emular técnicas documentadas de un ransomware nombrado
+(p. ej. perfil de técnicas de LockBit, ya cartografiado por terceros) con <strong>Atomic
+Red Team</strong> (Red Canary; open source MIT, mantenido, tests &lt;5 min, con atomics Linux).</p>
+<p><strong>Montaje</strong> (reutiliza la topología de los replays CTU-13): los atomics se lanzan
+desde la VM <code>client</code> —diseñada precisamente para inyectar tráfico— y <code>defender</code>
+observa en <code>eth1</code>, igual que con los pcap relays.</p>
+<p><strong>Diseño: matriz técnica × sensor × componente (ablación).</strong> Filas = sensores
+(aRGus con sus cabezas activables una a una, Suricata, Zeek, Wazuh). Columnas =
+técnicas ATT&amp;CK. Se activan/desactivan componentes para medir qué se cae. Resultado
+esperado y <strong>publicable</strong>:</p>
+<ul>
+<li>Técnicas de red (C2, discovery, lateral, exfil) → las cazan los NDR (aRGus/Suricata/Zeek).</li>
+<li>Cifrado y borrado de shadow copies (host) → invisibles a los NDR por diseño; los
+  caza Wazuh.</li>
+</ul>
+<p>Ese reparto, con sus huecos declarados, es el entregable que apoya la solicitud a
+Andrés. La emulación <strong>no rescata</strong> el modelo muerto de §2; genera la señal para
+entrenar un modelo comportamental nuevo y honesto, y valida empíricamente la frontera.</p>
+<hr />
+<h2 id="8-preguntas-concretas-al-consejo-para-deliberacion">8. Preguntas concretas al Consejo (para deliberación)</h2>
+<ol>
+<li>
+<p><strong>¿Desactivar la cabeza de ransomware embebida actual</strong> (<code>enabled: false</code> en
+   config)? Sus proxies producen scores engañosos; mantenerla "activa" contamina
+   cualquier veredicto. Alternativa: mantenerla con etiqueta explícita
+   "proxy-based, no fiable". <em>(Probablemente requiere ADR.)</em></p>
+</li>
+<li>
+<p><strong>¿Registrar <code>DEBT-RANSOMWARE-PROTO-ALIGNED-DEAD-001</code></strong> (XGBoost de 45 features
+   anónimas) y autorizar su borrado posterior vía <code>git rm</code>, documentando por qué
+   existió?</p>
+</li>
+<li>
+<p><strong>¿Registrar <code>DEBT-DDOS-FEATURES-CONSTANT-001</code></strong> (features [2],[3],[7] constantes)
+   sin acción inmediata? El DDoS funciona en lo esencial; arreglar o justificar esas
+   tres es otra batalla.</p>
+</li>
+<li>
+<p><strong>¿Autorizar entrenar un modelo comportamental de ransomware DE VERDAD?</strong> Y la
+   pregunta de diseño que define el tamaño del compromiso:</p>
+<ul>
+<li><strong>Opción A — modelo de red</strong>: entrenable con lo que aRGus ya observa, emulable
+  con Atomic Red Team, dentro del alcance pre-FEDER. Detecta las fases de red del
+  ransomware, no el cifrado.</li>
+<li><strong>Opción B — modelo híbrido red+host</strong>: requiere integrar telemetría de Wazuh al
+  pipeline. Detectaría también el cifrado, pero es mucho más ambicioso y
+  probablemente <strong>post-FEDER</strong>.</li>
+</ul>
+</li>
+<li>
+<p><strong>¿Aprobar la línea MITRE ATT&amp;CK / Atomic Red Team</strong> (§7) como trabajo real
+   pre-FEDER, con la matriz de ablación como entregable para Andrés?</p>
+</li>
+</ol>
+<hr />
+<p><em>Via Appia Quality — medir, no votar. Un escudo que conoce sus propias sombras.</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

@@ -1,0 +1,1103 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/continuity/PAPER_NOTES_DAY273_kernel_agg/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Notas para el paper — agregación por víctima en el kernel (DAY273) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#notas-para-el-paper-agregacion-por-victima-en-el-kernel-day273" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Notas para el paper — agregación por víctima en el kernel (DAY273)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-claim-candidato-una-frase-con-cautela" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Claim candidato (una frase, con cautela)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-motivacion-el-confound-de-day272" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Motivación (el confound de DAY272)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Diseño
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-metodo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Método
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-resultados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Resultados
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-dos-falsos-negativos-de-medicion-material-metodologico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Dos falsos negativos de medición (material metodológico)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-amenazas-a-la-validez-limites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Amenazas a la validez / límites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-que-habilita" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Qué habilita
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-reproducibilidad" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Reproducibilidad
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-parrafo-borrador-ingles-para-el-paper" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Párrafo borrador (inglés, para el paper)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-figuratabla-sugerida" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Figura/tabla sugerida
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-antes-de-publicar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Antes de publicar
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="notas-para-el-paper-agregacion-por-victima-en-el-kernel-day273">Notas para el paper — agregación por víctima en el kernel (DAY273)</h1>
+<p>Estado: material para una sección/apéndice de aRGus NDR (arXiv:2604.04952) y para el post técnico.
+Regla de redacción: solo afirmar lo medido; los límites van en el mismo párrafo que la afirmación.</p>
+<h2 id="1-claim-candidato-una-frase-con-cautela">1. Claim candidato (una frase, con cautela)</h2>
+<p>Contar tráfico por víctima dentro del kernel, antes del ring buffer, da una señal de entrada para la cabeza DDoS que
+no depende de que el userspace consuma a tiempo; a 100 pps el conteo fue exacto sobre IPv4 y no hubo pérdida
+entre el contador y el ring.</p>
+<h2 id="2-motivacion-el-confound-de-day272">2. Motivación (el confound de DAY272)</h2>
+<p>Cuando las características de detección se calculan en userspace a partir de eventos del ring buffer, cualquier pérdida
+del ring sesga en silencio justo la señal que se quiere evaluar. No se puede separar "el detector falló" de
+"el paquete nunca llegó al detector". La medición de DAY272 estaba confundida por eso.</p>
+<h2 id="3-diseno">3. Diseño</h2>
+<ul>
+<li>Programa XDP <code>xdp_sniffer_enhanced</code>; bloque de conteo tras el chequeo IPv4 y antes de <code>bpf_ringbuf_reserve</code>.</li>
+<li>Mapa <code>LRU_HASH</code>, 65 536 entradas; clave <code>(dst_ip, proto)</code> = 8 B; valor <code>(pkts, bytes)</code> = 16 B.</li>
+<li>Contadores monótonos con <code>__sync_fetch_and_add</code>; alta con <code>BPF_NOEXIST</code> + relectura.</li>
+<li>Sin ventanas, resets, float ni división en el kernel. Userspace lee por <code>bpf_map_lookup_batch</code> cada T y la ventana
+  tumbling es el delta entre lecturas (contadores que retroceden = reinserción tras desalojo; se detectan y se tratan).</li>
+<li>El desalojo LRU (de 128 en 128) es benigno para una víctima bajo flood: es la entrada más caliente.</li>
+</ul>
+<h2 id="4-metodo">4. Método</h2>
+<ul>
+<li>Entorno: VM Debian bookworm, kernel 6.1.0-53, XDP generic (SKB) en eth1 y eth2 sobre VirtualBox; libbpf 1.4.6.</li>
+<li>Tráfico: <code>tcpreplay --pps=100</code> de <code>_0125_50k_lab.pcap</code> (corte de CICDDoS2019, 50 000 paquetes, 23 999 270 B,
+  499.99 s) desde una VM cliente.</li>
+<li>Medida: snapshot antes/después con un solo comando (mapas <code>stats</code> y <code>ddos_victims</code>, contadores de interfaz).</li>
+<li>Tests previos: <code>BPF_PROG_TEST_RUN</code> con 5000 paquetes → <code>d_pkts=5000</code>, <code>d_bytes=2 410 000</code>; el verificador de 6.1 acepta el programa.</li>
+</ul>
+<h2 id="5-resultados">5. Resultados</h2>
+<table>
+<thead>
+<tr>
+<th>Magnitud</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Víctima 192.168.100.1/UDP</td>
+<td>+49 997 pkts, +23 998 186 B</td>
+</tr>
+<tr>
+<td>Víctima 192.168.100.1/ICMP</td>
+<td>+2 pkts, +1 020 B</td>
+</tr>
+<tr>
+<td>Total víctima</td>
+<td>49 999 pkts, 23 999 206 B</td>
+</tr>
+<tr>
+<td>Enviado</td>
+<td>50 000 pkts, 23 999 270 B</td>
+</tr>
+<tr>
+<td>Diferencia</td>
+<td>1 paquete, 64 B (hipótesis: trama no IPv4; pendiente de verificar con tcpdump)</td>
+</tr>
+<tr>
+<td>Delta <code>stats[0]</code> (eventos al ring)</td>
+<td>50 599</td>
+</tr>
+<tr>
+<td>Suma de deltas del mapa</td>
+<td>50 599 → pérdida kernel→ring = 0 a 100 pps</td>
+</tr>
+<tr>
+<td>Prueba corta</td>
+<td>500 pkts y 239 848 B, idénticos a lo enviado</td>
+</tr>
+</tbody>
+</table>
+<p>El total del mapa incluye tráfico de fondo (Wazuh, DNS, mDNS): 662 paquetes en unos 11 minutos en el primer intento,
+en el que el replay no llegó a la NIC de entrada (ver sección 6). Da una idea de la línea base.</p>
+<h2 id="6-dos-falsos-negativos-de-medicion-material-metodologico">6. Dos falsos negativos de medición (material metodológico)</h2>
+<p>Ambos produjeron "0 paquetes" y ambos eran errores del experimento, no del código. Encajan con "medir, no votar":
+un 0 medido correctamente sobre lo equivocado sigue siendo un 0 inválido.
+1. <code>BPF_PROG_TEST_RUN</code> sin contexto entrega los paquetes como recibidos por <code>lo</code>; sin entrada en <code>iface_configs</code> para
+   ese ifindex el programa sale antes de contar. Se detectó porque <code>stats[0]</code> también era 0.
+2. El primer replay se lanzó desde la propia VM defensora: los paquetes salen por TX y no atraviesan el hook XDP de RX
+   (<code>ip -s link</code> mostró TX +50 017 y RX casi sin cambio). Se detectó con <code>pgrep</code> y con los contadores de interfaz.</p>
+<h2 id="7-amenazas-a-la-validez-limites">7. Amenazas a la validez / límites</h2>
+<ul>
+<li>Una sola tasa (100 pps): es el régimen donde el ring no pierde; no se ha mostrado el caso con pérdida.</li>
+<li>La carrera multi-CPU del alta con <code>BPF_NOEXIST</code> no se ha ejercitado: 100 pps no genera concurrencia real y
+  <code>BPF_PROG_TEST_RUN</code> corre en una CPU.</li>
+<li>XDP generic sobre VirtualBox, no nativo; un solo pcap.</li>
+<li>El contador cuenta también paquetes que el filtro de puertos descartaría: mide "llegó a la NIC como IPv4", no "se capturó".</li>
+<li>La trama de 64 B no contada y los 2 ICMP no se han verificado contra el pcap.</li>
+<li>El número C del detector (790 líneas de flujo) es de flujos, no de paquetes; no mide pérdida aguas abajo.</li>
+<li>No hay resultado de detección: esto es la capa de medición, no el detector.</li>
+</ul>
+<h2 id="8-que-habilita">8. Qué habilita</h2>
+<p>El Paso 4: ajustar la fórmula de <code>escalation</code> (ventana tumbling frente a EWMA por shift) sobre conteos limpios y
+comprobar cuánto cambia el resultado cuando el ring pierde (a más pps).</p>
+<h2 id="9-reproducibilidad">9. Reproducibilidad</h2>
+<ul>
+<li>Test puro: <code>make sniffer-ddos-agg-test</code> (Mac). Integración contra el kernel real: <code>make sniffer-ddos-agg-bpf-test</code> (Mac; llama a la VM, pide root).</li>
+<li>E2E: <code>/tmp/snap.sh</code> antes → <code>sudo tcpreplay --pps=100 --intf1=eth1 datasets/cicddos2019/_0125_50k_lab.pcap</code> en la VM <code>client</code>
+  → <code>/tmp/snap.sh</code> después. Comparar deltas de <code>ddos_victims</code> y <code>stats[0]</code>.</li>
+<li>Revisión de cifras: todas recalculadas a partir de los volcados JSON de <code>bpftool</code> (antes/después).</li>
+</ul>
+<h2 id="10-parrafo-borrador-ingles-para-el-paper">10. Párrafo borrador (inglés, para el paper)</h2>
+<blockquote>
+<p>To decouple detection quality from userspace consumption, we moved per-victim accounting into the XDP program,
+upstream of the ring buffer. A <code>BPF_MAP_TYPE_LRU_HASH</code> keyed by <code>(dst_ip, proto)</code> holds monotonic packet and byte
+counters; userspace samples the map every T seconds and takes the difference between samples as a tumbling window,
+so the kernel side needs no windowing, resets, floating point or division. Replaying a 50,000-packet CICDDoS2019
+slice at 100 pps, the kernel counted 49,999 IPv4 packets (23,999,206 B) for the victim against 50,000 packets
+(23,999,270 B) sent; the single unaccounted 64-byte frame is consistent with a non-IPv4 frame [to be verified].
+The number of events submitted to the ring buffer equalled the sum of the per-victim counters (50,599), i.e. no
+loss between counter and ring at this rate. We have not yet evaluated higher rates, multi-CPU insertion races, or
+native-mode XDP, and no detection result is claimed here: this layer provides the loss-independent input on which
+the escalation formula will be fitted.</p>
+</blockquote>
+<h2 id="11-figuratabla-sugerida">11. Figura/tabla sugerida</h2>
+<p>Una tabla "enviado vs contado en kernel vs entrado al ring" a 100 pps, y (cuando exista) la misma a 1×, 10× y 50× de
+esa tasa, donde A−B debería dejar de ser 0. Es la figura que responde al confound de DAY272.</p>
+<h2 id="12-antes-de-publicar">12. Antes de publicar</h2>
+<ol>
+<li><code>tcpdump -nr datasets/cicddos2019/_0125_50k_lab.pcap not ip -c 5</code> y contar ICMP: cierra las dos incógnitas de la sección 7.</li>
+<li>Repetir a más pps (punto 4 de la continuidad) si se quiere afirmar algo sobre pérdida.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

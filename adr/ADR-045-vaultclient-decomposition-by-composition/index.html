@@ -1,0 +1,1312 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-045-vaultclient-decomposition-by-composition/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR-045 — VaultClient Decomposition by Composition - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-045-vaultclient-decomposition-by-composition" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-045 — VaultClient Decomposition by Composition
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#contexto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Contexto
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#interfaces-propuestas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Interfaces propuestas
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Interfaces propuestas">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ivaulttransport" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IVaultTransport
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#icachemanager" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ICacheManager
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ietcdregistrar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IEtcdRegistrar
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#icryptoderiver" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ICryptoDeriver
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ijitterstrategy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IJitterStrategy
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#implementaciones-de-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementaciones de producción
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#vaultprovider-refactorizado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        VaultProvider refactorizado
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#secuencia-de-implementacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Secuencia de implementación
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Secuencia de implementación">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#day-152-p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 152 (P0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-153-p0" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 153 (P0)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#day-154-p1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DAY 154 (P1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reglas-permanentes-derivadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reglas permanentes derivadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#referencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Referencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-045-vaultclient-decomposition-by-composition">ADR-045 — VaultClient Decomposition by Composition</h1>
+<p><strong>Status:</strong> APROBADO — DAY 151 · Consejo 8/8 + Founder<br />
+<strong>Fecha:</strong> 2026-05-14<br />
+<strong>Autores:</strong> Alonso Isidoro Román, Consejo de Sabios (8 modelos)<br />
+<strong>Relacionado:</strong> ADR-044 (ICryptoProvider), ADR-013 (SeedClient), ADR-035 (etcd HA)</p>
+<hr />
+<h2 id="contexto">Contexto</h2>
+<p><code>VaultClient</code> (implementado en DAY 150) acumula seis responsabilidades distintas:</p>
+<ol>
+<li><strong>HTTP a Vault API</strong> — fetch de seeds, tokens, health check</li>
+<li><strong>Derivación criptográfica</strong> — HKDF + <code>crypto_sign_seed_keypair()</code></li>
+<li><strong>Cache tmpfs</strong> — escritura, TTL, mlock, permisos 0600</li>
+<li><strong>Registro en etcd</strong> — bootstrap status, keepalive</li>
+<li><strong>Jitter anti-stampede</strong> — <code>component_index * 500ms + rand(0..1000ms)</code></li>
+<li><strong>Máquina de estados de autonomía</strong> — <code>NORMAL → AUTONOMOUS → RECONCILING → DEGRADED</code> (DAY 152)</li>
+</ol>
+<p>Una clase con seis responsabilidades es un monolito. No se puede testear <code>ICacheManager</code> sin levantar Vault. No se puede testear <code>IEtcdRegistrar</code> sin un etcd real. El jitter no se puede verificar sin tiempo real. Añadir la máquina de estados como séptima responsabilidad lo convierte en inmantenible.</p>
+<p>La motivación de fondo es de soberanía tecnológica: si <code>VaultClient</code> es monolítico, cambiar de proveedor (HashiCorp Vault → AWS KMS → HSM local → implementación propia) requiere reescribir la clase entera. Con composición, cambias <code>IVaultTransport</code>.</p>
+<hr />
+<h2 id="decision">Decisión</h2>
+<p><strong>VaultClient se descompone por composición.</strong> Cada responsabilidad se convierte en una interfaz C++20 pura, inyectable en el constructor de <code>VaultProvider</code>.</p>
+<pre><code>IVaultTransport       → fetch HTTP a Vault API
+ICryptoDeriver        → KDF + crypto_sign_seed_keypair
+ICacheManager         → tmpfs, TTL, mlock, permisos
+IEtcdRegistrar        → registro + keepalive
+IJitterStrategy       → anti-stampede
+CryptoAutonomyStateMachine → estados operativos (ADR-044 DAY 152)
+         ↓
+VaultProvider (compone todo, implementa ICryptoProvider)
+         ↓
+ICryptoProvider::get_operational_mode()
+         ↓
+firewall / alerting / etcd-server / RAG
+</code></pre>
+<p><code>VaultClient</code> puede mantenerse como implementación concreta de <code>IVaultTransport</code> (cliente HTTP a Vault), sin lógica de negocio.</p>
+<hr />
+<h2 id="interfaces-propuestas">Interfaces propuestas</h2>
+<h3 id="ivaulttransport">IVaultTransport</h3>
+<pre><code class="language-cpp">// common/vault_transport.h
+namespace ml_defender {
+
+struct VaultResponse {
+    bool ok;
+    std::vector&lt;uint8_t&gt; data;
+    std::string error;
+};
+
+class IVaultTransport {
+public:
+    virtual ~IVaultTransport() = default;
+    virtual VaultResponse fetch_seed(const std::string&amp; path) = 0;
+    virtual bool health_check() = 0;
+};
+
+} // namespace ml_defender
+</code></pre>
+<h3 id="icachemanager">ICacheManager</h3>
+<pre><code class="language-cpp">// common/cache_manager.h
+namespace ml_defender {
+
+class ICacheManager {
+public:
+    virtual ~ICacheManager() = default;
+    // Escribe datos en cache segura (tmpfs, mlock, 0600)
+    virtual bool store(const std::string&amp; key,
+                       const std::vector&lt;uint8_t&gt;&amp; data,
+                       std::chrono::seconds ttl) = 0;
+    // Lee cache. Retorna vacío si expirada o inexistente.
+    virtual std::optional&lt;std::vector&lt;uint8_t&gt;&gt; load(const std::string&amp; key) = 0;
+    virtual void invalidate(const std::string&amp; key) = 0;
+    virtual bool is_valid(const std::string&amp; key) const = 0;
+};
+
+} // namespace ml_defender
+</code></pre>
+<h3 id="ietcdregistrar">IEtcdRegistrar</h3>
+<pre><code class="language-cpp">// common/etcd_registrar.h
+namespace ml_defender {
+
+struct CryptoBootstrapStatus {
+    std::string component;
+    std::string fingerprint_hex;
+    uint32_t key_version;
+    std::string provider;   // &quot;SeedFileProvider&quot; | &quot;VaultProvider&quot;
+    bool from_cache;
+    std::string timestamp;
+};
+
+class IEtcdRegistrar {
+public:
+    virtual ~IEtcdRegistrar() = default;
+    virtual bool register_bootstrap(const CryptoBootstrapStatus&amp; status) = 0;
+    virtual bool send_keepalive(const std::string&amp; component) = 0;
+    virtual void unregister(const std::string&amp; component) = 0;
+};
+
+} // namespace ml_defender
+</code></pre>
+<h3 id="icryptoderiver">ICryptoDeriver</h3>
+<pre><code class="language-cpp">// common/crypto_deriver.h
+namespace ml_defender {
+
+class ICryptoDeriver {
+public:
+    virtual ~ICryptoDeriver() = default;
+    // Deriva keypair Ed25519 desde seed de 32 bytes.
+    // Implementación de referencia: crypto_sign_seed_keypair() (libsodium)
+    virtual CryptoMaterial derive(const std::array&lt;uint8_t, 32&gt;&amp; seed,
+                                  const std::string&amp; component_name,
+                                  uint32_t key_version) = 0;
+};
+
+} // namespace ml_defender
+</code></pre>
+<h3 id="ijitterstrategy">IJitterStrategy</h3>
+<pre><code class="language-cpp">// common/jitter_strategy.h
+namespace ml_defender {
+
+class IJitterStrategy {
+public:
+    virtual ~IJitterStrategy() = default;
+    // Tiempo de espera antes del primer fetch a Vault.
+    // Implementación de referencia: component_index * 500ms + rand(0..1000ms)
+    virtual std::chrono::milliseconds startup_delay(uint32_t component_index) = 0;
+    // Tiempo de espera entre reintentos.
+    virtual std::chrono::milliseconds retry_delay(uint32_t attempt) = 0;
+};
+
+} // namespace ml_defender
+</code></pre>
+<hr />
+<h2 id="implementaciones-de-produccion">Implementaciones de producción</h2>
+<table>
+<thead>
+<tr>
+<th>Interfaz</th>
+<th>Implementación de producción</th>
+<th>Implementación de test</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>IVaultTransport</code></td>
+<td><code>HttpVaultTransport</code> (libcurl)</td>
+<td><code>MockVaultTransport</code></td>
+</tr>
+<tr>
+<td><code>ICacheManager</code></td>
+<td><code>TmpfsCacheManager</code> (tmpfs + mlock)</td>
+<td><code>InMemoryCacheManager</code></td>
+</tr>
+<tr>
+<td><code>IEtcdRegistrar</code></td>
+<td><code>EtcdClientRegistrar</code></td>
+<td><code>NullEtcdRegistrar</code></td>
+</tr>
+<tr>
+<td><code>ICryptoDeriver</code></td>
+<td><code>LibsodiumCryptoDeriver</code></td>
+<td><code>DeterministicDeriver</code> (seed fija)</td>
+</tr>
+<tr>
+<td><code>IJitterStrategy</code></td>
+<td><code>ExponentialJitter</code></td>
+<td><code>ZeroJitter</code> (sin espera)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="vaultprovider-refactorizado">VaultProvider refactorizado</h2>
+<pre><code class="language-cpp">// common/vault_provider.h
+#ifdef ARGUS_VAULT_ENABLED
+
+class VaultProvider : public ICryptoProvider {
+public:
+    struct Config {
+        std::string component_name;
+        uint32_t component_index = 0;
+    };
+
+    // Constructor de producción (implementaciones reales inyectadas)
+    VaultProvider(Config cfg,
+                  std::shared_ptr&lt;IVaultTransport&gt;   transport,
+                  std::shared_ptr&lt;ICacheManager&gt;      cache,
+                  std::shared_ptr&lt;IEtcdRegistrar&gt;     registrar,
+                  std::shared_ptr&lt;ICryptoDeriver&gt;     deriver,
+                  std::shared_ptr&lt;IJitterStrategy&gt;    jitter,
+                  std::shared_ptr&lt;CryptoAutonomyStateMachine&gt; state_machine);
+
+    // ICryptoProvider
+    CryptoMaterial get_material() override;
+    bool refresh() override;
+    bool is_healthy() const override;
+    std::string component_name() const override;
+    OperationalMode get_operational_mode() const noexcept override;
+
+private:
+    Config cfg_;
+    std::shared_ptr&lt;IVaultTransport&gt;   transport_;
+    std::shared_ptr&lt;ICacheManager&gt;      cache_;
+    std::shared_ptr&lt;IEtcdRegistrar&gt;     registrar_;
+    std::shared_ptr&lt;ICryptoDeriver&gt;     deriver_;
+    std::shared_ptr&lt;IJitterStrategy&gt;    jitter_;
+    std::shared_ptr&lt;CryptoAutonomyStateMachine&gt; state_machine_;
+    std::optional&lt;CryptoMaterial&gt; cached_material_;
+    mutable std::mutex mutex_;
+};
+
+#endif // ARGUS_VAULT_ENABLED
+</code></pre>
+<hr />
+<h2 id="secuencia-de-implementacion">Secuencia de implementación</h2>
+<h3 id="day-152-p0">DAY 152 (P0)</h3>
+<ul>
+<li><code>common/crypto_autonomy.h/.cpp</code> — <code>CryptoAutonomyStateMachine</code></li>
+<li><code>ICryptoProvider::get_operational_mode()</code> con default <code>NORMAL</code></li>
+<li><code>SeedFileProvider</code> → siempre <code>NORMAL</code></li>
+</ul>
+<h3 id="day-153-p0">DAY 153 (P0)</h3>
+<ul>
+<li><code>common/vault_transport.h</code> + <code>HttpVaultTransport</code> (extrae HTTP de <code>VaultClient</code>)</li>
+<li><code>common/cache_manager.h</code> + <code>TmpfsCacheManager</code> (extrae cache tmpfs)</li>
+<li>Tests unitarios para cada uno con mocks</li>
+</ul>
+<h3 id="day-154-p1">DAY 154 (P1)</h3>
+<ul>
+<li><code>common/etcd_registrar.h</code> + <code>EtcdClientRegistrar</code></li>
+<li><code>common/crypto_deriver.h</code> + <code>LibsodiumCryptoDeriver</code></li>
+<li><code>common/jitter_strategy.h</code> + <code>ExponentialJitter</code></li>
+<li><code>VaultProvider</code> refactorizado usando todas las interfaces</li>
+<li><code>DEBT-EMECAS-DUAL-COMPILATION-001</code> — Jenkinsfile dual</li>
+</ul>
+<hr />
+<h2 id="consecuencias">Consecuencias</h2>
+<p><strong>Positivas:</strong>
+- Cada responsabilidad testeable en aislamiento sin Vault, sin red, sin etcd
+- Cambio de proveedor criptográfico = cambiar <code>IVaultTransport</code> y/o <code>ICryptoDeriver</code>
+- Futura implementación propia del servidor de secretos es un <code>IVaultTransport</code> diferente
+- Tests más rápidos y deterministas (sin red, sin tmpfs, sin esperas de jitter)
+- <code>VaultClient</code> puede mantenerse como implementación HTTP legítima</p>
+<p><strong>Negativas:</strong>
+- Más ficheros headers (aceptable — cada uno &lt; 50 líneas)
+- Constructor de <code>VaultProvider</code> con 6 parámetros (mitigar con builder o factory)
+- La factoría <code>CryptoProvider::create()</code> inyecta implementaciones de producción</p>
+<p><strong>Neutrales:</strong>
+- El <code>#ifdef ARGUS_VAULT_ENABLED</code> permanece confinado en <code>crypto_provider.cpp</code> (regla DAY 151)
+- <code>SeedFileProvider</code> no se ve afectado</p>
+<hr />
+<h2 id="reglas-permanentes-derivadas">Reglas permanentes derivadas</h2>
+<ul>
+<li><strong>REGLA ADR-045:</strong> Ninguna nueva responsabilidad entra en <code>VaultProvider</code> sin una interfaz nueva. Si no tiene interfaz, no tiene tests. Si no tiene tests, no entra.</li>
+<li><strong>REGLA ADR-045:</strong> La factoría <code>VaultProvider::make_production()</code> es el único lugar donde se instancian las implementaciones concretas de producción.</li>
+<li><strong>REGLA ADR-045:</strong> Los tests de <code>VaultProvider</code> solo usan mocks — nunca Vault real, nunca tmpfs real, nunca etcd real.</li>
+</ul>
+<hr />
+<h2 id="referencias">Referencias</h2>
+<ul>
+<li>ADR-044: ICryptoProvider abstraction</li>
+<li>ADR-013: SeedClient y CryptoTransport</li>
+<li>DEBT-CRYPTO-AUTONOMY-001: máquina de estados</li>
+<li>DEBT-AUTONOMY-CLOCK-INJECTION-001: clock inyectable</li>
+<li>Principio SRP (Consejo 8/8, DAY 151)</li>
+<li>Soberanía tecnológica (Founder, DAY 151)</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

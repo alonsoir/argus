@@ -1,0 +1,1019 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/PLAN%20%E2%80%94%20Circuito%20completo%20aguas%20abajo%20%28DAY%20196%20%E2%86%92%20implementaci%C3%B3n%29-deepseek/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>PLAN — Circuito completo aguas abajo (DAY 196 → implementación) deepseek - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#1-sobre-la-ratificacion-de-la-opcion-b-formato-de-salida-correlation_v1" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              PLAN — Circuito completo aguas abajo (DAY 196 → implementación) deepseek
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-sobre-la-ratificacion-de-la-opcion-b-formato-de-salida-correlation_v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Sobre la ratificación de la opción B (formato de salida correlation_v1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-forma-del-oro-join-en-arrow-vs-join-en-kuzu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Forma del oro: join en Arrow vs join en Kuzu
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-centinela-numerico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Centinela numérico
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-rotacion-y-seguimiento-del-fichero-bronce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Rotación y seguimiento del fichero bronce
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-wazuh-y-el-contrato-correlation_v1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Wazuh y el contrato correlation_v1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-andres-stub" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Andrés (stub)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-decisiones-adicionales-extraidas-del-cuerpo-del-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Decisiones adicionales (extraídas del cuerpo del plan)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-condiciones-para-proceder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de condiciones para proceder
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>PLAN — Circuito completo aguas abajo (DAY 196 → implementación) deepseek</h1>
+
+<p><strong>CONSEJO DE SABIOS — DICTAMEN SOBRE PLAN DE IMPLEMENTACIÓN (DAY 196)</strong><br />
+<em>Sesión extraordinaria, 2026-06-27</em></p>
+<p>Recibido el documento «PLAN — Circuito completo aguas abajo». Actuamos como adversarios según se solicita, sin concesiones. Cada decisión será escrutada; cada supuesto, cuestionado.</p>
+<hr />
+<h3 id="1-sobre-la-ratificacion-de-la-opcion-b-formato-de-salida-correlation_v1">1. Sobre la ratificación de la opción B (formato de salida <code>correlation_v1</code>)</h3>
+<p><strong>Dictamen:</strong> Se ratifica la opción B.<br />
+<strong>Condiciones y exigencias:</strong></p>
+<ul>
+<li>El contrato <code>correlation_v1</code> está sellado con 19 columnas. Cualquier cambio estructural futuro requerirá una nueva versión de contrato, documento de migración y plan de coexistencia durante la transición. No se admitirán parches «por una columna más».</li>
+<li>El Consejo exige que se demuestre, antes del Eslabón 4, que el <code>community_id</code> producido por Suricata y Zeek coincide efectivamente con el de aRGus para los mismos flujos <strong>en el entorno de integración</strong>, no solo en teoría. Se aportarán logs de validación cruzada. La coincidencia simétrica es condición necesaria para el join cross-engine; cualquier discrepancia invalidaría el circuito de correlación de flujo y obligaría a rediseñar el oro.</li>
+<li><strong>Cuestión no resuelta en el plan: encuadre ZMQ de la línea CSV.</strong> El plan afirma que el adapter emitirá «filas <code>correlation_v1</code>». ¿Una fila CSV por mensaje ZMQ? ¿Mensaje con múltiples filas? ¿Separador de trama? Esto no es un detalle menor: afecta a la propiedad <em>at-least-once</em> y a la granularidad del checkpoint. Se requiere una especificación explícita del framing antes de codificar el Eslabón 6. Sin ella, el contrato de transporte es incompleto y AdapterSpec v1.1 sería papel mojado.</li>
+</ul>
+<hr />
+<h3 id="2-forma-del-oro-join-en-arrow-vs-join-en-kuzu">2. Forma del oro: join en Arrow vs join en Kuzu</h3>
+<p>El Consejo observa que se propone <em>oro-como-ledger</em> + join en Kuzu, pero los argumentos son insuficientes para una decisión irreversible en este momento.</p>
+<p><strong>Objeciones y exigencias:</strong></p>
+<ul>
+<li>«Kuzu existe para hacer joins» es una verdad a medias. Kuzu está diseñado para consultas de grafo sobre datos ya relacionados. No hay evidencia en el plan de la complejidad computacional de materializar <code>:NetworkFlow</code> compartido a partir de millones de eventos de múltiples sensores con community_id, especialmente cuando los flujos de Zeek llegan con 5 minutos de retraso. Exigimos un <strong>prototipo de carga y consulta con datos sintéticos a escala</strong> (al menos 1M de filas por sensor) que mida tiempo de ingesta, uso de memoria y latencia de las consultas previstas para el dashboard, antes de descartar el join en Arrow.</li>
+<li>El argumento de la Via Appia (oro inmutable, Kuzu reconstruible) es válido, pero ignora que un oro pre-join en Arrow también es inmutable y reconstruible: el join se computa, se materializa en Parquet y se versiona. La diferencia es dónde reside la complejidad del join y quién paga el coste en consultas posteriores.</li>
+<li>Si se elige Kuzu para el join, el Consejo exige que el esquema del grafo (nodos, aristas, propiedades) se especifique formalmente y se someta a revisión <strong>antes</strong> del Eslabón 2. No aceptaremos «lo definiremos al implementar».</li>
+<li>Se deja abierta la posibilidad de un enfoque híbrido: oro-como-ledger para la preservación cruda, y una vista materializada <em>dentro de la LZ</em> (en Parquet) para consultas analíticas batch que no necesiten grafo. Esta vista sería un producto derivado, no el oro canónico.</li>
+</ul>
+<p><strong>Decisión preliminar:</strong> Se autoriza continuar con la exploración del diseño oro-como-ledger + join en Kuzu, pero el Eslabón 2 no se considerará cerrado hasta que se presente el prototipo de rendimiento exigido y el esquema de grafo detallado. La elección final se revisará en un nuevo Consejo.</p>
+<hr />
+<h3 id="3-centinela-numerico">3. Centinela numérico</h3>
+<p><strong>Dictamen:</strong>
+- Se confirma <code>-1</code> como centinela para las columnas numéricas ausentes en CSV (<code>src_port</code>, <code>dst_port</code>, scores, etc.). El valor <code>0</code> queda <strong>prohibido</strong> por su ambigüedad semántica (score nulo vs score de inactividad, puerto 0 válido en algunos contextos).
+- Se exige que la capa de conversión a Parquet (Eslabón 1) transforme el centinela <code>-1</code> a <code>null</code> tipado de Arrow <strong>sin excepciones</strong>. La documentación del esquema Parquet debe declarar explícitamente qué columnas admiten nulos por este motivo.
+- El reader C++ y el grafo Kuzu deberán tratar los nulos como «no aplica», no como error, y las consultas Cypher del dashboard deberán contemplar esta semántica. Cualquier agregación que ignore nulos (lo estándar) es aceptable, pero deberá quedar documentada para evitar interpretaciones erróneas de «score medio».</p>
+<hr />
+<h3 id="4-rotacion-y-seguimiento-del-fichero-bronce">4. Rotación y seguimiento del fichero bronce</h3>
+<p>El plan expone dos opciones: que el engine vigile el directorio o que el lanzador recalcule el datado. Ambas son insuficientemente robustas tal cual se describen.</p>
+<p><strong>Dictamen y requisitos:</strong></p>
+<ul>
+<li>El engine <strong>debe vigilar el directorio</strong> como fuente primaria de nuevos datos, utilizando mecanismos del sistema operativo (inotify o similar) para detectar la aparición de un nuevo fichero diario. No se admite un recalculo puntual en el arranque; eso garantiza perder el corte de medianoche si el engine está corriendo.</li>
+<li>Adicionalmente, el engine debe mantener internamente el offset de lectura dentro del fichero actual y ser capaz de reanudar tras reinicio (checkpoint de posición en fichero + hash de la última línea procesada). Esto es crítico para cumplir <em>at-least-once</em> sin reprocesar el día entero.</li>
+<li>El lanzador podrá seguir proporcionando un <code>--bronze</code> inicial, pero solo como semilla para el primer arranque; después el engine gestionará la rotación autónomamente.</li>
+<li>Se abre deuda técnica <code>ROTATION-FOLLOW</code> con prioridad P1, y se añade como condición para cerrar el Eslabón 0: la configuración JSON que sustituya el hardcode del writer deberá incluir también el patrón de naming de ficheros para que el engine pueda derivar la lista de ficheros a vigilar sin ambigüedades.</li>
+</ul>
+<hr />
+<h3 id="5-wazuh-y-el-contrato-correlation_v1">5. Wazuh y el contrato <code>correlation_v1</code></h3>
+<p>La postura del plan es correcta al identificar que Wazuh <strong>no cabe</strong> en el contrato actual, pero la propuesta de extender <code>correlation_v1</code> con <code>host_key</code> (creando <code>correlation_v2</code>) es rechazada de plano por este Consejo.</p>
+<p><strong>Argumentos y decisión:</strong></p>
+<ul>
+<li><code>correlation_v1</code> es un contrato sellado para el dominio de red. Abrirlo para añadir un campo de host contaminaría su semántica, obligaría a migrar todos los productores y consumidores existentes, y rompería la compatibilidad hacia atrás. La Via Appia exige que los contratos sean estables; no se alteran por acumulación.</li>
+<li>Wazuh pertenece a un dominio ontológico distinto: eventos de host, no flujos de red. Forzar su encaje mediante un campo foráneo es un antipatrón de modelado. La arista entre host y flujo es legítima, pero debe representarse en el grafo, no en el esquema de ingesta.</li>
+<li>Se ordena la creación de un nuevo contrato <strong><code>host_domain_v1</code></strong> (o similar) específico para eventos de host, con su propio medallón, su propia zona bronce y su propio pipeline. La conexión con el dominio de red se realizará exclusivamente en Kuzu, materializando relaciones <code>HostEvent –[INVOLVES_IP]– NetworkFlow</code> mediante consultas Cypher que correlacionen IPs y ventanas temporales.</li>
+<li>La deuda <code>DEBT-CORRELATION-V1-HOSTKEY-001</code> se transforma en la tarea de diseño de este nuevo contrato. El Eslabón 5 (Wazuh) no comenzará hasta que ese contrato esté ratificado por el Consejo.</li>
+</ul>
+<hr />
+<h3 id="6-andres-stub">6. Andrés (stub)</h3>
+<p>El contrato negativo es aceptable como contención de alcance, pero el Consejo no tolerará incertidumbre indefinida.</p>
+<p><strong>Exigencias:</strong></p>
+<ul>
+<li>Las 5 incógnitas listadas (naturaleza, transporte, community_id, clave de join, staleness SLO) deben ser respondidas por el responsable del motor Andrés en un plazo máximo de 15 días naturales desde la fecha de este dictamen. Si no hay respuesta, el stub se considerará abandonado y se eliminará del plan para no generar deuda fantasma.</li>
+<li>Mientras tanto, el adapter correspondiente no se implementará; el código contemplará un punto de extensión documentado (interface + mock) pero sin lógica alguna. Cualquier intento de codificar un adapter sin esas respuestas será vetado.</li>
+</ul>
+<hr />
+<h3 id="7-decisiones-adicionales-extraidas-del-cuerpo-del-plan">7. Decisiones adicionales (extraídas del cuerpo del plan)</h3>
+<p><strong>Enmienda AdapterSpec v1 → v1.1</strong><br />
+Se aprueba con las siguientes correcciones vinculantes:
+- Debe especificar explícitamente que el formato de salida de un adapter <strong>puede</strong> ser <code>correlation_v1</code> CSV+HMAC <strong>o</strong> un contrato de dominio específico (como el futuro <code>host_domain_v1</code>), eliminando toda referencia al inexistente protobuf <code>SecurityEvent</code>.
+- La sección de checkpoint (§6) debe aclarar si el checkpoint es responsabilidad del adapter o del engine, y cómo se implementa para un adapter basado en fichero CSV (offset, rotación). Hasta que no esté claro, la especificación no estará completa.
+- La deuda <code>DEBT-ADAPTERSPEC-ENVELOPE-001</code> se cierra condicionalmente a que la enmienda refleje estos cambios y se verifique que ningún otro documento hace referencia al envelope protobuf desaparecido.</p>
+<p><strong>Hardcode de configuración (<code>DEBT-CONFIG-BRONZE-HARDCODE-001</code>)</strong><br />
+Se exige que el Eslabón 0 se complete antes de cualquier otro eslabón que toque datos. La verificación de que writer y engine resuelven al mismo path <strong>no será visual</strong>; se exigirá un test de integración automático que ejecute el flujo completo y compruebe que los ficheros producidos son exactamente los consumidos, con hash HMAC válido, tanto en arranque como tras rotación simulada de medianoche.</p>
+<p><strong>Separación adapter-argus / lógica ML</strong><br />
+El Consejo refuerza el principio «co-ubicado sí, indistinto no». Exigimos que cuando se migre a ZMQ PUB/SUB, el adapter-argus sea un publicador independiente dentro del proceso <code>ml-detector</code>, con su propio socket y bucle de envío, que no comparta estado mutable con el motor de inferencia. Cualquier acoplamiento detectado en la revisión de código será motivo de bloqueo del merge.</p>
+<hr />
+<h3 id="resumen-de-condiciones-para-proceder">Resumen de condiciones para proceder</h3>
+<ol>
+<li>Prototipo de rendimiento de Kuzu con datos a escala (previo al cierre del Eslabón 2).</li>
+<li>Esquema formal del grafo Kuzu (previo al Eslabón 2).</li>
+<li>Especificación del framing ZMQ para CSV (previo al Eslabón 6).</li>
+<li>Implementación del Eslabón 0 con test de rotación automatizado (previo a cualquier otro eslabón).</li>
+<li>Nuevo contrato <code>host_domain_v1</code> diseñado y ratificado (previo al Eslabón 5).</li>
+<li>Respuesta vinculante sobre Andrés en 15 días o eliminación del stub.</li>
+</ol>
+<p>Este Consejo no dará «palmaditas en la espalda». El plan es ambicioso y contiene aciertos de arquitectura, pero las lagunas identificadas deben cerrarse con evidencia, no con buenas intenciones. Quedamos a la espera de las pruebas solicitadas.</p>
+<p>— <em>El Consejo de Sabios</em></p>
+<p>FDO</p>
+<p>DEEPSEEK</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

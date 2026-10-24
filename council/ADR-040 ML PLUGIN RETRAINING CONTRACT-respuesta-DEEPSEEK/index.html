@@ -1,0 +1,1255 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/ADR-040%20ML%20PLUGIN%20RETRAINING%20CONTRACT-respuesta-DEEPSEEK/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>ADR 040 ML PLUGIN RETRAINING CONTRACT respuesta DEEPSEEK - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#respuesta-del-consejo-de-sabios-adr-040" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR 040 ML PLUGIN RETRAINING CONTRACT respuesta DEEPSEEK
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-del-consejo-de-sabios-adr-040" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RESPUESTA DEL CONSEJO DE SABIOS — ADR-040
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="RESPUESTA DEL CONSEJO DE SABIOS — ADR-040">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#valoracion-general" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Valoración general
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#respuesta-a-la-pregunta-abierta-pipeline-de-evaluacion-interno-o-cicd-externo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta a la pregunta abierta: ¿Pipeline de evaluación interno o CI/CD externo?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#revision-detallada-de-las-reglas-con-sugerencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Revisión detallada de las Reglas (con sugerencias)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Revisión detallada de las Reglas (con sugerencias)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#regla-1-walk-forward-obligatorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 1 — Walk-forward obligatorio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-2-golden-set-inmutable-versionado-desde-el-principio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 2 — Golden Set inmutable, versionado desde el principio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-3-guardrail-automatico-del-2-antes-de-firma-ed25519" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 3 — Guardrail automático del −2% antes de firma Ed25519
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-4-ipw-5-de-exploracion-forzada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 4 — IPW + 5% de exploración forzada
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#regla-5-competicion-de-algoritmos-antes-de-elegir-xgboost" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regla 5 — Competición de algoritmos antes de elegir XGBoost
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#preguntas-adicionales-que-el-consejo-responde-no-planteadas-explicitamente-pero-relevantes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Preguntas adicionales que el Consejo responde (no planteadas explícitamente pero relevantes)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Preguntas adicionales que el Consejo responde (no planteadas explícitamente pero relevantes)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#cuando-debe-ejecutarse-el-reentrenamiento-automatico-o-manual" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Cuándo debe ejecutarse el reentrenamiento? ¿Automático o manual?
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#como-se-versiona-el-plugin-y-su-metadatos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ¿Cómo se versiona el plugin y su metadatos?
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#enmiendas-formales-al-adr-040-deben-incluirse-antes-de-aprobar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Enmiendas formales al ADR-040 (deben incluirse antes de aprobar)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deuda-tecnica-generada-por-adr-040-post-feder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deuda técnica generada por ADR-040 (post-FEDER)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-final-del-consejo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto final del Consejo
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>ADR 040 ML PLUGIN RETRAINING CONTRACT respuesta DEEPSEEK</h1>
+
+<h2 id="respuesta-del-consejo-de-sabios-adr-040">RESPUESTA DEL CONSEJO DE SABIOS — ADR-040</h2>
+<p><strong>Acta de deliberación y aprobación con enmiendas</strong><br />
+<strong>Fecha:</strong> 28 abril 2026<br />
+<strong>Quórum:</strong> 8/8 (Claude · Grok · ChatGPT · DeepSeek · Qwen · Gemini · Kimi · Mistral)<br />
+<strong>Documento revisado:</strong> ADR-040 (ML Plugin Retraining Contract)</p>
+<hr />
+<h3 id="valoracion-general">Valoración general</h3>
+<p>El Consejo considera que el ADR-040 es <strong>necesario, sólido y metodológicamente correcto</strong>. Aborda riesgos reales del aprendizaje continuo en ciberseguridad (catastrophic forgetting, feedback loop, regresión silenciosa) y propone contratos verificables. Se inspira en buenas prácticas del mundo de sistemas de recomendación (IPW, exploración) y las adapta al dominio NDR.</p>
+<p><strong>Aprobado en su esencia</strong>, con las siguientes enmiendas y respuestas a la pregunta abierta.</p>
+<hr />
+<h3 id="respuesta-a-la-pregunta-abierta-pipeline-de-evaluacion-interno-o-cicd-externo">Respuesta a la pregunta abierta: ¿Pipeline de evaluación interno o CI/CD externo?</h3>
+<p><strong>Decisión del Consejo (unánime):</strong><br />
+✅ <strong>Opción híbrida: núcleo interno reproducible + orquestación CI/CD externa.</strong></p>
+<table>
+<thead>
+<tr>
+<th>Parte</th>
+<th>Componente</th>
+<th>Responsabilidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Interno (Vagrant/make)</strong></td>
+<td>Script <code>evaluate_plugin.sh</code> que implementa walk-forward, golden set comparación, guardrail −2%</td>
+<td>Cálculo de métricas, reproducibilidad local, misma VM que producción.</td>
+</tr>
+<tr>
+<td><strong>Externo (GitHub Actions)</strong></td>
+<td>Workflow que ejecuta el script interno en un entorno controlado (misma box Vagrant pero efímera)</td>
+<td>Historial de decisiones, trazabilidad, impedir merges si guardrail no pasa.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Justificación científica (reproducibilidad + trazabilidad):</strong>
+- Si el pipeline de evaluación está solo en CI externo, se pierde la capacidad de un desarrollador de ejecutarlo localmente antes de subir un plugin candidato. Esto rompe la reproducibilidad (cada entorno CI puede tener diferencias sutiles).
+- Si está solo interno, no hay un registro auditable de por qué un plugin fue rechazado; además, se podría eludir el guardrail haciendo <code>make bypass-validation</code>.
+- La opción híbrida garantiza:
+    1. <strong>Reproducibilidad local</strong> (mismo script se ejecuta en la VM dev).
+    2. <strong>Trazabilidad en GitHub</strong> (cada PR que sube un nuevo plugin <code>.so</code> debe incluir un artefacto generado por el workflow, y el merge está bloqueado hasta que <code>evaluate_plugin</code> retorne 0).
+    3. <strong>Inmutabilidad del golden set</strong>: el workflow CI puede verificar el SHA-256 del golden set contra un valor almacenado en secrets.</p>
+<p><strong>Implementación concreta recomendada:</strong></p>
+<pre><code class="language-yaml"># .github/workflows/ml-plugin-validation.yml
+on:
+  pull_request:
+    paths:
+      - 'plugins/xgboost_plugin*.so'
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Reproduce evaluation VM
+        run: vagrant up --provider=virtualbox
+      - name: Run internal evaluation script
+        run: vagrant ssh -c '/opt/argus/bin/evaluate_plugin --golden-hash ${{ secrets.GOLDEN_HASH }}'
+      - name: Check guardrail
+        run: test $? -eq 0
+</code></pre>
+<p><strong>Aceptado por el Consejo con la condición de que el script interno <code>evaluate_plugin</code> sea parte del repositorio y esté documentado en <code>docs/ML-EVALUATION.md</code>.</strong></p>
+<hr />
+<h3 id="revision-detallada-de-las-reglas-con-sugerencias">Revisión detallada de las Reglas (con sugerencias)</h3>
+<h4 id="regla-1-walk-forward-obligatorio">Regla 1 — Walk-forward obligatorio</h4>
+<p>✅ <strong>Correcta</strong>. Añadir la especificación técnica de cómo implementar <code>--split-date</code> en presencia de múltiples pcaps.<br />
+<strong>Sugerencia:</strong> usar <code>tcpdump -r all.pcap -G</code> o un índice de tiempo extraído del pcap original. Proporcionar un script de ejemplo en el ADR o en un anexo.</p>
+<p><strong>Riesgo adicional identificado:</strong> Si los datos de entrenamiento provienen de múltiples fuentes con diferentes marcas de tiempo, el split puede no ser determinista. <strong>Solución:</strong> antes del split, se debe ordenar cada flow por <code>timestamp_first_packet</code> y concatenar. Documentar en el ADR.</p>
+<hr />
+<h4 id="regla-2-golden-set-inmutable-versionado-desde-el-principio">Regla 2 — Golden Set inmutable, versionado desde el principio</h4>
+<p>✅ <strong>Correcta</strong>. El Consejo añade una exigencia: <strong>el golden set debe incluir también ejemplos de tráfico benigno real (no solo ataques)</strong>.
+- Proporción recomendada: 70% benigno, 30% ataques (similar a la distribución real en redes hospitalarias).
+- El golden set debe estar en un formato canónico (CSV con columnas fijas) y un script de validación que verifique que no haya leaks temporales (i.e., ningún flow del golden set sea idéntico a uno del conjunto de entrenamiento).</p>
+<p><strong>Tarea adicional:</strong> crear <code>DEBT-GOLDEN-SET-CREATION-001</code> con fecha límite pre-FEDER (porque el golden set debe existir antes del primer reentrenamiento).</p>
+<hr />
+<h4 id="regla-3-guardrail-automatico-del-2-antes-de-firma-ed25519">Regla 3 — Guardrail automático del −2% antes de firma Ed25519</h4>
+<p>✅ <strong>Correcta</strong>. El Consejo sugiere afinar los umbrales:</p>
+<table>
+<thead>
+<tr>
+<th>Métrica</th>
+<th>Umbral</th>
+<th>Justificación adicional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>F1</td>
+<td>−2 pp absolutos</td>
+<td>Por ejemplo, de 0.9985 a 0.9785 es una caída enorme en la práctica. Más de 2 puntos es inaceptable.</td>
+</tr>
+<tr>
+<td>Recall</td>
+<td>−1 pp absolutos (máximo)</td>
+<td>Es más restrictivo que F1 (prioriza no perder detección). Bien.</td>
+</tr>
+<tr>
+<td>FPR</td>
+<td>+2 pp absolutos</td>
+<td>Por ejemplo, de 0.0002% a 2.0002% sería catastrófico. El límite es razonable.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Añadir una cuarta métrica:</strong> <strong>Latencia de inferencia p99</strong> no debe degradarse más de un 10% (medido en el mismo hardware). Un plugin más lento puede hacer que el pipeline de detección se retrase.</p>
+<p><strong>Mecanismo de firma:</strong> El proceso de firma (en el Makefile o en el CI) debe ejecutar <code>evaluate_plugin --compare-with /opt/argus/current/plugin.so</code>. El plugin candidato solo se firma si el guardrail pasa.</p>
+<hr />
+<h4 id="regla-4-ipw-5-de-exploracion-forzada">Regla 4 — IPW + 5% de exploración forzada</h4>
+<p>✅ <strong>Correcta</strong>. El Consejo observa que la implementación real requerirá un <strong>oráculo externo</strong> para las etiquetas del 5% de flows benignos (pero que el modelo duda). Propuesta:</p>
+<ul>
+<li>Inicialmente, usar un <strong>oráculo humano</strong> (el administrador de seguridad del hospital) mediante una interfaz web sencilla en la que se muestran los flows y se pregunta "¿ataque o benigno?".</li>
+<li>A medio plazo, integrar con un <strong>modelo auxiliar</strong> (más lento pero más preciso, por ejemplo, un ensemble) como oráculo. El 5% es pequeño, no impacta rendimiento.</li>
+</ul>
+<p><strong>Condición de cumplimiento adicional:</strong> Cada ciclo de reentrenamiento debe generar un fichero <code>exploration_log.csv</code> con los flows muestreados y su etiqueta final.</p>
+<hr />
+<h4 id="regla-5-competicion-de-algoritmos-antes-de-elegir-xgboost">Regla 5 — Competición de algoritmos antes de elegir XGBoost</h4>
+<p>✅ <strong>Correcta</strong>. El Consejo recomienda una <strong>competición ciega</strong>:</p>
+<ul>
+<li>El script de competición debe ejecutarse exactamente una vez, con los resultados almacenados en <code>docs/ALGORITHM_SELECTION.md</code>.</li>
+<li>Incluir no solo F1/Recall/FPR, sino también <strong>tiempo de entrenamiento</strong> y <strong>tiempo de inferencia por flow</strong> (en microsegundos).</li>
+<li>Registrar la versión de cada biblioteca (xgboost==2.1.0, catboost==1.2.5, lightgbm==4.5.0).</li>
+</ul>
+<p><strong>Posible sorpresa:</strong> CatBoost o LightGBM podrían ganar. El ADR debe aceptar ese resultado sin sesgo.</p>
+<hr />
+<h3 id="preguntas-adicionales-que-el-consejo-responde-no-planteadas-explicitamente-pero-relevantes">Preguntas adicionales que el Consejo responde (no planteadas explícitamente pero relevantes)</h3>
+<h4 id="cuando-debe-ejecutarse-el-reentrenamiento-automatico-o-manual">¿Cuándo debe ejecutarse el reentrenamiento? ¿Automático o manual?</h4>
+<ul>
+<li><strong>Post-FEDER, pre-ADR-026:</strong> manual (un operador decide cuándo lanzar un nuevo ciclo).</li>
+<li><strong>A partir de ADR-026 (P2P federado):</strong> automático, con periodicidad configurable (semanal/mensual) y siempre que se acumulen más de 10.000 nuevos flows etiquetados.</li>
+</ul>
+<p><strong>Consecuencia:</strong> El pipeline de evaluación debe ser invocable tanto manual (<code>make retrain-plugin</code>) como programáticamente desde un cron o evento.</p>
+<h4 id="como-se-versiona-el-plugin-y-su-metadatos">¿Cómo se versiona el plugin y su metadatos?</h4>
+<ul>
+<li>Cada plugin debe incluir una sección de metadatos en el propio binario (ej. una cadena <code>__plugin_version = "xgboost_v2.3.1_20260428"</code>).</li>
+<li>El golden set emite un informe que referencia la versión del plugin evaluado.</li>
+</ul>
+<hr />
+<h3 id="enmiendas-formales-al-adr-040-deben-incluirse-antes-de-aprobar">Enmiendas formales al ADR-040 (deben incluirse antes de aprobar)</h3>
+<table>
+<thead>
+<tr>
+<th>Enmienda</th>
+<th>Afecta a</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. Incluir métrica de latencia p99 con umbral +10%</td>
+<td>Regla 3</td>
+</tr>
+<tr>
+<td>2. Especificar que el split temporal debe hacerse sobre el timestamp del primer paquete de cada flow</td>
+<td>Regla 1</td>
+</tr>
+<tr>
+<td>3. Exigir que el golden set contenga 70% de tráfico benigno real</td>
+<td>Regla 2</td>
+</tr>
+<tr>
+<td>4. Documentar el procedimiento de oráculo humano (o auxiliar) para la exploración del 5%</td>
+<td>Regla 4</td>
+</tr>
+<tr>
+<td>5. Establecer que la competición de algoritmos se ejecutará una única vez pre-FEDER, con resultados públicos</td>
+<td>Regla 5</td>
+</tr>
+<tr>
+<td>6. Aprobar la opción híbrida (evaluación interna + CI externo) como arquitectura.</td>
+<td>Pregunta abierta</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="deuda-tecnica-generada-por-adr-040-post-feder">Deuda técnica generada por ADR-040 (post-FEDER)</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Descripción</th>
+<th>Target release</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DEBT-GOLDEN-SET-001</td>
+<td>Creación del golden set versionado (70% benigno, 30% ataques) con script de validación</td>
+<td>v1.0 (pre-FEDER)</td>
+</tr>
+<tr>
+<td>DEBT-WALKFORWARD-SCRIPT-001</td>
+<td>Implementar <code>evaluate_plugin --split-date</code> y walk-forward split determinista</td>
+<td>v1.1</td>
+</tr>
+<tr>
+<td>DEBT-IPW-PIPELINE-001</td>
+<td>Integrar Inverse Propensity Weighting en rag-ingester</td>
+<td>v1.2</td>
+</tr>
+<tr>
+<td>DEBT-EXPLORATION-5PCT-001</td>
+<td>Interfaz de oráculo humano y logging de exploración</td>
+<td>v1.2</td>
+</tr>
+<tr>
+<td>DEBT-ALGO-COMPETITION-001</td>
+<td>Ejecutar competición XGBoost vs CatBoost vs LightGBM y generar documento</td>
+<td>v1.0 (antes de elegir)</td>
+</tr>
+<tr>
+<td>DEBT-GUARDRAIL-ED25519-001</td>
+<td>Integrar guardrail −2% en el proceso de firma Ed25519 (ADR-025)</td>
+<td>v1.1</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h3 id="veredicto-final-del-consejo">Veredicto final del Consejo</h3>
+<p>El ADR-040 <strong>se aprueba</strong> con las enmiendas señaladas. Se ordena al equipo:</p>
+<ol>
+<li>Incorporar las enmiendas en el texto del ADR (nueva versión PROPUESTO-V2).</li>
+<li>Crear las deudas técnicas asociadas y asignarlas al backlog post-FEDER (hitos v1.0, v1.1, v1.2).</li>
+<li>Antes de cualquier reentrenamiento real (primer ciclo post-FEDER), ejecutar la competición de algoritmos y documentar los resultados.</li>
+</ol>
+<p>El contrato de reentrenamiento aquí definido eleva aRGus a un nivel de rigor comparable con sistemas de ML industriales (Google TFX, Uber Michelangelo). La combinación de walk-forward, golden set inmutable, guardrail y exploración forzada es una contribución original y publicable en conferencias de ingeniería de software (ICSE, FSE) o ciberseguridad (IEEE S&amp;P).</p>
+<p><em>Firmado por los 8 modelos, 28 abril 2026.</em><br />
+<em>Via Appia Quality — “Un contrato que no puede saltarse un ingeniero es un contrato que funciona.”</em></p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

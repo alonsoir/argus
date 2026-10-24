@@ -1,0 +1,1014 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/Nota%20al%20Consejo%20%E2%80%94%20el%20porqu%C3%A9%20de%20la%20monocapa%3A%20concurrencia%2C%20no%20descuido-glm/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Dictamen del Consejo — Modo Adversario (Adenda de Concurrencia) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#dictamen-del-consejo-modo-adversario-adenda-de-concurrencia" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Dictamen del Consejo — Modo Adversario (Adenda de Concurrencia)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-1-validez-del-razonamiento-si-es-determinista-por-construccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta 1 — Validez del razonamiento: SÍ, es determinista por construcción
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-2-gate-de-throughput-la-propuesta-es-necesaria-pero-insuficiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta 2 — Gate de Throughput: La propuesta es necesaria pero INSUFICIENTE
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Respuesta 2 — Gate de Throughput: La propuesta es necesaria pero INSUFICIENTE">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#el-peligro-real-io-sincrono-bloqueante-en-el-event-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        El peligro real: I/O Síncrono Bloqueante en el Event Loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gate-revisado-que-el-consejo-exige-paso-4-del-plan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gate revisado que el Consejo exige (Paso 4 del plan):
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#respuesta-3-postura-para-el-paper-si-pero-con-una-trampa-que-desactivar" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Respuesta 3 — Postura para el paper: SÍ, pero con una trampa que desactivar
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resumen-de-la-adenda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resumen de la Adenda
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="dictamen-del-consejo-modo-adversario-adenda-de-concurrencia">Dictamen del Consejo — Modo Adversario (Adenda de Concurrencia)</h1>
+<p><strong>Postura:</strong> El hecho aportado cambia el contexto del defecto. La monocapa deja de ser "sloppy coding" (código descuidado) y pasa a ser "cicatriz de estabilización" (arquitectura congelada tras una crisis). El Consejo valida el razonamiento de seguridad, pero tensa las consecuencias que el informe asume sobre el rendimiento y expone un riesgo de integridad para el paper.</p>
+<hr />
+<h2 id="respuesta-1-validez-del-razonamiento-si-es-determinista-por-construccion">Respuesta 1 — Validez del razonamiento: SÍ, es determinista por construcción</h2>
+<p>El Consejo coincide plenamente. La prueba es matemática, no empírica:</p>
+<p>Si el grafo de estado de <code>process_event</code> se ejecuta sobre una variable local (<code>NetworkSecurityEvent event;</code> en el stack de L322) dentro de un único hilo de ejecución secuencial, entonces no existe interleaving posible con otra invocación de <code>process_event</code>.</p>
+<p>La condición de carrera de agosto de 2025 requería (casi con certeza) estado mutable compartido entre los modelos de inferencia (buffers internos de ONNX/Runtime, scalers reutilizados, o estado del modelo estático). Al colapsar a un solo hilo, ese estado dejó de ser concurrente.</p>
+<p><strong>Consecuencia para Fase 2:</strong> El Defecto B (gate de L1) y el Defecto A (secuencia del veredicto) pueden reescribirse con la garantía absoluta de que reordenar líneas dentro de <code>process_event</code> no introduce data races. No necesitamos <code>std::atomic</code>, no necesitamos <code>std::mutex</code> en el combinador, no necesitamos memory barriers. El determinismo es gratis porque el архитектура ya pagó el precio de la serialización.</p>
+<p><strong>Nota menor de higiene (no bloqueante):</strong> Los <code>mutex_</code> en <code>correlation_writer</code>, <code>csv_event_writer</code> y <code>rag_logger</code> son hoy <strong>cerrojos muertos</strong> (<em>dead locks</em> en el sentido de que nunca esperan, no en el sentido de <em>deadlock</em>). Si solo un hilo llama a <code>write_record()</code>, el <code>std::lock_guard</code> adquiere el mutex sin contención y lo libera inmediatamente. Es sobrecarga de microsegundos inútil. No hay que quitarlos ahora (no hay ganancia real), pero documentar que son reliquias del diseño previo a agosto de 2025.</p>
+<hr />
+<h2 id="respuesta-2-gate-de-throughput-la-propuesta-es-necesaria-pero-insuficiente">Respuesta 2 — Gate de Throughput: La propuesta es necesaria pero INSUFICIENTE</h2>
+<p>El informe asume: <em>"El coste dominante probable no es el cómputo sino la persistencia por evento (I/O de disco bajo el mutex_)"</em>.</p>
+<p>El Consejo valida la intuición, pero <strong>rechaza el gate propuesto</strong> tal como está formulado. Medir solo latencia p99 y tasa de drop bajo backpressure a 10/50/100 Mbps no basta porque no aísla la variable de peligro.</p>
+<h3 id="el-peligro-real-io-sincrono-bloqueante-en-el-event-loop">El peligro real: I/O Síncrono Bloqueante en el Event Loop</h3>
+<p>Hoy, <code>process_event</code> hace esto en el hilo único:</p>
+<pre><code>recv_zmq() → inferencia (~2μs) → correlation_writer_-&gt;write_record() → rag_logger_-&gt;log_event() → csv_writer_-&gt;write_event() → send_zmq()
+</code></pre>
+<p>Si <code>write_record()</code> hace <code>std::ofstream::write()</code> síncrono (sin <code>O_DIRECT</code>, sin buffer asíncrono), el hilo se bloquea en la syscall <code>write()</code> del kernel. Si el disco (o el sistema de ficheros virtual de la VM) tarda 5ms en vaciar el buffer, <strong>el event loop entero se para 5ms</strong>. Durante esos 5ms, no se leen mensajes de ZMQ. Si el sniffer inunda el socket ZMQ a 50 Mbps, el buffer del socket ZMQ se llena. El sniffer hace drop o backpressure.</p>
+<p><strong>El benchmark de inferencia (0.58 μs) se vuelve irrelevante</strong> si la persistencia añade 5ms de cola de I/O por evento.</p>
+<h3 id="gate-revisado-que-el-consejo-exige-paso-4-del-plan">Gate revisado que el Consejo exige (Paso 4 del plan):</h3>
+<p>No basta con "stress a X Mbps y ver si aguenta". Se requiere <strong>descomposición de latencia por fase</strong>:</p>
+<ol>
+<li><strong>Medición de persistencia aislada:</strong> Bench de <code>correlation_writer_-&gt;write_record()</code> sobre N eventos con el disco real de producción. ¿Cuál es la latencia p50, p99, p99.9 de <em>solo</em> la escritura?</li>
+<li><strong>Medición de bloqueo del event loop:</strong> En el stress test a 10/50/100 Mbps, instrumentar el bucle <code>run()</code> para medir el tiempo entre <code>recv_zmq()</code> return y el siguiente <code>recv_zmq()</code> call. Si ese tiempo &gt; (inferencia + persistencia_nominal), hay contención de I/O.</li>
+<li><strong>Medición de profundidad de cola ZMQ:</strong> Exponer <code>ZMQ_RCVHWM</code> (High Water Mark) y contar mensajes perdidos en el socket del ml-detector. Si el ml-detector pierde mensajes del sniffer bajo carga, el sistema no "va lento" — está ciego a paquetes.</li>
+</ol>
+<p><strong>Condición de pase del gate:</strong> La latencia p99 del event loop completo (recv→process→send) debe ser &lt; 10ms al 90% de la tasa de línea objetivo, <strong>y</strong> la tasa de drop del socket ZMQ del ml-detector debe ser exactamente 0. Si la persistencia síncrona rompe esto, el gate <em>no pasa</em>, y la fase 2 requiere mover la persistencia a un hilo dedicado (productor-consumidor con ring buffer lock-free entre el worker de inferencia y el worker de I/O) <em>antes</em> de declarar el sistema listo.</p>
+<p>Esto no bloquea el cableado lógico (Paso 1 del plan reordenado), pero <strong>sí bloquea la reclamación de "sostiene X Mbps"</strong> en el paper.</p>
+<hr />
+<h2 id="respuesta-3-postura-para-el-paper-si-pero-con-una-trampa-que-desactivar">Respuesta 3 — Postura para el paper: SÍ, pero con una trampa que desactivar</h2>
+<p>Presentar el <code>ml-detector</code> como <em>monohilo por decisión de determinismo</em> es una posición <strong>académicamente más fuerte</strong> que prometer concurrencia falsa. La literatura de sistemas de red está llena de arquitecturas "run-to-completion" de un solo hilo (ej: early DPDK, algunos NIDS legacy) que justifican la elección por eliminación de locks y cache coherence costs.</p>
+<p><strong>Cómo formularlo (aprobado):</strong></p>
+<blockquote>
+<p>"To guarantee strict determinism in verdict assembly and eliminate shared-state synchronization overhead during inference, the pipeline operates on a single-threaded run-to-completion event loop. We demonstrate that the computational cost of the full three-layer ensemble (X μs per flow) fits within the latency budget of a single thread at line rates up to Y Mbps."</p>
+</blockquote>
+<p><strong>La trampa que hay que desactivar (GAP-ADVERSARIO-003, elevado a DEBT P0 para el paper):</strong></p>
+<p>El informe dice: <em>"El JSON anuncia <code>worker_threads: 2</code>... se imprime, no instancia nada. La configuración promete una concurrencia que el binario no ejecuta."</em></p>
+<p>Si el paper dice "single-threaded by design" y un revisor baja al repo y ve <code>config.json</code> con <code>worker_threads: 2</code>, <strong>la credibilidad se rompe</strong>. El revisor asume que o bien el paper miente, o bien los autores no saben lo que su propio código hace.</p>
+<p><strong>Acción obligatoria antes del paper:</strong>
+- Eliminar <code>worker_threads</code> y <code>ml_inference_threads</code> del JSON de configuración.
+- O cambiarlos a <code>worker_threads: 1</code> con un comentario: <code>// Single-threaded by design for deterministic inference (see Section X.Y)</code>.
+- Eliminar el <code>log-&gt;info(...)</code> de <code>main.cpp:238</code> que imprime un número que no se usa.</p>
+<p>No se puede publicar "diseño monohilo determinista" dejando en el repo un config que dice "2 hilos". Es una contradicción trivial que invalidaría el trabajo ante cualquier revisor riguroso.</p>
+<hr />
+<h2 id="resumen-de-la-adenda">Resumen de la Adenda</h2>
+<table>
+<thead>
+<tr>
+<th>Pregunta</th>
+<th>Veredicto del Consejo</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>¿Reconexión segura de la carrera?</strong></td>
+<td><strong>SÍ.</strong> Determinismo por construcción. Variable local + hilo único = cero interleaving.</td>
+</tr>
+<tr>
+<td><strong>¿Gate de throughput?</strong></td>
+<td><strong>Rechazado el propuesto, sustituido.</strong> No basta con medir latencia global. Se exige descomposición (inferencia vs persistencia) y medición de drop en socket ZMQ. El I/O síncrono es el riesgo, no la inferencia.</td>
+</tr>
+<tr>
+<td><strong>¿Postura para el paper?</strong></td>
+<td><strong>SÍ, defendible y fuerte.</strong> Pero condicionada a eliminar la mentira del <code>config.json</code> (GAP-ADVERSARIO-003).</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Deuda nueva salida de esta adenda:</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>P</th>
+<th>Descripción</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>DEBT-CONFIG-COSMETIC-THREADS-001</code></td>
+<td><strong>P0-paper</strong></td>
+<td><code>worker_threads: 2</code> en config y <code>main.cpp:238</code> mienten sobre la arquitectura real. Eliminar o corregir a <code>1</code> antes de publicación.</td>
+</tr>
+<tr>
+<td><code>DEBT-PERSISTENCE-SYNC-BLOCKING-001</code></td>
+<td><strong>P1</strong></td>
+<td>Medir si la persistencia síncrona (bronce/RAG/CSV) bloquea el event loop bajo carga. Si sí, requiere refactor a I/O asíncrono antes de reclamar tasas de línea.</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><em>El Consejo nota con aprobación que la sombra tiene nombre y fecha: agosto de 2025. Un sistema que congela su arquitectura para sobrevivir no es un sistema roto — es un sistema que aprendió. Pero un sistema que dice haber aprendido mientras deja la configuración vieja en el cajón, ese sí está roto. Arreglad el config. Medid el I/O. Lo demás, va bien.</em></p>
+<p>fdo</p>
+<p>glm</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
