@@ -7855,3 +7855,15 @@ Requisitos de partida:
 3. Proteccion de datos: las IPs de zombis y reflectores son de terceros inocentes (datos personales). Minimizacion:
    solo lo necesario para actuar, solo por el canal oficial; enlaza con la pseudonimizacion del ADR-043.
 Depende de la consola de operacion (DEBT-ETCD-REMOTE-ADMIN-001) y de un grafo con las cuatro lentes en runtime.
+
+### DEBT-REA-RECERTIFY-001 — ABIERTA (Alonso DAY306), requisito de cierre de la auditoria REA
+Tras el endurecimiento con REA, volver a certificar que los numeros prometidos por la automatizacion resisten los
+cambios. Antes de tocar nada: medir la linea base. Despues de cada medida: su prediccion. Al final: EMECAS+++ y
+reproduce-paper comparados contra esa linea base, con el criterio fijado de antemano:
+1. Identicos bit a bit (lo determinista): reproduce-paper sobre el mismo replay y STAMP (bias-report,
+   bias-denominator-true, autopsy-67), test_ddos_v2_parity y el cruce 1:1 bronce-oro. Un cambio aqui no es ruido:
+   es un cambio de comportamiento y se para.
+2. Dentro del rango historico (lo que depende del tiempo real): los E2E del laboratorio, p. ej. protegidos con FIN
+   en [10741, 10787] y alertas en [5369, 5393], identidad exacta. PIE, RELRO, seccomp o AppArmor mas estricto
+   pueden mover los tiempos sin que nada este mal.
+3. El coste, medido: perdidas del anillo del sniffer y latencia por evento antes y despues.
