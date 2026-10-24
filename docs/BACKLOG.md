@@ -7839,3 +7839,19 @@ contract_validator.cpp resume "40 embedded (4x10)". Actualizar cuando la rama de
 ### Leccion DAY306
 Una regresion de replay se predice como rango observado, no como identidad: el mismo E2E varia +-25 eventos entre
 corridas. Y git rm mete los borrados en el indice al momento: va justo antes del commit que debe llevarlos.
+
+### DEBT-CERT-INCIDENT-REPORT-001 — ABIERTA (vision de Alonso DAY306), caso de uso final
+Generar desde el grafo, en runtime y con un comando del admin, la documentacion de un incidente para el CERT. Principio
+(Alonso): aRGus detecta, contiene y documenta con rigor; el seguimiento del origen lo hacen el CERT y las fuerzas de
+seguridad, que tienen la infraestructura y los permisos legales. aRGus no hace atribucion activa ni muestra mapas de
+coordenadas (la IP de origen es el ultimo salto: proxy, zombi de botnet o reflector, y en reflexion puede estar
+falsificada). Si hace falta contexto de red, el sistema autonomo (ASN), no coordenadas.
+Requisitos de partida:
+1. Plazos y formato de la norma: NIS2 pide alerta temprana (24 h), notificacion (72 h) e informe final (1 mes); el
+   comando genera cada pieza con lo que se sabe en ese momento. Indicadores en STIX 2.1 (importable en MISP). Canal y
+   detalles segun la transposicion espanola y la guia de INCIBE-CERT (verificar al disenar, no dar por sabidos).
+2. Cadena de custodia: el informe cita el sha256 de cada fichero de bronce y oro que usa y la etiqueta de aRGus que
+   produjo el analisis; las filas van selladas con HMAC.
+3. Proteccion de datos: las IPs de zombis y reflectores son de terceros inocentes (datos personales). Minimizacion:
+   solo lo necesario para actuar, solo por el canal oficial; enlaza con la pseudonimizacion del ADR-043.
+Depende de la consola de operacion (DEBT-ETCD-REMOTE-ADMIN-001) y de un grafo con las cuatro lentes en runtime.

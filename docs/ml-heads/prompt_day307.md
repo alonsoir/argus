@@ -9,8 +9,11 @@ Usa las sesiones anteriores relevantes (DAY305-DAY306) para crear el contexto. B
 - Rama `feat/ddos-v1-retire` (5 commits: `349a3a63`, `1195f91a`, `dfa5e0b1`, `76cecd17` y el de documentación).
   DEBT-DDOS-V1-RETIRE-001 cerrada en código: la cabeza DDoS v1 ya no existe en ml-detector, sniffer, proto (campos
   2, 3, 4, 6, 8, 9 y 10 reservados), configuración ni `ml-training`. Regresión ddos_v2 PASA en tres corridas.
-- Pendiente: EMECAS+++ `PROFILE=production` desde cero, PR contra main y, tras el merge, etiqueta
-  `pre-release-ddos-v1-retired-0.0.7`.
+- Hecho: EMECAS+++ `PROFILE=production` desde cero (rc=0, cinco E2E del lab en PASA; evidencia en
+  `logs/lab/emecas/emecas_20261024_day306.log`), PR #150 mergeada (`57d1d400`) y etiqueta
+  `pre-release-ddos-v1-retired-0.0.7` publicada.
+- Pregunta abierta: los "28/28 hitos" de DAY305 salian de un log en `logs/lab/emecas/` que la
+  invocacion de DAY306 (`make emecas+++` redirigido a /tmp) no escribio. Medir que lo genera.
 - Erratum conocido: el commit `dfa5e0b1` ("3/5") lleva también los 40 borrados; el `76cecd17` ("4/5") solo Makefile
   y `.gitignore`. Va explicado en la PR. La historia no se reescribe.
 
