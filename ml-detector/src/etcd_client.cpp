@@ -152,7 +152,14 @@ bool EtcdClient::registerService() {
     // Extraer capabilities para log
     std::string profile = full_config.value("profile", "unknown");
     bool level1_enabled = full_config["ml"]["level1"].value("enabled", false);
-    bool ddos_enabled = full_config["ml"]["level2"]["ddos"].value("enabled", false);
+    // [DDOS-V1-RETIRE-D306] ml.level2.ddos (v1) se retiro. Sobre un JSON no constante, operator[] con una clave ausente
+    // crea un null y value() lanzaria: se lee ml.ddos_v2 solo si existe. Es informativo; el estado efectivo
+    // de cada cabeza lo da la linea [HEADS].
+    const auto& ml_cfg = full_config["ml"];
+    const bool ddos_v2_enabled = ml_cfg.contains("ddos_v2") && ml_cfg["ddos_v2"].is_object() &&
+                                 ml_cfg["ddos_v2"].contains("enabled") &&
+                                 ml_cfg["ddos_v2"]["enabled"].is_boolean() &&
+                                 ml_cfg["ddos_v2"]["enabled"].get<bool>();
     bool ransomware_enabled = full_config["ml"]["level2"]["ransomware"].value("enabled", false);
     bool traffic_enabled = full_config["ml"]["level3"]["web"].value("enabled", false);
     bool internal_enabled = full_config["ml"]["level3"]["internal"].value("enabled", false);
@@ -160,7 +167,7 @@ bool EtcdClient::registerService() {
     std::cout << "📋 [ml-detector] Capabilities:" << std::endl;
     std::cout << "   - Profile: " << profile << std::endl;
     std::cout << "   - Level 1 (Attack): " << (level1_enabled ? "✅" : "❌") << std::endl;
-    std::cout << "   - Level 2 DDoS: " << (ddos_enabled ? "✅" : "❌") << std::endl;
+    std::cout << "   - DDoS v2: " << (ddos_v2_enabled ? "✅" : "❌") << std::endl;
     std::cout << "   - Level 2 Ransomware: " << (ransomware_enabled ? "✅" : "❌") << std::endl;
     std::cout << "   - Level 3 Traffic: " << (traffic_enabled ? "✅" : "❌") << std::endl;
     std::cout << "   - Level 3 Internal: " << (internal_enabled ? "✅" : "❌") << std::endl;

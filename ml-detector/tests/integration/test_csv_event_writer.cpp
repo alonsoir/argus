@@ -161,15 +161,8 @@ protected:
         // --- Section 3: Embedded detector features ---
         auto* ddos = nf->mutable_ddos_embedded();
         ddos->set_syn_ack_ratio(0.1f);
-        ddos->set_packet_symmetry(0.8f);
-        ddos->set_source_ip_dispersion(0.9f);
-        ddos->set_protocol_anomaly_score(0.2f);
         ddos->set_packet_size_entropy(0.5f);
-        ddos->set_traffic_amplification_factor(1.2f);
         ddos->set_flow_completion_rate(0.95f);
-        ddos->set_geographical_concentration(0.3f);
-        ddos->set_traffic_escalation_rate(0.4f);
-        ddos->set_resource_saturation_score(0.6f);
 
         auto* rsw = nf->mutable_ransomware_embedded();
         rsw->set_io_intensity(0.7f);
@@ -219,11 +212,13 @@ protected:
         // Level 2 — index 0 = DDoS, index 1 = Ransomware
         auto* l2d = ml->add_level2_specialized_predictions();
         l2d->set_model_name("RANDOM_FOREST_DDOS");
+        l2d->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_DDOS);  // [DDOS-V1-RETIRE-D306] el CSV elige por tipo
         l2d->set_prediction_class("DDoS");
         l2d->set_confidence_score(0.92);
 
         auto* l2r = ml->add_level2_specialized_predictions();
         l2r->set_model_name("RANDOM_FOREST_RANSOMWARE");
+        l2r->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_RANSOMWARE);  // [DDOS-V1-RETIRE-D306]
         l2r->set_prediction_class("BENIGN");
         l2r->set_confidence_score(0.10);
 

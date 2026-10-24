@@ -96,14 +96,15 @@ TEST_F(RingConsumerProtobufTest, ExtractsMLDefenderFeatures) {
     ASSERT_TRUE(net_features.has_ddos_embedded()) << "DDoS features must be populated";
     const auto& ddos = net_features.ddos_embedded();
 
+    // [DDOS-V1-RETIRE-D306] rasgos de flujo del contrato v2 que rellena el extractor
     EXPECT_GE(ddos.syn_ack_ratio(), 0.0f) << "SYN/ACK ratio populated";
-    EXPECT_GE(ddos.packet_symmetry(), 0.0f) << "Packet symmetry populated";
     EXPECT_GE(ddos.packet_size_entropy(), 0.0f) << "Packet size entropy populated";
-    EXPECT_GE(ddos.traffic_amplification_factor(), 0.0f) << "Amplification factor populated";
+    EXPECT_GT(ddos.flow_packet_count(), 0.0f) << "Flow packet count populated";
+    EXPECT_GT(ddos.mean_packet_size(), 0.0f) << "Mean packet size populated";
 
     std::cout << "✅ DDoS Features: "
               << "syn_ack=" << ddos.syn_ack_ratio() << " "
-              << "symmetry=" << ddos.packet_symmetry() << " "
+              << "pkts=" << ddos.flow_packet_count() << " "
               << "entropy=" << ddos.packet_size_entropy() << "\n";
 
     // Ransomware Features (10)
@@ -346,15 +347,15 @@ TEST_F(RingConsumerProtobufTest, ExtractsBidirectionalFeatures) {
 
     const auto& ddos = proto_event.network_features().ddos_embedded();
 
-    // Packet symmetry should reflect 10:5 ratio
-    EXPECT_GT(ddos.packet_symmetry(), 0.0f) << "Asymmetry detected";
-    EXPECT_LT(ddos.packet_symmetry(), 1.0f) << "Not completely one-directional";
+    // [DDOS-V1-RETIRE-D306] symmetry y amplification (v1) retirados: el 10:5 se comprueba en los campos de flujo
+    const auto& nfb = proto_event.network_features();
+    EXPECT_EQ(nfb.total_forward_packets(), 10u) << "Forward packets in the event";
+    EXPECT_EQ(nfb.total_backward_packets(), 5u) << "Backward packets in the event";
+    EXPECT_FLOAT_EQ(ddos.flow_packet_count(), 15.0f) << "v2 flow_packet_count = fwd + bwd";
 
-    // Amplification factor (backward/forward bytes)
-    EXPECT_GT(ddos.traffic_amplification_factor(), 0.0f) << "Amplification calculated";
-
-    std::cout << "✅ Bidirectional: symmetry=" << ddos.packet_symmetry()
-              << " amplification=" << ddos.traffic_amplification_factor() << "\n";
+    std::cout << "✅ Bidirectional: fwd=" << nfb.total_forward_packets()
+              << " bwd=" << nfb.total_backward_packets()
+              << " flow_packet_count=" << ddos.flow_packet_count() << "\n";
 }
 
 // ============================================================================

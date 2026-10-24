@@ -237,7 +237,11 @@ DetectorConfig ConfigLoader::load() {
         // Thresholds
         auto& thresh = ml["thresholds"];
         config.ml.thresholds.level1_attack = get_required<float>(thresh, "level1_attack", "ml.thresholds");
-        config.ml.thresholds.level2_ddos = get_required<float>(thresh, "level2_ddos", "ml.thresholds");
+        // [DDOS-V1-RETIRE-D306] la cabeza DDoS v1 se retiro: si el JSON aun trae su umbral, se avisa y se ignora
+        if (thresh.contains("level2_ddos")) {
+            std::cerr << "[CONFIG-OBSOLETO] ml.thresholds.level2_ddos: la cabeza DDoS v1 se retiro (DAY306); el "
+                         "campo se ignora. Quitelo del JSON. La cabeza DDoS vigente es ml.ddos_v2\n";
+        }
         config.ml.thresholds.level2_ransomware = get_required<float>(thresh, "level2_ransomware", "ml.thresholds");
         config.ml.thresholds.level3_anomaly = get_required<float>(thresh, "level3_anomaly", "ml.thresholds");
         config.ml.thresholds.level3_web = get_required<float>(thresh, "level3_web", "ml.thresholds");
@@ -282,16 +286,11 @@ DetectorConfig ConfigLoader::load() {
         // Level 2
         auto& l2 = ml["level2"];
         
-        auto& l2ddos = l2["ddos"];
-        config.ml.level2.ddos.enabled = read_head_enabled(l2ddos, "ml.level2.ddos");  // [HEADS-SWITCH-D305]
-        config.ml.level2.ddos.name = get_required<std::string>(l2ddos, "name", "ml.level2.ddos");
-        config.ml.level2.ddos.model_file = get_required<std::string>(l2ddos, "model_file", "ml.level2.ddos");
-        config.ml.level2.ddos.features_count = get_required<int>(l2ddos, "features_count", "ml.level2.ddos");
-        config.ml.level2.ddos.model_type = get_required<std::string>(l2ddos, "model_type", "ml.level2.ddos");
-        config.ml.level2.ddos.description = get_required<std::string>(l2ddos, "description", "ml.level2.ddos");
-        config.ml.level2.ddos.requires_scaling = get_required<bool>(l2ddos, "requires_scaling", "ml.level2.ddos");
-        config.ml.level2.ddos.timeout_ms = get_required<int>(l2ddos, "timeout_ms", "ml.level2.ddos");
-        config.ml.level2.ddos.scaler_file = "";
+        // [DDOS-V1-RETIRE-D306] la cabeza DDoS v1 se retiro: si el JSON aun trae su bloque, se avisa y se ignora
+        if (l2.contains("ddos")) {
+            std::cerr << "[CONFIG-OBSOLETO] ml.level2.ddos: la cabeza DDoS v1 se retiro (DAY306); el bloque se "
+                         "ignora. Quitelo del JSON. La cabeza DDoS vigente es ml.ddos_v2\n";
+        }
         
         auto& l2ransom = l2["ransomware"];
         config.ml.level2.ransomware.enabled = read_head_enabled(l2ransom, "ml.level2.ransomware");  // [HEADS-SWITCH-D305]
@@ -569,8 +568,8 @@ void ConfigLoader::print_config(const DetectorConfig& config, bool verbose) {
     std::cout << "   Base Dir: " << config.ml.models_base_dir << "\n";
     std::cout << "   Level 1: " << (config.ml.level1.enabled ? "✅" : "❌") 
               << " " << config.ml.level1.name << " (" << config.ml.level1.features_count << " features)\n";
-    std::cout << "   Level 2 DDoS: " << (config.ml.level2.ddos.enabled ? "✅" : "❌")
-              << " " << config.ml.level2.ddos.name << " (" << config.ml.level2.ddos.features_count << " features)\n";
+    std::cout << "   DDoS v2: " << (config.ml.ddos_v2.enabled ? "✅" : "❌")  // [DDOS-V1-RETIRE-D306]
+              << " (k_ratio=" << config.ml.ddos_v2.k_ratio << ")\n";
     std::cout << "   Level 2 Ransomware: " << (config.ml.level2.ransomware.enabled ? "✅" : "❌")
               << " " << config.ml.level2.ransomware.name << " (" << config.ml.level2.ransomware.features_count << " features)\n";
     std::cout << "   Level 3 Internal: " << (config.ml.level3.internal.enabled ? "✅" : "❌")
@@ -598,7 +597,6 @@ void ConfigLoader::print_config(const DetectorConfig& config, bool verbose) {
         
         std::cout << "ML Thresholds:\n";
         std::cout << "  Level 1 Attack: " << std::fixed << std::setprecision(2) << config.ml.thresholds.level1_attack << "\n";
-        std::cout << "  Level 2 DDoS: " << config.ml.thresholds.level2_ddos << "\n";
         std::cout << "  Level 2 Ransomware: " << config.ml.thresholds.level2_ransomware << "\n";
         std::cout << "  Level 3 Anomaly: " << config.ml.thresholds.level3_anomaly << "\n";
         std::cout << "  Level 3 Web (traffic): " << config.ml.thresholds.level3_web << "\n";

@@ -117,19 +117,12 @@ private:
     mutable bool window_cache_valid_ = false;
 
     // ========================================================================
-    // DDOS FEATURE EXTRACTORS (10 features)
+    // DDOS FEATURE EXTRACTORS — contrato v2 [DDOS-V1-RETIRE-D306]
     // ========================================================================
 
     float extract_ddos_syn_ack_ratio(const FlowStatistics& flow) const;
-    float extract_ddos_packet_symmetry(const FlowStatistics& flow) const;
-    float extract_ddos_source_ip_dispersion(const FlowStatistics& flow) const;
-    float extract_ddos_protocol_anomaly_score(const FlowStatistics& flow) const;
     float extract_ddos_packet_size_entropy(const FlowStatistics& flow) const;
-    float extract_ddos_traffic_amplification_factor(const FlowStatistics& flow) const;
     float extract_ddos_flow_completion_rate(const FlowStatistics& flow) const;
-    float extract_ddos_geographical_concentration(const FlowStatistics& flow) const;
-    float extract_ddos_traffic_escalation_rate(const FlowStatistics& flow) const;
-    float extract_ddos_resource_saturation_score(const FlowStatistics& flow) const;
 
     // ========================================================================
     // RANSOMWARE FEATURE EXTRACTORS (10 features)

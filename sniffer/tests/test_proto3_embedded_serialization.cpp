@@ -71,8 +71,8 @@ TEST(Proto3EmbeddedSerializationTest, SentinelValuesForceSubmessageSerialization
 
     // DAY 75 FIX: replicate exactly what send_ransomware_features() now does
     auto* ddos_emb = net_features->mutable_ddos_embedded();
-    ddos_emb->set_source_ip_dispersion(0.5f);
-    ddos_emb->set_geographical_concentration(0.5f);
+    ddos_emb->set_mean_packet_size(0.5f);  // [DDOS-V1-RETIRE-D306] campos v2 (los de la v1 estan reservados)
+    ddos_emb->set_victim_rate_ratio(0.5f);
     ddos_emb->set_flow_completion_rate(0.5f);
 
     auto* traffic_emb = net_features->mutable_traffic_classification();
@@ -95,14 +95,14 @@ TEST(Proto3EmbeddedSerializationTest, SentinelValuesForceSubmessageSerialization
     EXPECT_TRUE(nf.has_traffic_classification());
     EXPECT_TRUE(nf.has_internal_anomaly());
 
-    EXPECT_FLOAT_EQ(nf.ddos_embedded().source_ip_dispersion(), 0.5f);
-    EXPECT_FLOAT_EQ(nf.ddos_embedded().geographical_concentration(), 0.5f);
+    EXPECT_FLOAT_EQ(nf.ddos_embedded().mean_packet_size(), 0.5f);
+    EXPECT_FLOAT_EQ(nf.ddos_embedded().victim_rate_ratio(), 0.5f);
     EXPECT_FLOAT_EQ(nf.ddos_embedded().flow_completion_rate(), 0.5f);
     EXPECT_FLOAT_EQ(nf.traffic_classification().connection_rate(), 0.5f);
     EXPECT_FLOAT_EQ(nf.internal_anomaly().internal_connection_rate(), 0.5f);
 
-    EXPECT_GE(nf.ddos_embedded().source_ip_dispersion(), 0.0f);
-    EXPECT_LE(nf.ddos_embedded().source_ip_dispersion(), 1.0f);
+    EXPECT_GE(nf.ddos_embedded().victim_rate_ratio(), 0.0f);
+    EXPECT_LE(nf.ddos_embedded().victim_rate_ratio(), 1.0f);
 
     std::cout << "✅ Fix validated: sentinel 0.5f forces proto3 serialization\n";
     std::cout << "   has_ddos_embedded: " << nf.has_ddos_embedded() << "\n";
@@ -119,8 +119,7 @@ TEST(Proto3EmbeddedSerializationTest, NonZeroValuesFromRealFlowAlwaysSerialize) 
 
     auto* ddos = net_features->mutable_ddos_embedded();
     ddos->set_syn_ack_ratio(1.5f);
-    ddos->set_packet_symmetry(0.33f);
-    ddos->set_source_ip_dispersion(0.5f);
+    ddos->set_mean_packet_size(512.0f);  // [DDOS-V1-RETIRE-D306]
     ddos->set_flow_completion_rate(1.0f);
 
     std::string serialized;

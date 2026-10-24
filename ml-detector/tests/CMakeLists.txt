@@ -113,7 +113,6 @@ endif()
 if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_detectors.cpp")
     add_executable(test_detectors
             unit/test_detectors.cpp
-            ../src/ddos_detector.cpp
             ../src/traffic_detector.cpp
             ../src/internal_detector.cpp
     )
@@ -293,7 +292,7 @@ message(STATUS "    test_classifier             (stub)")
 message(STATUS "    test_feature_extractor       (stub)")
 message(STATUS "    test_model_loader            (stub)")
 message(STATUS "    test_ransomware_detector_unit")
-message(STATUS "    test_detectors               (standalone + ctest, guardián contrato 9-feat)")
+message(STATUS "    test_detectors               (standalone + ctest: traffic e internal)")
 message(STATUS "  Integration:")
 message(STATUS "    test_ransomware_detector_integration")
 message(STATUS "    test_pipeline                (stub)")

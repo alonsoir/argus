@@ -231,7 +231,6 @@ set_source_files_properties(${PROTO_SOURCES} PROPERTIES
 )
 # Suprimir warnings en source files que incluyen árboles XGBoost generados
 set_source_files_properties(
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/ddos_detector.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/traffic_detector.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/internal_detector.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/ransomware_detector.cpp
@@ -254,7 +253,6 @@ set(SOURCES
         src/logger.cpp
         src/stats_collector.cpp
         src/ransomware_detector.cpp
-        src/ddos_detector.cpp
         src/traffic_detector.cpp
         src/internal_detector.cpp
         src/etcd_client.cpp

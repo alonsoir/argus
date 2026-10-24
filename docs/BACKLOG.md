@@ -7795,3 +7795,47 @@ scripts/timebase/__pycache__/ (sin trackear; anadir a .gitignore).
 Antes de poner un interruptor, medir QUE hace de verdad lo que se va a apagar: el sniffer ejecutaba cabezas que
 nadie sabia que corrian alli (y tiraba el resultado). Y un interruptor que solo cambia un mensaje es peor que no
 tenerlo: fast_detector.enabled y "Ransomware Detection: DISABLED" decian algo que el codigo no hacia.
+
+
+---
+
+## Cierre DAY306 (24-oct-2026) — rama feat/ddos-v1-retire
+
+Documento: `docs/ml-heads/day306_retirar_ddos_v1.md`. Marca en el código: `[DDOS-V1-RETIRE-D306]`.
+
+### DEBT-DDOS-V1-RETIRE-001 — CERRADA DAY306 (pendiente EMECAS+++ y merge)
+Retirada la cabeza DDoS v1 entera. ml-detector: DDoSDetector, ddos_trees_inline.hpp, extract_level2_ddos_features,
+su paso en zmq_handler, ml.level2.ddos y thresholds.level2_ddos (con [CONFIG-OBSOLETO] si un JSON aun los trae).
+Proto: campos 2, 3, 4, 6, 8, 9 y 10 de DDoSFeatures reservados (numeros y nombres). Sniffer: fuera los siete
+extractores v1 y sus centinelas. CSV: columnas 77-79, 81 y 83-85 vacias. sniffer.json: fuera fast_detector.ddos
+(PLANNED, nadie lo leia). Borrados 40 ficheros: manivela v1, XGBoost DDoS, metadatos level2_ddos, linea ddos_head_A
+y parcheadores de la raiz que solo les servian. Regresion ddos_v2 PASA en tres corridas (FIN 10765/10778/10753,
+alertas 5383/5388/5377, identidad exacta), dentro del rango historico.
+Arreglos de paso: etcd_client.cpp ya no lanza sin ml.level2.ddos; el CSV elige la prediccion level2 por model_type
+(antes por posicion, y con ddos_v2 en la 0 la v1 caia en la columna de ransomware).
+Erratum: el commit dfa5e0b1 (mensaje "3/5", sniffer.json) lleva tambien los 40 borrados; el 76cecd17 ("4/5") solo
+lleva Makefile y .gitignore. No se reescribe la historia.
+
+### DEBT-PROTO-CONTRACTS-SPLIT-001 — ABIERTA (decision de Alonso DAY306), rama propia mas adelante
+Contratos protobuf propios entre sniffer y ml-detector y entre ml-detector y firewall, para repartir la carga de
+forma optimizada. El contrato actual (NetworkSecurityEvent unico) quedara deprecado. Los campos reservados en DAY306
+son el primer paso.
+
+### DEBT-DDOS-V2-PINNED-ENV-001 — ABIERTA
+ml-training/requirements-ddos-pinned.txt lo instala el Vagrantfile (linea 417), pero su comentario documenta el
+entorno de la manivela v1 (sha 56f0c5ae, DAY256). Medir con que entorno se entrena la v2
+(export_ddos_v2_fact_rf.py) y reescribir el comentario o el pin.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY306
+tools/generate_synthetic_events.cpp y los targets day38-step2/day38-step3 (escriben a logs/rag/, RAG retirado
+DAY304); scripts de analisis que parsean formatos de log anteriores a DAY306 (scripts/d279_*,
+scripts/d282_head_scores.sh, join_flood_escalation*.py); parcheadores historicos de la raiz; run_crank_sandbox.sh
+(sin trackear).
+
+### DEBT-DOCS-CSV-SCHEMA-V1-001 — ABIERTA (va con DEBT-RAG-LOGGER-BRANCH-001)
+ml-detector/docs/feature_schema.md y los comentarios de csv_event_writer.hpp describen las columnas 76-85 de la v1;
+contract_validator.cpp resume "40 embedded (4x10)". Actualizar cuando la rama del RAG Logger decida el formato del CSV.
+
+### Leccion DAY306
+Una regresion de replay se predice como rango observado, no como identidad: el mismo E2E varia +-25 eventos entre
+corridas. Y git rm mete los borrados en el indice al momento: va justo antes del commit que debe llevarlos.

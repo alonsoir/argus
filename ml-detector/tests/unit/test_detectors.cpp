@@ -1,7 +1,7 @@
 // Unit Test Example for ML Defender Detectors
-// Compile: g++ -std=c++20 -O3 test_detectors.cpp ddos_detector.cpp traffic_detector.cpp internal_detector.cpp -o test_detectors
+// Compile: g++ -std=c++20 -O3 test_detectors.cpp traffic_detector.cpp internal_detector.cpp -o test_detectors
+// [DDOS-V1-RETIRE-D306] sin la cabeza DDoS v1 (retirada): quedan traffic e internal.
 
-#include "ml_defender/ddos_detector.hpp"
 #include "ml_defender/traffic_detector.hpp"
 #include "ml_defender/internal_detector.hpp"
 #include <iostream>
@@ -41,71 +41,6 @@ void print_prediction(const char* detector_name, int class_id,
               << " Class: " << class_id << " (" << class_name << ") "
               << "Prob: " << std::fixed << std::setprecision(4) << probability
               << " Confidence: " << confidence << "\n";
-}
-
-// ============================================================================
-// TEST 1: DDOS DETECTOR
-// ============================================================================
-
-void test_ddos_detector() {
-    std::cout << "\n" << GREEN << "=== TEST 1: DDoS Detector ===" << RESET << "\n";
-
-    DDoSDetector detector;
-
-    // Test metadata
-    assert(detector.num_trees() == 100);
-    assert(detector.num_features() == 9);
-    std::cout << "✓ Metadata: " << detector.num_trees() << " trees, "
-              << detector.num_features() << " features\n";
-
-    // Test case 1: Normal traffic (low anomaly scores)
-    DDoSDetector::Features normal_features{
-        0.01f,  // syn_ack_ratio
-        0.95f,  // packet_symmetry
-        0.80f,  // source_ip_dispersion
-        0.05f,  // protocol_anomaly_score
-        0.40f,  // packet_size_entropy
-        0.10f,  // traffic_amplification_factor
-        0.90f,  // flow_completion_rate
-        0.02f,  // traffic_escalation_rate
-        0.10f   // resource_saturation_score
-    };
-
-    auto normal_pred = detector.predict(normal_features);
-    print_prediction("DDoS", normal_pred.class_id,
-                     normal_pred.is_normal() ? "NORMAL" : "DDOS",
-                     normal_pred.probability, normal_pred.confidence_level());
-
-    // Test case 2: DDoS attack (high anomaly scores)
-    DDoSDetector::Features ddos_features{
-        0.85f,  // syn_ack_ratio (SYN flood)
-        0.15f,  // packet_symmetry (asymmetric)
-        0.95f,  // source_ip_dispersion (many sources)
-        0.90f,  // protocol_anomaly_score
-        0.85f,  // packet_size_entropy
-        0.95f,  // traffic_amplification_factor
-        0.20f,  // flow_completion_rate (incomplete flows)
-        0.95f,  // traffic_escalation_rate (sudden spike)
-        0.90f   // resource_saturation_score
-    };
-
-    auto ddos_pred = detector.predict(ddos_features);
-    print_prediction("DDoS", ddos_pred.class_id,
-                     ddos_pred.is_ddos() ? "DDOS" : "NORMAL",
-                     ddos_pred.probability, ddos_pred.confidence_level());
-
-    // Benchmark latency
-    auto latency = benchmark_latency_us([&]() {
-        detector.predict(normal_features);
-    });
-
-    std::cout << "⏱  Latency: " << std::fixed << std::setprecision(2)
-              << latency << " μs ";
-    if (latency < 100.0) {
-        std::cout << GREEN << "✓ (<100μs)" << RESET << "\n";
-    } else {
-        std::cout << RED << "✗ (>100μs)" << RESET << "\n";
-    }
 }
 
 // ============================================================================
@@ -243,44 +178,6 @@ void test_internal_detector() {
 }
 
 // ============================================================================
-// TEST 4: BATCH PREDICTION
-// ============================================================================
-
-void test_batch_prediction() {
-    std::cout << "\n" << GREEN << "=== TEST 4: Batch Prediction ===" << RESET << "\n";
-
-    DDoSDetector detector;
-
-    // Create batch of 1000 samples
-    std::vector<DDoSDetector::Features> batch(1000);
-    for (auto& features : batch) {
-        features = {
-            0.5f, 0.5f, 0.5f, 0.5f, 0.5f,
-            0.5f, 0.5f, 0.5f, 0.5f
-        };
-    }
-
-    // Benchmark batch prediction
-    auto start = high_resolution_clock::now();
-    auto predictions = detector.predict_batch(batch);
-    auto end = high_resolution_clock::now();
-
-    auto duration_ms = duration_cast<milliseconds>(end - start).count();
-    double throughput = (batch.size() * 1000.0) / duration_ms;
-
-    std::cout << "✓ Batch size: " << batch.size() << " samples\n";
-    std::cout << "⏱  Duration: " << duration_ms << " ms\n";
-    std::cout << "🚀 Throughput: " << std::fixed << std::setprecision(0)
-              << throughput << " predictions/sec ";
-
-    if (throughput > 10000) {
-        std::cout << GREEN << "✓ (>10k/sec)" << RESET << "\n";
-    } else {
-        std::cout << YELLOW << "⚠ (<10k/sec)" << RESET << "\n";
-    }
-}
-
-// ============================================================================
 // MAIN
 // ============================================================================
 
@@ -293,10 +190,8 @@ int main() {
 )" << RESET << "\n";
 
     try {
-        test_ddos_detector();
         test_traffic_detector();
         test_internal_detector();
-        test_batch_prediction();
 
         std::cout << "\n" << GREEN << "✓ All tests passed!" << RESET << "\n\n";
         return 0;

@@ -396,15 +396,17 @@ std::string CsvEventWriter::build_section3(
         event.network_features().has_ddos_embedded()) {
         const auto& d = event.network_features().ddos_embedded();
         sep() << fmt_float(d.syn_ack_ratio());              // 76
-        sep() << fmt_float(d.packet_symmetry());            // 77
-        sep() << fmt_float(d.source_ip_dispersion());       // 78
-        sep() << fmt_float(d.protocol_anomaly_score());     // 79
+        // [DDOS-V1-RETIRE-D306] 77, 78, 79, 81, 83, 84 y 85 eran rasgos de la v1 (reservados en el proto): se quedan
+        // vacios para no mover el resto de columnas hasta la rama del RAG Logger.
+        sep();                                              // 77 (v1 retirada)
+        sep();                                              // 78 (v1 retirada)
+        sep();                                              // 79 (v1 retirada)
         sep() << fmt_float(d.packet_size_entropy());        // 80
-        sep() << fmt_float(d.traffic_amplification_factor()); // 81
+        sep();                                              // 81 (v1 retirada)
         sep() << fmt_float(d.flow_completion_rate());       // 82
-        sep() << fmt_float(d.geographical_concentration()); // 83
-        sep() << fmt_float(d.traffic_escalation_rate());    // 84
-        sep() << fmt_float(d.resource_saturation_score());  // 85
+        sep();                                              // 83 (v1 retirada)
+        sep();                                              // 84 (v1 retirada)
+        sep();                                              // 85 (v1 retirada)
     } else {
         for (int i = 0; i < 10; ++i) sep() << '0';
     }
@@ -487,15 +489,16 @@ std::string CsvEventWriter::build_section4(
             l1_conf = ml.level1_general_detection().confidence_score();
         }
 
-        // Level 2 — specialized predictions (positional: 0=DDoS, 1=Ransomware)
-        // See FEATURE_SCHEMA.md note: positional indexing may change in v1.1
-        if (ml.level2_specialized_predictions_size() > 0) {
-            l2d_pred = ml.level2_specialized_predictions(0).prediction_class();
-            l2d_conf = ml.level2_specialized_predictions(0).confidence_score();
-        }
-        if (ml.level2_specialized_predictions_size() > 1) {
-            l2r_pred = ml.level2_specialized_predictions(1).prediction_class();
-            l2r_conf = ml.level2_specialized_predictions(1).confidence_score();
+        // [DDOS-V1-RETIRE-D306] Level 2 por tipo de modelo, no por posicion: ddos_v2 ocupa la posicion 0 y la v1 se
+        // retiro, asi que la posicion ya no dice que cabeza es. RANDOM_FOREST_DDOS = ddos_v2.
+        for (const auto& pr : ml.level2_specialized_predictions()) {
+            if (pr.model_type() == protobuf::ModelPrediction::RANDOM_FOREST_DDOS) {
+                l2d_pred = pr.prediction_class();
+                l2d_conf = pr.confidence_score();
+            } else if (pr.model_type() == protobuf::ModelPrediction::RANDOM_FOREST_RANSOMWARE) {
+                l2r_pred = pr.prediction_class();
+                l2r_conf = pr.confidence_score();
+            }
         }
 
         // Level 3 — specialized predictions (positional: 0=Traffic, 1=Internal)

@@ -15,7 +15,6 @@
 #include "ml_defender/ransomware_detector.hpp"
 #include "config_loader.hpp"
 #include "onnx_model.hpp"
-#include "ml_defender/ddos_detector.hpp"
 #include "ml_defender/traffic_detector.hpp"
 #include "ml_defender/internal_detector.hpp"
 
@@ -46,7 +45,6 @@ public:
         uint64_t events_sent = 0;
         uint64_t attacks_detected = 0;
         uint64_t send_failures = 0;          // [SUMMARY-D285] descartes hacia el firewall
-        uint64_t detections_ddos = 0;        // [SUMMARY-D285]
         uint64_t detections_ransomware = 0;  // [SUMMARY-D285]
         uint64_t detections_internal = 0;    // [SUMMARY-D285]
         uint64_t ddos_v2_presion = 0;        // [DDOS-V2-D293] eventos que pasan la etapa 1
@@ -62,7 +60,6 @@ public:
         const DetectorConfig& config,
         std::shared_ptr<ONNXModel> level1_model,
         std::shared_ptr<FeatureExtractor> extractor,
-        std::shared_ptr<ml_defender::DDoSDetector> ddos_detector,
         std::shared_ptr<ml_defender::RansomwareDetector> ransomware_detector,
         std::shared_ptr<ml_defender::TrafficDetector> traffic_detector,
         std::shared_ptr<ml_defender::InternalDetector> internal_detector,
@@ -104,7 +101,6 @@ private:
     // Config & Models
     DetectorConfig config_;
     std::shared_ptr<ONNXModel> level1_model_;
-    std::shared_ptr<ml_defender::DDoSDetector> ddos_detector_;
     std::shared_ptr<ml_defender::RansomwareDetector> ransomware_detector_;
     std::shared_ptr<ml_defender::TrafficDetector> traffic_detector_;
     std::shared_ptr<ml_defender::InternalDetector> internal_detector_;

@@ -138,7 +138,6 @@ struct DetectorConfig {
         
         struct {
             float level1_attack{};
-            float level2_ddos{};
             float level2_ransomware{};
             float level3_anomaly{};
             float level3_web{};
@@ -166,7 +165,6 @@ struct DetectorConfig {
         ModelConfig level1;
         
         struct {
-            ModelConfig ddos;
             ModelConfig ransomware;
         } level2;
         

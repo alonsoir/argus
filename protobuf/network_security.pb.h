@@ -703,15 +703,8 @@ class DDoSFeatures final :
 
   enum : int {
     kSynAckRatioFieldNumber = 1,
-    kPacketSymmetryFieldNumber = 2,
-    kSourceIpDispersionFieldNumber = 3,
-    kProtocolAnomalyScoreFieldNumber = 4,
     kPacketSizeEntropyFieldNumber = 5,
-    kTrafficAmplificationFactorFieldNumber = 6,
     kFlowCompletionRateFieldNumber = 7,
-    kGeographicalConcentrationFieldNumber = 8,
-    kTrafficEscalationRateFieldNumber = 9,
-    kResourceSaturationScoreFieldNumber = 10,
     kMeanPacketSizeFieldNumber = 11,
     kReflectionSignatureFieldNumber = 12,
     kFlowPacketCountFieldNumber = 13,
@@ -728,33 +721,6 @@ class DDoSFeatures final :
   void _internal_set_syn_ack_ratio(float value);
   public:
 
-  // float packet_symmetry = 2;
-  void clear_packet_symmetry();
-  float packet_symmetry() const;
-  void set_packet_symmetry(float value);
-  private:
-  float _internal_packet_symmetry() const;
-  void _internal_set_packet_symmetry(float value);
-  public:
-
-  // float source_ip_dispersion = 3;
-  void clear_source_ip_dispersion();
-  float source_ip_dispersion() const;
-  void set_source_ip_dispersion(float value);
-  private:
-  float _internal_source_ip_dispersion() const;
-  void _internal_set_source_ip_dispersion(float value);
-  public:
-
-  // float protocol_anomaly_score = 4;
-  void clear_protocol_anomaly_score();
-  float protocol_anomaly_score() const;
-  void set_protocol_anomaly_score(float value);
-  private:
-  float _internal_protocol_anomaly_score() const;
-  void _internal_set_protocol_anomaly_score(float value);
-  public:
-
   // float packet_size_entropy = 5;
   void clear_packet_size_entropy();
   float packet_size_entropy() const;
@@ -764,15 +730,6 @@ class DDoSFeatures final :
   void _internal_set_packet_size_entropy(float value);
   public:
 
-  // float traffic_amplification_factor = 6;
-  void clear_traffic_amplification_factor();
-  float traffic_amplification_factor() const;
-  void set_traffic_amplification_factor(float value);
-  private:
-  float _internal_traffic_amplification_factor() const;
-  void _internal_set_traffic_amplification_factor(float value);
-  public:
-
   // float flow_completion_rate = 7;
   void clear_flow_completion_rate();
   float flow_completion_rate() const;
@@ -780,33 +737,6 @@ class DDoSFeatures final :
   private:
   float _internal_flow_completion_rate() const;
   void _internal_set_flow_completion_rate(float value);
-  public:
-
-  // float geographical_concentration = 8;
-  void clear_geographical_concentration();
-  float geographical_concentration() const;
-  void set_geographical_concentration(float value);
-  private:
-  float _internal_geographical_concentration() const;
-  void _internal_set_geographical_concentration(float value);
-  public:
-
-  // float traffic_escalation_rate = 9;
-  void clear_traffic_escalation_rate();
-  float traffic_escalation_rate() const;
-  void set_traffic_escalation_rate(float value);
-  private:
-  float _internal_traffic_escalation_rate() const;
-  void _internal_set_traffic_escalation_rate(float value);
-  public:
-
-  // float resource_saturation_score = 10;
-  void clear_resource_saturation_score();
-  float resource_saturation_score() const;
-  void set_resource_saturation_score(float value);
-  private:
-  float _internal_resource_saturation_score() const;
-  void _internal_set_resource_saturation_score(float value);
   public:
 
   // float mean_packet_size = 11;
@@ -872,15 +802,8 @@ class DDoSFeatures final :
   typedef void DestructorSkippable_;
   struct Impl_ {
     float syn_ack_ratio_;
-    float packet_symmetry_;
-    float source_ip_dispersion_;
-    float protocol_anomaly_score_;
     float packet_size_entropy_;
-    float traffic_amplification_factor_;
     float flow_completion_rate_;
-    float geographical_concentration_;
-    float traffic_escalation_rate_;
-    float resource_saturation_score_;
     float mean_packet_size_;
     float reflection_signature_;
     float flow_packet_count_;
@@ -10817,66 +10740,6 @@ inline void DDoSFeatures::set_syn_ack_ratio(float value) {
   // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.syn_ack_ratio)
 }
 
-// float packet_symmetry = 2;
-inline void DDoSFeatures::clear_packet_symmetry() {
-  _impl_.packet_symmetry_ = 0;
-}
-inline float DDoSFeatures::_internal_packet_symmetry() const {
-  return _impl_.packet_symmetry_;
-}
-inline float DDoSFeatures::packet_symmetry() const {
-  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.packet_symmetry)
-  return _internal_packet_symmetry();
-}
-inline void DDoSFeatures::_internal_set_packet_symmetry(float value) {
-  
-  _impl_.packet_symmetry_ = value;
-}
-inline void DDoSFeatures::set_packet_symmetry(float value) {
-  _internal_set_packet_symmetry(value);
-  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.packet_symmetry)
-}
-
-// float source_ip_dispersion = 3;
-inline void DDoSFeatures::clear_source_ip_dispersion() {
-  _impl_.source_ip_dispersion_ = 0;
-}
-inline float DDoSFeatures::_internal_source_ip_dispersion() const {
-  return _impl_.source_ip_dispersion_;
-}
-inline float DDoSFeatures::source_ip_dispersion() const {
-  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.source_ip_dispersion)
-  return _internal_source_ip_dispersion();
-}
-inline void DDoSFeatures::_internal_set_source_ip_dispersion(float value) {
-  
-  _impl_.source_ip_dispersion_ = value;
-}
-inline void DDoSFeatures::set_source_ip_dispersion(float value) {
-  _internal_set_source_ip_dispersion(value);
-  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.source_ip_dispersion)
-}
-
-// float protocol_anomaly_score = 4;
-inline void DDoSFeatures::clear_protocol_anomaly_score() {
-  _impl_.protocol_anomaly_score_ = 0;
-}
-inline float DDoSFeatures::_internal_protocol_anomaly_score() const {
-  return _impl_.protocol_anomaly_score_;
-}
-inline float DDoSFeatures::protocol_anomaly_score() const {
-  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.protocol_anomaly_score)
-  return _internal_protocol_anomaly_score();
-}
-inline void DDoSFeatures::_internal_set_protocol_anomaly_score(float value) {
-  
-  _impl_.protocol_anomaly_score_ = value;
-}
-inline void DDoSFeatures::set_protocol_anomaly_score(float value) {
-  _internal_set_protocol_anomaly_score(value);
-  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.protocol_anomaly_score)
-}
-
 // float packet_size_entropy = 5;
 inline void DDoSFeatures::clear_packet_size_entropy() {
   _impl_.packet_size_entropy_ = 0;
@@ -10897,26 +10760,6 @@ inline void DDoSFeatures::set_packet_size_entropy(float value) {
   // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.packet_size_entropy)
 }
 
-// float traffic_amplification_factor = 6;
-inline void DDoSFeatures::clear_traffic_amplification_factor() {
-  _impl_.traffic_amplification_factor_ = 0;
-}
-inline float DDoSFeatures::_internal_traffic_amplification_factor() const {
-  return _impl_.traffic_amplification_factor_;
-}
-inline float DDoSFeatures::traffic_amplification_factor() const {
-  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.traffic_amplification_factor)
-  return _internal_traffic_amplification_factor();
-}
-inline void DDoSFeatures::_internal_set_traffic_amplification_factor(float value) {
-  
-  _impl_.traffic_amplification_factor_ = value;
-}
-inline void DDoSFeatures::set_traffic_amplification_factor(float value) {
-  _internal_set_traffic_amplification_factor(value);
-  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.traffic_amplification_factor)
-}
-
 // float flow_completion_rate = 7;
 inline void DDoSFeatures::clear_flow_completion_rate() {
   _impl_.flow_completion_rate_ = 0;
@@ -10935,66 +10778,6 @@ inline void DDoSFeatures::_internal_set_flow_completion_rate(float value) {
 inline void DDoSFeatures::set_flow_completion_rate(float value) {
   _internal_set_flow_completion_rate(value);
   // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.flow_completion_rate)
-}
-
-// float geographical_concentration = 8;
-inline void DDoSFeatures::clear_geographical_concentration() {
-  _impl_.geographical_concentration_ = 0;
-}
-inline float DDoSFeatures::_internal_geographical_concentration() const {
-  return _impl_.geographical_concentration_;
-}
-inline float DDoSFeatures::geographical_concentration() const {
-  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.geographical_concentration)
-  return _internal_geographical_concentration();
-}
-inline void DDoSFeatures::_internal_set_geographical_concentration(float value) {
-  
-  _impl_.geographical_concentration_ = value;
-}
-inline void DDoSFeatures::set_geographical_concentration(float value) {
-  _internal_set_geographical_concentration(value);
-  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.geographical_concentration)
-}
-
-// float traffic_escalation_rate = 9;
-inline void DDoSFeatures::clear_traffic_escalation_rate() {
-  _impl_.traffic_escalation_rate_ = 0;
-}
-inline float DDoSFeatures::_internal_traffic_escalation_rate() const {
-  return _impl_.traffic_escalation_rate_;
-}
-inline float DDoSFeatures::traffic_escalation_rate() const {
-  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.traffic_escalation_rate)
-  return _internal_traffic_escalation_rate();
-}
-inline void DDoSFeatures::_internal_set_traffic_escalation_rate(float value) {
-  
-  _impl_.traffic_escalation_rate_ = value;
-}
-inline void DDoSFeatures::set_traffic_escalation_rate(float value) {
-  _internal_set_traffic_escalation_rate(value);
-  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.traffic_escalation_rate)
-}
-
-// float resource_saturation_score = 10;
-inline void DDoSFeatures::clear_resource_saturation_score() {
-  _impl_.resource_saturation_score_ = 0;
-}
-inline float DDoSFeatures::_internal_resource_saturation_score() const {
-  return _impl_.resource_saturation_score_;
-}
-inline float DDoSFeatures::resource_saturation_score() const {
-  // @@protoc_insertion_point(field_get:protobuf.DDoSFeatures.resource_saturation_score)
-  return _internal_resource_saturation_score();
-}
-inline void DDoSFeatures::_internal_set_resource_saturation_score(float value) {
-  
-  _impl_.resource_saturation_score_ = value;
-}
-inline void DDoSFeatures::set_resource_saturation_score(float value) {
-  _internal_set_resource_saturation_score(value);
-  // @@protoc_insertion_point(field_set:protobuf.DDoSFeatures.resource_saturation_score)
 }
 
 // float mean_packet_size = 11;

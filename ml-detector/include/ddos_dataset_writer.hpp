@@ -42,8 +42,9 @@ public:
     DdosDatasetWriter(const DdosDatasetWriter&) = delete;
     DdosDatasetWriter& operator=(const DdosDatasetWriter&) = delete;
 
-    // old_class < 0 => la cabeza vieja no corrio en este evento: prob y clase = -1
-    void write(const protobuf::NetworkSecurityEvent& ev, int old_class, double old_prob) {
+    // [DDOS-V1-RETIRE-D306] old_ddos_prob/old_ddos_class: la cabeza v1 se retiro; las columnas se conservan con -1
+    // (= no evaluada) para no romper el formato del dataset.
+    void write(const protobuf::NetworkSecurityEvent& ev) {
         const auto& nf = ev.network_features();
         const auto& d  = nf.ddos_embedded();
         const auto& ts = ev.event_timestamp();
@@ -60,7 +61,7 @@ public:
             static_cast<double>(d.reflection_signature()), static_cast<double>(d.packet_size_entropy()),
             static_cast<double>(d.flow_packet_count()), static_cast<double>(d.flow_completion_rate()),
             static_cast<double>(d.victim_rate_ratio()), static_cast<double>(d.victim_pps()),
-            old_class < 0 ? -1.0 : old_prob, old_class < 0 ? -1 : old_class);
+            -1.0, -1);
         std::lock_guard<std::mutex> lock(mutex_);
         if (n <= 0 || n >= static_cast<int>(sizeof(buf))) { ++dropped_; return; }
         out_.write(buf, n);
