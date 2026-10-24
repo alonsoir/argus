@@ -17,7 +17,7 @@
 namespace sniffer {
 
 // ============================================================================
-// DDOS FEATURES (10 features)
+// DDOS FEATURES — contrato v2 (cabeza ddos_v2) [DDOS-V1-RETIRE-D306]
 // ============================================================================
 
 void MLDefenderExtractor::extract_ddos_features(
@@ -25,15 +25,8 @@ void MLDefenderExtractor::extract_ddos_features(
     ::protobuf::DDoSFeatures* ddos) const {
 
     ddos->set_syn_ack_ratio(extract_ddos_syn_ack_ratio(flow));
-    ddos->set_packet_symmetry(extract_ddos_packet_symmetry(flow));
-    ddos->set_source_ip_dispersion(extract_ddos_source_ip_dispersion(flow));
-    ddos->set_protocol_anomaly_score(extract_ddos_protocol_anomaly_score(flow));
     ddos->set_packet_size_entropy(extract_ddos_packet_size_entropy(flow));
-    ddos->set_traffic_amplification_factor(extract_ddos_traffic_amplification_factor(flow));
     ddos->set_flow_completion_rate(extract_ddos_flow_completion_rate(flow));
-    ddos->set_geographical_concentration(extract_ddos_geographical_concentration(flow));
-    ddos->set_traffic_escalation_rate(extract_ddos_traffic_escalation_rate(flow));
-    ddos->set_resource_saturation_score(extract_ddos_resource_saturation_score(flow));
     // [DDOS-V2-D286] contrato v2 (8 rasgos, solo trafico entrante)
     ddos->set_mean_packet_size(calculate_mean(flow.all_lengths));
     ddos->set_flow_packet_count(static_cast<float>(flow.get_total_packets()));
@@ -52,78 +45,10 @@ float MLDefenderExtractor::extract_ddos_syn_ack_ratio(const FlowStatistics& flow
     return std::min(ratio, 10.0f);
 }
 
-float MLDefenderExtractor::extract_ddos_packet_symmetry(const FlowStatistics& flow) const {
-    // Packet symmetry: DDoS often shows highly asymmetric patterns
-    // 0.0 = perfect symmetry, 1.0 = completely one-directional
-    uint64_t total = flow.spkts + flow.dpkts;
-    if (total == 0) return 0.0f;
-
-    int64_t diff = static_cast<int64_t>(flow.spkts) - static_cast<int64_t>(flow.dpkts);
-    float asymmetry = static_cast<float>(std::abs(diff)) / static_cast<float>(total);
-
-    return asymmetry;
-}
-
-float MLDefenderExtractor::extract_ddos_source_ip_dispersion(const FlowStatistics& /*flow*/) const {
-    if (!aggregator_) return MISSING_FEATURE_SENTINEL;
-    auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
-    if (stats.event_count == 0) return 0.0f;
-    return std::min(
-        std::log2f(static_cast<float>(stats.unique_ips_count) + 1.0f) /
-        std::log2f(static_cast<float>(stats.event_count) + 2.0f),
-        1.0f);
-}
-
-float MLDefenderExtractor::extract_ddos_protocol_anomaly_score(const FlowStatistics& flow) const {
-    // Protocol anomaly: Unusual flag combinations or patterns
-    // 0.0 = normal, 1.0 = highly anomalous
-
-    uint64_t total_packets = flow.spkts + flow.dpkts;
-    if (total_packets == 0) return 0.0f;
-
-    float anomaly_score = 0.0f;
-
-    // Check 1: High SYN without corresponding ACK (incomplete handshakes)
-    if (flow.syn_count > flow.ack_count * 2) {
-        anomaly_score += 0.3f;
-    }
-
-    // Check 2: Excessive RST (connection refused/reset attacks)
-    float rst_ratio = safe_divide(static_cast<float>(flow.rst_count),
-                                   static_cast<float>(total_packets));
-    if (rst_ratio > 0.3f) {
-        anomaly_score += 0.3f;
-    }
-
-    // Check 3: FIN without proper handshake completion
-    if (flow.fin_count > 0 && flow.ack_count < flow.fin_count) {
-        anomaly_score += 0.2f;
-    }
-
-    // Check 4: Unusual URG flag usage (rare in normal traffic)
-    if (flow.urg_count > 0) {
-        anomaly_score += 0.2f;
-    }
-
-    return std::min(anomaly_score, 1.0f);
-}
-
 float MLDefenderExtractor::extract_ddos_packet_size_entropy(const FlowStatistics& flow) const {
     // Packet size entropy: DDoS often has uniform packet sizes (low entropy)
     // Normal traffic: varied sizes (high entropy)
     return calculate_entropy(flow.all_lengths);
-}
-
-float MLDefenderExtractor::extract_ddos_traffic_amplification_factor(const FlowStatistics& flow) const {
-    // Amplification factor: Ratio of response to request bytes
-    // DNS/NTP amplification attacks have high factors (>10x)
-    float amplification = safe_divide(
-        static_cast<float>(flow.dbytes),  // Backward (response)
-        static_cast<float>(flow.sbytes)   // Forward (request)
-    );
-
-    // Cap at 100.0 to avoid extreme outliers
-    return std::min(amplification, 100.0f);
 }
 
 float MLDefenderExtractor::extract_ddos_flow_completion_rate(const FlowStatistics& flow) const {
@@ -141,53 +66,6 @@ float MLDefenderExtractor::extract_ddos_flow_completion_rate(const FlowStatistic
     } else {
         return 0.0f;  // Incomplete
     }
-}
-
-float MLDefenderExtractor::extract_ddos_geographical_concentration(const FlowStatistics& /* flow */) const {
-    // TODO(Phase 2): GeoIP deliberately NOT in critical path
-    //
-    // ARCHITECTURAL DECISION:
-    // GeoIP lookups introduce unacceptable latency (100-500ms REST calls)
-    // in a sub-microsecond pipeline.
-    //
-    // GeoIP will be calculated AFTER blocking decision by RAG when needed
-    // for post-mortem analysis, NOT for the blocking decision itself.
-    //
-    // Rationale: Geographic location is USEFUL context but NOT NECESSARY
-    // for determining if traffic is an attack. A SYN flood is a SYN flood
-    // whether it comes from China, Russia, or USA.
-    //
-    // For Phase 1: Return neutral value
-    // For Phase 2: GeoIP service available to RAG for analysis queries
-    return MISSING_FEATURE_SENTINEL;
-}
-
-float MLDefenderExtractor::extract_ddos_traffic_escalation_rate(const FlowStatistics& flow) const {
-    // Traffic escalation: How quickly traffic volume increases
-    // Measured as packets per second
-    float pps = calculate_packet_rate(flow);
-
-    // Normalize: 0-100 pps = 0.0, 1000+ pps = 1.0
-    float normalized = pps / 1000.0f;
-    return std::min(normalized, 1.0f);
-}
-
-float MLDefenderExtractor::extract_ddos_resource_saturation_score(const FlowStatistics& flow) const {
-    // Resource saturation: Combination of high rate + small packets + many connections
-    // Small packets are more CPU-intensive to process
-
-    float avg_size = calculate_mean(flow.all_lengths);
-    float pps = calculate_packet_rate(flow);
-
-    // Small packet factor: <100 bytes is suspicious
-    float small_packet_factor = (avg_size < 100.0f) ? 1.0f : 0.0f;
-
-    // High rate factor: >500 pps is high
-    float high_rate_factor = (pps > 500.0f) ? 1.0f : 0.0f;
-
-    // Combined score
-    float saturation = (small_packet_factor + high_rate_factor) / 2.0f;
-    return saturation;
 }
 
 // ============================================================================

@@ -396,15 +396,17 @@ std::string CsvEventWriter::build_section3(
         event.network_features().has_ddos_embedded()) {
         const auto& d = event.network_features().ddos_embedded();
         sep() << fmt_float(d.syn_ack_ratio());              // 76
-        sep() << fmt_float(d.packet_symmetry());            // 77
-        sep() << fmt_float(d.source_ip_dispersion());       // 78
-        sep() << fmt_float(d.protocol_anomaly_score());     // 79
+        // [DDOS-V1-RETIRE-D306] 77, 78, 79, 81, 83, 84 y 85 eran rasgos de la v1 (reservados en el proto): se quedan
+        // vacios para no mover el resto de columnas hasta la rama del RAG Logger.
+        sep();                                              // 77 (v1 retirada)
+        sep();                                              // 78 (v1 retirada)
+        sep();                                              // 79 (v1 retirada)
         sep() << fmt_float(d.packet_size_entropy());        // 80
-        sep() << fmt_float(d.traffic_amplification_factor()); // 81
+        sep();                                              // 81 (v1 retirada)
         sep() << fmt_float(d.flow_completion_rate());       // 82
-        sep() << fmt_float(d.geographical_concentration()); // 83
-        sep() << fmt_float(d.traffic_escalation_rate());    // 84
-        sep() << fmt_float(d.resource_saturation_score());  // 85
+        sep();                                              // 83 (v1 retirada)
+        sep();                                              // 84 (v1 retirada)
+        sep();                                              // 85 (v1 retirada)
     } else {
         for (int i = 0; i < 10; ++i) sep() << '0';
     }

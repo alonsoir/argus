@@ -61,8 +61,7 @@ TEST(RagLoggerArtifactSaveTest, EventWithSentinelsPassesEmbeddedCheck) {
 
     // Apply the DAY 75 fix sentinels (as in ring_consumer.cpp send_ransomware_features)
     auto* ddos_emb = net_features->mutable_ddos_embedded();
-    ddos_emb->set_source_ip_dispersion(0.5f);
-    ddos_emb->set_geographical_concentration(0.5f);
+    ddos_emb->set_mean_packet_size(0.5f);  // [DDOS-V1-RETIRE-D306] campo v2 (los de la v1 estan reservados)
     ddos_emb->set_flow_completion_rate(0.5f);
 
     auto* ransom_emb = net_features->mutable_ransomware_embedded();
@@ -125,8 +124,7 @@ TEST(RagLoggerArtifactSaveTest, NormalFlowEventsUnaffectedByFix) {
     // Normal flow: real values from ml_defender_features.cpp extract_* functions
     auto* ddos = net_features->mutable_ddos_embedded();
     ddos->set_syn_ack_ratio(1.5f);
-    ddos->set_packet_symmetry(0.33f);
-    ddos->set_source_ip_dispersion(0.5f);   // Phase 1 sentinel
+    ddos->set_mean_packet_size(512.0f);  // [DDOS-V1-RETIRE-D306]
     ddos->set_packet_size_entropy(0.72f);
     ddos->set_flow_completion_rate(1.0f);
     // remaining 5 fields at 0.0f is fine — 5 non-zero force serialization

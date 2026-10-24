@@ -135,11 +135,9 @@ protobuf::NetworkSecurityEvent make_full_event() {
 
     // Embedded detectors
     auto* d = nf->mutable_ddos_embedded();
-    d->set_syn_ack_ratio(0.11f);   d->set_packet_symmetry(0.82f);
-    d->set_source_ip_dispersion(0.91f); d->set_protocol_anomaly_score(0.22f);
-    d->set_packet_size_entropy(0.51f);  d->set_traffic_amplification_factor(1.3f);
-    d->set_flow_completion_rate(0.96f); d->set_geographical_concentration(0.31f);
-    d->set_traffic_escalation_rate(0.41f); d->set_resource_saturation_score(0.61f);
+    d->set_syn_ack_ratio(0.11f);  // [DDOS-V1-RETIRE-D306] solo los rasgos v2 que el CSV aun escribe
+    d->set_packet_size_entropy(0.51f);
+    d->set_flow_completion_rate(0.96f);
 
     auto* r = nf->mutable_ransomware_embedded();
     r->set_io_intensity(0.71f); r->set_entropy(0.86f);
@@ -378,11 +376,10 @@ TEST(ProtoFieldAccessibility, Section3AllEmbeddedSubMessagesReadable) {
 
     // DDoSFeatures
     auto* d = nf->mutable_ddos_embedded();
-    (void)d->syn_ack_ratio();           (void)d->packet_symmetry();
-    (void)d->source_ip_dispersion();    (void)d->protocol_anomaly_score();
-    (void)d->packet_size_entropy();     (void)d->traffic_amplification_factor();
-    (void)d->flow_completion_rate();    (void)d->geographical_concentration();
-    (void)d->traffic_escalation_rate(); (void)d->resource_saturation_score();
+    (void)d->syn_ack_ratio();           (void)d->packet_size_entropy();  // [DDOS-V1-RETIRE-D306]
+    (void)d->flow_completion_rate();    (void)d->mean_packet_size();
+    (void)d->reflection_signature();    (void)d->flow_packet_count();
+    (void)d->victim_rate_ratio();       (void)d->victim_pps();
 
     // RansomwareEmbeddedFeatures
     auto* r = nf->mutable_ransomware_embedded();
@@ -440,8 +437,10 @@ TEST_F(CsvFeatureExtractionTest, Section3Produces40Columns) {
          c < ml_defender::CSV_S3_EMBEDDED_START + ml_defender::CSV_S3_EMBEDDED_COUNT; ++c) {
         if (cols[c] != "0" && !cols[c].empty()) ++populated;
     }
-    EXPECT_EQ(populated, ml_defender::CSV_S3_EMBEDDED_COUNT)
-        << "All S3 columns should be non-zero for a full event";
+    // [DDOS-V1-RETIRE-D306] las 7 columnas de la v1 (77-79, 81, 83-85) salen vacias
+    constexpr size_t kColumnasV1Retiradas = 7;
+    EXPECT_EQ(populated, ml_defender::CSV_S3_EMBEDDED_COUNT - kColumnasV1Retiradas)
+        << "All S3 columns except the 7 retired v1 ones should be non-zero for a full event";
 }
 
 TEST_F(CsvFeatureExtractionTest, Section4Produces10Columns) {

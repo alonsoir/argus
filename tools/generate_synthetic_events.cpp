@@ -407,15 +407,9 @@ protobuf::NetworkSecurityEvent generate_event(
 
     auto* ddos = nf->mutable_ddos_embedded();
     ddos->set_syn_ack_ratio(feat.ddos[0]);
-    ddos->set_packet_symmetry(feat.ddos[1]);
-    ddos->set_source_ip_dispersion(feat.ddos[2]);
-    ddos->set_protocol_anomaly_score(feat.ddos[3]);
+    // [DDOS-V1-RETIRE-D306] feat.ddos[1,2,3,5,7,8,9] eran rasgos de la v1 (reservados en el proto): no se escriben
     ddos->set_packet_size_entropy(feat.ddos[4]);
-    ddos->set_traffic_amplification_factor(feat.ddos[5]);
     ddos->set_flow_completion_rate(feat.ddos[6]);
-    ddos->set_geographical_concentration(feat.ddos[7]);
-    ddos->set_traffic_escalation_rate(feat.ddos[8]);
-    ddos->set_resource_saturation_score(feat.ddos[9]);
 
     auto* ransomware = nf->mutable_ransomware_embedded();
     ransomware->set_io_intensity(feat.ransomware[0]);

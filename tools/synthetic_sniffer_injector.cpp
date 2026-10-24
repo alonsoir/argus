@@ -410,31 +410,17 @@ private:
         nf->set_active_mean(rand_float(0.001, 10.0));
         nf->set_idle_mean(rand_float(0.001, 10.0));
 
-        // DDoS Embedded Features (10 features)
+        // DDoS Embedded Features: solo los rasgos del contrato v2; los de la v1 estan reservados [DDOS-V1-RETIRE-D306]
         auto* ddos = nf->mutable_ddos_embedded();
         if (is_attack) {
             ddos->set_syn_ack_ratio(rand_float(0.95, 1.0));
-            ddos->set_packet_symmetry(rand_float(0.0, 0.05));
-            ddos->set_source_ip_dispersion(rand_float(0.8, 1.0));
-            ddos->set_protocol_anomaly_score(rand_float(0.7, 1.0));
             ddos->set_packet_size_entropy(rand_float(0.0, 1.0));
-            ddos->set_traffic_amplification_factor(rand_float(50, 100));
             ddos->set_flow_completion_rate(rand_float(0.0, 0.05));
-            ddos->set_geographical_concentration(rand_float(0.7, 1.0));
-            ddos->set_traffic_escalation_rate(rand_float(7.0, 10.0));
-            ddos->set_resource_saturation_score(rand_float(0.8, 1.0));
         } else {
             // Ransomware y benign: DDoS features normales
             ddos->set_syn_ack_ratio(rand_float(0.0, 1.0));
-            ddos->set_packet_symmetry(rand_float(0.0, 1.0));
-            ddos->set_source_ip_dispersion(rand_float(0.0, 1.0));
-            ddos->set_protocol_anomaly_score(rand_float(0.0, 1.0));
             ddos->set_packet_size_entropy(rand_float(0.0, 8.0));
-            ddos->set_traffic_amplification_factor(rand_float(1.0, 100.0));
             ddos->set_flow_completion_rate(rand_float(0.0, 1.0));
-            ddos->set_geographical_concentration(rand_float(0.0, 1.0));
-            ddos->set_traffic_escalation_rate(rand_float(0.0, 10.0));
-            ddos->set_resource_saturation_score(rand_float(0.0, 1.0));
         }
 
         // Ransomware Embedded Features (10 features)

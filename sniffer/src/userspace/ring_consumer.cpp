@@ -33,15 +33,8 @@ static void init_embedded_sentinels(protobuf::NetworkFeatures* net) {
     // DAY 78: sentinel en ml_defender_features.hpp
     auto* ddos = net->mutable_ddos_embedded();
     ddos->set_syn_ack_ratio(MISSING_FEATURE_SENTINEL);
-    ddos->set_packet_symmetry(MISSING_FEATURE_SENTINEL);
-    ddos->set_source_ip_dispersion(MISSING_FEATURE_SENTINEL);
-    ddos->set_protocol_anomaly_score(MISSING_FEATURE_SENTINEL);
     ddos->set_packet_size_entropy(MISSING_FEATURE_SENTINEL);
-    ddos->set_traffic_amplification_factor(MISSING_FEATURE_SENTINEL);
     ddos->set_flow_completion_rate(MISSING_FEATURE_SENTINEL);
-    ddos->set_geographical_concentration(MISSING_FEATURE_SENTINEL);
-    ddos->set_traffic_escalation_rate(MISSING_FEATURE_SENTINEL);
-    ddos->set_resource_saturation_score(MISSING_FEATURE_SENTINEL);
     // [DDOS-V2-D286] centinelas del contrato v2
     ddos->set_mean_packet_size(MISSING_FEATURE_SENTINEL);
     ddos->set_reflection_signature(MISSING_FEATURE_SENTINEL);

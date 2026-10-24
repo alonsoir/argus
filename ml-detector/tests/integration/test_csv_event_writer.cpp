@@ -161,15 +161,8 @@ protected:
         // --- Section 3: Embedded detector features ---
         auto* ddos = nf->mutable_ddos_embedded();
         ddos->set_syn_ack_ratio(0.1f);
-        ddos->set_packet_symmetry(0.8f);
-        ddos->set_source_ip_dispersion(0.9f);
-        ddos->set_protocol_anomaly_score(0.2f);
         ddos->set_packet_size_entropy(0.5f);
-        ddos->set_traffic_amplification_factor(1.2f);
         ddos->set_flow_completion_rate(0.95f);
-        ddos->set_geographical_concentration(0.3f);
-        ddos->set_traffic_escalation_rate(0.4f);
-        ddos->set_resource_saturation_score(0.6f);
 
         auto* rsw = nf->mutable_ransomware_embedded();
         rsw->set_io_intensity(0.7f);
