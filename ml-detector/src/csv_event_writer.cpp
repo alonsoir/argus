@@ -487,15 +487,16 @@ std::string CsvEventWriter::build_section4(
             l1_conf = ml.level1_general_detection().confidence_score();
         }
 
-        // Level 2 — specialized predictions (positional: 0=DDoS, 1=Ransomware)
-        // See FEATURE_SCHEMA.md note: positional indexing may change in v1.1
-        if (ml.level2_specialized_predictions_size() > 0) {
-            l2d_pred = ml.level2_specialized_predictions(0).prediction_class();
-            l2d_conf = ml.level2_specialized_predictions(0).confidence_score();
-        }
-        if (ml.level2_specialized_predictions_size() > 1) {
-            l2r_pred = ml.level2_specialized_predictions(1).prediction_class();
-            l2r_conf = ml.level2_specialized_predictions(1).confidence_score();
+        // [DDOS-V1-RETIRE-D306] Level 2 por tipo de modelo, no por posicion: ddos_v2 ocupa la posicion 0 y la v1 se
+        // retiro, asi que la posicion ya no dice que cabeza es. RANDOM_FOREST_DDOS = ddos_v2.
+        for (const auto& pr : ml.level2_specialized_predictions()) {
+            if (pr.model_type() == protobuf::ModelPrediction::RANDOM_FOREST_DDOS) {
+                l2d_pred = pr.prediction_class();
+                l2d_conf = pr.confidence_score();
+            } else if (pr.model_type() == protobuf::ModelPrediction::RANDOM_FOREST_RANSOMWARE) {
+                l2r_pred = pr.prediction_class();
+                l2r_conf = pr.confidence_score();
+            }
         }
 
         // Level 3 — specialized predictions (positional: 0=Traffic, 1=Internal)

@@ -77,20 +77,10 @@ void ContractValidator::log_missing_features(const protobuf::NetworkSecurityEven
     // EMBEDDED MESSAGES VALIDATION (CRITICAL for ML classification)
     // ========================================================================
     
-    // Level 2 DDoS Features (10 fields required)
+    // [DDOS-V1-RETIRE-D306] ddos_embedded lo consume la cabeza ddos_v2 (contrato v2). El recuento de la v1
+    // ("10 fields required") se retiro: en proto3 un rasgo v2 que vale 0 no se lista y no es un fallo.
     if (!nf.has_ddos_embedded()) {
-        logger->warn("  Missing: ddos_embedded (CRITICAL - Level 2 DDoS detector requires this)");
-    } else {
-        const auto& ddos = nf.ddos_embedded();
-        int ddos_fields = 0;
-        const google::protobuf::Reflection* reflection = ddos.GetReflection();
-        std::vector<const google::protobuf::FieldDescriptor*> fields;
-        reflection->ListFields(ddos, &fields);
-        ddos_fields = static_cast<int>(fields.size());
-        
-        if (ddos_fields < 10) {
-            logger->warn("  ddos_embedded incomplete: {} / 10 fields", ddos_fields);
-        }
+        logger->warn("  Missing: ddos_embedded (CRITICAL - la cabeza ddos_v2 lo necesita)");
     }
     
     // Level 2 Ransomware Features (10 fields required)

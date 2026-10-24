@@ -219,11 +219,13 @@ protected:
         // Level 2 — index 0 = DDoS, index 1 = Ransomware
         auto* l2d = ml->add_level2_specialized_predictions();
         l2d->set_model_name("RANDOM_FOREST_DDOS");
+        l2d->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_DDOS);  // [DDOS-V1-RETIRE-D306] el CSV elige por tipo
         l2d->set_prediction_class("DDoS");
         l2d->set_confidence_score(0.92);
 
         auto* l2r = ml->add_level2_specialized_predictions();
         l2r->set_model_name("RANDOM_FOREST_RANSOMWARE");
+        l2r->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_RANSOMWARE);  // [DDOS-V1-RETIRE-D306]
         l2r->set_prediction_class("BENIGN");
         l2r->set_confidence_score(0.10);
 

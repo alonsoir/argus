@@ -11,7 +11,6 @@
 #include "zmq_handler.hpp"
 #include "etcd_client.hpp"
 #include "ml_defender/ransomware_detector.hpp"
-#include "ml_defender/ddos_detector.hpp"
 #include "ml_defender/traffic_detector.hpp"
 #include "ml_defender/internal_detector.hpp"
 
@@ -203,9 +202,8 @@ int main(int argc, char* argv[]) {
         std::cout << "   Level 1: " << (config.ml.level1.enabled ? "✅" : "❌")
                   << " " << config.ml.level1.name
                   << " (" << config.ml.level1.features_count << " features)\n";
-        std::cout << "   Level 2 DDoS: " << (config.ml.level2.ddos.enabled ? "✅" : "❌")
-                  << " " << config.ml.level2.ddos.name
-                  << " (" << config.ml.level2.ddos.features_count << " features)\n";
+        std::cout << "   DDoS v2: " << (config.ml.ddos_v2.enabled ? "✅" : "❌")  // [DDOS-V1-RETIRE-D306]
+                  << " (k_ratio=" << config.ml.ddos_v2.k_ratio << ")\n";
         std::cout << "   Level 2 Ransomware: " << (config.ml.level2.ransomware.enabled ? "✅" : "❌")
                   << " " << config.ml.level2.ransomware.name
                   << " (" << config.ml.level2.ransomware.features_count << " features)\n";
@@ -279,42 +277,6 @@ int main(int argc, char* argv[]) {
         // ═══════════════════════════════════════════════════════════════════════
         // 4. Load Level 2 Models
         // ═══════════════════════════════════════════════════════════════════════
-
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        // ✨ LEVEL 2: DDoS Detector (C++20 Embedded)
-        // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-        std::shared_ptr<ml_defender::DDoSDetector> ddos_detector;
-
-        if (config.ml.level2.ddos.enabled) {
-            log->info("📦 Loading Level 2 DDoS Detector (Embedded C++20)");
-            log->info("   Name: {}", config.ml.level2.ddos.name);
-            log->info("   Type: RandomForest-Embedded (100 trees, 612 nodes)");
-            log->info("   Features: {} (normalized 0.0-1.0)", config.ml.level2.ddos.features_count);
-            log->info("   Threshold: {}", config.ml.thresholds.level2_ddos);
-            log->info("   Implementation: Native C++20 (no ONNX)");
-
-            ddos_detector = std::make_shared<ml_defender::DDoSDetector>();
-
-            // Test de inicialización
-            ml_defender::DDoSDetector::Features test_features{
-                .syn_ack_ratio = 0.5f,
-                .packet_symmetry = 0.5f,
-                .source_ip_dispersion = 0.5f,
-                .protocol_anomaly_score = 0.5f,
-                .packet_size_entropy = 0.5f,
-                .traffic_amplification_factor = 0.5f,
-                .flow_completion_rate = 0.5f,
-                .traffic_escalation_rate = 0.5f,
-                .resource_saturation_score = 0.5f
-            };
-
-            auto test_result = ddos_detector->predict(test_features);
-            log->info("✅ DDoS detector initialized (test: class={}, prob={:.4f})",
-                       test_result.class_id, test_result.probability);
-
-        } else {
-            log->warn("⚠️  Level 2 DDoS detector is disabled in configuration");
-        }
 
         // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
         // Level 2 Ransomware - Embedded C++20 Detector
@@ -459,9 +421,6 @@ int main(int argc, char* argv[]) {
         if (model) {  // [HEADS-SWITCH-D305]
             log->info("     Level 1: General Attack (ONNX)");
         }
-        if (ddos_detector) {
-            log->info("     Level 2: DDoS (C++20 - {} trees)", ddos_detector->num_trees());
-        }
         if (ransomware_detector) {
             log->info("     Level 2: Ransomware (C++20 - {} trees)", ransomware_detector->num_trees());
         }
@@ -478,7 +437,6 @@ int main(int argc, char* argv[]) {
             config,
             model,
             feature_extractor,
-            ddos_detector,
             ransomware_detector,
             traffic_detector,
             internal_detector,

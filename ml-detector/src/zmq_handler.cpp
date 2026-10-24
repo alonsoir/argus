@@ -19,7 +19,6 @@ ZMQHandler::ZMQHandler(
     const DetectorConfig& config,
     std::shared_ptr<ONNXModel> level1_model,
     std::shared_ptr<FeatureExtractor> extractor,
-    std::shared_ptr<ml_defender::DDoSDetector> ddos_detector,
     std::shared_ptr<ml_defender::RansomwareDetector> ransomware_detector,
     std::shared_ptr<ml_defender::TrafficDetector> traffic_detector,
     std::shared_ptr<ml_defender::InternalDetector> internal_detector,
@@ -28,7 +27,6 @@ ZMQHandler::ZMQHandler(
 )
     : config_(config)
     , level1_model_(level1_model)
-    , ddos_detector_(ddos_detector)
     , ransomware_detector_(ransomware_detector)
     , traffic_detector_(traffic_detector)
     , internal_detector_(internal_detector)
@@ -74,10 +72,6 @@ ZMQHandler::ZMQHandler(
                   config_.ml.ddos_v2.enabled ? "ACTIVA" : "DESACTIVADA", ml_defender::ddos_v2::kModelName,
                   ml_defender::ddos_v2::kModelVersion, ml_defender::ddos_v2::kNumTrees,
                   ml_defender::ddos_v2::kNumFeatures, config_.ml.ddos_v2.k_ratio);
-    if (ddos_detector_) {
-        logger_->info("   Level 2: DDoS ({} trees, {} features)",
-                     ddos_detector_->num_trees(), ddos_detector_->num_features());
-    }
     if (ransomware_detector_) {
         logger_->info("   Level 2: Ransomware ({} trees, {} features)",
                      ransomware_detector_->num_trees(), ransomware_detector_->num_features());
@@ -355,7 +349,6 @@ void ZMQHandler::run() {
                 const auto s = get_stats();
                 const auto secs = std::chrono::duration_cast<std::chrono::seconds>(now - summary_last).count();
                 const uint64_t d_drop = summary_delta(s.send_failures, summary_prev.send_failures);
-                const uint64_t d_ddos = summary_delta(s.detections_ddos, summary_prev.detections_ddos);
                 const uint64_t d_rw   = summary_delta(s.detections_ransomware, summary_prev.detections_ransomware);
                 const uint64_t d_int  = summary_delta(s.detections_internal, summary_prev.detections_internal);
                 const uint64_t d_v2p  = summary_delta(s.ddos_v2_presion, summary_prev.ddos_v2_presion);  // [DDOS-V2-D293]
@@ -365,9 +358,9 @@ void ZMQHandler::run() {
                     logger_->warn("[ZMQ-DROP-OUT] descartados={} en los últimos {} s (total={})",
                                   d_drop, secs, s.send_failures);
                 }
-                if (d_ddos + d_rw + d_int > 0) {
-                    logger_->warn("[DETECCIONES] ddos={} ransomware={} internal={} en los últimos {} s",
-                                  d_ddos, d_rw, d_int, secs);
+                if (d_rw + d_int > 0) {  // [DDOS-V1-RETIRE-D306] sin ddos v1; ddos_v2 tiene su resumen [DDOS-V2]
+                    logger_->warn("[DETECCIONES] ransomware={} internal={} en los últimos {} s",
+                                  d_rw, d_int, secs);
                 }
                 if (d_v2p > 0) {  // [DDOS-V2-D293]
                     logger_->warn("[DDOS-V2] bajo_presion={} ataque={} en los últimos {} s (k_ratio={})",
@@ -500,6 +493,8 @@ void ZMQHandler::process_event(const std::string& message) {
         // sin compuerta de level1 (sin veto, DAY272). Etapa 1: victim_rate_ratio >= k_ratio; etapa 2: bosque sobre los
         // 6 rasgos de flujo de ddos_embedded (contrato v2). Decide final_decision (más abajo).
         bool ddos_v2_attack = false;
+        int hs_v2_c = -1;      // [DDOS-V1-RETIRE-D306] clase de ddos_v2 para [HEAD-SCORES]; -1 = no evaluada
+        double hs_v2_p = 0.0;  // [DDOS-V1-RETIRE-D306] p1 de ddos_v2 para [HEAD-SCORES]
         double ddos_v2_score = 0.0;  // [DDOS-SHADOW-D293] p1 de ddos_v2 si pasa la etapa 1; 0 si no
         if (is_flow_event && config_.ml.ddos_v2.enabled && event.has_network_features() &&
             event.network_features().has_ddos_embedded()) {
@@ -518,6 +513,8 @@ void ZMQHandler::process_event(const std::string& message) {
             const auto r2 = ml_defender::ddos_v2::evaluate(in2, config_.ml.ddos_v2.k_ratio, ev2);
             ddos_v2_attack = (r2.clase == 1);
             ddos_v2_score = r2.stage1 ? r2.p1 : 0.0;  // [DDOS-SHADOW-D293]
+            hs_v2_c = static_cast<int>(r2.clase);  // [DDOS-V1-RETIRE-D306]
+            hs_v2_p = static_cast<double>(r2.p1);
             auto* p2 = ml_analysis->add_level2_specialized_predictions();
             p2->set_model_name(ml_defender::ddos_v2::kModelName);
             p2->set_model_version(ml_defender::ddos_v2::kModelVersion);
@@ -705,8 +702,8 @@ void ZMQHandler::process_event(const std::string& message) {
 
         // Level 2 & 3: Specialized detectors (si Level 1 detectó ATTACK)
         // [HEAD-SCORES-D282] clase:puntuacion por cabeza; -1 = no evaluada
-        int hs_ddos_c = -1, hs_ransom_c = -1, hs_traffic_c = -1, hs_internal_c = -1;
-        double hs_ddos_p = 0.0, hs_ransom_p = 0.0, hs_traffic_p = 0.0, hs_internal_p = 0.0;
+        int hs_ransom_c = -1, hs_traffic_c = -1, hs_internal_c = -1;  // [DDOS-V1-RETIRE-D306] sin ddos v1
+        double hs_ransom_p = 0.0, hs_traffic_p = 0.0, hs_internal_p = 0.0;
         // [EVENT-KIND-D285] sin rasgos de flujo la compuerta nunca abre, ni con FORCE_ALL_HEADS
         const bool hs_gate = is_flow_event &&
                              l2_gate_open(force_all_heads_, label_l1, confidence_l1, config_.ml.thresholds.level1_attack);
@@ -716,75 +713,6 @@ void ZMQHandler::process_event(const std::string& message) {
             {
                 std::lock_guard<std::mutex> lock(stats_mutex_);
                 stats_.attacks_detected++;
-            }
-
-            // Level 2: DDoS
-            if (ddos_detector_ && config_.ml.level2.ddos.enabled) {
-                try {
-                    logger_->debug("🔍 Running Level 2 DDoS classification...");
-
-                    if (!event.has_network_features()) {
-                        logger_->error("❌ Event {} missing network_features, skipping Level 2 DDoS",
-                                      event.event_id());
-                    } else {
-                        const auto& nf = event.network_features();
-
-                        std::vector<float> ddos_features_vec;
-                        try {
-                            ddos_features_vec = extractor_->extract_level2_ddos_features(nf);
-                            if (ddos_features_vec.size() != 9) {
-                                throw std::runtime_error("Invalid DDoS feature count");
-                            }
-                            logger_->debug("   DDoS Features: syn_ack={:.3f}, entropy={:.3f}, amp={:.3f}, disp={:.3f}, symmetry={:.3f}, protocol={:.3f}, completion={:.3f}, escalation={:.3f}, saturation={:.3f}",
-                                          ddos_features_vec[0], ddos_features_vec[4], ddos_features_vec[5], ddos_features_vec[2], ddos_features_vec[1], ddos_features_vec[3], ddos_features_vec[6], ddos_features_vec[7], ddos_features_vec[8]);
-                        } catch (const std::exception& e) {
-                            logger_->error("❌ DDoS feature extraction failed: {}", e.what());
-                            std::lock_guard<std::mutex> lock(stats_mutex_);
-                            stats_.feature_extraction_errors++;
-                            throw;
-                        }
-
-                        ml_defender::DDoSDetector::Features ddos_features{
-                            .syn_ack_ratio              = ddos_features_vec[0],
-                            .packet_symmetry            = ddos_features_vec[1],
-                            .source_ip_dispersion       = ddos_features_vec[2],
-                            .protocol_anomaly_score     = ddos_features_vec[3],
-                            .packet_size_entropy        = ddos_features_vec[4],
-                            .traffic_amplification_factor = ddos_features_vec[5],
-                            .flow_completion_rate       = ddos_features_vec[6],
-                            .traffic_escalation_rate    = ddos_features_vec[7],
-                            .resource_saturation_score  = ddos_features_vec[8]
-                        };
-
-                        auto ddos_result = ddos_detector_->predict(ddos_features);
-                        hs_ddos_c = static_cast<int>(ddos_result.class_id); hs_ddos_p = ddos_result.ddos_prob;
-                        logger_->debug("🤖 DDoS: class={} ({}), conf={:.4f}, ddos_prob={:.4f}",
-                                      ddos_result.class_id,
-                                      (ddos_result.class_id == 0 ? "NORMAL" : "DDOS"),
-                                      ddos_result.probability, ddos_result.ddos_prob);
-
-                        auto* level2_ddos_pred = ml_analysis->add_level2_specialized_predictions();
-                        level2_ddos_pred->set_model_name("ddos_detector_embedded_cpp20");
-                        level2_ddos_pred->set_model_version("1.0.0");
-                        level2_ddos_pred->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_DDOS);
-                        level2_ddos_pred->set_prediction_class(
-                            ddos_result.class_id == 0 ? "NORMAL" : "DDOS"
-                        );
-                        level2_ddos_pred->set_confidence_score(ddos_result.ddos_prob);
-
-                        if (ddos_result.is_ddos(config_.ml.thresholds.level2_ddos)) {
-                            event.set_threat_category("DDOS");
-                            ml_analysis->set_final_threat_classification("DDOS");
-                            { std::lock_guard<std::mutex> lock(stats_mutex_); stats_.detections_ddos++; }  // [SUMMARY-D285]
-                            logger_->debug("🔴 DDoS ATTACK: event={}, L1={:.2f}%, L2={:.2f}%",  // [LOG-VERBOSE-D285]
-                                         event.event_id(), confidence_l1 * 100, ddos_result.ddos_prob * 100);
-                        }
-                    }
-                } catch (const std::exception& e) {
-                    logger_->error("❌ Level 2 DDoS processing failed: {}", e.what());
-                    std::lock_guard<std::mutex> lock(stats_mutex_);
-                    stats_.inference_errors++;
-                }
             }
 
             // Level 2: Ransomware
@@ -995,17 +923,17 @@ void ZMQHandler::process_event(const std::string& message) {
                 if (c < 0) return std::string("na");
                 char b[32]; std::snprintf(b, sizeof(b), "%d:%.4f", c, p); return std::string(b);
             };
-            logger_->debug("[HEAD-SCORES] event={}, src={}:{}, dst={}:{}, gate={}, l1={}:{:.4f}, fast={:.4f}, ddos={}, ransom={}, traffic={}, internal={}, cat={}",  // [LOG-VERBOSE-D285]
+            logger_->debug("[HEAD-SCORES] event={}, src={}:{}, dst={}:{}, gate={}, l1={}:{:.4f}, fast={:.4f}, ddos_v2={}, ransom={}, traffic={}, internal={}, cat={}",  // [LOG-VERBOSE-D285]
                           event.event_id(),
                   event.network_features().source_ip(), event.network_features().source_port(),
                   event.network_features().destination_ip(), event.network_features().destination_port(),
                   hs_gate ? 1 : 0, label_l1, confidence_l1, fast_score,
-                          hs_fmt(hs_ddos_c, hs_ddos_p), hs_fmt(hs_ransom_c, hs_ransom_p),
+                          hs_fmt(hs_v2_c, hs_v2_p), hs_fmt(hs_ransom_c, hs_ransom_p),
                           hs_fmt(hs_traffic_c, hs_traffic_p), hs_fmt(hs_internal_c, hs_internal_p),
                           event.threat_category());
         }
         if (ddos_dataset_writer_) {  // [DDOS-DATASET-D287] cada evento una vez, sin depender de VERBOSE
-            ddos_dataset_writer_->write(event, hs_ddos_c, hs_ddos_p);
+            ddos_dataset_writer_->write(event);  // [DDOS-V1-RETIRE-D306] old_ddos_* = -1 (cabeza v1 retirada)
         }
         if (logger_->should_log(spdlog::level::debug)) {  // [DDOS-V2-D286] contrato v2 tal como llega del sniffer (observacion)
             const auto& dv = event.network_features().ddos_embedded();
@@ -1224,19 +1152,18 @@ void ZMQHandler::memory_monitor_loop() {
 void ZMQHandler::log_heads_state(const char* momento) const {
     const bool l1 = level1_model_ != nullptr;
     const bool v2 = config_.ml.ddos_v2.enabled;
-    const bool d1 = ddos_detector_ && config_.ml.level2.ddos.enabled;
     const bool rw = ransomware_detector_ && config_.ml.level2.ransomware.enabled;
     const bool tr = traffic_detector_ && config_.ml.level3.web.enabled;
     const bool in = internal_detector_ && config_.ml.level3.internal.enabled;
     auto s = [](bool b) { return b ? "ON" : "OFF"; };
     std::string nota;
-    if (!l1 && !v2 && !(force_all_heads_ && (d1 || rw || tr || in))) {
+    if (!l1 && !v2 && !(force_all_heads_ && (rw || tr || in))) {  // [DDOS-V1-RETIRE-D306]
         nota = " | TODAS APAGADAS: sin clasificacion, final_decision=ALLOW (el bronce se sigue escribiendo)";
-    } else if (!l1 && !force_all_heads_ && (d1 || rw || tr || in)) {
-        nota = " | AVISO: ddos_v1/ransomware/traffic/internal solo corren tras level1=ATTACK; con level1 OFF no se evaluan";
+    } else if (!l1 && !force_all_heads_ && (rw || tr || in)) {
+        nota = " | AVISO: ransomware/traffic/internal solo corren tras level1=ATTACK; con level1 OFF no se evaluan";
     }
-    logger_->warn("[HEADS] ({}) level1={} ddos_v2={} ddos_v1={} ransomware={} traffic={} internal={} force_all_heads={}{}",
-                  momento, s(l1), s(v2), s(d1), s(rw), s(tr), s(in), s(force_all_heads_), nota);
+    logger_->warn("[HEADS] ({}) level1={} ddos_v2={} ransomware={} traffic={} internal={} force_all_heads={}{}",
+                  momento, s(l1), s(v2), s(rw), s(tr), s(in), s(force_all_heads_), nota);
 }
 
 double ZMQHandler::get_memory_usage_mb() {

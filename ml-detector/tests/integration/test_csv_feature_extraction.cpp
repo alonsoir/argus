@@ -169,8 +169,10 @@ protobuf::NetworkSecurityEvent make_full_event() {
     ml->mutable_level1_general_detection()->set_confidence_score(0.87);
     auto* p2d = ml->add_level2_specialized_predictions();
     p2d->set_prediction_class("DDoS"); p2d->set_confidence_score(0.93);
+    p2d->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_DDOS);  // [DDOS-V1-RETIRE-D306] el CSV elige por tipo
     auto* p2r = ml->add_level2_specialized_predictions();
     p2r->set_prediction_class("BENIGN"); p2r->set_confidence_score(0.07);
+    p2r->set_model_type(protobuf::ModelPrediction::RANDOM_FOREST_RANSOMWARE);  // [DDOS-V1-RETIRE-D306]
     auto* p3t = ml->add_level3_specialized_predictions();
     p3t->set_prediction_class("EXTERNAL_WEB"); p3t->set_confidence_score(0.76);
     auto* p3i = ml->add_level3_specialized_predictions();

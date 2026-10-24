@@ -218,54 +218,6 @@ bool FeatureExtractor::validate_features(const std::vector<float>& features) {
     return true;
 }
 
-    // ============================================================================
-// LEVEL 2: DDoS Features (10 features)
-// ============================================================================
-std::vector<float> FeatureExtractor::extract_level2_ddos_features(
-    const protobuf::NetworkFeatures& nf
-) {
-    std::vector<float> features(9);
-
-    // [0] SYN/ACK Ratio
-    float total_flags = static_cast<float>(nf.fin_flag_count()) + static_cast<float>(nf.syn_flag_count()) +
-                       static_cast<float>(nf.rst_flag_count()) + static_cast<float>(nf.psh_flag_count()) +
-                       static_cast<float>(nf.ack_flag_count()) + static_cast<float>(nf.urg_flag_count());
-    features[0] = safe_divide(static_cast<float>(nf.syn_flag_count()), total_flags);
-
-    // [1] Packet Symmetry (forward vs backward)
-    float total_packets = static_cast<float>(nf.total_forward_packets()) + static_cast<float>(nf.total_backward_packets());
-    features[1] = safe_divide(static_cast<float>(nf.total_forward_packets()), total_packets);
-
-    // [2] Source IP Dispersion (using protocol variety as proxy)
-    features[2] = normalize(1.0f, 0.0f, 10.0f);
-
-    // [3] Protocol Anomaly Score (derived from unusual protocol combinations)
-    float protocol_anomaly = (1.0f > 5) ? 1.0f : 0.0f;
-    features[3] = protocol_anomaly;
-
-    // [4] Packet Size Entropy (using packet length std)
-    features[4] = normalize(static_cast<float>(nf.packet_length_std()), 0.0f, 1500.0f);
-
-    // [5] Traffic Amplification Factor (response vs request size)
-    float fwd_bytes = static_cast<float>(nf.total_forward_bytes());
-    float bwd_bytes = static_cast<float>(nf.total_backward_bytes());
-    features[5] = safe_divide(bwd_bytes, std::max(fwd_bytes, 1.0f));
-
-    // [6] Flow Completion Rate (using FIN flags)
-    features[6] = safe_divide(static_cast<float>(nf.fin_flag_count()), total_packets);
-
-    // [7] Traffic Escalation Rate (using flow bytes/s)
-    float flow_bytes_per_sec = static_cast<float>(nf.flow_bytes_per_second());
-    features[7] = normalize(flow_bytes_per_sec, 0.0f, 1e6f);  // Normalize to 1Mbps
-
-    // [8] Resource Saturation Score (using packet rate)
-    float packet_rate = safe_divide(total_packets,
-                                    std::max(static_cast<float>(nf.flow_duration_microseconds()) / 1e6f, 1.0f));
-    features[8] = normalize(packet_rate, 0.0f, 1000.0f);  // Normalize to 1000 pps
-
-    return features;
-}
-
 std::vector<float> FeatureExtractor::extract_level2_ransomware_features(
     const protobuf::NetworkFeatures& nf) {
 

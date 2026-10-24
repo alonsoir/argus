@@ -31,12 +31,6 @@ public:
     std::vector<float> extract_level1_features(const protobuf::NetworkSecurityEvent& event);
 
     /**
-     * @brief Extrae las 10 features del Level 2 DDoS Binary
-     * @param nf NetworkFeatures del evento
-     * @return vector<float>[10] para predicción DDoS binaria (accuracy 98.61%)
-     */
-    std::vector<float> extract_level2_ddos_features(const protobuf::NetworkFeatures& nf);
-    /**
     * External Traffic classification (10 features)
     * @param nf NetworkFeatures del evento
     * @return vector<float>[10] para predicción External Traffic binaria
