@@ -118,18 +118,6 @@ std::unique_ptr<SnifferConfig> ConfigManager::load_from_file(const std::string& 
     config->timebase = parse_timebase(root.get("timebase", Json::Value{}));  // [TIMEBASE-D295]
     config->user_space = parse_user_space(root.get("user_space", Json::Value{}));
 
-    // Parse feature groups
-    if (root.isMember("feature_groups")) {
-        for (const auto& group_name : root["feature_groups"].getMemberNames()) {
-            auto group_json = root["feature_groups"][group_name];
-            FeatureGroupConfig group;
-            group.count = group_json.get("count", 0).asInt();
-            group.reference = group_json.get("reference", "").asString();
-            group.description = group_json.get("description", "").asString();
-            config->feature_groups[group_name] = group;
-        }
-    }
-
     config->sniffer_time_windows = parse_time_windows(root.get("sniffer_time_windows", Json::Value{}));
     config->network = parse_network(root.get("network", Json::Value{}));
     config->zmq = parse_zmq(root.get("zmq", Json::Value{}));
@@ -364,7 +352,6 @@ UserSpaceConfig ConfigManager::parse_user_space(const Json::Value& user_json) {
     UserSpaceConfig user;
     user.flow_table_size = user_json.get("flow_table_size", 1000000).asUInt64();
     user.time_window_buffer_size = user_json.get("time_window_buffer_size", 10000).asUInt64();
-    user.user_features = parse_string_array(user_json["user_features"]);
 
     // Parse memory management
     auto mem_json = user_json["memory_management"];
@@ -695,16 +682,6 @@ void ConfigManager::validate_config(const SnifferConfig& config) {
         errors.push_back("Ring buffer entries must be > 0");
     }
 
-    // Validate feature groups
-    for (const auto& [name, group] : config.feature_groups) {
-        if (group.count <= 0) {
-            errors.push_back("Feature group '" + name + "' must have count > 0");
-        }
-        if (group.reference.empty()) {
-            errors.push_back("Feature group '" + name + "' must have reference file");
-        }
-    }
-
     if (!errors.empty()) {
         std::string error_msg = "Configuration validation failed:\n";
         for (const auto& error : errors) {
@@ -796,12 +773,6 @@ void ConfigManager::log_config_summary(const SnifferConfig& config) {
               << " (" << (config.transport.compression.enabled ? "enabled" : "disabled") << ")" << std::endl;
     std::cout << "Encryption: " << config.transport.encryption.algorithm
               << " (" << (config.transport.encryption.enabled ? "enabled" : "disabled") << ")" << std::endl;
-
-    // Feature groups
-    std::cout << "Feature groups: " << config.feature_groups.size() << " defined" << std::endl;
-    for (const auto& [name, group] : config.feature_groups) {
-        std::cout << "  - " << name << ": " << group.count << " features" << std::endl;
-    }
 
     // etcd info
     std::cout << "etcd: " << (config.etcd.enabled ? "enabled" : "disabled") << std::endl;

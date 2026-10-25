@@ -293,38 +293,10 @@
   "user_space": {
     "flow_table_size": 1000000,
     "time_window_buffer_size": 10000,
-    "user_features": [
-      "ddos_feature_group",
-      "ransomware_feature_group",
-      "rf_feature_group",
-      "internal_traffic_feature_group"
-    ],
     "memory_management": {
       "flow_eviction_policy": "lru",
       "max_memory_usage_mb": 2048,
       "gc_interval_seconds": 60
-    }
-  },
-  "feature_groups": {
-    "ddos_feature_group": {
-      "count": 83,
-      "reference": "config/features/ddos_83_features.json",
-      "description": "DDOS detection features including packet rates, flag patterns, timing analysis"
-    },
-    "ransomware_feature_group": {
-      "count": 20,
-      "reference": "config/features/ransomware_20_features.json",
-      "description": "Ransomware detection features (20 critical features optimized for RPi)"
-    },
-    "rf_feature_group": {
-      "count": 23,
-      "reference": "config/features/rf_23_features.json",
-      "description": "Random Forest general attack detection (Level 1)"
-    },
-    "internal_traffic_feature_group": {
-      "count": 4,
-      "reference": "config/features/internal_4_features.json",
-      "description": "Internal traffic classification features"
     }
   },
   "sniffer_time_windows": {

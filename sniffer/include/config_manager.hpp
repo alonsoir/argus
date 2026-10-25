@@ -109,18 +109,10 @@ struct KernelSpaceConfig {
     } performance;
 };
 
-// Feature group configuration
-struct FeatureGroupConfig {
-    int count;
-    std::string reference;
-    std::string description;
-};
-
 // User space configuration
 struct UserSpaceConfig {
     size_t flow_table_size;
     size_t time_window_buffer_size;
-    std::vector<std::string> user_features;
 
     struct MemoryManagement {
         std::string flow_eviction_policy;
@@ -383,7 +375,6 @@ struct SnifferConfig {
     CaptureConfig capture;
     KernelSpaceConfig kernel_space;
     UserSpaceConfig user_space;
-    std::unordered_map<std::string, FeatureGroupConfig> feature_groups;
     TimeWindowsConfig sniffer_time_windows;
     NetworkConfig network;
     ZmqConfig zmq;

@@ -509,7 +509,6 @@ endif()
 
 # Create necessary directories
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config/features)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)
 
 # Copy configuration files
@@ -518,12 +517,6 @@ configure_file(
         ${CMAKE_BINARY_DIR}/config/sniffer.json
         COPYONLY
 )
-
-# Create feature group placeholder files
-set(FEATURE_GROUPS ddos_83 ransomware_83 rf_23 internal_4)
-foreach(GROUP ${FEATURE_GROUPS})
-    file(WRITE ${CMAKE_BINARY_DIR}/config/features/${GROUP}_features.json "[]")
-endforeach()
 
 # ============================================================================
 # INSTALL RULES

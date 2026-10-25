@@ -70,14 +70,6 @@ struct CommandLineArgs {
     bool show_config_only = false;
 };
 
-struct FeatureGroup {
-    std::string name;
-    int count;
-    std::string reference;
-    std::string description;
-    bool loaded = false;
-};
-
 struct StrictSnifferConfig {
     // Componente - TODOS REQUERIDOS
     std::string component_name;
@@ -173,14 +165,10 @@ struct StrictSnifferConfig {
     struct {
         int flow_table_size;
         int time_window_buffer_size;
-        std::vector<std::string> user_features;
         std::string flow_eviction_policy;
         int max_memory_usage_mb;
         int gc_interval_seconds;
     } user_space;
-
-    // Feature groups - TODOS REQUERIDOS
-    std::unordered_map<std::string, FeatureGroup> feature_groups;
 
     // Time windows - TODOS REQUERIDOS
     struct {
@@ -480,7 +468,6 @@ void validate_buffers_section(const Json::Value& root, StrictSnifferConfig& conf
 void validate_threading_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_kernel_space_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_user_space_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
-void validate_feature_groups_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_time_windows_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_network_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_zmq_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);

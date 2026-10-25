@@ -263,7 +263,6 @@ void validate_buffers_section(const Json::Value&, StrictSnifferConfig&, bool) {}
 void validate_threading_section(const Json::Value&, StrictSnifferConfig&, bool) {}
 void validate_kernel_space_section(const Json::Value&, StrictSnifferConfig&, bool) {}
 void validate_user_space_section(const Json::Value&, StrictSnifferConfig&, bool) {}
-void validate_feature_groups_section(const Json::Value&, StrictSnifferConfig&, bool) {}
 void validate_time_windows_section(const Json::Value&, StrictSnifferConfig&, bool) {}
 void validate_network_section(const Json::Value&, StrictSnifferConfig&, bool) {}
 void validate_zmq_section(const Json::Value&, StrictSnifferConfig&, bool) {}
