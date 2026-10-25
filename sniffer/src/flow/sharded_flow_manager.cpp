@@ -144,7 +144,6 @@ std::optional<FlowStatistics> ShardedFlowManager::get_flow_stats_copy(const Flow
         copy.len_hist = it->second.stats.len_hist;
         copy.bwd_header_lengths = it->second.stats.bwd_header_lengths;
         
-        // time_windows will be created by FlowStatistics() constructor
         
         return std::make_optional(std::move(copy));
     }

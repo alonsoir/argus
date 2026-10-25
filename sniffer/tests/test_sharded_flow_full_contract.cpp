@@ -180,51 +180,6 @@ TEST_F(ShardedFlowFullContractTest, CapturesAllTCPFlags) {
 }
 
 // ============================================================================
-// TEST 3: TimeWindowManager integration (FASE 3)
-// ============================================================================
-TEST_F(ShardedFlowFullContractTest, TimeWindowManagerWorks) {
-    auto& mgr = ShardedFlowManager::instance();
-
-    FlowKey key{
-        .src_ip = 0xC0A80105,
-        .dst_ip = 0xC0A80106,
-        .src_port = 9999,
-        .dst_port = 8080,
-        .protocol = 6
-    };
-
-    SimpleEvent pkt{};
-    pkt.src_ip = key.src_ip;
-    pkt.dst_ip = key.dst_ip;
-    pkt.src_port = key.src_port;
-    pkt.dst_port = key.dst_port;
-    pkt.protocol = 6;
-    pkt.packet_len = 200;
-    pkt.ip_header_len = 20;
-    pkt.l4_header_len = 20;
-    pkt.timestamp = 3000000000ULL;
-    pkt.tcp_flags = TCP_FLAG_ACK;
-
-    // Agregar 20 paquetes a lo largo de 1 segundo
-    for (int i = 0; i < 20; i++) {
-        pkt.timestamp += 50000000ULL;  // +50ms cada paquete
-        mgr.add_packet(key, pkt);
-    }
-
-    auto stats_opt = mgr.get_flow_stats_copy(key);
-    ASSERT_TRUE(stats_opt.has_value());
-    const auto& stats = stats_opt.value();
-
-    // Validar que TimeWindowManager está inicializado
-    ASSERT_NE(stats.time_windows, nullptr) << "TimeWindowManager debe estar inicializado";
-
-    // Verificar que procesó paquetes
-    EXPECT_GT(stats.get_total_packets(), 0) << "Time windows debe haber procesado paquetes";
-
-    std::cout << "✅ TEST 3 PASSED: TimeWindowManager integrated and working\n";
-}
-
-// ============================================================================
 // TEST 4: Validación de valores NO-default (142 campos populated)
 // ============================================================================
 TEST_F(ShardedFlowFullContractTest, NoFieldsLeftAtDefaultValues) {
@@ -278,13 +233,12 @@ TEST_F(ShardedFlowFullContractTest, NoFieldsLeftAtDefaultValues) {
     populated_fields++;  // dbytes: siempre contar (puede ser 0 si solo hay forward)
 
     // Vectors
-    total_fields += 7;
+    total_fields += 6;
     if (!stats.fwd_lengths.empty()) populated_fields++;
     if (!stats.all_lengths.empty()) populated_fields++;
     if (!stats.packet_timestamps.empty()) populated_fields++;
     if (!stats.fwd_timestamps.empty()) populated_fields++;
     if (!stats.fwd_header_lengths.empty()) populated_fields++;
-    if (stats.time_windows != nullptr) populated_fields++;
 
     // TCP Flags (al menos algunos deben estar > 0)
     total_fields += 8;

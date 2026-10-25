@@ -5,7 +5,6 @@
 #pragma once
 
 #include "main.h"
-#include "time_window_manager.hpp"
 #include "flow_tracker.hpp"
 #include <unordered_map>
 #include <vector>
@@ -66,15 +65,10 @@ struct FlowStatistics {
     std::vector<uint16_t> fwd_header_lengths;
     std::vector<uint16_t> bwd_header_lengths;
 
-    // ============ FASE 3: TIME WINDOW MANAGER ============
-    std::unique_ptr<TimeWindowManager> time_windows;
-
     // ============ METHODS ============
 
     // Constructor
-    FlowStatistics() {
-        time_windows = std::make_unique<TimeWindowManager>();
-    }
+    FlowStatistics() = default;
 
     // Move constructor
     FlowStatistics(FlowStatistics&& other) noexcept = default;
@@ -134,10 +128,6 @@ struct FlowStatistics {
         ++len_hist[static_cast<uint32_t>(pkt.packet_len)];
         packet_timestamps.push_back(pkt.timestamp);
 
-        // ⭐ FASE 3: Update time windows
-        if (time_windows) {
-            time_windows->add_packet(pkt.timestamp, pkt.packet_len, is_fwd);
-        }
 
         // TCP flags totals
         if (pkt.protocol == 6) {  // TCP only
