@@ -56,14 +56,6 @@ public:
     // ========================================================================
 
     /**
-     * Extract Level 2 - DDoS Features (10 features)
-     * Detects volumetric attacks, SYN floods, amplification attacks
-     */
-    void extract_ddos_features(
-        const FlowStatistics& flow,
-        ::protobuf::DDoSFeatures* ddos) const;
-
-    /**
      * Extract Level 2 - Ransomware Features (10 features)
      * Detects file encryption patterns, lateral movement, C2 communication
      */
@@ -103,8 +95,8 @@ public:
         ::protobuf::NetworkSecurityEvent& proto_event) const;
 
     // [DDOS-SNAP-D290] Foto O(k) de los 5 rasgos DDoS v2 de flujo (syn_ack_ratio,
-    // flow_completion_rate, flow_packet_count, mean_packet_size, packet_size_entropy) con las
-    // mismas formulas que extract_ddos_features, sobre los estadisticos incrementales del flujo.
+    // flow_completion_rate, flow_packet_count, mean_packet_size, packet_size_entropy), sobre los
+    // estadisticos incrementales del flujo. Unica fuente de esos 5 rasgos [D307-PASO2].
     DdosFlowSnap ddos_v2_flow_snapshot(const FlowStatistics& flow) const;
 
 private:
@@ -121,7 +113,6 @@ private:
     // ========================================================================
 
     float extract_ddos_syn_ack_ratio(const FlowStatistics& flow) const;
-    float extract_ddos_packet_size_entropy(const FlowStatistics& flow) const;
     float extract_ddos_flow_completion_rate(const FlowStatistics& flow) const;
 
     // ========================================================================

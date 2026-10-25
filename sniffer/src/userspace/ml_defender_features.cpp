@@ -20,17 +20,9 @@ namespace sniffer {
 // DDOS FEATURES — contrato v2 (cabeza ddos_v2) [DDOS-V1-RETIRE-D306]
 // ============================================================================
 
-void MLDefenderExtractor::extract_ddos_features(
-    const FlowStatistics& flow,
-    ::protobuf::DDoSFeatures* ddos) const {
-
-    ddos->set_syn_ack_ratio(extract_ddos_syn_ack_ratio(flow));
-    ddos->set_packet_size_entropy(extract_ddos_packet_size_entropy(flow));
-    ddos->set_flow_completion_rate(extract_ddos_flow_completion_rate(flow));
-    // [DDOS-V2-D286] contrato v2 (8 rasgos, solo trafico entrante)
-    ddos->set_mean_packet_size(calculate_mean(flow.all_lengths));
-    ddos->set_flow_packet_count(static_cast<float>(flow.get_total_packets()));
-}
+// [D307-PASO2] Los 5 rasgos DDoS v2 de flujo solo los calcula ddos_v2_flow_snapshot (foto en el lock del shard,
+// O(k)); ring_consumer los escribe en el protobuf. El antiguo extract_ddos_features los recalculaba sobre la copia
+// recorriendo all_lengths en cada evento, y ring_consumer los sobrescribia siempre con la foto.
 
 float MLDefenderExtractor::extract_ddos_syn_ack_ratio(const FlowStatistics& flow) const {
     // SYN/ACK ratio: High ratio indicates potential SYN flood
@@ -43,12 +35,6 @@ float MLDefenderExtractor::extract_ddos_syn_ack_ratio(const FlowStatistics& flow
 
     // Cap at 10.0 to avoid extreme outliers
     return std::min(ratio, 10.0f);
-}
-
-float MLDefenderExtractor::extract_ddos_packet_size_entropy(const FlowStatistics& flow) const {
-    // Packet size entropy: DDoS often has uniform packet sizes (low entropy)
-    // Normal traffic: varied sizes (high entropy)
-    return calculate_entropy(flow.all_lengths);
 }
 
 float MLDefenderExtractor::extract_ddos_flow_completion_rate(const FlowStatistics& flow) const {
@@ -650,9 +636,7 @@ void MLDefenderExtractor::populate_ml_defender_features(
     // PART 1: ML DEFENDER EMBEDDED FEATURES (40 features)
     // ========================================================================
 
-    // Extract DDoS features (10 features)
-    auto* ddos = net_features->mutable_ddos_embedded();
-    extract_ddos_features(flow, ddos);
+    // DDoS: ring_consumer escribe los 5 rasgos de flujo desde la foto (ddos_v2_flow_snapshot) [D307-PASO2]
 
     // Extract Ransomware features (10 features)
     auto* ransomware = net_features->mutable_ransomware_embedded();

@@ -1,7 +1,7 @@
 // sniffer/tests/test_ddos_flow_snap.cpp
 // [DDOS-SNAP-D290] La foto incremental de los rasgos DDoS v2 (ddos_v2_flow_snapshot, la que toma
-// el hilo del anillo) tiene que dar EXACTAMENTE (bit a bit) lo mismo que la extraccion de lote de
-// produccion (extract_ddos_features sobre la copia del flujo). Sin agregador: source_ip_dispersion
+// el hilo del anillo) tiene que dar EXACTAMENTE (bit a bit) lo mismo que el calculo de lote sobre la
+// copia del flujo (formulas de calculate_mean/calculate_entropy, DAY307). Sin agregador: source_ip_dispersion
 // sale como centinela y no interviene en lo que se compara.
 #include "flow/sharded_flow_manager.hpp"
 #include "flow_manager.hpp"
@@ -12,6 +12,8 @@
 #include <cstring>
 #include <map>
 #include <random>
+#include <algorithm>  // [D307-PASO2]
+#include <cmath>      // [D307-PASO2]
 
 using namespace sniffer;
 using namespace sniffer::flow;
@@ -81,14 +83,26 @@ void verificar(const char* caso, const FlowKey& k) {
                     static_cast<unsigned long long>(f.get_total_packets()));
     }
 
-    ::protobuf::DDoSFeatures lote;
-    ext.extract_ddos_features(f, &lote);
+    // [D307-PASO2] Referencia de lote calculada aqui sobre la copia, con las mismas operaciones en float que
+    // usaba extract_ddos_features (retirado): calculate_mean y calculate_entropy sobre all_lengths.
+    const float n_f = static_cast<float>(f.all_lengths.size());
+    float ent = 0.0f;
+    for (const auto& [v, c] : hist) {
+        (void)v;
+        const float p = static_cast<float>(c) / n_f;
+        if (p > 0.0f) ent -= p * std::log2(p);
+    }
+    const float ack1 = static_cast<float>(f.ack_count) + 1.0f;
+    const float sar = std::min((ack1 != 0.0f) ? static_cast<float>(f.syn_count) / ack1 : 0.0f, 10.0f);
+    const float fcr = (f.syn_count > 0 && f.ack_count > 0 && f.fin_count > 0) ? 1.0f
+                    : (f.syn_count > 0 && f.ack_count > 0) ? 0.5f : 0.0f;
+    const float media = f.all_lengths.empty() ? 0.0f : static_cast<float>(suma) / n_f;
 
-    comparar(caso, "syn_ack_ratio", foto.syn_ack_ratio, lote.syn_ack_ratio());
-    comparar(caso, "flow_completion_rate", foto.flow_completion_rate, lote.flow_completion_rate());
-    comparar(caso, "flow_packet_count", foto.flow_packet_count, lote.flow_packet_count());
-    comparar(caso, "mean_packet_size", foto.mean_packet_size, lote.mean_packet_size());
-    comparar(caso, "packet_size_entropy", foto.packet_size_entropy, lote.packet_size_entropy());
+    comparar(caso, "syn_ack_ratio", foto.syn_ack_ratio, sar);
+    comparar(caso, "flow_completion_rate", foto.flow_completion_rate, fcr);
+    comparar(caso, "flow_packet_count", foto.flow_packet_count, static_cast<float>(f.get_total_packets()));
+    comparar(caso, "mean_packet_size", foto.mean_packet_size, media);
+    comparar(caso, "packet_size_entropy", foto.packet_size_entropy, ent);
 }
 
 }  // namespace

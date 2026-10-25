@@ -295,9 +295,15 @@ TEST_F(ShardedFlowMultithreadTest, FeatureExtractionUnderLoad) {
                     protobuf::NetworkSecurityEvent proto_event;
                     ml_extractor_->populate_ml_defender_features(stats_opt.value(), proto_event);
 
+                    // [D307-PASO2] los 5 rasgos DDoS v2 salen de la foto en lock (ddos_v2_flow_snapshot), que
+                    // ring_consumer escribe en el protobuf; populate ya no toca ddos_embedded.
+                    DdosFlowSnap snap{};
+                    mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
+
                     // Validate features were populated
                     if (proto_event.has_network_features() &&
-                        proto_event.network_features().has_ddos_embedded() &&
+                        snap.valid &&
+                        !proto_event.network_features().has_ddos_embedded() &&
                         proto_event.network_features().has_ransomware_embedded() &&
                         proto_event.network_features().has_traffic_classification() &&
                         proto_event.network_features().has_internal_anomaly()) {
