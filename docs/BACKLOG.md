@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 305 — 2026-10-23*
+*Última actualización: DAY 307 — 2026-10-25*
 
 ---
 
@@ -7839,3 +7839,60 @@ contract_validator.cpp resume "40 embedded (4x10)". Actualizar cuando la rama de
 ### Leccion DAY306
 Una regresion de replay se predice como rango observado, no como identidad: el mismo E2E varia +-25 eventos entre
 corridas. Y git rm mete los borrados en el indice al momento: va justo antes del commit que debe llevarlos.
+
+## Cierre DAY307 (25-oct-2026) — rama feat/sniffer-flow-expiry (en curso)
+
+Documento: `docs/ml-heads/day307_tabla_flujos.md`. Herramientas: `scripts/flow_expiry/`. Regla de la rama (Alonso):
+cada paso se mide antes y despues. Ningun commit del dia cambia lo que sale del sniffer (paridad byte a byte en
+300000 eventos, d307_paridad_rasgos.cpp, sha256 64471c1e...).
+
+Hecho (commits 290f342d, 62b3c204, 0f5e5a8e, 73d27542, bdf2506b): include canonico de sharded_flow_manager.cpp
+(incluia _fix3.hpp, ODR latente desde Day 45) y fuera 9 residuos _fix*/_original; fuera la clase FlowManager y
+scripts/verify_integration.sh; fuera TimeWindowManager por flujo y la clase FeatureExtractor (sin lector vivo);
+fuera el mecanismo feature_groups de sniffer.json y sus dos JSON; fuera el calculo de los 5 rasgos DDoS en populate
+(ring_consumer los sobrescribia siempre con la foto en lock). Medido: RAM por flujo 1697 -> 658 B (tabla llena
+265 -> 103 MB); populate por evento 121 -> 92,7 us de media (flujos de 501+ paquetes 289 -> 216 us).
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Medido DAY307: el estado de un flujo que nunca esta inactivo crece ~30 B por paquete sin limite (10 M paquetes =
+292 MB un solo flujo) y la copia por evento es O(n) (7,7 ms a 1 M paquetes). Pendiente: paso 1 (estadisticos
+incrementales en FlowStatistics, con diseno y tolerancia de paridad escritos antes del codigo), limpieza periodica
+desde la cola de la LRU (hoy cleanup_expired_flows no se llama y es O(n^2)), guarda en should_expire (resta sin
+signo), decision sobre tope de duracion activa, bateria de la etapa 2 y E2E antes/despues.
+
+### DEBT-SNIFFER-FLOWTABLE-CONFIG-001 — ampliada DAY307 (esta rama)
+sniffer.json declara tres timeouts de flujo (kernel_space.flow_timeout_seconds,
+processing.feature_extraction.flow_timeout_seconds, bloque user_space con flow_table_size 1000000 y
+gc_interval_seconds 60) y ninguno se aplica: la tabla real es 16 x 10000 escrita en ring_consumer.cpp:131 y no
+caduca. La configuracion de la tabla ira en un solo sitio del JSON, validada y registrada en el log, y los campos
+que mienten se quitan en el mismo cambio.
+
+### DEBT-SNIFFER-TESTS-NOT-REGISTERED-001 — ABIERTA (esta rama)
+test_ring_consumer_protobuf (4), test_sharded_flow_multithread (6) y test_sharded_flow_full_contract (3) se
+compilan pero no tienen add_test: test-components no los ejecuta nunca. Pasan los tres (a mano, DAY307).
+Misma familia que DEBT-MLDETECTOR-TESTS-NOT-BUILT-001.
+
+### DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001 — ABIERTA (decision de diseno)
+ring_consumer.cpp construye la FlowKey con los campos del paquete y FlowKey no normaliza el sentido: cada sentido
+de una conversacion es un flujo propio. dpkts, bwd_* y los rasgos backward salen siempre a 0; el SYN-ACK de la
+respuesta cae en el flujo inverso. ddos_v2 se entreno asi: cambiarlo exige medir y probablemente reentrenar.
+
+### DEBT-SNIFFER-FLOWKEY-HASH-001 — ABIERTA
+FlowKey::Hash combina los campos con XOR y desplazamientos (debil). Afecta al reparto entre shards. Medir el
+reparto antes de cambiarlo.
+
+### DEBT-SNIFFER-CONFIG-CEREMONIAL-001 — ABIERTA (rama propia)
+La configuracion del sniffer es en buena parte ceremonial: campos sin consumidor, defectos aplicados en silencio
+con get(campo, defecto) (contra la regla DAY291/DAY300), dos modelos de configuracion (SnifferConfig y
+StrictSnifferConfig, con campos que nunca se rellenan) y 20 validate_*_section vacios. Auditoria campo a campo de
+sniffer.json: consumido / no consumido / leido en silencio; un solo modelo.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY307
+scripts/timebase/__pycache__/ sin trackear ni ignorado; commit-message.txt (buffer de commits con -F, ya no se usa);
+day290_patch_ddos_snap.py nombra ficheros borrados en DAY307.
+
+### Lecciones DAY307
+Con LTO el hash del .o no compara codigo (guarda ubicaciones fuente): comparar el preprocesado. git log -S cuenta
+apariciones; para una linea, git log -G. Un inventario no se trunca. En un bucle con | grep, $? es el del grep.
+Los logs de ctest llevan colores ANSI dentro de la linea. Una prediccion de tiempo medio pesa eventos, no
+conversaciones.
