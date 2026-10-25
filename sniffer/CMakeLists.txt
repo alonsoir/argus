@@ -273,7 +273,6 @@ set(SNIFFER_SOURCES
         src/userspace/thread_manager.cpp
         src/userspace/compression_handler.cpp
         src/userspace/etcd_client.cpp
-        src/userspace/flow_manager.cpp
         src/userspace/feature_extractor.cpp
         src/userspace/time_window_manager.cpp
         src/userspace/feature_logger.cpp
@@ -693,7 +692,6 @@ add_executable(test_sharded_flow_full_contract
 
         # ShardedFlowManager components
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
         src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
 
@@ -725,7 +723,6 @@ add_executable(test_ring_consumer_protobuf
 
         # ShardedFlowManager + ML Defender extractor
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
         src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
         src/userspace/ml_defender_features.cpp
@@ -759,7 +756,6 @@ message(STATUS "🧪 Unit Test: test_ring_consumer_protobuf configured (Day 46 -
 add_executable(test_ddos_flow_snap
         tests/test_ddos_flow_snap.cpp
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
         src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
         src/userspace/ml_defender_features.cpp
@@ -832,7 +828,6 @@ add_executable(test_sharded_flow_multithread
 
         # ShardedFlowManager + ML Defender extractor
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
         src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
         src/userspace/ml_defender_features.cpp

@@ -1,4 +1,7 @@
 // sniffer/include/flow_manager.hpp
+// Define FlowStatistics: lo que el sniffer acumula por flujo para extraer rasgos. La tabla que lo guarda
+// es flow/sharded_flow_manager.hpp; FlowKey esta en flow_tracker.hpp. [DAY307] la clase FlowManager que
+// vivia aqui no la usaba nadie y se borro (la historia de git la conserva).
 #pragma once
 
 #include "main.h"
@@ -180,82 +183,6 @@ struct FlowStatistics {
     bool is_tcp_closed() const {
         return fin_count > 0 || rst_count > 0;
     }
-};
-
-// Callback for when a flow expires and needs to be processed
-using FlowExportCallback = std::function<void(const FlowKey&, const FlowStatistics&)>;
-
-// Flow Manager - Tracks active flows and manages expiration
-class FlowManager {
-public:
-    // Configuration
-    struct Config {
-        uint64_t flow_timeout_ns = 120'000'000'000ULL;  // 120 seconds default
-        size_t max_flows = 100'000;                      // Max concurrent flows
-        bool auto_export_on_tcp_close = true;            // Export TCP flows on FIN/RST
-        bool enable_statistics = true;                   // Track FlowManager stats
-    };
-
-    explicit FlowManager(const Config& config);
-    ~FlowManager();
-
-    // Add packet to flow tracking
-    void add_packet(const SimpleEvent& pkt);
-
-    // Expire flows that have timed out
-    // Returns number of flows expired
-    size_t expire_flows(uint64_t current_ns);
-
-    // Force expire all flows (for shutdown)
-    size_t expire_all_flows();
-
-    // Set callback for flow export
-    void set_export_callback(FlowExportCallback callback);
-
-    // Get current statistics
-    struct Stats {
-        size_t active_flows = 0;
-        uint64_t total_packets_processed = 0;
-        uint64_t total_flows_created = 0;
-        uint64_t total_flows_expired = 0;
-        uint64_t flows_expired_timeout = 0;
-        uint64_t flows_expired_tcp_close = 0;
-    };
-
-    Stats get_stats() const;
-    void print_stats() const;
-    void reset_stats();
-
-    // ============================================================================
-    // ML DEFENDER INTEGRATION (Phase 1, Day 3 - Nov 17, 2025)
-    // ============================================================================
-
-    // Get flow statistics for feature extraction (thread-local safe)
-    // SAFETY NOTE: This method is NOT thread-safe for shared FlowManager instances.
-    // Only use with thread_local FlowManager where each thread has its own instance.
-    // Returns nullptr if flow doesn't exist.
-    FlowStatistics* get_flow_stats_unsafe(const FlowKey& key) {
-        auto it = active_flows_.find(key);
-        return (it != active_flows_.end()) ? &it->second : nullptr;
-    }
-
-private:
-    Config config_;
-
-    // Flow storage
-    std::unordered_map<FlowKey, FlowStatistics, FlowKey::Hash> active_flows_;
-    mutable std::mutex flows_mutex_;
-
-    // Statistics
-    Stats stats_;
-
-    // Export callback
-    FlowExportCallback export_callback_;
-
-    // Helper methods
-    FlowKey create_flow_key(const SimpleEvent& pkt) const;
-    void export_flow(const FlowKey& key, const FlowStatistics& stats);
-    bool should_auto_export(const FlowStatistics& stats) const;
 };
 
 } // namespace sniffer
