@@ -7896,3 +7896,39 @@ Con LTO el hash del .o no compara codigo (guarda ubicaciones fuente): comparar e
 apariciones; para una linea, git log -G. Un inventario no se trunca. En un bucle con | grep, $? es el del grep.
 Los logs de ctest llevan colores ANSI dentro de la linea. Una prediccion de tiempo medio pesa eventos, no
 conversaciones.
+
+## DAY308 (26-oct-2026) — rama feat/sniffer-flow-expiry, paso 1
+
+Documento: `docs/ml-heads/day308_paso1_diseno.md` (diseno antes de medir, resultado en la seccion 7). Herramientas:
+`scripts/flow_expiry/d308_*`. Paso 1 hecho: FlowStatistics sin vectores por paquete (acumuladores de tamano fijo,
+sumas enteras exactas en __int128); copia por evento O(1); populate desde los acumuladores. Medido (defender): paridad
+E/V/D 0/0 ulp/0 en 300000 eventos, sin banderas y con las de produccion; RAM 658 -> 625,6 B por flujo; 0 B por
+paquete (antes ~30, DAY307); copia a 1 M paquetes 7,7 ms -> 0,3 us; populate aislado ~0,6 us, plano. 82/82.
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Paso 1 (estadisticos incrementales) hecho DAY308. Quedan: caducidad (limpieza periodica desde la cola de la LRU,
+guarda en should_expire, decision sobre tope de duracion activa, configuracion de la tabla en un solo sitio del JSON),
+bateria de la etapa 2 y E2E antes/despues, registrar los 3 tests en ctest, EMECAS+++.
+
+### DEBT-SNIFFER-LENHIST-UNBOUNDED-001 — ABIERTA (rama propia)
+len_hist (histograma de longitudes por flujo, [DDOS-SNAP-D290]) crece con las longitudes DISTINTAS del flujo, ~48 B
+por longitud. Medido DAY308 (d308_ram_hist, fase C): 70,8 kB por flujo con 1461 longitudes (40-1500), 122,7 kB antes
+del paso 1. Tabla llena (160000 flujos) extrapolada a ~11 GB (no medido). Un atacante en la red puede forzarlo variando
+la longitud de sus paquetes: vector de agotamiento de memoria del sniffer. Ademas la foto DDoS recorre el mapa entero
+en el lock en cada evento: O(k), 23-36 us de media en el tramo 501+ del instrumento, hoy el coste dominante por evento.
+La foto de ddos_v2 (cabeza entrenada) depende de la entropia exacta de ese histograma: cualquier cambio necesita
+diseno propio y medir el efecto en la cabeza.
+
+### DEBT-PARIDAD-FLAGS-PRODUCCION-001 — ABIERTA (metodo)
+La referencia de paridad de DAY307 (logs/lab/day307/paridad/antes.tsv) se genero sin las banderas de produccion
+(-O3 -march=native -flto). Con ellas, el codigo de antes cambia 104784 de 300000 eventos en las ultimas cifras
+(entropias, incluida la de ddos_v2, y desviaciones en float) por fusion FMA. Desde DAY308 antes y despues se comparan
+en los dos perfiles (referencia de produccion: logs/lab/day308/paridad/prod_hoy.tsv). Pendiente: que los instrumentos
+documenten su perfil y que el de produccion sea el de registro; -march=native hace que el resultado dependa de la CPU.
+
+### Lecciones DAY308
+Las medidas de tiempo del lab no escriben en /vagrant (vboxsf): solo eso anadia ~0,55 us por evento en el defender.
+Una cifra absoluta no se lleva de una maquina a otra con un factor supuesto: se mide en la maquina de registro. Antes de
+predecir RAM, medir el sizeof (el alineamiento de __int128 rellena). Una prueba de mutacion dice que ve cada
+herramienta: el instrumento de paridad no veia marcas repetidas; el test si. Las secciones escritas antes de medir no
+se reescriben: el resultado va aparte.
