@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>  // [D308-PASO1] std::min
 
 using namespace sniffer;
 using namespace sniffer::flow;
@@ -79,11 +80,16 @@ TEST_F(RingConsumerProtobufTest, ExtractsMLDefenderFeatures) {
 
     const auto& flow = stats_opt.value();
 
+    // [D307-PASO2] / [D308-PASO1] foto DDoS en lock: da los 5 rasgos DDoS v2 y la entropia de longitudes
+    // que populate usa para ransomware.entropy e internal.access_pattern_entropy
+    DdosFlowSnap snap{};
+    mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
+
     // Create protobuf event
     protobuf::NetworkSecurityEvent proto_event;
 
     // Populate ML Defender features (40 features)
-    ml_extractor_->populate_ml_defender_features(flow, proto_event);
+    ml_extractor_->populate_ml_defender_features(flow, snap.packet_size_entropy, proto_event);
 
     // Verify NetworkFeatures was created
     ASSERT_TRUE(proto_event.has_network_features()) << "NetworkFeatures must be populated";
@@ -95,8 +101,6 @@ TEST_F(RingConsumerProtobufTest, ExtractsMLDefenderFeatures) {
     // DDoS (contrato v2) [D307-PASO2]: populate ya no rellena ddos_embedded; los 5 rasgos de flujo salen de la
     // foto en lock (ddos_v2_flow_snapshot), que ring_consumer escribe en el protobuf. Se comprueban sobre la foto.
     EXPECT_FALSE(net_features.has_ddos_embedded()) << "populate no debe tocar ddos_embedded";
-    DdosFlowSnap snap{};
-    mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
     ASSERT_TRUE(snap.valid) << "La foto DDoS debe existir";
     EXPECT_GE(snap.syn_ack_ratio, 0.0f) << "SYN/ACK ratio populated";
     EXPECT_GE(snap.packet_size_entropy, 0.0f) << "Packet size entropy populated";
@@ -113,6 +117,12 @@ TEST_F(RingConsumerProtobufTest, ExtractsMLDefenderFeatures) {
     const auto& ransomware = net_features.ransomware_embedded();
 
     EXPECT_GE(ransomware.entropy(), 0.0f) << "Entropy populated";
+    // [D308-PASO1] las dos entropias de longitudes salen de la de la foto
+    EXPECT_FLOAT_EQ(ransomware.entropy(), std::min(snap.packet_size_entropy / 5.0f, 1.0f))
+        << "Ransomware entropy = foto / 5, tope 1";
+    EXPECT_FLOAT_EQ(net_features.internal_anomaly().access_pattern_entropy(),
+                    std::min(snap.packet_size_entropy / 5.0f, 1.0f))
+        << "Access pattern entropy = foto / 5, tope 1";
     EXPECT_GE(ransomware.network_activity(), 0.0f) << "Network activity populated";
     EXPECT_GE(ransomware.data_volume(), 0.0f) << "Data volume populated";
 
@@ -271,14 +281,15 @@ TEST_F(RingConsumerProtobufTest, ExtractsTCPSpecificFeatures) {
     ASSERT_TRUE(stats_opt.has_value());
     const auto& flow = stats_opt.value();
 
-    // Verify TCP-specific calculations work
-    protobuf::NetworkSecurityEvent proto_event;
-    ml_extractor_->populate_ml_defender_features(flow, proto_event);
-
     // [D307-PASO2] los rasgos DDoS v2 salen de la foto en lock, no de populate
+    // [D308-PASO1] populate recibe la entropia de longitudes de la foto
     DdosFlowSnap snap{};
     mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
     ASSERT_TRUE(snap.valid);
+
+    // Verify TCP-specific calculations work
+    protobuf::NetworkSecurityEvent proto_event;
+    ml_extractor_->populate_ml_defender_features(flow, snap.packet_size_entropy, proto_event);
 
     // SYN/ACK ratio should be calculated from TCP flags
     EXPECT_GT(snap.syn_ack_ratio, 0.0f) << "SYN/ACK ratio must be calculated";
@@ -346,13 +357,14 @@ TEST_F(RingConsumerProtobufTest, ExtractsBidirectionalFeatures) {
     EXPECT_EQ(flow.spkts, 10) << "Forward packets captured";
     EXPECT_EQ(flow.dpkts, 5) << "Backward packets captured";
 
-    protobuf::NetworkSecurityEvent proto_event;
-    ml_extractor_->populate_ml_defender_features(flow, proto_event);
-
     // [D307-PASO2] los rasgos DDoS v2 salen de la foto en lock, no de populate
+    // [D308-PASO1] populate recibe la entropia de longitudes de la foto
     DdosFlowSnap snap{};
     mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
     ASSERT_TRUE(snap.valid);
+
+    protobuf::NetworkSecurityEvent proto_event;
+    ml_extractor_->populate_ml_defender_features(flow, snap.packet_size_entropy, proto_event);
 
     // [DDOS-V1-RETIRE-D306] symmetry y amplification (v1) retirados: el 10:5 se comprueba en los campos de flujo
     const auto& nfb = proto_event.network_features();

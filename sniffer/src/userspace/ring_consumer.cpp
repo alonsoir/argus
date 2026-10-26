@@ -937,7 +937,11 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 		if (!ml_extractor_.has_aggregator() && ransomware_processor_) {
     		ml_extractor_.set_aggregator(ransomware_processor_->get_aggregator());
 		}
-		ml_extractor_.populate_ml_defender_features(flow_stats, proto_event);
+		// [D308-PASO1, D1] la entropia de longitudes viene de la foto DDoS v2 (mismo calculo, en el lock, en el
+		// instante del paquete): la copia del flujo ya no lleva el histograma. Sin foto -> centinela.
+		const float len_entropy = (queued && queued->flow.valid) ? queued->flow.packet_size_entropy
+		                                                          : MISSING_FEATURE_SENTINEL;
+		ml_extractor_.populate_ml_defender_features(flow_stats, len_entropy, proto_event);
 		// [DDOS-V2-D286] reflection_signature: depende de la tupla del paquete, no de FlowStatistics
 		proto_event.mutable_network_features()->mutable_ddos_embedded()->set_reflection_signature(
 		    ::argus::ddos::reflection_signature(event.protocol, event.src_port, event.dst_port));

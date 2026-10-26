@@ -93,7 +93,10 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
 }
 
 // FIX #3: NEW - Thread-safe copy (reads inside lock)
-std::optional<FlowStatistics> ShardedFlowManager::get_flow_stats_copy(const FlowKey& key) const {
+// [D308-PASO1] Copia del nucleo de tamano fijo, de una vez y O(1): sin vectores que crezcan con el flujo y sin
+// la copia a mano campo a campo (un campo nuevo no se puede perder, DEBT-FLOWSTATS-COPY-AMPUTATED-001). El
+// histograma de longitudes no viaja: solo lo lee la foto DDoS v2 dentro del lock (with_flow_stats).
+std::optional<FlowStatsCore> ShardedFlowManager::get_flow_stats_copy(const FlowKey& key) const {
     if (!initialized_.load(std::memory_order_acquire)) {
         return std::nullopt;
     }
@@ -105,47 +108,7 @@ std::optional<FlowStatistics> ShardedFlowManager::get_flow_stats_copy(const Flow
 
     auto it = shard.flows->find(key);
     if (it != shard.flows->end()) {
-        // Create copy manually (FlowStatistics has unique_ptr members)
-        FlowStatistics copy;
-        
-        // Copy primitive fields
-        copy.flow_start_ns = it->second.stats.flow_start_ns;
-        copy.flow_last_seen_ns = it->second.stats.flow_last_seen_ns;
-        copy.spkts = it->second.stats.spkts;
-        copy.dpkts = it->second.stats.dpkts;
-        copy.sbytes = it->second.stats.sbytes;
-        copy.dbytes = it->second.stats.dbytes;
-        
-        // Copy vectors
-        copy.fwd_lengths = it->second.stats.fwd_lengths;
-        copy.bwd_lengths = it->second.stats.bwd_lengths;
-        copy.all_lengths = it->second.stats.all_lengths;
-        copy.packet_timestamps = it->second.stats.packet_timestamps;
-        copy.fwd_timestamps = it->second.stats.fwd_timestamps;
-        copy.bwd_timestamps = it->second.stats.bwd_timestamps;
-        
-        // Copy TCP flags
-        copy.fin_count = it->second.stats.fin_count;
-        copy.syn_count = it->second.stats.syn_count;
-        copy.rst_count = it->second.stats.rst_count;
-        copy.psh_count = it->second.stats.psh_count;
-        copy.ack_count = it->second.stats.ack_count;
-        copy.urg_count = it->second.stats.urg_count;
-        copy.ece_count = it->second.stats.ece_count;
-        copy.cwr_count = it->second.stats.cwr_count;
-        copy.fwd_psh_flags = it->second.stats.fwd_psh_flags;
-        copy.bwd_psh_flags = it->second.stats.bwd_psh_flags;
-        copy.fwd_urg_flags = it->second.stats.fwd_urg_flags;
-        copy.bwd_urg_flags = it->second.stats.bwd_urg_flags;
-        
-        // Copy header lengths
-        copy.fwd_header_lengths = it->second.stats.fwd_header_lengths;
-        copy.sum_all_lengths = it->second.stats.sum_all_lengths;  // [DDOS-SNAP-D290]
-        copy.len_hist = it->second.stats.len_hist;
-        copy.bwd_header_lengths = it->second.stats.bwd_header_lengths;
-        
-        
-        return std::make_optional(std::move(copy));
+        return std::make_optional<FlowStatsCore>(static_cast<const FlowStatsCore&>(it->second.stats));
     }
     return std::nullopt;
 }

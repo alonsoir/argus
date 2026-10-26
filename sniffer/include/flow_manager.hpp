@@ -1,7 +1,8 @@
 // sniffer/include/flow_manager.hpp
 // Define FlowStatistics: lo que el sniffer acumula por flujo para extraer rasgos. La tabla que lo guarda
 // es flow/sharded_flow_manager.hpp; FlowKey esta en flow_tracker.hpp. [DAY307] la clase FlowManager que
-// vivia aqui no la usaba nadie y se borro (la historia de git la conserva).
+// vivia aqui no la usaba nadie y se borro (la historia de git la conserva). [D308-PASO1] estadisticos
+// incrementales de tamano fijo en lugar de un vector por paquete.
 #pragma once
 
 #include "main.h"
@@ -16,34 +17,77 @@
 
 namespace sniffer {
 
-// Flow statistics - Accumulates data for ML feature extraction
-struct FlowStatistics {
+// [D308-PASO1] Estadisticos incrementales de tamano fijo: el estado de un flujo ya no crece con sus paquetes.
+// Las sumas son enteras y exactas; las varianzas se evaluan al leer (ml_defender_features.cpp).
+// Cotas (sin desbordamiento posible dentro de las hipotesis que el codigo ya hacia):
+//   longitudes: packet_len es uint32_t -> x^2 < 2^64 -> sum_sq < 2^128 con menos de 2^64 paquetes.
+//   IAT: la suma de pares validos cabe en uint64_t (como antes); como todo iat >= 0,
+//        sum_sq <= (sum)^2 < 2^128.
+__extension__ using u128 = unsigned __int128;  // __extension__: -Wpedantic no admite __int128 sin el
+
+// Longitudes de una serie (todas, ida, vuelta). La suma vive fuera: sbytes, dbytes y sbytes + dbytes.
+struct LenAcc {
+    uint32_t min = UINT32_MAX;
+    uint32_t max = 0;
+    u128 sum_sq = 0;
+
+    void add(uint32_t x) {
+        if (x < min) min = x;
+        if (x > max) max = x;
+        sum_sq += static_cast<u128>(x) * x;
+    }
+};
+
+// Tiempos entre llegadas de una serie de marcas en orden de llegada. Par valido: la marca nueva es >= la
+// anterior EN LLEGADA (no la maxima); la anterior se actualiza siempre, sea el par valido o no. Es la regla
+// del recorrido timestamps[i] >= timestamps[i-1] que hacia ml_defender_features.cpp sobre los vectores.
+// El numero de marcas de la serie no se guarda: es spkts + dpkts, spkts o dpkts.
+struct IatAcc {
+    uint64_t last_ts = 0;
+    uint64_t pairs = 0;        // pares validos
+    uint64_t sum = 0;          // suma de los iat de los pares validos
+    uint64_t min = UINT64_MAX;
+    uint64_t max = 0;
+    u128 sum_sq = 0;
+
+    // marcas_previas: cuantas marcas tenia ya la serie antes de esta
+    void add(uint64_t ts, uint64_t marcas_previas) {
+        if (marcas_previas > 0 && ts >= last_ts) {
+            const uint64_t iat = ts - last_ts;
+            ++pairs;
+            sum += iat;
+            if (iat < min) min = iat;
+            if (iat > max) max = iat;
+            sum_sq += static_cast<u128>(iat) * iat;
+        }
+        last_ts = ts;
+    }
+};
+
+// Nucleo del flujo: todo lo que leen los rasgos, de tamano fijo y copiable de una vez (la copia por evento
+// de ShardedFlowManager::get_flow_stats_copy es O(1) y no se pierde ningun campo al anadir uno nuevo).
+struct FlowStatsCore {
     // ============ TIMING ============
-    uint64_t flow_start_ns;
-    uint64_t flow_last_seen_ns;
+    uint64_t flow_start_ns = 0;
+    uint64_t flow_last_seen_ns = 0;
 
     // ============ PACKET COUNTERS ============
     uint64_t spkts = 0;  // Forward packets (source -> destination)
     uint64_t dpkts = 0;  // Backward packets (destination -> source)
 
     // ============ BYTE COUNTERS ============
-    uint64_t sbytes = 0;  // Forward bytes
-    uint64_t dbytes = 0;  // Backward bytes
+    uint64_t sbytes = 0;  // Forward bytes (= suma de longitudes de ida)
+    uint64_t dbytes = 0;  // Backward bytes (= suma de longitudes de vuelta)
 
     // ============ PACKET LENGTHS ============
-    std::vector<uint32_t> fwd_lengths;  // For smean calculation
-    std::vector<uint32_t> bwd_lengths;  // For dmean calculation
-    std::vector<uint32_t> all_lengths;  // For packet_len_mean/std/var
-    // [DDOS-SNAP-D290] Estadisticos incrementales de all_lengths para la foto DDoS v2:
-    // suma exacta (media identica a calculate_mean) e histograma ordenado (entropia identica a
-    // calculate_entropy, que tambien recorre un std::map por valor ascendente).
-    uint64_t sum_all_lengths = 0;
-    std::map<uint32_t, uint32_t> len_hist;
+    LenAcc len_all;
+    LenAcc len_fwd;
+    LenAcc len_bwd;
 
     // ============ INTER-ARRIVAL TIMES ============
-    std::vector<uint64_t> packet_timestamps;  // ALL packet timestamps (for flow IAT)
-    std::vector<uint64_t> fwd_timestamps;     // Forward packet timestamps
-    std::vector<uint64_t> bwd_timestamps;     // Backward packet timestamps
+    IatAcc iat_all;
+    IatAcc iat_fwd;
+    IatAcc iat_bwd;
 
     // ============ TCP FLAGS COUNTERS ============
     uint32_t fin_count = 0;
@@ -62,17 +106,8 @@ struct FlowStatistics {
     uint32_t bwd_urg_flags = 0;
 
     // ============ HEADER LENGTHS ============
-    std::vector<uint16_t> fwd_header_lengths;
-    std::vector<uint16_t> bwd_header_lengths;
-
-    // ============ METHODS ============
-
-    // Constructor
-    FlowStatistics() = default;
-
-    // Move constructor
-    FlowStatistics(FlowStatistics&& other) noexcept = default;
-    FlowStatistics& operator=(FlowStatistics&& other) noexcept = default;
+    uint64_t fwd_header_sum = 0;  // la cuenta es spkts
+    uint64_t bwd_header_sum = 0;  // la cuenta es dpkts
 
     // Determines if packet is forward direction
     bool is_forward(const SimpleEvent& pkt, const FlowKey& flow_key) const {
@@ -82,40 +117,35 @@ struct FlowStatistics {
                pkt.dst_port == flow_key.dst_port;
     }
 
-    // Add packet to flow statistics
+    // Add packet to flow statistics (O(1))
     void add_packet(const SimpleEvent& pkt, const FlowKey& flow_key) {
+        const uint64_t previos = spkts + dpkts;
         // Initialize timestamps on first packet
-        if (spkts == 0 && dpkts == 0) {
+        if (previos == 0) {
             flow_start_ns = pkt.timestamp;
         }
         flow_last_seen_ns = pkt.timestamp;
 
-        bool is_fwd = is_forward(pkt, flow_key);
+        const uint16_t total_header = pkt.ip_header_len + pkt.l4_header_len;
 
         // Direction-specific counters
-        if (is_fwd) {
+        if (is_forward(pkt, flow_key)) {
+            iat_fwd.add(pkt.timestamp, spkts);
             spkts++;
             sbytes += pkt.packet_len;
-            fwd_lengths.push_back(pkt.packet_len);
-
-            uint16_t total_header = pkt.ip_header_len + pkt.l4_header_len;
-            fwd_header_lengths.push_back(total_header);
-
-            fwd_timestamps.push_back(pkt.timestamp);
+            len_fwd.add(pkt.packet_len);
+            fwd_header_sum += total_header;
 
             // Directional TCP flags
             if (has_tcp_flag(pkt, TCP_FLAG_PSH)) fwd_psh_flags++;
             if (has_tcp_flag(pkt, TCP_FLAG_URG)) fwd_urg_flags++;
 
         } else {
+            iat_bwd.add(pkt.timestamp, dpkts);
             dpkts++;
             dbytes += pkt.packet_len;
-            bwd_lengths.push_back(pkt.packet_len);
-
-            uint16_t total_header = pkt.ip_header_len + pkt.l4_header_len;
-            bwd_header_lengths.push_back(total_header);
-
-            bwd_timestamps.push_back(pkt.timestamp);
+            len_bwd.add(pkt.packet_len);
+            bwd_header_sum += total_header;
 
             // Directional TCP flags
             if (has_tcp_flag(pkt, TCP_FLAG_PSH)) bwd_psh_flags++;
@@ -123,11 +153,8 @@ struct FlowStatistics {
         }
 
         // Overall statistics
-        all_lengths.push_back(pkt.packet_len);
-        sum_all_lengths += pkt.packet_len;                    // [DDOS-SNAP-D290]
-        ++len_hist[static_cast<uint32_t>(pkt.packet_len)];
-        packet_timestamps.push_back(pkt.timestamp);
-
+        len_all.add(pkt.packet_len);
+        iat_all.add(pkt.timestamp, previos);
 
         // TCP flags totals
         if (pkt.protocol == 6) {  // TCP only
@@ -172,6 +199,20 @@ struct FlowStatistics {
     // Check if TCP connection is closed (FIN or RST seen)
     bool is_tcp_closed() const {
         return fin_count > 0 || rst_count > 0;
+    }
+};
+
+// Lo que guarda la tabla por flujo: el nucleo mas el histograma de longitudes, que solo lee la foto DDoS v2
+// dentro del lock (ddos_v2_flow_snapshot). El histograma NO viaja en la copia por evento [D308-PASO1, D1]:
+// las dos entropias de populate reciben la de la foto, que es el mismo numero.
+struct FlowStatistics : FlowStatsCore {
+    // [DDOS-SNAP-D290] histograma ordenado de longitudes (entropia identica a recorrer un std::map por valor
+    // ascendente). Crece con las longitudes distintas del flujo, no con sus paquetes.
+    std::map<uint32_t, uint32_t> len_hist;
+
+    void add_packet(const SimpleEvent& pkt, const FlowKey& flow_key) {
+        FlowStatsCore::add_packet(pkt, flow_key);
+        ++len_hist[static_cast<uint32_t>(pkt.packet_len)];
     }
 };
 

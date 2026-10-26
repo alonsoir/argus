@@ -30,7 +30,8 @@ public:
     // REMOVED: get_flow_stats_mut() - returned unprotected pointer (data race)
     
     // NEW: Thread-safe API - returns copy inside lock
-    std::optional<FlowStatistics> get_flow_stats_copy(const FlowKey& key) const;
+    // [D308-PASO1] copia del nucleo de tamano fijo (sin el histograma de longitudes)
+    std::optional<FlowStatsCore> get_flow_stats_copy(const FlowKey& key) const;
     
     // NEW: Thread-safe API - executes callback inside lock
     template<typename Func>
