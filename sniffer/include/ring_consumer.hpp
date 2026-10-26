@@ -155,6 +155,7 @@ private:
     void feature_processor_loop();
     void zmq_sender_loop();
     void timebase_loop();  // [TIMEBASE-D295]
+    void flow_table_loop();  // [FLOW-TABLE-D308] limpieza por inactividad y linea [FLOW-TABLE]
     void stamp_time_context(protobuf::NetworkSecurityEvent& ev, uint64_t mono_ns);  // [TIMEBASE-D295]
     void stats_display_loop();  // NEW: Thread for periodic stats
 

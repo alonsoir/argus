@@ -28,7 +28,9 @@ void ShardedFlowManager::initialize(const Config& config) {
         std::cout << "[ShardedFlowManager] Initialized:" << std::endl;
         std::cout << "  Shard count: " << config_.shard_count << std::endl;
         std::cout << "  Max flows per shard: " << config_.max_flows_per_shard << std::endl;
-        std::cout << "  Flow timeout: " << config_.flow_timeout_ns / 1'000'000'000 << " seconds" << std::endl;
+        std::cout << "  Idle timeout: " << config_.idle_timeout_ns / 1'000'000'000 << " seconds" << std::endl;
+        std::cout << "  Active timeout: " << config_.active_timeout_ns / 1'000'000'000 << " seconds"
+                  << (config_.active_timeout_ns == 0 ? " (sin tope)" : "") << std::endl;
         std::cout << "  Total capacity: " << config_.shard_count * config_.max_flows_per_shard << " flows" << std::endl;
     });
 }
@@ -55,7 +57,10 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
 
     std::unique_lock lock(*shard.mutex);
 
-    shard.last_seen_ns.store(now_ns(), std::memory_order_relaxed);
+    const uint64_t ahora = now_ns();
+    shard.last_seen_ns.store(ahora, std::memory_order_relaxed);
+    // [FLOW-TABLE-D308] marca del paquete posterior a la hora de la tabla: los dos relojes no son la misma base
+    if (event.timestamp > ahora) marcas_futuras_.fetch_add(1, std::memory_order_relaxed);
 
     auto it = shard.flows->find(key);
 
@@ -66,6 +71,7 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
                 FlowKey evict_key = shard.lru_queue->back();
                 shard.lru_queue->pop_back();
                 shard.flows->erase(evict_key);
+                desalojos_lru_.fetch_add(1, std::memory_order_relaxed);  // [FLOW-TABLE-D308] antes, en silencio
             }
         }
 
@@ -80,7 +86,15 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
 
     } else {
         // Existing flow
-        it->second.stats.add_packet(event, key);
+        // [FLOW-TABLE-D308] Tope de duracion activa (0 = sin tope), con marcas de paquete: si el flujo ya dura el
+        // tope, se cierra (estado a cero) y este paquete abre el flujo nuevo con la misma clave. O(1), sin recorrer.
+        auto& st = it->second.stats;
+        if (config_.active_timeout_ns > 0 && event.timestamp >= st.flow_start_ns &&
+            event.timestamp - st.flow_start_ns >= config_.active_timeout_ns) {
+            st = FlowStatistics{};
+            cortes_tope_.fetch_add(1, std::memory_order_relaxed);
+        }
+        st.add_packet(event, key);
         
         // FIX #2: O(1) LRU update using splice
         shard.lru_queue->splice(
@@ -113,30 +127,64 @@ std::optional<FlowStatsCore> ShardedFlowManager::get_flow_stats_copy(const FlowK
     return std::nullopt;
 }
 
+// [FLOW-TABLE-D308] Desde la cola de la LRU de cada shard (el flujo cuyo ultimo paquete llego hace mas): mientras la
+// cola este caducada, se borra (O(1) por flujo); se para en la primera que no lo este. Coste O(caducados + shards) y
+// cada lock solo mientras se borra lo de su shard (antes: recorria todos los flujos y borraba de la LRU con
+// list::remove, O(n) por borrado; medido DAY308: 6 s con 72 000 caducados en el defender). La LRU ordena por
+// llegada, no por marca: con marcas desordenadas un caducado puede esperar a una pasada posterior.
 size_t ShardedFlowManager::cleanup_expired_flows(uint64_t current_ns) {
     if (!initialized_.load(std::memory_order_acquire)) {
         return 0;
     }
 
     size_t total_cleaned = 0;
+    uint64_t max_us = 0;
 
     for (auto& shard_ptr : shards_) {
         auto& shard = *shard_ptr;
-        std::unique_lock lock(*shard.mutex);
-
-        auto it = shard.flows->begin();
-        while (it != shard.flows->end()) {
-            if (it->second.stats.should_expire(current_ns, config_.flow_timeout_ns)) {
-                shard.lru_queue->remove(it->first);
-                it = shard.flows->erase(it);
+        const auto t0 = std::chrono::steady_clock::now();
+        {
+            std::unique_lock lock(*shard.mutex);
+            while (!shard.lru_queue->empty()) {
+                auto it = shard.flows->find(shard.lru_queue->back());
+                if (it == shard.flows->end()) {  // no deberia pasar: la LRU y la tabla van juntas
+                    shard.lru_queue->pop_back();
+                    continue;
+                }
+                if (!it->second.stats.should_expire(current_ns, config_.idle_timeout_ns)) {
+                    break;
+                }
+                shard.flows->erase(it);
+                shard.lru_queue->pop_back();
                 ++total_cleaned;
-            } else {
-                ++it;
             }
         }
+        const uint64_t us = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - t0).count());
+        if (us > max_us) max_us = us;
     }
 
+    caducados_.fetch_add(total_cleaned, std::memory_order_relaxed);
+    uint64_t previo = max_lock_us_.load(std::memory_order_relaxed);
+    while (max_us > previo && !max_lock_us_.compare_exchange_weak(previo, max_us, std::memory_order_relaxed)) {
+    }
     return total_cleaned;
+}
+
+ShardedFlowManager::Counters ShardedFlowManager::take_counters() {
+    Counters c;
+    c.caducados = caducados_.exchange(0, std::memory_order_relaxed);
+    c.cortes_tope = cortes_tope_.exchange(0, std::memory_order_relaxed);
+    c.desalojos_lru = desalojos_lru_.exchange(0, std::memory_order_relaxed);
+    c.marcas_futuras = marcas_futuras_.exchange(0, std::memory_order_relaxed);
+    c.max_lock_us = max_lock_us_.exchange(0, std::memory_order_relaxed);
+    if (initialized_.load(std::memory_order_acquire)) {
+        for (const auto& shard_ptr : shards_) {
+            std::unique_lock lock(*shard_ptr->mutex);
+            c.vivos += shard_ptr->flows->size();
+        }
+    }
+    return c;
 }
 
 void ShardedFlowManager::print_stats() const {

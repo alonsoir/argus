@@ -15,8 +15,8 @@
 // Ademas comprueba que la tabla y la sombra cuentan los mismos paquetes por flujo (si no, ABORTA: el oraculo
 // no seria del mismo flujo).
 //
-// Compila contra el codigo de HOY (populate sin entropia) y, con -DD308_DESPUES, contra el del paso 1
-// (populate recibe la entropia de la foto, decision D1).
+// Compila contra el codigo desde el paso 1 de DAY308 (populate recibe la entropia de la foto, decision D1; el
+// codigo de antes se midio con la version del commit 1612f037, que lo elegia con -DD308_DESPUES).
 // La region cronometrada se reparte en tres piezas (copia del flujo, populate, rasgos DDoS) con dos lecturas de
 // reloj mas (0,022 us cada una, medido en el defender, DAY308).
 // Uso: d308_paridad_tolerancia N_PAQUETES SEMILLA SALIDA.tsv ORACULO.tsv
@@ -211,7 +211,7 @@ int main(int argc, char** argv) {
 
     auto& mgr = ShardedFlowManager::instance();
     mgr.initialize(ShardedFlowManager::Config{.shard_count = 16, .max_flows_per_shard = 10000,
-                                              .flow_timeout_ns = 120'000'000'000ULL});
+                                              .idle_timeout_ns = 120'000'000'000ULL});
     MLDefenderExtractor ext;  // sin agregador, como cuando el procesador de ransomware esta apagado
 
     std::map<std::tuple<uint32_t, uint32_t, uint16_t, uint16_t, uint8_t>, Sombra> sombras;
@@ -292,11 +292,7 @@ int main(int argc, char** argv) {
         auto copia = mgr.get_flow_stats_copy(key);
         const auto t1 = std::chrono::steady_clock::now();  // [DAY308] piezas: copia | populate | rasgos DDoS
         const uint64_t n_flujo = copia ? copia->get_total_packets() : 0;
-#ifdef D308_DESPUES
         if (copia) ext.populate_ml_defender_features(*copia, snap.packet_size_entropy, ev);
-#else
-        if (copia) ext.populate_ml_defender_features(*copia, ev);
-#endif
         else ++eventos_sin_flujo;
         const auto t2 = std::chrono::steady_clock::now();
         auto* dd = ev.mutable_network_features()->mutable_ddos_embedded();

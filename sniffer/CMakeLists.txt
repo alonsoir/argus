@@ -766,6 +766,26 @@ target_link_libraries(test_ddos_flow_snap
 add_test(NAME test_ddos_flow_snap COMMAND test_ddos_flow_snap)
 message(STATUS "🧪 Unit Test: test_ddos_flow_snap configured (DAY 290 - foto DDoS v2 incremental) [DDOS-SNAP-D290]")
 
+# [FLOW-TABLE-D308] caducidad de la tabla de flujos: lector de flow_table (sniffer.json) y ShardedFlowManager
+add_executable(test_flow_expiry
+        tests/test_flow_expiry.cpp
+        src/flow/sharded_flow_manager.cpp
+        src/userspace/flow_tracker.cpp
+)
+target_include_directories(test_flow_expiry PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/flow
+        ${CMAKE_SOURCE_DIR}/src
+        ${JSONCPP_INCLUDE_DIRS}
+)
+target_link_directories(test_flow_expiry PRIVATE ${JSONCPP_LIBRARY_DIRS})
+target_link_libraries(test_flow_expiry
+        Threads::Threads
+        ${JSONCPP_LIBRARIES}
+)
+add_test(NAME test_flow_expiry COMMAND test_flow_expiry)
+message(STATUS "🧪 Unit Test: test_flow_expiry configured (DAY 308 - caducidad de la tabla de flujos) [FLOW-TABLE-D308]")
+
 # ============================================================================
 # PROTO3 EMBEDDED SERIALIZATION TEST — DAY 75 regression
 # Validates: all-zero float submessage trap + sentinel fix for send_ransomware_features

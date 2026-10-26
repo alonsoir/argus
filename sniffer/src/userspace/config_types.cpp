@@ -105,10 +105,10 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
         config.kernel_space.ddos_kernel_agg_csv_path = sniffer_config->kernel_space.ddos_kernel_agg_csv_path;
         config.kernel_space.ddos_victim_ewma = sniffer_config->kernel_space.ddos_victim_ewma;  // [DDOS-HYST-D291]
         config.timebase = sniffer_config->timebase;  // [TIMEBASE-D295]
+        config.flow_table = sniffer_config->flow_table;  // [FLOW-TABLE-D308]
         config.kernel_space.xdp_mode = sniffer_config->kernel_space.xdp_mode;
         config.kernel_space.ring_buffer_size = sniffer_config->kernel_space.ring_buffer_size;
         config.kernel_space.max_flows_in_kernel = sniffer_config->kernel_space.max_flows_in_kernel;
-        config.kernel_space.flow_timeout_seconds = sniffer_config->kernel_space.flow_timeout_seconds;
         config.kernel_space.kernel_features = sniffer_config->kernel_space.kernel_features;
 
         // Network output

@@ -176,7 +176,7 @@ int main() {
     mgr.initialize(ShardedFlowManager::Config{
         .shard_count = 4,
         .max_flows_per_shard = 100000,
-        .flow_timeout_ns = 120'000'000'000ULL
+        .idle_timeout_ns = 120'000'000'000ULL
     });
     uint64_t ts = 1'000'000'000ULL;
 

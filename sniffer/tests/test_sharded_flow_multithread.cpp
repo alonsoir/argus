@@ -36,7 +36,7 @@ protected:
         ShardedFlowManager::Config config{
             .shard_count = 16,  // Production setting
             .max_flows_per_shard = 10000,
-            .flow_timeout_ns = 120'000'000'000ULL
+            .idle_timeout_ns = 120'000'000'000ULL
         };
 
         auto& mgr = ShardedFlowManager::instance();

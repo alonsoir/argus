@@ -116,7 +116,7 @@ std::unique_ptr<SnifferConfig> ConfigManager::load_from_file(const std::string& 
     config->capture = parse_capture(root.get("capture", Json::Value{}));
     config->kernel_space = parse_kernel_space(root.get("kernel_space", Json::Value{}));
     config->timebase = parse_timebase(root.get("timebase", Json::Value{}));  // [TIMEBASE-D295]
-    config->user_space = parse_user_space(root.get("user_space", Json::Value{}));
+    config->flow_table = ::argus::flowtable::parse_flow_table(root);  // [FLOW-TABLE-D308] un solo sitio, en el log
 
     config->sniffer_time_windows = parse_time_windows(root.get("sniffer_time_windows", Json::Value{}));
     config->network = parse_network(root.get("network", Json::Value{}));
@@ -336,7 +336,6 @@ KernelSpaceConfig ConfigManager::parse_kernel_space(const Json::Value& kernel_js
     kernel.xdp_mode = kernel_json.get("xdp_mode", "native").asString();
     kernel.ring_buffer_size = kernel_json.get("ring_buffer_size", 1048576).asUInt64();
     kernel.max_flows_in_kernel = kernel_json.get("max_flows_in_kernel", 100000).asUInt64();
-    kernel.flow_timeout_seconds = kernel_json.get("flow_timeout_seconds", 300).asInt();
     kernel.kernel_features = parse_string_array(kernel_json["kernel_features"]);
 
     // Parse performance settings
@@ -346,20 +345,6 @@ KernelSpaceConfig ConfigManager::parse_kernel_space(const Json::Value& kernel_js
     kernel.performance.map_update_batch_size = perf_json.get("map_update_batch_size", 100).asUInt64();
 
     return kernel;
-}
-
-UserSpaceConfig ConfigManager::parse_user_space(const Json::Value& user_json) {
-    UserSpaceConfig user;
-    user.flow_table_size = user_json.get("flow_table_size", 1000000).asUInt64();
-    user.time_window_buffer_size = user_json.get("time_window_buffer_size", 10000).asUInt64();
-
-    // Parse memory management
-    auto mem_json = user_json["memory_management"];
-    user.memory_management.flow_eviction_policy = mem_json.get("flow_eviction_policy", "lru").asString();
-    user.memory_management.max_memory_usage_mb = mem_json.get("max_memory_usage_mb", 2048).asUInt64();
-    user.memory_management.gc_interval_seconds = mem_json.get("gc_interval_seconds", 60).asInt();
-
-    return user;
 }
 
 TimeWindowsConfig ConfigManager::parse_time_windows(const Json::Value& windows_json) {
@@ -505,7 +490,6 @@ ProcessingConfig ConfigManager::parse_processing(const Json::Value& processing_j
     processing.feature_extraction.enabled = feature_json.get("enabled", true).asBool();
     processing.feature_extraction.extract_all_features = feature_json.get("extract_all_features", true).asBool();
     processing.feature_extraction.cache_flow_states = feature_json.get("cache_flow_states", true).asBool();
-    processing.feature_extraction.flow_timeout_seconds = feature_json.get("flow_timeout_seconds", 300).asInt();
     processing.feature_extraction.max_concurrent_flows = feature_json.get("max_concurrent_flows", 1000000).asUInt64();
     processing.feature_extraction.statistics_engine = feature_json.get("statistics_engine", "high_performance_cpp").asString();
     processing.feature_extraction.simd_optimization = feature_json.get("simd_optimization", true).asBool();

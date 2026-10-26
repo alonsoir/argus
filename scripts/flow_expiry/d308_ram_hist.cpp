@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
         entero(argv[4], 1, 100'000'000, c) && entero(argv[5], 1, 65535, d) && entero(argv[6], 1, 65535, e2) &&
         d <= e2 && entero(argv[7], 1, 100'000'000, g)) {
         mgr.initialize(ShardedFlowManager::Config{.shard_count = (size_t)a, .max_flows_per_shard = (size_t)b,
-                                                  .flow_timeout_ns = 120'000'000'000ULL});
+                                                  .idle_timeout_ns = 120'000'000'000ULL});
         const long rss0 = vmrss_kb();
         std::printf("# fase=C shards=%llu max_por_shard=%llu cap=%llu flujos=%llu lmin=%llu lmax=%llu "
                     "longitudes_por_flujo=%llu paso=%llu rss0_kb=%ld\n",

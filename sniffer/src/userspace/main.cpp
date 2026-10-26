@@ -599,6 +599,7 @@ int main(int argc, char* argv[]) {
         sniffer_config.node_id = g_config.node_id;
         sniffer_config.cluster_name = g_config.cluster_name;
         sniffer_config.timebase = g_config.timebase;  // [TIMEBASE-D295]
+        sniffer_config.flow_table = g_config.flow_table;  // [FLOW-TABLE-D308]
 
         // Mapear buffers
         sniffer_config.buffers.ring_buffer_entries = g_config.buffers.ring_buffer_entries;

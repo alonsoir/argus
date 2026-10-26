@@ -186,7 +186,10 @@ struct FlowStatsCore {
     }
 
     // Check if flow should expire (inactive for timeout period)
+    // [FLOW-TABLE-D308] guarda: una ultima marca posterior a current_ns no caduca (antes la resta sin signo daba la
+    // vuelta y caducaba un flujo vivo)
     bool should_expire(uint64_t current_ns, uint64_t timeout_ns) const {
+        if (flow_last_seen_ns > current_ns) return false;
         return (current_ns - flow_last_seen_ns) > timeout_ns;
     }
 

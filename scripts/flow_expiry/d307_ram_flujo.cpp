@@ -73,7 +73,7 @@ int main(int argc, char** argv) {
         uint64_t max_ps = entero(argv[3], "MAX_POR_SHARD", 1, 10000000);
         uint64_t paso = entero(argv[4], "PASO", 1, 100000000);
         mgr.initialize(ShardedFlowManager::Config{.shard_count = shards, .max_flows_per_shard = max_ps,
-                                                  .flow_timeout_ns = 120'000'000'000ULL});
+                                                  .idle_timeout_ns = 120'000'000'000ULL});
         const uint64_t cap = shards * max_ps;
         const uint64_t total = cap * 2;
         long rss0 = vmrss_kb();
@@ -104,7 +104,7 @@ int main(int argc, char** argv) {
         uint64_t n = entero(argv[2], "N_PAQUETES", 1, 1'000'000'000ULL);
         uint64_t paso = entero(argv[3], "PASO", 1, 1'000'000'000ULL);
         mgr.initialize(ShardedFlowManager::Config{.shard_count = 16, .max_flows_per_shard = 10000,
-                                                  .flow_timeout_ns = 120'000'000'000ULL});
+                                                  .idle_timeout_ns = 120'000'000'000ULL});
         long rss0 = vmrss_kb();
         std::printf("# fase=B n=%llu paso=%llu rss0_kb=%ld (1 flujo UDP, 90 B, 1 paquete cada 10 ms)\n",
                     (unsigned long long)n, (unsigned long long)paso, rss0);

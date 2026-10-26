@@ -20,6 +20,7 @@
 #include <json/json.h>
 #include "ddos_contract_v2.hpp"  // [DDOS-HYST-D291]
 #include "timebase.hpp"  // [TIMEBASE-D295]
+#include "flow_table_config.hpp"  // [FLOW-TABLE-D308]
 
 // ============================================================================
 // MACROS DE VALIDACIÓN ESTRICTA JSON
@@ -152,7 +153,6 @@ struct StrictSnifferConfig {
         std::string xdp_mode;
         int ring_buffer_size;
         int max_flows_in_kernel;
-        int flow_timeout_seconds;
         std::vector<std::string> kernel_features;
         int cpu_budget_us_per_packet;
         int max_instructions_per_program;
@@ -160,15 +160,7 @@ struct StrictSnifferConfig {
     } kernel_space;
 
     ::argus::timebase::TimebaseParams timebase{};  // [TIMEBASE-D295]
-
-    // User space - TODOS REQUERIDOS
-    struct {
-        int flow_table_size;
-        int time_window_buffer_size;
-        std::string flow_eviction_policy;
-        int max_memory_usage_mb;
-        int gc_interval_seconds;
-    } user_space;
+    ::argus::flowtable::FlowTableParams flow_table{};  // [FLOW-TABLE-D308]
 
     // Time windows - TODOS REQUERIDOS
     struct {
