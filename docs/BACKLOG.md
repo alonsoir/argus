@@ -7932,3 +7932,39 @@ Una cifra absoluta no se lleva de una maquina a otra con un factor supuesto: se 
 predecir RAM, medir el sizeof (el alineamiento de __int128 rellena). Una prueba de mutacion dice que ve cada
 herramienta: el instrumento de paridad no veia marcas repetidas; el test si. Las secciones escritas antes de medir no
 se reescriben: el resultado va aparte.
+
+## DAY308 — paso 2 (rama feat/sniffer-flow-expiry)
+
+Documento: `docs/ml-heads/day308_paso2_diseno.md` (diseno antes de medir, resultado en la seccion 6). Commit 97e48add.
+
+### DEBT-SNIFFER-FLOWTABLE-CONFIG-001 — CERRADA DAY308
+La tabla de flujos se configura en un solo sitio, la seccion flow_table de sniffer.json (shards, max_flows_per_shard,
+idle_timeout_s 300, active_timeout_s 0 = sin tope, cleanup_interval_ms 1000, log_interval_s 60), con defectos iguales
+en el codigo (flow_table_params.hpp), [CONFIG-DEFAULT] por campo y linea [FLOW-TABLE] con el valor y el origen. Fuera
+kernel_space.flow_timeout_seconds, processing.feature_extraction.flow_timeout_seconds y user_space ([CONFIG-OBSOLETO]
+si vuelven).
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Pasos 1 (estadisticos incrementales) y 2 (caducidad) hechos DAY308. Caducidad: limpieza por inactividad desde la cola
+de la LRU (80000 flujos, 72000 caducados: 6,0 s -> 32 ms en el defender), tope de duracion activa perezoso (desactivado
+por defecto), should_expire con guarda, contadores en la linea [FLOW-TABLE]. E2E: marcas_futuras=0 (mismo reloj).
+Quedan: bateria de la etapa 2 (ddos_v2) y E2E antes/despues, registrar los 3 tests en ctest, EMECAS+++, PR.
+
+### Barrido de idle_timeout_s y active_timeout_s — rama propia (decision DAY308)
+Los defectos (300 s, sin tope) son seguros, no optimos. El valor optimo se mide con una herramienta de barrido fuera de
+linea (pcap -> ShardedFlowManager real + foto DDoS, varios valores) en tres ejes: memoria y flujos vivos, efecto en la
+puntuacion y decisiones de ddos_v2 (entrenada sin caducidad, con corridas cortas) en ataque, ataque largo y benigno, y
+coste de la limpieza. Va junto a DEBT-DDOS-V2-LONG-ATTACK-001.
+
+### Correccion de metodo — total de tests de make test-components
+El "out of 82" que se comprobaba desde DAY307 es el numero de tests del firewall, no el total. Hay cinco lineas de
+resumen (flow_uid 9, sniffer 19, ml-detector 15, autonomia 3, firewall 82 = 128): se comprueban las cinco, cada una con
+su numero esperado, y que todas digan 0 tests failed.
+
+### Errata del commit 1612f037 (paso 1)
+Su mensaje dice "0 B por paquete (antes ~47)" y "copia ... 7,9 ms": son cifras de otra maquina. En el defender, DAY307
+midio ~30 B por paquete (292 MB a 10 M paquetes) y 7,7 ms. Las cifras correctas estan en day308_paso1_diseno.md.
+
+### Lecciones DAY308 (paso 2)
+Un factor entre maquinas medido en un tipo de trabajo no vale para otro: la persecucion de punteros (list::remove) pago
+x3,4 en la VM; mirar 16 colas apenas paga nada. Un resumen de herramienta se lee entero antes de convertirlo en regla.
