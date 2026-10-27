@@ -8017,3 +8017,40 @@ la caducidad); EMECAS+++ production; PR.
 Antes de predecir lo que mide un test, leer el codigo que prueba y no solo el test: la prediccion de la prueba de tiempo
 (1-50 us) fallo porque su payload aleatorio toma la rama cara. Un inventario se saca contra el fichero (cada
 add_executable con su add_test), no se hereda de la lista de una deuda.
+
+## DAY309 — paso 2: antes/despues de la caducidad en ddos_v2 (rama feat/sniffer-flow-expiry)
+
+Documento: `docs/ml-heads/day309_diseno.md` (diseno y predicciones antes de medir; resultado en la seccion 4).
+Herramientas en `scripts/flow_expiry/d309_*` (corrieron desde logs/lab/day309/tools para usar las mismas en main y en
+la rama; mismo sha256). "Antes" = main 57d1d400 (git switch --detach + pipeline-build production); el diff main..rama
+sin docs/ ni scripts/ esta todo en sniffer/.
+- A, make lab-e2e-mitigacion: PASA en los dos lados (C1-C5 dentro del ruido; no ejercita la caducidad).
+- B, bateria DAY292 (ntp, dns, syn a 60 pps) y benigna DAY294: rasgos predichos con simulacion de la tabla sobre las
+  tuplas reales, 1-2 de 1-2 en cada lado; decisiones iguales en ntp, dns y syn (0,17-0,82 %); la benigna dio 0 frente a
+  8 positivos aislados, explicados por la etapa 1 en el borde de K (abajo), sin INICIO en ningun lado.
+- C, corrida "hueco" (mismo ataque NTP tras 330 s de silencio): fpk del ataque que vuelve 2,080 en main y 1,027 en la
+  rama, fila por fila como la simulacion; decisiones iguales (p1 = 1,0, 2 INICIO / 2 FIN, mismos DROP). Rama: 6 474
+  caducados, marcas_futuras 0, desalojos_lru 0.
+Conclusion: la caducidad cambia exactamente el rasgo predicho y en ninguna corrida cambia una decision.
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Hechos: pasos 1 y 2 (DAY308), registro de tests y antes/despues A, B y C (DAY309). Quedan: EMECAS+++ production, PR,
+merge y etiqueta.
+
+### DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001 — ABIERTA (medido DAY309)
+La etapa 2 de ddos_v2 da p1 > 0,5 en trafico legitimo: los primeros ~68 eventos de una subida TCP (fpk 1-68, p1
+0,53-0,99) y el agente Wazuh (.12:1514, p1 hasta 1,0). Solo los protege la etapa 1 (ratio >= K). En la benigna de
+DAY309 el arranque de la subida coincidio con ratio 5,0 (rama) frente a 2,814 (main): 8 positivos aislados frente a 0,
+absorbidos por k=3/5 (0 INICIO). El "TCP 50 KB/s: 0 positivos" de DAY294 depende de cuando arranca la subida respecto
+a la presion sobre la victima. Evaluador fuera de linea con el mismo bosque: scripts/flow_expiry/d309_p1_filas.cpp.
+Relacion: bateria v3 y reentrenamiento (la etapa 2 aprende firmas de los generadores, bloque1_day293.md).
+
+### Lecciones DAY309
+Antes de predecir lo que mide un test, leer el codigo que prueba, no solo el test. Un inventario se saca contra el
+fichero (cada add_executable con su add_test), no se hereda de la lista de una deuda. pgrep -f / pkill -f se encuentran
+a si mismos cuando su linea de comandos contiene el patron: vigilar un servicio por su puerto y pararlo por su PID. Un
+comprobador se lee por su TEXTO, no por su codigo de salida (un fallo no capturado de Python sale con rc 1). Un
+criterio relativo no sirve con base 0: para positivos aislados se predice una cuenta absoluta. Una corrida que falla
+para la cadena: no se sigue con el paso siguiente. Un analisis que agrupa por origen filtra tambien por protocolo (el
+ping de fondo de esperar ESTABLE sale de .50). Un tail corto puede cortar justo la parte que importa: el analisis va a
+fichero y se lee entero.
