@@ -7968,3 +7968,52 @@ midio ~30 B por paquete (292 MB a 10 M paquetes) y 7,7 ms. Las cifras correctas 
 ### Lecciones DAY308 (paso 2)
 Un factor entre maquinas medido en un tipo de trabajo no vale para otro: la persecucion de punteros (list::remove) pago
 x3,4 en la VM; mirar 16 colas apenas paga nada. Un resumen de herramienta se lee entero antes de convertirlo en regla.
+
+## DAY309 (27-oct-2026) — rama feat/sniffer-flow-expiry, registro de tests
+
+Parcheador: `scripts/flow_expiry/d309_registrar_tests.py` ([TESTS-REG-D309], solo sniffer/CMakeLists.txt, 4 lineas
+add_test). Medido en el defender y desde el Mac: pipeline-build production con 0 diagnosticos; make test-components
+PROFILE=production con flow_uid 9, sniffer 23 (antes 19), ml-detector 15, autonomia 3, firewall 82 = 132, 0 fallos.
+
+### DEBT-SNIFFER-TESTS-NOT-REGISTERED-001 — CERRADA DAY309
+El inventario completo de sniffer/CMakeLists.txt (cada add_executable contra su add_test) daba 5 tests sin registrar,
+no 3: los tres de la deuda, test_proto3_embedded_serialization y test_payload_analyzer. Registrados los cuatro que
+pasan: test_sharded_flow_full_contract (3), test_ring_consumer_protobuf (4), test_sharded_flow_multithread (6) y
+test_proto3_embedded_serialization (3). test_payload_analyzer queda fuera (DEBT-SNIFFER-PAYLOAD-ANALYZER-001).
+Notas medidas al registrarlos:
+- test_proto3_embedded_serialization solo enlaza network_security.pb.cc: comprueba el comportamiento de protobuf y que
+  existan y se serialicen los campos v2 del .proto, no el arreglo de send_ransomware_features que dice vigilar; su
+  comentario nombra el rag_logger, ya retirado. Se registra porque salta si alguien vuelve a tocar esos campos.
+- test_sharded_flow_multithread imprime Duration y Throughput pero no los afirma (sus aserciones son de cuentas).
+  ShardDistribution no mide el reparto entre shards, solo que los 1000 flujos se recuperan (el reparto sigue en
+  DEBT-SNIFFER-FLOWKEY-HASH-001). Las lineas "142/142 features" y "Shards: 16" son texto fijo, no medidas.
+- Los fixtures de los tres tests de DAY46 fijan idle_timeout_ns = 120 s (valor heredado del renombrado del paso 2);
+  ninguno depende de la caducidad. El defecto del codigo sigue en 300 s (flow_table_params.hpp).
+- El target test-hardening del Makefile (compila y lanza a mano los tres de DAY46) se queda: entrada directa a ese
+  subconjunto.
+
+### DEBT-SNIFFER-PAYLOAD-ANALYZER-001 — ABIERTA
+test_payload_analyzer (18 pruebas, nunca en ctest) falla 4 de 18: 10 nota de rescate, 11 API criptografica, 12
+direccion .onion, 13 mayusculas/minusculas. Causa leida en el codigo: el commit 00a67a6a hizo perezosa la busqueda de
+patrones (solo con entropia > 7,0 o cabecera PE) y esas pruebas usan texto plano, de entropia baja: siguen afirmando
+el contrato anterior. La prueba de tiempo se llama test_performance_under_10us pero su umbral es 250 us; medido en el
+defender: 160-199 us en 6 corridas sobre 512 B aleatorios (entropia alta: rama cara, 53 patrones con tolower byte a
+byte). Margen ~25 %: fragil en ctest con la VM cargada. En produccion (ring_consumer.cpp, Layer 1.5) solo corre con
+verbosidad BASIC o superior ([PAYLOAD-VERBOSE-D290]) y su resultado solo llega a la linea [Payload] Suspicious del log
+(TODO: llevarlo al protobuf); con verbose, cada payload de entropia alta (TLS) pagaria ~180 us por evento en el hilo
+del consumidor. Su futuro (arreglar test y aserto de tiempo, conectarlo o borrarlo) se decide con la reescritura de la
+cabeza ransomware, la unica que podria consumirlo.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY309
+sniffer/include/payload_analyzer.hpp.v1.0 y sniffer/src/userspace/payload_analyzer.cpp.v1.0 (version anterior a la
+busqueda perezosa) estan trackeados: se borran (la historia de git los conserva).
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Registro de tests hecho DAY309. Quedan: bateria de la etapa 2 (ddos_v2) y E2E antes/despues, con una corrida que deje
+inactivos mas de idle_timeout_s flujos que luego vuelven (las corridas de DAY292-294 duran 210 y 450 s y no ejercitan
+la caducidad); EMECAS+++ production; PR.
+
+### Lecciones DAY309
+Antes de predecir lo que mide un test, leer el codigo que prueba y no solo el test: la prediccion de la prueba de tiempo
+(1-50 us) fallo porque su payload aleatorio toma la rama cara. Un inventario se saca contra el fichero (cada
+add_executable con su add_test), no se hereda de la lista de una deuda.
