@@ -702,6 +702,7 @@ target_link_libraries(test_sharded_flow_full_contract
         gtest_main
 )
 
+add_test(NAME test_sharded_flow_full_contract COMMAND test_sharded_flow_full_contract)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_sharded_flow_full_contract configured (Day 46 - ISSUE-003)")
 
 # ============================================================================
@@ -739,6 +740,7 @@ target_link_libraries(test_ring_consumer_protobuf
         gtest_main
 )
 
+add_test(NAME test_ring_consumer_protobuf COMMAND test_ring_consumer_protobuf)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_ring_consumer_protobuf configured (Day 46 - 40 features)")
 
 # [DDOS-SNAP-D290] Foto DDoS v2 incremental == extraccion de lote de produccion, bit a bit
@@ -804,6 +806,7 @@ target_link_libraries(test_proto3_embedded_serialization
         gtest
         gtest_main
 )
+add_test(NAME test_proto3_embedded_serialization COMMAND test_proto3_embedded_serialization)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_proto3_embedded_serialization configured (DAY 75 regression)")
 
 # ============================================================================
@@ -862,6 +865,7 @@ target_link_libraries(test_sharded_flow_multithread
         gtest_main
 )
 
+add_test(NAME test_sharded_flow_multithread COMMAND test_sharded_flow_multithread)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_sharded_flow_multithread configured (Day 46 - Concurrency)")
 
 # ============================================================================
