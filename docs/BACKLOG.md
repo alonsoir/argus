@@ -8054,3 +8054,27 @@ criterio relativo no sirve con base 0: para positivos aislados se predice una cu
 para la cadena: no se sigue con el paso siguiente. Un analisis que agrupa por origen filtra tambien por protocolo (el
 ping de fondo de esperar ESTABLE sale de .50). Un tail corto puede cortar justo la parte que importa: el analisis va a
 fichero y se lee entero.
+
+## Cierre DAY309 (27-oct-2026) — feat/sniffer-flow-expiry en main
+
+PR #151 mergeada en main (6605c296), etiqueta pre-release-flow-expiry-0.0.8. EMECAS+++ production verde sobre
+69d8f207: 28/28 hitos, los cinco E2E del lab con PASA, 2 h 05 min. test-components: flow_uid 9, sniffer 23,
+ml-detector 15, autonomia 3, firewall 82 = 132, 0 fallos.
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — CERRADA DAY309
+Paso 1 (FlowStatistics de tamano fijo, copia por evento O(1)) y paso 2 (caducidad desde la cola de la LRU, tope activo
+perezoso, guarda en should_expire, contadores en [FLOW-TABLE]) en main; antes/despues A, B y C en
+docs/ml-heads/day309_diseno.md: la caducidad cambia el rasgo predicho (flow_packet_count del ataque que vuelve) y no
+cambia ninguna decision. Defectos seguros, no optimos: su valor optimo, en el barrido de rama propia.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY309 (cierre)
+- Parcheadores de un solo uso ya aplicados y commiteados en scripts/flow_expiry/ (d307_*, d308_* y d309_* que solo
+  parchean: d309_registrar_tests.py, d309_backlog.py); los instrumentos de medida se quedan. Desde DAY309 los
+  parcheadores de un solo uso no se commitean.
+- Tres copias del esqueleto de corrida del lab (d302_mitigacion_e2e.sh, d309_hueco_e2e.sh, d309_corrida_e2e.sh): un
+  unico envoltorio con el client como parametro.
+
+### Orden de ramas despues de DAY309 (sin cambios)
+RAG Logger del ml-detector (DEBT-RAG-LOGGER-BRANCH-001, con DEBT-DOCS-CSV-SCHEMA-V1-001) -> residuos del repo -> REA.
+En ramas propias mas adelante: DEBT-SNIFFER-LENHIST-UNBOUNDED-001, barrido de idle_timeout_s/active_timeout_s con
+DEBT-DDOS-V2-LONG-ATTACK-001, DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001, DEBT-SNIFFER-PAYLOAD-ANALYZER-001.
