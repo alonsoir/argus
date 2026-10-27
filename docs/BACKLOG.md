@@ -1,5 +1,5 @@
 # aRGus NDR — BACKLOG
-*Última actualización: DAY 305 — 2026-10-23*
+*Última actualización: DAY 307 — 2026-10-25*
 
 ---
 
@@ -7839,3 +7839,218 @@ contract_validator.cpp resume "40 embedded (4x10)". Actualizar cuando la rama de
 ### Leccion DAY306
 Una regresion de replay se predice como rango observado, no como identidad: el mismo E2E varia +-25 eventos entre
 corridas. Y git rm mete los borrados en el indice al momento: va justo antes del commit que debe llevarlos.
+
+## Cierre DAY307 (25-oct-2026) — rama feat/sniffer-flow-expiry (en curso)
+
+Documento: `docs/ml-heads/day307_tabla_flujos.md`. Herramientas: `scripts/flow_expiry/`. Regla de la rama (Alonso):
+cada paso se mide antes y despues. Ningun commit del dia cambia lo que sale del sniffer (paridad byte a byte en
+300000 eventos, d307_paridad_rasgos.cpp, sha256 64471c1e...).
+
+Hecho (commits 290f342d, 62b3c204, 0f5e5a8e, 73d27542, bdf2506b): include canonico de sharded_flow_manager.cpp
+(incluia _fix3.hpp, ODR latente desde Day 45) y fuera 9 residuos _fix*/_original; fuera la clase FlowManager y
+scripts/verify_integration.sh; fuera TimeWindowManager por flujo y la clase FeatureExtractor (sin lector vivo);
+fuera el mecanismo feature_groups de sniffer.json y sus dos JSON; fuera el calculo de los 5 rasgos DDoS en populate
+(ring_consumer los sobrescribia siempre con la foto en lock). Medido: RAM por flujo 1697 -> 658 B (tabla llena
+265 -> 103 MB); populate por evento 121 -> 92,7 us de media (flujos de 501+ paquetes 289 -> 216 us).
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Medido DAY307: el estado de un flujo que nunca esta inactivo crece ~30 B por paquete sin limite (10 M paquetes =
+292 MB un solo flujo) y la copia por evento es O(n) (7,7 ms a 1 M paquetes). Pendiente: paso 1 (estadisticos
+incrementales en FlowStatistics, con diseno y tolerancia de paridad escritos antes del codigo), limpieza periodica
+desde la cola de la LRU (hoy cleanup_expired_flows no se llama y es O(n^2)), guarda en should_expire (resta sin
+signo), decision sobre tope de duracion activa, bateria de la etapa 2 y E2E antes/despues.
+
+### DEBT-SNIFFER-FLOWTABLE-CONFIG-001 — ampliada DAY307 (esta rama)
+sniffer.json declara tres timeouts de flujo (kernel_space.flow_timeout_seconds,
+processing.feature_extraction.flow_timeout_seconds, bloque user_space con flow_table_size 1000000 y
+gc_interval_seconds 60) y ninguno se aplica: la tabla real es 16 x 10000 escrita en ring_consumer.cpp:131 y no
+caduca. La configuracion de la tabla ira en un solo sitio del JSON, validada y registrada en el log, y los campos
+que mienten se quitan en el mismo cambio.
+
+### DEBT-SNIFFER-TESTS-NOT-REGISTERED-001 — ABIERTA (esta rama)
+test_ring_consumer_protobuf (4), test_sharded_flow_multithread (6) y test_sharded_flow_full_contract (3) se
+compilan pero no tienen add_test: test-components no los ejecuta nunca. Pasan los tres (a mano, DAY307).
+Misma familia que DEBT-MLDETECTOR-TESTS-NOT-BUILT-001.
+
+### DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001 — ABIERTA (decision de diseno)
+ring_consumer.cpp construye la FlowKey con los campos del paquete y FlowKey no normaliza el sentido: cada sentido
+de una conversacion es un flujo propio. dpkts, bwd_* y los rasgos backward salen siempre a 0; el SYN-ACK de la
+respuesta cae en el flujo inverso. ddos_v2 se entreno asi: cambiarlo exige medir y probablemente reentrenar.
+
+### DEBT-SNIFFER-FLOWKEY-HASH-001 — ABIERTA
+FlowKey::Hash combina los campos con XOR y desplazamientos (debil). Afecta al reparto entre shards. Medir el
+reparto antes de cambiarlo.
+
+### DEBT-SNIFFER-CONFIG-CEREMONIAL-001 — ABIERTA (rama propia)
+La configuracion del sniffer es en buena parte ceremonial: campos sin consumidor, defectos aplicados en silencio
+con get(campo, defecto) (contra la regla DAY291/DAY300), dos modelos de configuracion (SnifferConfig y
+StrictSnifferConfig, con campos que nunca se rellenan) y 20 validate_*_section vacios. Auditoria campo a campo de
+sniffer.json: consumido / no consumido / leido en silencio; un solo modelo.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY307
+scripts/timebase/__pycache__/ sin trackear ni ignorado; commit-message.txt (buffer de commits con -F, ya no se usa);
+day290_patch_ddos_snap.py nombra ficheros borrados en DAY307.
+
+### Lecciones DAY307
+Con LTO el hash del .o no compara codigo (guarda ubicaciones fuente): comparar el preprocesado. git log -S cuenta
+apariciones; para una linea, git log -G. Un inventario no se trunca. En un bucle con | grep, $? es el del grep.
+Los logs de ctest llevan colores ANSI dentro de la linea. Una prediccion de tiempo medio pesa eventos, no
+conversaciones.
+
+## DAY308 (26-oct-2026) — rama feat/sniffer-flow-expiry, paso 1
+
+Documento: `docs/ml-heads/day308_paso1_diseno.md` (diseno antes de medir, resultado en la seccion 7). Herramientas:
+`scripts/flow_expiry/d308_*`. Paso 1 hecho: FlowStatistics sin vectores por paquete (acumuladores de tamano fijo,
+sumas enteras exactas en __int128); copia por evento O(1); populate desde los acumuladores. Medido (defender): paridad
+E/V/D 0/0 ulp/0 en 300000 eventos, sin banderas y con las de produccion; RAM 658 -> 625,6 B por flujo; 0 B por
+paquete (antes ~30, DAY307); copia a 1 M paquetes 7,7 ms -> 0,3 us; populate aislado ~0,6 us, plano. 82/82.
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Paso 1 (estadisticos incrementales) hecho DAY308. Quedan: caducidad (limpieza periodica desde la cola de la LRU,
+guarda en should_expire, decision sobre tope de duracion activa, configuracion de la tabla en un solo sitio del JSON),
+bateria de la etapa 2 y E2E antes/despues, registrar los 3 tests en ctest, EMECAS+++.
+
+### DEBT-SNIFFER-LENHIST-UNBOUNDED-001 — ABIERTA (rama propia)
+len_hist (histograma de longitudes por flujo, [DDOS-SNAP-D290]) crece con las longitudes DISTINTAS del flujo, ~48 B
+por longitud. Medido DAY308 (d308_ram_hist, fase C): 70,8 kB por flujo con 1461 longitudes (40-1500), 122,7 kB antes
+del paso 1. Tabla llena (160000 flujos) extrapolada a ~11 GB (no medido). Un atacante en la red puede forzarlo variando
+la longitud de sus paquetes: vector de agotamiento de memoria del sniffer. Ademas la foto DDoS recorre el mapa entero
+en el lock en cada evento: O(k), 23-36 us de media en el tramo 501+ del instrumento, hoy el coste dominante por evento.
+La foto de ddos_v2 (cabeza entrenada) depende de la entropia exacta de ese histograma: cualquier cambio necesita
+diseno propio y medir el efecto en la cabeza.
+
+### DEBT-PARIDAD-FLAGS-PRODUCCION-001 — ABIERTA (metodo)
+La referencia de paridad de DAY307 (logs/lab/day307/paridad/antes.tsv) se genero sin las banderas de produccion
+(-O3 -march=native -flto). Con ellas, el codigo de antes cambia 104784 de 300000 eventos en las ultimas cifras
+(entropias, incluida la de ddos_v2, y desviaciones en float) por fusion FMA. Desde DAY308 antes y despues se comparan
+en los dos perfiles (referencia de produccion: logs/lab/day308/paridad/prod_hoy.tsv). Pendiente: que los instrumentos
+documenten su perfil y que el de produccion sea el de registro; -march=native hace que el resultado dependa de la CPU.
+
+### Lecciones DAY308
+Las medidas de tiempo del lab no escriben en /vagrant (vboxsf): solo eso anadia ~0,55 us por evento en el defender.
+Una cifra absoluta no se lleva de una maquina a otra con un factor supuesto: se mide en la maquina de registro. Antes de
+predecir RAM, medir el sizeof (el alineamiento de __int128 rellena). Una prueba de mutacion dice que ve cada
+herramienta: el instrumento de paridad no veia marcas repetidas; el test si. Las secciones escritas antes de medir no
+se reescriben: el resultado va aparte.
+
+## DAY308 — paso 2 (rama feat/sniffer-flow-expiry)
+
+Documento: `docs/ml-heads/day308_paso2_diseno.md` (diseno antes de medir, resultado en la seccion 6). Commit 97e48add.
+
+### DEBT-SNIFFER-FLOWTABLE-CONFIG-001 — CERRADA DAY308
+La tabla de flujos se configura en un solo sitio, la seccion flow_table de sniffer.json (shards, max_flows_per_shard,
+idle_timeout_s 300, active_timeout_s 0 = sin tope, cleanup_interval_ms 1000, log_interval_s 60), con defectos iguales
+en el codigo (flow_table_params.hpp), [CONFIG-DEFAULT] por campo y linea [FLOW-TABLE] con el valor y el origen. Fuera
+kernel_space.flow_timeout_seconds, processing.feature_extraction.flow_timeout_seconds y user_space ([CONFIG-OBSOLETO]
+si vuelven).
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Pasos 1 (estadisticos incrementales) y 2 (caducidad) hechos DAY308. Caducidad: limpieza por inactividad desde la cola
+de la LRU (80000 flujos, 72000 caducados: 6,0 s -> 32 ms en el defender), tope de duracion activa perezoso (desactivado
+por defecto), should_expire con guarda, contadores en la linea [FLOW-TABLE]. E2E: marcas_futuras=0 (mismo reloj).
+Quedan: bateria de la etapa 2 (ddos_v2) y E2E antes/despues, registrar los 3 tests en ctest, EMECAS+++, PR.
+
+### Barrido de idle_timeout_s y active_timeout_s — rama propia (decision DAY308)
+Los defectos (300 s, sin tope) son seguros, no optimos. El valor optimo se mide con una herramienta de barrido fuera de
+linea (pcap -> ShardedFlowManager real + foto DDoS, varios valores) en tres ejes: memoria y flujos vivos, efecto en la
+puntuacion y decisiones de ddos_v2 (entrenada sin caducidad, con corridas cortas) en ataque, ataque largo y benigno, y
+coste de la limpieza. Va junto a DEBT-DDOS-V2-LONG-ATTACK-001.
+
+### Correccion de metodo — total de tests de make test-components
+El "out of 82" que se comprobaba desde DAY307 es el numero de tests del firewall, no el total. Hay cinco lineas de
+resumen (flow_uid 9, sniffer 19, ml-detector 15, autonomia 3, firewall 82 = 128): se comprueban las cinco, cada una con
+su numero esperado, y que todas digan 0 tests failed.
+
+### Errata del commit 1612f037 (paso 1)
+Su mensaje dice "0 B por paquete (antes ~47)" y "copia ... 7,9 ms": son cifras de otra maquina. En el defender, DAY307
+midio ~30 B por paquete (292 MB a 10 M paquetes) y 7,7 ms. Las cifras correctas estan en day308_paso1_diseno.md.
+
+### Lecciones DAY308 (paso 2)
+Un factor entre maquinas medido en un tipo de trabajo no vale para otro: la persecucion de punteros (list::remove) pago
+x3,4 en la VM; mirar 16 colas apenas paga nada. Un resumen de herramienta se lee entero antes de convertirlo en regla.
+
+## DAY309 (27-oct-2026) — rama feat/sniffer-flow-expiry, registro de tests
+
+Parcheador: `scripts/flow_expiry/d309_registrar_tests.py` ([TESTS-REG-D309], solo sniffer/CMakeLists.txt, 4 lineas
+add_test). Medido en el defender y desde el Mac: pipeline-build production con 0 diagnosticos; make test-components
+PROFILE=production con flow_uid 9, sniffer 23 (antes 19), ml-detector 15, autonomia 3, firewall 82 = 132, 0 fallos.
+
+### DEBT-SNIFFER-TESTS-NOT-REGISTERED-001 — CERRADA DAY309
+El inventario completo de sniffer/CMakeLists.txt (cada add_executable contra su add_test) daba 5 tests sin registrar,
+no 3: los tres de la deuda, test_proto3_embedded_serialization y test_payload_analyzer. Registrados los cuatro que
+pasan: test_sharded_flow_full_contract (3), test_ring_consumer_protobuf (4), test_sharded_flow_multithread (6) y
+test_proto3_embedded_serialization (3). test_payload_analyzer queda fuera (DEBT-SNIFFER-PAYLOAD-ANALYZER-001).
+Notas medidas al registrarlos:
+- test_proto3_embedded_serialization solo enlaza network_security.pb.cc: comprueba el comportamiento de protobuf y que
+  existan y se serialicen los campos v2 del .proto, no el arreglo de send_ransomware_features que dice vigilar; su
+  comentario nombra el rag_logger, ya retirado. Se registra porque salta si alguien vuelve a tocar esos campos.
+- test_sharded_flow_multithread imprime Duration y Throughput pero no los afirma (sus aserciones son de cuentas).
+  ShardDistribution no mide el reparto entre shards, solo que los 1000 flujos se recuperan (el reparto sigue en
+  DEBT-SNIFFER-FLOWKEY-HASH-001). Las lineas "142/142 features" y "Shards: 16" son texto fijo, no medidas.
+- Los fixtures de los tres tests de DAY46 fijan idle_timeout_ns = 120 s (valor heredado del renombrado del paso 2);
+  ninguno depende de la caducidad. El defecto del codigo sigue en 300 s (flow_table_params.hpp).
+- El target test-hardening del Makefile (compila y lanza a mano los tres de DAY46) se queda: entrada directa a ese
+  subconjunto.
+
+### DEBT-SNIFFER-PAYLOAD-ANALYZER-001 — ABIERTA
+test_payload_analyzer (18 pruebas, nunca en ctest) falla 4 de 18: 10 nota de rescate, 11 API criptografica, 12
+direccion .onion, 13 mayusculas/minusculas. Causa leida en el codigo: el commit 00a67a6a hizo perezosa la busqueda de
+patrones (solo con entropia > 7,0 o cabecera PE) y esas pruebas usan texto plano, de entropia baja: siguen afirmando
+el contrato anterior. La prueba de tiempo se llama test_performance_under_10us pero su umbral es 250 us; medido en el
+defender: 160-199 us en 6 corridas sobre 512 B aleatorios (entropia alta: rama cara, 53 patrones con tolower byte a
+byte). Margen ~25 %: fragil en ctest con la VM cargada. En produccion (ring_consumer.cpp, Layer 1.5) solo corre con
+verbosidad BASIC o superior ([PAYLOAD-VERBOSE-D290]) y su resultado solo llega a la linea [Payload] Suspicious del log
+(TODO: llevarlo al protobuf); con verbose, cada payload de entropia alta (TLS) pagaria ~180 us por evento en el hilo
+del consumidor. Su futuro (arreglar test y aserto de tiempo, conectarlo o borrarlo) se decide con la reescritura de la
+cabeza ransomware, la unica que podria consumirlo.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY309
+sniffer/include/payload_analyzer.hpp.v1.0 y sniffer/src/userspace/payload_analyzer.cpp.v1.0 (version anterior a la
+busqueda perezosa) estan trackeados: se borran (la historia de git los conserva).
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Registro de tests hecho DAY309. Quedan: bateria de la etapa 2 (ddos_v2) y E2E antes/despues, con una corrida que deje
+inactivos mas de idle_timeout_s flujos que luego vuelven (las corridas de DAY292-294 duran 210 y 450 s y no ejercitan
+la caducidad); EMECAS+++ production; PR.
+
+### Lecciones DAY309
+Antes de predecir lo que mide un test, leer el codigo que prueba y no solo el test: la prediccion de la prueba de tiempo
+(1-50 us) fallo porque su payload aleatorio toma la rama cara. Un inventario se saca contra el fichero (cada
+add_executable con su add_test), no se hereda de la lista de una deuda.
+
+## DAY309 — paso 2: antes/despues de la caducidad en ddos_v2 (rama feat/sniffer-flow-expiry)
+
+Documento: `docs/ml-heads/day309_diseno.md` (diseno y predicciones antes de medir; resultado en la seccion 4).
+Herramientas en `scripts/flow_expiry/d309_*` (corrieron desde logs/lab/day309/tools para usar las mismas en main y en
+la rama; mismo sha256). "Antes" = main 57d1d400 (git switch --detach + pipeline-build production); el diff main..rama
+sin docs/ ni scripts/ esta todo en sniffer/.
+- A, make lab-e2e-mitigacion: PASA en los dos lados (C1-C5 dentro del ruido; no ejercita la caducidad).
+- B, bateria DAY292 (ntp, dns, syn a 60 pps) y benigna DAY294: rasgos predichos con simulacion de la tabla sobre las
+  tuplas reales, 1-2 de 1-2 en cada lado; decisiones iguales en ntp, dns y syn (0,17-0,82 %); la benigna dio 0 frente a
+  8 positivos aislados, explicados por la etapa 1 en el borde de K (abajo), sin INICIO en ningun lado.
+- C, corrida "hueco" (mismo ataque NTP tras 330 s de silencio): fpk del ataque que vuelve 2,080 en main y 1,027 en la
+  rama, fila por fila como la simulacion; decisiones iguales (p1 = 1,0, 2 INICIO / 2 FIN, mismos DROP). Rama: 6 474
+  caducados, marcas_futuras 0, desalojos_lru 0.
+Conclusion: la caducidad cambia exactamente el rasgo predicho y en ninguna corrida cambia una decision.
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — EN CURSO (esta rama)
+Hechos: pasos 1 y 2 (DAY308), registro de tests y antes/despues A, B y C (DAY309). Quedan: EMECAS+++ production, PR,
+merge y etiqueta.
+
+### DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001 — ABIERTA (medido DAY309)
+La etapa 2 de ddos_v2 da p1 > 0,5 en trafico legitimo: los primeros ~68 eventos de una subida TCP (fpk 1-68, p1
+0,53-0,99) y el agente Wazuh (.12:1514, p1 hasta 1,0). Solo los protege la etapa 1 (ratio >= K). En la benigna de
+DAY309 el arranque de la subida coincidio con ratio 5,0 (rama) frente a 2,814 (main): 8 positivos aislados frente a 0,
+absorbidos por k=3/5 (0 INICIO). El "TCP 50 KB/s: 0 positivos" de DAY294 depende de cuando arranca la subida respecto
+a la presion sobre la victima. Evaluador fuera de linea con el mismo bosque: scripts/flow_expiry/d309_p1_filas.cpp.
+Relacion: bateria v3 y reentrenamiento (la etapa 2 aprende firmas de los generadores, bloque1_day293.md).
+
+### Lecciones DAY309
+Antes de predecir lo que mide un test, leer el codigo que prueba, no solo el test. Un inventario se saca contra el
+fichero (cada add_executable con su add_test), no se hereda de la lista de una deuda. pgrep -f / pkill -f se encuentran
+a si mismos cuando su linea de comandos contiene el patron: vigilar un servicio por su puerto y pararlo por su PID. Un
+comprobador se lee por su TEXTO, no por su codigo de salida (un fallo no capturado de Python sale con rc 1). Un
+criterio relativo no sirve con base 0: para positivos aislados se predice una cuenta absoluta. Una corrida que falla
+para la cadena: no se sigue con el paso siguiente. Un analisis que agrupa por origen filtra tambien por protocolo (el
+ping de fondo de esperar ESTABLE sale de .50). Un tail corto puede cortar justo la parte que importa: el analisis va a
+fichero y se lee entero.

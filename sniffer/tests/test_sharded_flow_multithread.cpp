@@ -36,7 +36,7 @@ protected:
         ShardedFlowManager::Config config{
             .shard_count = 16,  // Production setting
             .max_flows_per_shard = 10000,
-            .flow_timeout_ns = 120'000'000'000ULL
+            .idle_timeout_ns = 120'000'000'000ULL
         };
 
         auto& mgr = ShardedFlowManager::instance();
@@ -210,19 +210,15 @@ TEST_F(ShardedFlowMultithreadTest, ConcurrentReadsAndWrites) {
                     data_inconsistencies++;
                 }
 
-                // 3. Vector sizes should match packet counts
-                if (flow.all_lengths.size() != total) {
+                // 3. [D308-PASO1] Accumulators consistent with the counts: every writer sends increasing
+                //    timestamps to its own flow, so every IAT pair is valid (pairs = total - 1)
+                if (total > 0 && flow.iat_all.pairs != total - 1) {
                     data_inconsistencies++;
                 }
 
-                // 4. Timestamps should be monotonic increasing
-                if (flow.packet_timestamps.size() >= 2) {
-                    for (size_t i = 1; i < flow.packet_timestamps.size(); i++) {
-                        if (flow.packet_timestamps[i] < flow.packet_timestamps[i-1]) {
-                            data_inconsistencies++;
-                            break;
-                        }
-                    }
+                // 4. Lengths seen: min <= max, and the max fits in the byte total
+                if (total > 0 && (flow.len_all.min > flow.len_all.max || flow.len_all.max > total_bytes)) {
+                    data_inconsistencies++;
                 }
             }
 
@@ -290,14 +286,21 @@ TEST_F(ShardedFlowMultithreadTest, FeatureExtractionUnderLoad) {
                 }
 
                 // Extract features
+                // [D307-PASO2] los 5 rasgos DDoS v2 salen de la foto en lock (ddos_v2_flow_snapshot), que
+                // ring_consumer escribe en el protobuf; populate ya no toca ddos_embedded.
+                // [D308-PASO1] populate recibe la entropia de longitudes de la foto
+                DdosFlowSnap snap{};
+                mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
                 auto stats_opt = mgr.get_flow_stats_copy(key);
                 if (stats_opt.has_value()) {
                     protobuf::NetworkSecurityEvent proto_event;
-                    ml_extractor_->populate_ml_defender_features(stats_opt.value(), proto_event);
+                    ml_extractor_->populate_ml_defender_features(stats_opt.value(), snap.packet_size_entropy,
+                                                                 proto_event);
 
                     // Validate features were populated
                     if (proto_event.has_network_features() &&
-                        proto_event.network_features().has_ddos_embedded() &&
+                        snap.valid &&
+                        !proto_event.network_features().has_ddos_embedded() &&
                         proto_event.network_features().has_ransomware_embedded() &&
                         proto_event.network_features().has_traffic_classification() &&
                         proto_event.network_features().has_internal_anomaly()) {

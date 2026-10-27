@@ -17,6 +17,7 @@
 #include <gtest/gtest.h>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>  // [D308-PASO1] std::min
 
 using namespace sniffer;
 using namespace sniffer::flow;
@@ -28,7 +29,7 @@ protected:
         ShardedFlowManager::Config config{
             .shard_count = 4,
             .max_flows_per_shard = 1000,
-            .flow_timeout_ns = 120'000'000'000ULL
+            .idle_timeout_ns = 120'000'000'000ULL
         };
 
         auto& mgr = ShardedFlowManager::instance();
@@ -79,11 +80,16 @@ TEST_F(RingConsumerProtobufTest, ExtractsMLDefenderFeatures) {
 
     const auto& flow = stats_opt.value();
 
+    // [D307-PASO2] / [D308-PASO1] foto DDoS en lock: da los 5 rasgos DDoS v2 y la entropia de longitudes
+    // que populate usa para ransomware.entropy e internal.access_pattern_entropy
+    DdosFlowSnap snap{};
+    mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
+
     // Create protobuf event
     protobuf::NetworkSecurityEvent proto_event;
 
     // Populate ML Defender features (40 features)
-    ml_extractor_->populate_ml_defender_features(flow, proto_event);
+    ml_extractor_->populate_ml_defender_features(flow, snap.packet_size_entropy, proto_event);
 
     // Verify NetworkFeatures was created
     ASSERT_TRUE(proto_event.has_network_features()) << "NetworkFeatures must be populated";
@@ -92,26 +98,31 @@ TEST_F(RingConsumerProtobufTest, ExtractsMLDefenderFeatures) {
 
     // ============ VALIDATE ML DEFENDER FEATURES (40 total) ============
 
-    // DDoS Features (10)
-    ASSERT_TRUE(net_features.has_ddos_embedded()) << "DDoS features must be populated";
-    const auto& ddos = net_features.ddos_embedded();
+    // DDoS (contrato v2) [D307-PASO2]: populate ya no rellena ddos_embedded; los 5 rasgos de flujo salen de la
+    // foto en lock (ddos_v2_flow_snapshot), que ring_consumer escribe en el protobuf. Se comprueban sobre la foto.
+    EXPECT_FALSE(net_features.has_ddos_embedded()) << "populate no debe tocar ddos_embedded";
+    ASSERT_TRUE(snap.valid) << "La foto DDoS debe existir";
+    EXPECT_GE(snap.syn_ack_ratio, 0.0f) << "SYN/ACK ratio populated";
+    EXPECT_GE(snap.packet_size_entropy, 0.0f) << "Packet size entropy populated";
+    EXPECT_GT(snap.flow_packet_count, 0.0f) << "Flow packet count populated";
+    EXPECT_GT(snap.mean_packet_size, 0.0f) << "Mean packet size populated";
 
-    // [DDOS-V1-RETIRE-D306] rasgos de flujo del contrato v2 que rellena el extractor
-    EXPECT_GE(ddos.syn_ack_ratio(), 0.0f) << "SYN/ACK ratio populated";
-    EXPECT_GE(ddos.packet_size_entropy(), 0.0f) << "Packet size entropy populated";
-    EXPECT_GT(ddos.flow_packet_count(), 0.0f) << "Flow packet count populated";
-    EXPECT_GT(ddos.mean_packet_size(), 0.0f) << "Mean packet size populated";
-
-    std::cout << "✅ DDoS Features: "
-              << "syn_ack=" << ddos.syn_ack_ratio() << " "
-              << "pkts=" << ddos.flow_packet_count() << " "
-              << "entropy=" << ddos.packet_size_entropy() << "\n";
+    std::cout << "✅ DDoS Features (foto): "
+              << "syn_ack=" << snap.syn_ack_ratio << " "
+              << "pkts=" << snap.flow_packet_count << " "
+              << "entropy=" << snap.packet_size_entropy << "\n";
 
     // Ransomware Features (10)
     ASSERT_TRUE(net_features.has_ransomware_embedded()) << "Ransomware features must be populated";
     const auto& ransomware = net_features.ransomware_embedded();
 
     EXPECT_GE(ransomware.entropy(), 0.0f) << "Entropy populated";
+    // [D308-PASO1] las dos entropias de longitudes salen de la de la foto
+    EXPECT_FLOAT_EQ(ransomware.entropy(), std::min(snap.packet_size_entropy / 5.0f, 1.0f))
+        << "Ransomware entropy = foto / 5, tope 1";
+    EXPECT_FLOAT_EQ(net_features.internal_anomaly().access_pattern_entropy(),
+                    std::min(snap.packet_size_entropy / 5.0f, 1.0f))
+        << "Access pattern entropy = foto / 5, tope 1";
     EXPECT_GE(ransomware.network_activity(), 0.0f) << "Network activity populated";
     EXPECT_GE(ransomware.data_volume(), 0.0f) << "Data volume populated";
 
@@ -205,7 +216,7 @@ TEST_F(RingConsumerProtobufTest, ExtractsMLDefenderFeatures) {
     if (net_features.syn_flag_count() > 0) populated++;
     if (net_features.ack_flag_count() > 0) populated++;
     if (net_features.forward_header_length() > 0) populated++;
-    if (net_features.has_ddos_embedded()) populated++;
+    if (snap.valid) populated++;  // [D307-PASO2] DDoS desde la foto
     if (net_features.has_ransomware_embedded()) populated++;
     if (net_features.has_traffic_classification()) populated++;
     if (net_features.has_internal_anomaly()) populated++;
@@ -270,20 +281,24 @@ TEST_F(RingConsumerProtobufTest, ExtractsTCPSpecificFeatures) {
     ASSERT_TRUE(stats_opt.has_value());
     const auto& flow = stats_opt.value();
 
+    // [D307-PASO2] los rasgos DDoS v2 salen de la foto en lock, no de populate
+    // [D308-PASO1] populate recibe la entropia de longitudes de la foto
+    DdosFlowSnap snap{};
+    mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
+    ASSERT_TRUE(snap.valid);
+
     // Verify TCP-specific calculations work
     protobuf::NetworkSecurityEvent proto_event;
-    ml_extractor_->populate_ml_defender_features(flow, proto_event);
-
-    const auto& ddos = proto_event.network_features().ddos_embedded();
+    ml_extractor_->populate_ml_defender_features(flow, snap.packet_size_entropy, proto_event);
 
     // SYN/ACK ratio should be calculated from TCP flags
-    EXPECT_GT(ddos.syn_ack_ratio(), 0.0f) << "SYN/ACK ratio must be calculated";
+    EXPECT_GT(snap.syn_ack_ratio, 0.0f) << "SYN/ACK ratio must be calculated";
 
     // Flow completion rate should reflect complete handshake
-    EXPECT_GT(ddos.flow_completion_rate(), 0.0f) << "Flow completion must be detected";
+    EXPECT_GT(snap.flow_completion_rate, 0.0f) << "Flow completion must be detected";
 
-    std::cout << "✅ TCP Features: syn_ack_ratio=" << ddos.syn_ack_ratio()
-              << " completion=" << ddos.flow_completion_rate() << "\n";
+    std::cout << "✅ TCP Features: syn_ack_ratio=" << snap.syn_ack_ratio
+              << " completion=" << snap.flow_completion_rate << "\n";
 }
 
 // ============================================================================
@@ -342,20 +357,24 @@ TEST_F(RingConsumerProtobufTest, ExtractsBidirectionalFeatures) {
     EXPECT_EQ(flow.spkts, 10) << "Forward packets captured";
     EXPECT_EQ(flow.dpkts, 5) << "Backward packets captured";
 
-    protobuf::NetworkSecurityEvent proto_event;
-    ml_extractor_->populate_ml_defender_features(flow, proto_event);
+    // [D307-PASO2] los rasgos DDoS v2 salen de la foto en lock, no de populate
+    // [D308-PASO1] populate recibe la entropia de longitudes de la foto
+    DdosFlowSnap snap{};
+    mgr.with_flow_stats(key, [&](const auto& fs) { snap = ml_extractor_->ddos_v2_flow_snapshot(fs); });
+    ASSERT_TRUE(snap.valid);
 
-    const auto& ddos = proto_event.network_features().ddos_embedded();
+    protobuf::NetworkSecurityEvent proto_event;
+    ml_extractor_->populate_ml_defender_features(flow, snap.packet_size_entropy, proto_event);
 
     // [DDOS-V1-RETIRE-D306] symmetry y amplification (v1) retirados: el 10:5 se comprueba en los campos de flujo
     const auto& nfb = proto_event.network_features();
     EXPECT_EQ(nfb.total_forward_packets(), 10u) << "Forward packets in the event";
     EXPECT_EQ(nfb.total_backward_packets(), 5u) << "Backward packets in the event";
-    EXPECT_FLOAT_EQ(ddos.flow_packet_count(), 15.0f) << "v2 flow_packet_count = fwd + bwd";
+    EXPECT_FLOAT_EQ(snap.flow_packet_count, 15.0f) << "v2 flow_packet_count = fwd + bwd";
 
     std::cout << "✅ Bidirectional: fwd=" << nfb.total_forward_packets()
               << " bwd=" << nfb.total_backward_packets()
-              << " flow_packet_count=" << ddos.flow_packet_count() << "\n";
+              << " flow_packet_count=" << snap.flow_packet_count << "\n";
 }
 
 // ============================================================================

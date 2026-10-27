@@ -18,7 +18,7 @@ protected:
         ShardedFlowManager::Config config{
             .shard_count = 4,
             .max_flows_per_shard = 1000,
-            .flow_timeout_ns = 120'000'000'000ULL
+            .idle_timeout_ns = 120'000'000'000ULL
         };
 
         auto& mgr = ShardedFlowManager::instance();
@@ -94,19 +94,34 @@ TEST_F(ShardedFlowFullContractTest, CapturesAllBasicCounters) {
     EXPECT_GT(stats.flow_last_seen_ns, stats.flow_start_ns) << "Last seen > start";
     EXPECT_GT(stats.get_duration_us(), 0) << "Flow duration debe ser > 0";
 
-    // ============ VALIDAR VECTORES POBLADOS ============
-    EXPECT_EQ(stats.fwd_lengths.size(), 10) << "Forward lengths vector size";
-    EXPECT_EQ(stats.bwd_lengths.size(), 5) << "Backward lengths vector size";
-    EXPECT_EQ(stats.all_lengths.size(), 15) << "All lengths vector size";
+    // ============ VALIDAR ACUMULADORES [D308-PASO1] ============
+    // Longitudes: ida siempre 1000, vuelta siempre 500
+    EXPECT_EQ(stats.len_fwd.min, 1000u) << "Forward length min";
+    EXPECT_EQ(stats.len_fwd.max, 1000u) << "Forward length max";
+    EXPECT_EQ(stats.len_bwd.min, 500u) << "Backward length min";
+    EXPECT_EQ(stats.len_bwd.max, 500u) << "Backward length max";
+    EXPECT_EQ(stats.len_all.min, 500u) << "All lengths min";
+    EXPECT_EQ(stats.len_all.max, 1000u) << "All lengths max";
+    EXPECT_TRUE(stats.len_all.sum_sq == static_cast<u128>(10) * 1000 * 1000 + static_cast<u128>(5) * 500 * 500)
+        << "All lengths sum of squares";
 
-    EXPECT_EQ(stats.packet_timestamps.size(), 15) << "All timestamps vector";
-    EXPECT_EQ(stats.fwd_timestamps.size(), 10) << "Forward timestamps vector";
-    EXPECT_EQ(stats.bwd_timestamps.size(), 5) << "Backward timestamps vector";
+    // Marcas (el bucle suma i * paso a la anterior): ida 1,00 1,01 1,03 1,06 ... 1,45 s (9 pares validos);
+    // vuelta 1,100 1,115 1,145 1,190 1,250 s (4 pares validos). En la serie global la primera de vuelta (1,100)
+    // es ANTERIOR a la ultima de ida (1,45): ese par no es valido -> 9 + 4 = 13 pares validos de 14.
+    EXPECT_EQ(stats.iat_fwd.pairs, 9u) << "Forward valid IAT pairs";
+    EXPECT_EQ(stats.iat_bwd.pairs, 4u) << "Backward valid IAT pairs";
+    EXPECT_EQ(stats.iat_all.pairs, 13u) << "All valid IAT pairs (one out-of-order pair)";
+    EXPECT_EQ(stats.iat_fwd.sum, 450000000ULL) << "Forward IAT sum = 1,45 s - 1,00 s";
+    EXPECT_EQ(stats.iat_bwd.sum, 150000000ULL) << "Backward IAT sum = 1,250 s - 1,100 s";
+    EXPECT_EQ(stats.iat_all.sum, 600000000ULL) << "All IAT sum (valid pairs only)";
+    EXPECT_EQ(stats.iat_fwd.min, 10000000ULL) << "Forward IAT min = 10 ms";
+    EXPECT_EQ(stats.iat_fwd.max, 90000000ULL) << "Forward IAT max = 90 ms";
 
-    EXPECT_EQ(stats.fwd_header_lengths.size(), 10) << "Forward header lengths";
-    EXPECT_EQ(stats.bwd_header_lengths.size(), 5) << "Backward header lengths";
+    // Cabeceras: 20 + 20 por paquete
+    EXPECT_EQ(stats.fwd_header_sum, 10u * 40u) << "Forward header sum";
+    EXPECT_EQ(stats.bwd_header_sum, 5u * 40u) << "Backward header sum";
 
-    std::cout << "\n✅ TEST 1 PASSED: All basic counters and vectors populated\n";
+    std::cout << "\n✅ TEST 1 PASSED: All basic counters and accumulators populated\n";
 }
 
 // ============================================================================
@@ -180,51 +195,6 @@ TEST_F(ShardedFlowFullContractTest, CapturesAllTCPFlags) {
 }
 
 // ============================================================================
-// TEST 3: TimeWindowManager integration (FASE 3)
-// ============================================================================
-TEST_F(ShardedFlowFullContractTest, TimeWindowManagerWorks) {
-    auto& mgr = ShardedFlowManager::instance();
-
-    FlowKey key{
-        .src_ip = 0xC0A80105,
-        .dst_ip = 0xC0A80106,
-        .src_port = 9999,
-        .dst_port = 8080,
-        .protocol = 6
-    };
-
-    SimpleEvent pkt{};
-    pkt.src_ip = key.src_ip;
-    pkt.dst_ip = key.dst_ip;
-    pkt.src_port = key.src_port;
-    pkt.dst_port = key.dst_port;
-    pkt.protocol = 6;
-    pkt.packet_len = 200;
-    pkt.ip_header_len = 20;
-    pkt.l4_header_len = 20;
-    pkt.timestamp = 3000000000ULL;
-    pkt.tcp_flags = TCP_FLAG_ACK;
-
-    // Agregar 20 paquetes a lo largo de 1 segundo
-    for (int i = 0; i < 20; i++) {
-        pkt.timestamp += 50000000ULL;  // +50ms cada paquete
-        mgr.add_packet(key, pkt);
-    }
-
-    auto stats_opt = mgr.get_flow_stats_copy(key);
-    ASSERT_TRUE(stats_opt.has_value());
-    const auto& stats = stats_opt.value();
-
-    // Validar que TimeWindowManager está inicializado
-    ASSERT_NE(stats.time_windows, nullptr) << "TimeWindowManager debe estar inicializado";
-
-    // Verificar que procesó paquetes
-    EXPECT_GT(stats.get_total_packets(), 0) << "Time windows debe haber procesado paquetes";
-
-    std::cout << "✅ TEST 3 PASSED: TimeWindowManager integrated and working\n";
-}
-
-// ============================================================================
 // TEST 4: Validación de valores NO-default (142 campos populated)
 // ============================================================================
 TEST_F(ShardedFlowFullContractTest, NoFieldsLeftAtDefaultValues) {
@@ -277,14 +247,13 @@ TEST_F(ShardedFlowFullContractTest, NoFieldsLeftAtDefaultValues) {
     if (stats.sbytes > 0) populated_fields++;
     populated_fields++;  // dbytes: siempre contar (puede ser 0 si solo hay forward)
 
-    // Vectors
-    total_fields += 7;
-    if (!stats.fwd_lengths.empty()) populated_fields++;
-    if (!stats.all_lengths.empty()) populated_fields++;
-    if (!stats.packet_timestamps.empty()) populated_fields++;
-    if (!stats.fwd_timestamps.empty()) populated_fields++;
-    if (!stats.fwd_header_lengths.empty()) populated_fields++;
-    if (stats.time_windows != nullptr) populated_fields++;
+    // Acumuladores [D308-PASO1]
+    total_fields += 6;
+    if (stats.len_fwd.max > 0) populated_fields++;
+    if (stats.len_all.max > 0) populated_fields++;
+    if (stats.iat_all.pairs > 0) populated_fields++;
+    if (stats.iat_fwd.pairs > 0) populated_fields++;
+    if (stats.fwd_header_sum > 0) populated_fields++;
 
     // TCP Flags (al menos algunos deben estar > 0)
     total_fields += 8;
@@ -300,8 +269,8 @@ TEST_F(ShardedFlowFullContractTest, NoFieldsLeftAtDefaultValues) {
     std::cout << "   Populated: " << populated_fields << "/" << total_fields
               << " (" << std::fixed << std::setprecision(1) << (population_rate * 100) << "%)\n";
     std::cout << "   spkts=" << stats.spkts << " sbytes=" << stats.sbytes << "\n";
-    std::cout << "   Vectors: fwd_len=" << stats.fwd_lengths.size()
-              << " all_len=" << stats.all_lengths.size() << "\n";
+    std::cout << "   Accumulators: len_all=[" << stats.len_all.min << "," << stats.len_all.max
+              << "] iat_pairs=" << stats.iat_all.pairs << "\n";
 
     EXPECT_GT(population_rate, 0.85) << "Al menos 85% de campos deben estar poblados";
 

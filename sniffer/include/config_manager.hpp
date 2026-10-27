@@ -8,6 +8,7 @@
 #include <json/json.h>
 #include "ddos_contract_v2.hpp"  // [DDOS-HYST-D291]
 #include "timebase.hpp"  // [TIMEBASE-D295]
+#include "flow_table_config.hpp"  // [FLOW-TABLE-D308]
 
 namespace sniffer {
 
@@ -99,7 +100,6 @@ struct KernelSpaceConfig {
     std::string xdp_mode;
     size_t ring_buffer_size;
     size_t max_flows_in_kernel;
-    int flow_timeout_seconds;
     std::vector<std::string> kernel_features;
 
     struct Performance {
@@ -107,26 +107,6 @@ struct KernelSpaceConfig {
         size_t max_instructions_per_program;
         size_t map_update_batch_size;
     } performance;
-};
-
-// Feature group configuration
-struct FeatureGroupConfig {
-    int count;
-    std::string reference;
-    std::string description;
-};
-
-// User space configuration
-struct UserSpaceConfig {
-    size_t flow_table_size;
-    size_t time_window_buffer_size;
-    std::vector<std::string> user_features;
-
-    struct MemoryManagement {
-        std::string flow_eviction_policy;
-        size_t max_memory_usage_mb;
-        int gc_interval_seconds;
-    } memory_management;
 };
 
 // Time windows configuration
@@ -294,7 +274,6 @@ struct ProcessingConfig {
         bool enabled;
         bool extract_all_features;
         bool cache_flow_states;
-        int flow_timeout_seconds;
         size_t max_concurrent_flows;
         std::string statistics_engine;
         bool simd_optimization;
@@ -382,8 +361,6 @@ struct SnifferConfig {
     ThreadingConfig threading;
     CaptureConfig capture;
     KernelSpaceConfig kernel_space;
-    UserSpaceConfig user_space;
-    std::unordered_map<std::string, FeatureGroupConfig> feature_groups;
     TimeWindowsConfig sniffer_time_windows;
     NetworkConfig network;
     ZmqConfig zmq;
@@ -397,6 +374,7 @@ struct SnifferConfig {
     SecurityConfig security;
     BackpressureConfig backpressure;
     ::argus::timebase::TimebaseParams timebase{};  // [TIMEBASE-D295]
+    ::argus::flowtable::FlowTableParams flow_table{};  // [FLOW-TABLE-D308]
 
     // Validation methods
     bool is_valid() const;
@@ -433,7 +411,6 @@ private:
     static ThreadingConfig parse_threading(const Json::Value& threading_json);
     static CaptureConfig parse_capture(const Json::Value& capture_json);
     static KernelSpaceConfig parse_kernel_space(const Json::Value& kernel_json);
-    static UserSpaceConfig parse_user_space(const Json::Value& user_json);
     static TimeWindowsConfig parse_time_windows(const Json::Value& windows_json);
     static NetworkConfig parse_network(const Json::Value& network_json);
     static ZmqConfig parse_zmq(const Json::Value& zmq_json);

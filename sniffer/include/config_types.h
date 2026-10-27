@@ -20,6 +20,7 @@
 #include <json/json.h>
 #include "ddos_contract_v2.hpp"  // [DDOS-HYST-D291]
 #include "timebase.hpp"  // [TIMEBASE-D295]
+#include "flow_table_config.hpp"  // [FLOW-TABLE-D308]
 
 // ============================================================================
 // MACROS DE VALIDACIÓN ESTRICTA JSON
@@ -68,14 +69,6 @@ struct CommandLineArgs {
     std::string profile_override = "";
     bool dry_run = false;
     bool show_config_only = false;
-};
-
-struct FeatureGroup {
-    std::string name;
-    int count;
-    std::string reference;
-    std::string description;
-    bool loaded = false;
 };
 
 struct StrictSnifferConfig {
@@ -160,7 +153,6 @@ struct StrictSnifferConfig {
         std::string xdp_mode;
         int ring_buffer_size;
         int max_flows_in_kernel;
-        int flow_timeout_seconds;
         std::vector<std::string> kernel_features;
         int cpu_budget_us_per_packet;
         int max_instructions_per_program;
@@ -168,19 +160,7 @@ struct StrictSnifferConfig {
     } kernel_space;
 
     ::argus::timebase::TimebaseParams timebase{};  // [TIMEBASE-D295]
-
-    // User space - TODOS REQUERIDOS
-    struct {
-        int flow_table_size;
-        int time_window_buffer_size;
-        std::vector<std::string> user_features;
-        std::string flow_eviction_policy;
-        int max_memory_usage_mb;
-        int gc_interval_seconds;
-    } user_space;
-
-    // Feature groups - TODOS REQUERIDOS
-    std::unordered_map<std::string, FeatureGroup> feature_groups;
+    ::argus::flowtable::FlowTableParams flow_table{};  // [FLOW-TABLE-D308]
 
     // Time windows - TODOS REQUERIDOS
     struct {
@@ -480,7 +460,6 @@ void validate_buffers_section(const Json::Value& root, StrictSnifferConfig& conf
 void validate_threading_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_kernel_space_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_user_space_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
-void validate_feature_groups_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_time_windows_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_network_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);
 void validate_zmq_section(const Json::Value& root, StrictSnifferConfig& config, bool verbose);

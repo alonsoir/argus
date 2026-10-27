@@ -9,7 +9,6 @@
 #include <cmath>
 #include <map>
 #include <algorithm>
-#include <numeric>
 
 // Protobuf header - path configured in CMakeLists.txt via ${CMAKE_BINARY_DIR}/proto
 #include "proto/network_security.pb.h"
@@ -20,19 +19,11 @@ namespace sniffer {
 // DDOS FEATURES — contrato v2 (cabeza ddos_v2) [DDOS-V1-RETIRE-D306]
 // ============================================================================
 
-void MLDefenderExtractor::extract_ddos_features(
-    const FlowStatistics& flow,
-    ::protobuf::DDoSFeatures* ddos) const {
+// [D307-PASO2] Los 5 rasgos DDoS v2 de flujo solo los calcula ddos_v2_flow_snapshot (foto en el lock del shard,
+// O(k)); ring_consumer los escribe en el protobuf. El antiguo extract_ddos_features los recalculaba sobre la copia
+// recorriendo all_lengths en cada evento, y ring_consumer los sobrescribia siempre con la foto.
 
-    ddos->set_syn_ack_ratio(extract_ddos_syn_ack_ratio(flow));
-    ddos->set_packet_size_entropy(extract_ddos_packet_size_entropy(flow));
-    ddos->set_flow_completion_rate(extract_ddos_flow_completion_rate(flow));
-    // [DDOS-V2-D286] contrato v2 (8 rasgos, solo trafico entrante)
-    ddos->set_mean_packet_size(calculate_mean(flow.all_lengths));
-    ddos->set_flow_packet_count(static_cast<float>(flow.get_total_packets()));
-}
-
-float MLDefenderExtractor::extract_ddos_syn_ack_ratio(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ddos_syn_ack_ratio(const FlowStatsCore& flow) const {
     // SYN/ACK ratio: High ratio indicates potential SYN flood
     // Normal TCP: ratio ≈ 1.0, SYN flood: ratio > 5.0
     float syn_count = static_cast<float>(flow.syn_count);
@@ -45,13 +36,7 @@ float MLDefenderExtractor::extract_ddos_syn_ack_ratio(const FlowStatistics& flow
     return std::min(ratio, 10.0f);
 }
 
-float MLDefenderExtractor::extract_ddos_packet_size_entropy(const FlowStatistics& flow) const {
-    // Packet size entropy: DDoS often has uniform packet sizes (low entropy)
-    // Normal traffic: varied sizes (high entropy)
-    return calculate_entropy(flow.all_lengths);
-}
-
-float MLDefenderExtractor::extract_ddos_flow_completion_rate(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ddos_flow_completion_rate(const FlowStatsCore& flow) const {
     // Flow completion: TCP flows that complete proper handshake and termination
     // 1.0 = complete, 0.5 = established but not closed, 0.0 = incomplete
 
@@ -73,11 +58,12 @@ float MLDefenderExtractor::extract_ddos_flow_completion_rate(const FlowStatistic
 // ============================================================================
 
 void MLDefenderExtractor::extract_ransomware_features(
-    const FlowStatistics& flow,
+    const FlowStatsCore& flow,
+    float len_entropy,
     ::protobuf::RansomwareEmbeddedFeatures* ransomware) const {
 
     ransomware->set_io_intensity(extract_ransomware_io_intensity(flow));
-    ransomware->set_entropy(extract_ransomware_entropy(flow));
+    ransomware->set_entropy(extract_ransomware_entropy(len_entropy));
     ransomware->set_resource_usage(extract_ransomware_resource_usage(flow));
     ransomware->set_network_activity(extract_ransomware_network_activity(flow));
     ransomware->set_file_operations(extract_ransomware_file_operations(flow));
@@ -88,7 +74,7 @@ void MLDefenderExtractor::extract_ransomware_features(
     ransomware->set_behavior_consistency(extract_ransomware_behavior_consistency(flow));
 }
 
-float MLDefenderExtractor::extract_ransomware_io_intensity(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_ransomware_io_intensity(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires system-level I/O metrics
     //
     // This feature measures file system I/O operations (reads/writes per second).
@@ -103,17 +89,19 @@ float MLDefenderExtractor::extract_ransomware_io_intensity(const FlowStatistics&
     return MISSING_FEATURE_SENTINEL;
 }
 
-float MLDefenderExtractor::extract_ransomware_entropy(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_entropy(float len_entropy) const {
     // Entropy: High entropy in packet sizes suggests encryption
     // Ransomware encrypts files before exfiltration
-    float entropy = calculate_entropy(flow.all_lengths);
+    // [D308-PASO1] len_entropy es la entropia de longitudes de la foto DDoS v2 (mismo calculo, en el lock)
+    if (len_entropy == MISSING_FEATURE_SENTINEL) return MISSING_FEATURE_SENTINEL;
+    float entropy = len_entropy;
 
     // Normalize: entropy typically 0-5 for packet sizes
     float normalized = entropy / 5.0f;
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_ransomware_resource_usage(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_ransomware_resource_usage(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires CPU/memory metrics from system
     //
     // Ransomware typically shows high CPU usage during encryption phase.
@@ -123,7 +111,7 @@ float MLDefenderExtractor::extract_ransomware_resource_usage(const FlowStatistic
     return MISSING_FEATURE_SENTINEL;
 }
 
-float MLDefenderExtractor::extract_ransomware_network_activity(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_network_activity(const FlowStatsCore& flow) const {
     // Network activity: Packet rate + byte rate combined
     float pps = calculate_packet_rate(flow);
     float bps = calculate_byte_rate(flow);
@@ -135,7 +123,7 @@ float MLDefenderExtractor::extract_ransomware_network_activity(const FlowStatist
     return (pps_normalized + bps_normalized) / 2.0f;
 }
 
-float MLDefenderExtractor::extract_ransomware_file_operations(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_ransomware_file_operations(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires protocol inspection for SMB/CIFS
     //
     // File operations require deep packet inspection to identify:
@@ -152,7 +140,7 @@ float MLDefenderExtractor::extract_ransomware_file_operations(const FlowStatisti
     return MISSING_FEATURE_SENTINEL;
 }
 
-float MLDefenderExtractor::extract_ransomware_process_anomaly(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_ransomware_process_anomaly(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires process-level monitoring
     //
     // Process anomaly detection requires:
@@ -167,10 +155,10 @@ float MLDefenderExtractor::extract_ransomware_process_anomaly(const FlowStatisti
     return MISSING_FEATURE_SENTINEL;
 }
 
-float MLDefenderExtractor::extract_ransomware_temporal_pattern(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_temporal_pattern(const FlowStatsCore& flow) const {
     // Temporal pattern: Regularity vs randomness in packet timing
     // Ransomware often shows regular patterns during C2 communication
-    float cv = calculate_iat_coefficient_of_variation(flow.packet_timestamps);
+    float cv = iat_coefficient_of_variation(flow);
 
     // Low CoV (< 0.5) = regular pattern (suspicious)
     // High CoV (> 1.0) = random pattern (normal)
@@ -183,7 +171,7 @@ float MLDefenderExtractor::extract_ransomware_temporal_pattern(const FlowStatist
     }
 }
 
-float MLDefenderExtractor::extract_ransomware_access_frequency(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_access_frequency(const FlowStatsCore& flow) const {
     // Access frequency: Packet rate as proxy
     float pps = calculate_packet_rate(flow);
 
@@ -192,7 +180,7 @@ float MLDefenderExtractor::extract_ransomware_access_frequency(const FlowStatist
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_ransomware_data_volume(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_data_volume(const FlowStatsCore& flow) const {
     // Data volume: Total bytes transferred
     uint64_t total_bytes = flow.sbytes + flow.dbytes;
 
@@ -203,10 +191,10 @@ float MLDefenderExtractor::extract_ransomware_data_volume(const FlowStatistics& 
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_ransomware_behavior_consistency(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_ransomware_behavior_consistency(const FlowStatsCore& flow) const {
     // Behavior consistency: Low std dev in IAT = consistent behavior
-    float iat_std = calculate_iat_std_dev(flow.packet_timestamps);
-    float iat_mean = calculate_iat_mean(flow.packet_timestamps);
+    float iat_std = iat_std_dev(flow.iat_all);
+    float iat_mean = iat_mean_quirk(flow.iat_all, flow.get_total_packets());
 
     if (iat_mean == 0.0f) return MISSING_FEATURE_SENTINEL;
 
@@ -223,7 +211,7 @@ float MLDefenderExtractor::extract_ransomware_behavior_consistency(const FlowSta
 // ============================================================================
 
 void MLDefenderExtractor::extract_traffic_features(
-    const FlowStatistics& flow,
+    const FlowStatsCore& flow,
     ::protobuf::TrafficFeatures* traffic) const {
 
     traffic->set_packet_rate(extract_traffic_packet_rate(flow));
@@ -238,7 +226,7 @@ void MLDefenderExtractor::extract_traffic_features(
     traffic->set_temporal_consistency(extract_traffic_temporal_consistency(flow));
 }
 
-float MLDefenderExtractor::extract_traffic_packet_rate(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_packet_rate(const FlowStatsCore& flow) const {
     // Packets per second
     float pps = calculate_packet_rate(flow);
 
@@ -247,7 +235,7 @@ float MLDefenderExtractor::extract_traffic_packet_rate(const FlowStatistics& flo
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_connection_rate(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_traffic_connection_rate(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     // connections per second en ventana de 30s, normalizado a [0,1] (saturación en 100 conn/s)
@@ -255,7 +243,7 @@ float MLDefenderExtractor::extract_traffic_connection_rate(const FlowStatistics&
     return std::min(rate / 100.0f, 1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_tcp_udp_ratio(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_traffic_tcp_udp_ratio(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires protocol field in FlowStatistics
     //
     // Current FlowStatistics doesn't store protocol type.
@@ -265,7 +253,7 @@ float MLDefenderExtractor::extract_traffic_tcp_udp_ratio(const FlowStatistics& /
     return MISSING_FEATURE_SENTINEL;  // Phase 2: implement with TimeWindowAggregator
 }
 
-float MLDefenderExtractor::extract_traffic_avg_packet_size(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_avg_packet_size(const FlowStatsCore& flow) const {
     // Average packet size
     uint64_t total_packets = flow.spkts + flow.dpkts;
     if (total_packets == 0) return 0.0f;
@@ -281,7 +269,7 @@ float MLDefenderExtractor::extract_traffic_avg_packet_size(const FlowStatistics&
     return std::min(normalized, 1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_port_entropy(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_traffic_port_entropy(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
@@ -291,7 +279,7 @@ float MLDefenderExtractor::extract_traffic_port_entropy(const FlowStatistics& /*
         1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_flow_duration_std(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_traffic_flow_duration_std(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires multi-flow aggregator
     //
     // Standard deviation of flow durations requires multiple flows.
@@ -301,7 +289,7 @@ float MLDefenderExtractor::extract_traffic_flow_duration_std(const FlowStatistic
     return MISSING_FEATURE_SENTINEL;  // Phase 2: implement with TimeWindowAggregator
 }
 
-float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
@@ -312,7 +300,7 @@ float MLDefenderExtractor::extract_traffic_src_ip_entropy(const FlowStatistics& 
         1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_dst_ip_concentration(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_traffic_dst_ip_concentration(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
@@ -323,7 +311,7 @@ float MLDefenderExtractor::extract_traffic_dst_ip_concentration(const FlowStatis
         1.0f);
 }
 
-float MLDefenderExtractor::extract_traffic_protocol_variety(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_traffic_protocol_variety(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires multi-flow aggregator
     //
     // Protocol variety = number of unique protocols in time window.
@@ -333,9 +321,9 @@ float MLDefenderExtractor::extract_traffic_protocol_variety(const FlowStatistics
     return MISSING_FEATURE_SENTINEL;  // Phase 2: implement with TimeWindowAggregator
 }
 
-float MLDefenderExtractor::extract_traffic_temporal_consistency(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_traffic_temporal_consistency(const FlowStatsCore& flow) const {
     // Temporal consistency: Low CoV = consistent timing
-    float cv = calculate_iat_coefficient_of_variation(flow.packet_timestamps);
+    float cv = iat_coefficient_of_variation(flow);
 
     // Low CV = high consistency
     float consistency = std::max(0.0f, 1.0f - cv);
@@ -347,7 +335,8 @@ float MLDefenderExtractor::extract_traffic_temporal_consistency(const FlowStatis
 // ============================================================================
 
 void MLDefenderExtractor::extract_internal_features(
-    const FlowStatistics& flow,
+    const FlowStatsCore& flow,
+    float len_entropy,
     ::protobuf::InternalFeatures* internal) const {
 
     internal->set_internal_connection_rate(extract_internal_connection_rate(flow));
@@ -359,17 +348,17 @@ void MLDefenderExtractor::extract_internal_features(
     internal->set_service_discovery_patterns(extract_internal_service_discovery_patterns(flow));
     internal->set_data_exfiltration_indicators(extract_internal_data_exfiltration_indicators(flow));
     internal->set_temporal_anomaly_score(extract_internal_temporal_anomaly_score(flow));
-    internal->set_access_pattern_entropy(extract_internal_access_pattern_entropy(flow));
+    internal->set_access_pattern_entropy(extract_internal_access_pattern_entropy(len_entropy));
 }
 
-float MLDefenderExtractor::extract_internal_connection_rate(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_internal_connection_rate(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     float rate = static_cast<float>(stats.event_count) / 30.0f;
     return std::min(rate / 100.0f, 1.0f);
 }
 
-float MLDefenderExtractor::extract_internal_service_port_consistency(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_internal_service_port_consistency(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
@@ -380,19 +369,20 @@ float MLDefenderExtractor::extract_internal_service_port_consistency(const FlowS
         1.0f);
 }
 
-float MLDefenderExtractor::extract_internal_protocol_regularity(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_protocol_regularity(const FlowStatsCore& flow) const {
     // Protocol regularity: Consistency in packet timing
-    float cv = calculate_iat_coefficient_of_variation(flow.packet_timestamps);
+    float cv = iat_coefficient_of_variation(flow);
 
     // Low CV = high regularity
     float regularity = std::max(0.0f, 1.0f - cv);
     return regularity;
 }
 
-float MLDefenderExtractor::extract_internal_packet_size_consistency(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_packet_size_consistency(const FlowStatsCore& flow) const {
     // Packet size consistency: Low std dev = consistent sizes
-    float std_dev = calculate_std_dev(flow.all_lengths);
-    float mean = calculate_mean(flow.all_lengths);
+    const uint64_t n = flow.get_total_packets();
+    float std_dev = len_std_dev(flow.len_all, n, flow.get_total_bytes());
+    float mean = mean_of(flow.get_total_bytes(), n);
 
     if (mean == 0.0f) return MISSING_FEATURE_SENTINEL;
 
@@ -403,7 +393,7 @@ float MLDefenderExtractor::extract_internal_packet_size_consistency(const FlowSt
     return consistency;
 }
 
-float MLDefenderExtractor::extract_internal_connection_duration_std(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_internal_connection_duration_std(const FlowStatsCore& /*flow*/) const {
     // TODO(Phase 2): Requires multi-flow aggregator
     //
     // Standard deviation of connection durations requires multiple flows.
@@ -412,7 +402,7 @@ float MLDefenderExtractor::extract_internal_connection_duration_std(const FlowSt
     return MISSING_FEATURE_SENTINEL;  // Phase 2: implement with TimeWindowAggregator
 }
 
-float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
@@ -423,7 +413,7 @@ float MLDefenderExtractor::extract_internal_lateral_movement_score(const FlowSta
         1.0f);
 }
 
-float MLDefenderExtractor::extract_internal_service_discovery_patterns(const FlowStatistics& /*flow*/) const {
+float MLDefenderExtractor::extract_internal_service_discovery_patterns(const FlowStatsCore& /*flow*/) const {
     if (!aggregator_) return MISSING_FEATURE_SENTINEL;
     auto stats = window_stats_30s();  // [WINSTATS-CACHE-D289]
     if (stats.event_count == 0) return 0.0f;
@@ -434,7 +424,7 @@ float MLDefenderExtractor::extract_internal_service_discovery_patterns(const Flo
         1.0f);
 }
 
-float MLDefenderExtractor::extract_internal_data_exfiltration_indicators(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_data_exfiltration_indicators(const FlowStatsCore& flow) const {
     // Data exfiltration: High upload ratio
     float upload_download_ratio = safe_divide(
         static_cast<float>(flow.sbytes),  // Upload (forward)
@@ -446,9 +436,9 @@ float MLDefenderExtractor::extract_internal_data_exfiltration_indicators(const F
     return normalized;
 }
 
-float MLDefenderExtractor::extract_internal_temporal_anomaly_score(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_temporal_anomaly_score(const FlowStatsCore& flow) const {
     // Temporal anomaly: Unusual timing patterns
-    float cv = calculate_iat_coefficient_of_variation(flow.packet_timestamps);
+    float cv = iat_coefficient_of_variation(flow);
 
     // Very low CV (<0.2) or very high CV (>2.0) = anomalous
     if (cv < 0.2f) {
@@ -460,9 +450,11 @@ float MLDefenderExtractor::extract_internal_temporal_anomaly_score(const FlowSta
     }
 }
 
-float MLDefenderExtractor::extract_internal_access_pattern_entropy(const FlowStatistics& flow) const {
+float MLDefenderExtractor::extract_internal_access_pattern_entropy(float len_entropy) const {
     // Access pattern entropy: Entropy of packet sizes as proxy
-    float entropy = calculate_entropy(flow.all_lengths);
+    // [D308-PASO1] len_entropy es la entropia de longitudes de la foto DDoS v2 (mismo calculo, en el lock)
+    if (len_entropy == MISSING_FEATURE_SENTINEL) return MISSING_FEATURE_SENTINEL;
+    float entropy = len_entropy;
 
     // Normalize: 0-5 → 0.0-1.0
     float normalized = entropy / 5.0f;
@@ -473,32 +465,9 @@ float MLDefenderExtractor::extract_internal_access_pattern_entropy(const FlowSta
 // HELPER FUNCTIONS
 // ============================================================================
 
-float MLDefenderExtractor::calculate_entropy(const std::vector<uint32_t>& data) const {
-    if (data.empty()) return 0.0f;
-
-    // Count frequency of each value
-    std::map<uint32_t, uint32_t> freq_map;
-    for (uint32_t val : data) {
-        freq_map[val]++;
-    }
-
-    // Calculate Shannon entropy
-    float entropy = 0.0f;
-    float total = static_cast<float>(data.size());
-
-    for (const auto& [value, count] : freq_map) {
-        float probability = static_cast<float>(count) / total;
-        if (probability > 0.0f) {
-            entropy -= probability * std::log2(probability);
-        }
-    }
-
-    return entropy;
-}
-
-// [DDOS-SNAP-D290] Igual que calculate_entropy pero sobre el histograma incremental del flujo:
-// mismo std::map (orden ascendente), mismo total y la misma acumulacion en float -> mismo
-// resultado bit a bit si hist son las frecuencias de all_lengths y total == all_lengths.size().
+// [DDOS-SNAP-D290] Entropia de Shannon de las longitudes sobre el histograma incremental del flujo (std::map,
+// orden ascendente, acumulacion en float). [D308-PASO1] Es la unica entropia de longitudes: la foto DDoS v2 la
+// calcula en el lock y populate la recibe para ransomware.entropy e internal.access_pattern_entropy.
 float MLDefenderExtractor::calculate_entropy_from_hist(const std::map<uint32_t, uint32_t>& hist,
                                                        uint64_t total_count) const {
     if (total_count == 0) return 0.0f;
@@ -527,85 +496,44 @@ DdosFlowSnap MLDefenderExtractor::ddos_v2_flow_snapshot(const FlowStatistics& fl
     s.flow_completion_rate = extract_ddos_flow_completion_rate(flow);
     s.flow_packet_count = static_cast<float>(n);
     s.mean_packet_size = (n == 0) ? 0.0f
-        : static_cast<float>(flow.sum_all_lengths) / static_cast<float>(n);
+        : static_cast<float>(flow.get_total_bytes()) / static_cast<float>(n);  // [D308-PASO1] D4
     s.packet_size_entropy = calculate_entropy_from_hist(flow.len_hist, n);
     return s;
 }
 
-float MLDefenderExtractor::calculate_std_dev(const std::vector<uint32_t>& data) const {
-    if (data.size() < 2) return 0.0f;
-
-    float mean = calculate_mean(data);
-
-    float sum_sq_diff = 0.0f;
-    for (uint32_t val : data) {
-        float diff = static_cast<float>(val) - mean;
-        sum_sq_diff += diff * diff;
-    }
-
-    float variance = sum_sq_diff / static_cast<float>(data.size());
-    return std::sqrt(variance);
+// [D308-PASO1] Estadisticos sobre los acumuladores del flujo (O(1), sin recorrer paquetes). Varianza
+// poblacional: E[x^2] - E[x]^2 con las sumas enteras exactas, evaluada en long double y recortada a 0; el error
+// relativo es ~2^-64 * (1 + media^2 / var), muy por debajo de la precision del float que se devuelve
+// (day308_paso1_diseno.md, seccion 1). Antes: dos pasadas en float sobre un vector por paquete.
+static float std_dev_from_sums(long double sum, long double sum_sq, uint64_t n) {
+    const long double m = sum / static_cast<long double>(n);
+    long double var = sum_sq / static_cast<long double>(n) - m * m;
+    if (var < 0.0L) var = 0.0L;
+    return static_cast<float>(std::sqrt(var));
 }
 
-float MLDefenderExtractor::calculate_coefficient_of_variation(const std::vector<uint32_t>& data) const {
-    if (data.size() < 2) return 0.0f;
+float MLDefenderExtractor::len_std_dev(const LenAcc& acc, uint64_t n, uint64_t sum) const {
+    if (n < 2) return 0.0f;  // como el calculo anterior: menos de 2 valores -> 0
+    return std_dev_from_sums(static_cast<long double>(sum), static_cast<long double>(acc.sum_sq), n);
+}
 
-    float mean = calculate_mean(data);
+float MLDefenderExtractor::iat_std_dev(const IatAcc& acc) const {
+    if (acc.pairs == 0) return 0.0f;  // sin pares validos (o menos de 2 marcas) -> 0, como antes
+    return std_dev_from_sums(static_cast<long double>(acc.sum), static_cast<long double>(acc.sum_sq), acc.pairs);
+}
+
+// Peculiaridad que se conserva: divide la suma de los pares VALIDOS entre (marcas - 1), es decir, cuenta tambien
+// los pares desordenados; la desviacion (iat_std_dev) usa solo los pares validos.
+float MLDefenderExtractor::iat_mean_quirk(const IatAcc& acc, uint64_t marcas) const {
+    if (marcas < 2) return 0.0f;
+    return static_cast<float>(acc.sum) / static_cast<float>(marcas - 1);
+}
+
+float MLDefenderExtractor::iat_coefficient_of_variation(const FlowStatsCore& flow) const {
+    float mean = iat_mean_quirk(flow.iat_all, flow.get_total_packets());
     if (mean == 0.0f) return 0.0f;
 
-    float std_dev = calculate_std_dev(data);
-    return std_dev / mean;
-}
-
-float MLDefenderExtractor::calculate_iat_mean(const std::vector<uint64_t>& timestamps) const {
-    if (timestamps.size() < 2) return 0.0f;
-
-    uint64_t sum_iat = 0;
-    for (size_t i = 1; i < timestamps.size(); ++i) {
-        if (timestamps[i] >= timestamps[i-1]) {
-            sum_iat += (timestamps[i] - timestamps[i-1]);
-        }
-    }
-
-    return static_cast<float>(sum_iat) / static_cast<float>(timestamps.size() - 1);
-}
-
-float MLDefenderExtractor::calculate_iat_std_dev(const std::vector<uint64_t>& timestamps) const {
-    if (timestamps.size() < 2) return 0.0f;
-
-    // Calculate IATs
-    std::vector<uint64_t> iats;
-    iats.reserve(timestamps.size() - 1);
-
-    for (size_t i = 1; i < timestamps.size(); ++i) {
-        if (timestamps[i] >= timestamps[i-1]) {
-            iats.push_back(timestamps[i] - timestamps[i-1]);
-        }
-    }
-
-    if (iats.empty()) return 0.0f;
-
-    // Calculate mean
-    uint64_t sum = 0;
-    for (uint64_t iat : iats) sum += iat;
-    float mean = static_cast<float>(sum) / static_cast<float>(iats.size());
-
-    // Calculate std dev
-    float sum_sq_diff = 0.0f;
-    for (uint64_t iat : iats) {
-        float diff = static_cast<float>(iat) - mean;
-        sum_sq_diff += diff * diff;
-    }
-
-    float variance = sum_sq_diff / static_cast<float>(iats.size());
-    return std::sqrt(variance);
-}
-
-float MLDefenderExtractor::calculate_iat_coefficient_of_variation(const std::vector<uint64_t>& timestamps) const {
-    float mean = calculate_iat_mean(timestamps);
-    if (mean == 0.0f) return 0.0f;
-
-    float std_dev = calculate_iat_std_dev(timestamps);
+    float std_dev = iat_std_dev(flow.iat_all);
     return std_dev / mean;
 }
 
@@ -639,7 +567,8 @@ struct WindowCacheScope {
 }  // namespace
 
 void MLDefenderExtractor::populate_ml_defender_features(
-        const FlowStatistics& flow,
+        const FlowStatsCore& flow,
+        float len_entropy,
         ::protobuf::NetworkSecurityEvent& proto_event) const {
     WindowCacheScope cache_scope(window_cache_active_, window_cache_valid_);  // [WINSTATS-CACHE-D289]
 
@@ -650,13 +579,11 @@ void MLDefenderExtractor::populate_ml_defender_features(
     // PART 1: ML DEFENDER EMBEDDED FEATURES (40 features)
     // ========================================================================
 
-    // Extract DDoS features (10 features)
-    auto* ddos = net_features->mutable_ddos_embedded();
-    extract_ddos_features(flow, ddos);
+    // DDoS: ring_consumer escribe los 5 rasgos de flujo desde la foto (ddos_v2_flow_snapshot) [D307-PASO2]
 
     // Extract Ransomware features (10 features)
     auto* ransomware = net_features->mutable_ransomware_embedded();
-    extract_ransomware_features(flow, ransomware);
+    extract_ransomware_features(flow, len_entropy, ransomware);
 
     // Extract Traffic features (10 features)
     auto* traffic = net_features->mutable_traffic_classification();
@@ -664,7 +591,7 @@ void MLDefenderExtractor::populate_ml_defender_features(
 
     // Extract Internal features (10 features)
     auto* internal = net_features->mutable_internal_anomaly();
-    extract_internal_features(flow, internal);
+    extract_internal_features(flow, len_entropy, internal);
 
     // ========================================================================
     // PART 2: BASE NETWORK FEATURES (102+ fields) - DAY 46 COMPLETION
@@ -680,32 +607,30 @@ void MLDefenderExtractor::populate_ml_defender_features(
     uint64_t duration_us = flow.get_duration_us();
     net_features->set_flow_duration_microseconds(duration_us);
 
-    // 📏 ESTADÍSTICAS DE LONGITUD - FORWARD
-    if (!flow.fwd_lengths.empty()) {
-        auto fwd_minmax = std::minmax_element(flow.fwd_lengths.begin(), flow.fwd_lengths.end());
-        net_features->set_forward_packet_length_min(*fwd_minmax.first);
-        net_features->set_forward_packet_length_max(*fwd_minmax.second);
-        net_features->set_forward_packet_length_mean(calculate_mean(flow.fwd_lengths));
-        net_features->set_forward_packet_length_std(calculate_std_dev(flow.fwd_lengths));
+    // 📏 ESTADÍSTICAS DE LONGITUD - FORWARD  [D308-PASO1] desde los acumuladores; la suma es sbytes
+    if (flow.spkts > 0) {
+        net_features->set_forward_packet_length_min(flow.len_fwd.min);
+        net_features->set_forward_packet_length_max(flow.len_fwd.max);
+        net_features->set_forward_packet_length_mean(mean_of(flow.sbytes, flow.spkts));
+        net_features->set_forward_packet_length_std(len_std_dev(flow.len_fwd, flow.spkts, flow.sbytes));
     }
 
-    // 📏 ESTADÍSTICAS DE LONGITUD - BACKWARD
-    if (!flow.bwd_lengths.empty()) {
-        auto bwd_minmax = std::minmax_element(flow.bwd_lengths.begin(), flow.bwd_lengths.end());
-        net_features->set_backward_packet_length_min(*bwd_minmax.first);
-        net_features->set_backward_packet_length_max(*bwd_minmax.second);
-        net_features->set_backward_packet_length_mean(calculate_mean(flow.bwd_lengths));
-        net_features->set_backward_packet_length_std(calculate_std_dev(flow.bwd_lengths));
+    // 📏 ESTADÍSTICAS DE LONGITUD - BACKWARD  [D308-PASO1] la suma es dbytes
+    if (flow.dpkts > 0) {
+        net_features->set_backward_packet_length_min(flow.len_bwd.min);
+        net_features->set_backward_packet_length_max(flow.len_bwd.max);
+        net_features->set_backward_packet_length_mean(mean_of(flow.dbytes, flow.dpkts));
+        net_features->set_backward_packet_length_std(len_std_dev(flow.len_bwd, flow.dpkts, flow.dbytes));
     }
 
-    // 📊 ESTADÍSTICAS GLOBALES DE LONGITUD
-    if (!flow.all_lengths.empty()) {
-        auto all_minmax = std::minmax_element(flow.all_lengths.begin(), flow.all_lengths.end());
-        net_features->set_minimum_packet_length(*all_minmax.first);
-        net_features->set_maximum_packet_length(*all_minmax.second);
+    // 📊 ESTADÍSTICAS GLOBALES DE LONGITUD  [D308-PASO1] la suma es sbytes + dbytes
+    const uint64_t n_total = flow.get_total_packets();
+    if (n_total > 0) {
+        net_features->set_minimum_packet_length(flow.len_all.min);
+        net_features->set_maximum_packet_length(flow.len_all.max);
 
-        float mean = calculate_mean(flow.all_lengths);
-        float std_dev = calculate_std_dev(flow.all_lengths);
+        float mean = mean_of(flow.get_total_bytes(), n_total);
+        float std_dev = len_std_dev(flow.len_all, n_total, flow.get_total_bytes());
 
         net_features->set_packet_length_mean(mean);
         net_features->set_packet_length_std(std_dev);
@@ -744,98 +669,40 @@ void MLDefenderExtractor::populate_ml_defender_features(
         );
     }
 
-    // ⏱️ INTER-ARRIVAL TIMES - FLOW (all packets)
-    if (flow.packet_timestamps.size() >= 2) {
-        std::vector<uint64_t> iats;
-        iats.reserve(flow.packet_timestamps.size() - 1);
+    // ⏱️ INTER-ARRIVAL TIMES - FLOW (all packets)  [D308-PASO1] desde los acumuladores: solo pares validos
+    // (marca >= la anterior en llegada); se escriben si hay al menos uno, como antes
+    if (flow.iat_all.pairs > 0) {
+        float mean_ns = static_cast<float>(flow.iat_all.sum) / static_cast<float>(flow.iat_all.pairs);
+        float std_ns = iat_std_dev(flow.iat_all);
 
-        for (size_t i = 1; i < flow.packet_timestamps.size(); ++i) {
-            if (flow.packet_timestamps[i] >= flow.packet_timestamps[i-1]) {
-                iats.push_back(flow.packet_timestamps[i] - flow.packet_timestamps[i-1]);
-            }
-        }
-
-        if (!iats.empty()) {
-            auto iat_minmax = std::minmax_element(iats.begin(), iats.end());
-
-            uint64_t sum = std::accumulate(iats.begin(), iats.end(), 0ULL);
-            float mean_ns = static_cast<float>(sum) / iats.size();
-
-            // Calculate std dev
-            float sum_sq_diff = 0.0f;
-            for (uint64_t iat : iats) {
-                float diff = static_cast<float>(iat) - mean_ns;
-                sum_sq_diff += diff * diff;
-            }
-            float std_ns = std::sqrt(sum_sq_diff / iats.size());
-
-            net_features->set_flow_inter_arrival_time_min(*iat_minmax.first);
-            net_features->set_flow_inter_arrival_time_max(*iat_minmax.second);
-            net_features->set_flow_inter_arrival_time_mean(mean_ns / 1000.0);  // Convert to microseconds
-            net_features->set_flow_inter_arrival_time_std(std_ns / 1000.0);
-        }
+        net_features->set_flow_inter_arrival_time_min(flow.iat_all.min);
+        net_features->set_flow_inter_arrival_time_max(flow.iat_all.max);
+        net_features->set_flow_inter_arrival_time_mean(mean_ns / 1000.0);  // Convert to microseconds
+        net_features->set_flow_inter_arrival_time_std(std_ns / 1000.0);
     }
 
     // ⏱️ INTER-ARRIVAL TIMES - FORWARD
-    if (flow.fwd_timestamps.size() >= 2) {
-        std::vector<uint64_t> fwd_iats;
-        fwd_iats.reserve(flow.fwd_timestamps.size() - 1);
+    if (flow.iat_fwd.pairs > 0) {
+        float mean_ns = static_cast<float>(flow.iat_fwd.sum) / static_cast<float>(flow.iat_fwd.pairs);
+        float std_ns = iat_std_dev(flow.iat_fwd);
 
-        for (size_t i = 1; i < flow.fwd_timestamps.size(); ++i) {
-            if (flow.fwd_timestamps[i] >= flow.fwd_timestamps[i-1]) {
-                fwd_iats.push_back(flow.fwd_timestamps[i] - flow.fwd_timestamps[i-1]);
-            }
-        }
-
-        if (!fwd_iats.empty()) {
-            auto fwd_minmax = std::minmax_element(fwd_iats.begin(), fwd_iats.end());
-            uint64_t sum = std::accumulate(fwd_iats.begin(), fwd_iats.end(), 0ULL);
-            float mean_ns = static_cast<float>(sum) / fwd_iats.size();
-
-            float sum_sq_diff = 0.0f;
-            for (uint64_t iat : fwd_iats) {
-                float diff = static_cast<float>(iat) - mean_ns;
-                sum_sq_diff += diff * diff;
-            }
-            float std_ns = std::sqrt(sum_sq_diff / fwd_iats.size());
-
-            net_features->set_forward_inter_arrival_time_min(*fwd_minmax.first);
-            net_features->set_forward_inter_arrival_time_max(*fwd_minmax.second);
-            net_features->set_forward_inter_arrival_time_mean(mean_ns / 1000.0);
-            net_features->set_forward_inter_arrival_time_std(std_ns / 1000.0);
-            net_features->set_forward_inter_arrival_time_total(sum / 1000.0);
-        }
+        net_features->set_forward_inter_arrival_time_min(flow.iat_fwd.min);
+        net_features->set_forward_inter_arrival_time_max(flow.iat_fwd.max);
+        net_features->set_forward_inter_arrival_time_mean(mean_ns / 1000.0);
+        net_features->set_forward_inter_arrival_time_std(std_ns / 1000.0);
+        net_features->set_forward_inter_arrival_time_total(flow.iat_fwd.sum / 1000.0);
     }
 
     // ⏱️ INTER-ARRIVAL TIMES - BACKWARD
-    if (flow.bwd_timestamps.size() >= 2) {
-        std::vector<uint64_t> bwd_iats;
-        bwd_iats.reserve(flow.bwd_timestamps.size() - 1);
+    if (flow.iat_bwd.pairs > 0) {
+        float mean_ns = static_cast<float>(flow.iat_bwd.sum) / static_cast<float>(flow.iat_bwd.pairs);
+        float std_ns = iat_std_dev(flow.iat_bwd);
 
-        for (size_t i = 1; i < flow.bwd_timestamps.size(); ++i) {
-            if (flow.bwd_timestamps[i] >= flow.bwd_timestamps[i-1]) {
-                bwd_iats.push_back(flow.bwd_timestamps[i] - flow.bwd_timestamps[i-1]);
-            }
-        }
-
-        if (!bwd_iats.empty()) {
-            auto bwd_minmax = std::minmax_element(bwd_iats.begin(), bwd_iats.end());
-            uint64_t sum = std::accumulate(bwd_iats.begin(), bwd_iats.end(), 0ULL);
-            float mean_ns = static_cast<float>(sum) / bwd_iats.size();
-
-            float sum_sq_diff = 0.0f;
-            for (uint64_t iat : bwd_iats) {
-                float diff = static_cast<float>(iat) - mean_ns;
-                sum_sq_diff += diff * diff;
-            }
-            float std_ns = std::sqrt(sum_sq_diff / bwd_iats.size());
-
-            net_features->set_backward_inter_arrival_time_min(*bwd_minmax.first);
-            net_features->set_backward_inter_arrival_time_max(*bwd_minmax.second);
-            net_features->set_backward_inter_arrival_time_mean(mean_ns / 1000.0);
-            net_features->set_backward_inter_arrival_time_std(std_ns / 1000.0);
-            net_features->set_backward_inter_arrival_time_total(sum / 1000.0);
-        }
+        net_features->set_backward_inter_arrival_time_min(flow.iat_bwd.min);
+        net_features->set_backward_inter_arrival_time_max(flow.iat_bwd.max);
+        net_features->set_backward_inter_arrival_time_mean(mean_ns / 1000.0);
+        net_features->set_backward_inter_arrival_time_std(std_ns / 1000.0);
+        net_features->set_backward_inter_arrival_time_total(flow.iat_bwd.sum / 1000.0);
     }
 
     // 🏳️ TCP FLAGS COUNTS
@@ -876,20 +743,16 @@ void MLDefenderExtractor::populate_ml_defender_features(
         // flow_duration_min_ms — SYN-8b, P2 (DAY 97+)
     }
 
-    // 📋 HEADERS
-    if (!flow.fwd_header_lengths.empty()) {
-        uint64_t sum = std::accumulate(flow.fwd_header_lengths.begin(),
-                                       flow.fwd_header_lengths.end(), 0ULL);
+    // 📋 HEADERS  [D308-PASO1] suma por sentido; la cuenta es spkts / dpkts
+    if (flow.spkts > 0) {
         net_features->set_forward_header_length(
-            static_cast<double>(sum) / flow.fwd_header_lengths.size()
+            static_cast<double>(flow.fwd_header_sum) / static_cast<double>(flow.spkts)
         );
     }
 
-    if (!flow.bwd_header_lengths.empty()) {
-        uint64_t sum = std::accumulate(flow.bwd_header_lengths.begin(),
-                                       flow.bwd_header_lengths.end(), 0ULL);
+    if (flow.dpkts > 0) {
         net_features->set_backward_header_length(
-            static_cast<double>(sum) / flow.bwd_header_lengths.size()
+            static_cast<double>(flow.bwd_header_sum) / static_cast<double>(flow.dpkts)
         );
     }
 

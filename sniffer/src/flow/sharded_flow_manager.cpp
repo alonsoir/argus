@@ -1,6 +1,6 @@
 // Day 44 - FIX #3: Thread-safe API implementation
 
-#include "flow/sharded_flow_manager_fix3.hpp"
+#include "flow/sharded_flow_manager.hpp"
 #include <iostream>
 #include <chrono>
 
@@ -28,7 +28,9 @@ void ShardedFlowManager::initialize(const Config& config) {
         std::cout << "[ShardedFlowManager] Initialized:" << std::endl;
         std::cout << "  Shard count: " << config_.shard_count << std::endl;
         std::cout << "  Max flows per shard: " << config_.max_flows_per_shard << std::endl;
-        std::cout << "  Flow timeout: " << config_.flow_timeout_ns / 1'000'000'000 << " seconds" << std::endl;
+        std::cout << "  Idle timeout: " << config_.idle_timeout_ns / 1'000'000'000 << " seconds" << std::endl;
+        std::cout << "  Active timeout: " << config_.active_timeout_ns / 1'000'000'000 << " seconds"
+                  << (config_.active_timeout_ns == 0 ? " (sin tope)" : "") << std::endl;
         std::cout << "  Total capacity: " << config_.shard_count * config_.max_flows_per_shard << " flows" << std::endl;
     });
 }
@@ -55,7 +57,10 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
 
     std::unique_lock lock(*shard.mutex);
 
-    shard.last_seen_ns.store(now_ns(), std::memory_order_relaxed);
+    const uint64_t ahora = now_ns();
+    shard.last_seen_ns.store(ahora, std::memory_order_relaxed);
+    // [FLOW-TABLE-D308] marca del paquete posterior a la hora de la tabla: los dos relojes no son la misma base
+    if (event.timestamp > ahora) marcas_futuras_.fetch_add(1, std::memory_order_relaxed);
 
     auto it = shard.flows->find(key);
 
@@ -66,6 +71,7 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
                 FlowKey evict_key = shard.lru_queue->back();
                 shard.lru_queue->pop_back();
                 shard.flows->erase(evict_key);
+                desalojos_lru_.fetch_add(1, std::memory_order_relaxed);  // [FLOW-TABLE-D308] antes, en silencio
             }
         }
 
@@ -80,7 +86,15 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
 
     } else {
         // Existing flow
-        it->second.stats.add_packet(event, key);
+        // [FLOW-TABLE-D308] Tope de duracion activa (0 = sin tope), con marcas de paquete: si el flujo ya dura el
+        // tope, se cierra (estado a cero) y este paquete abre el flujo nuevo con la misma clave. O(1), sin recorrer.
+        auto& st = it->second.stats;
+        if (config_.active_timeout_ns > 0 && event.timestamp >= st.flow_start_ns &&
+            event.timestamp - st.flow_start_ns >= config_.active_timeout_ns) {
+            st = FlowStatistics{};
+            cortes_tope_.fetch_add(1, std::memory_order_relaxed);
+        }
+        st.add_packet(event, key);
         
         // FIX #2: O(1) LRU update using splice
         shard.lru_queue->splice(
@@ -93,7 +107,10 @@ void ShardedFlowManager::add_packet(const FlowKey& key, const SimpleEvent& event
 }
 
 // FIX #3: NEW - Thread-safe copy (reads inside lock)
-std::optional<FlowStatistics> ShardedFlowManager::get_flow_stats_copy(const FlowKey& key) const {
+// [D308-PASO1] Copia del nucleo de tamano fijo, de una vez y O(1): sin vectores que crezcan con el flujo y sin
+// la copia a mano campo a campo (un campo nuevo no se puede perder, DEBT-FLOWSTATS-COPY-AMPUTATED-001). El
+// histograma de longitudes no viaja: solo lo lee la foto DDoS v2 dentro del lock (with_flow_stats).
+std::optional<FlowStatsCore> ShardedFlowManager::get_flow_stats_copy(const FlowKey& key) const {
     if (!initialized_.load(std::memory_order_acquire)) {
         return std::nullopt;
     }
@@ -105,76 +122,69 @@ std::optional<FlowStatistics> ShardedFlowManager::get_flow_stats_copy(const Flow
 
     auto it = shard.flows->find(key);
     if (it != shard.flows->end()) {
-        // Create copy manually (FlowStatistics has unique_ptr members)
-        FlowStatistics copy;
-        
-        // Copy primitive fields
-        copy.flow_start_ns = it->second.stats.flow_start_ns;
-        copy.flow_last_seen_ns = it->second.stats.flow_last_seen_ns;
-        copy.spkts = it->second.stats.spkts;
-        copy.dpkts = it->second.stats.dpkts;
-        copy.sbytes = it->second.stats.sbytes;
-        copy.dbytes = it->second.stats.dbytes;
-        
-        // Copy vectors
-        copy.fwd_lengths = it->second.stats.fwd_lengths;
-        copy.bwd_lengths = it->second.stats.bwd_lengths;
-        copy.all_lengths = it->second.stats.all_lengths;
-        copy.packet_timestamps = it->second.stats.packet_timestamps;
-        copy.fwd_timestamps = it->second.stats.fwd_timestamps;
-        copy.bwd_timestamps = it->second.stats.bwd_timestamps;
-        
-        // Copy TCP flags
-        copy.fin_count = it->second.stats.fin_count;
-        copy.syn_count = it->second.stats.syn_count;
-        copy.rst_count = it->second.stats.rst_count;
-        copy.psh_count = it->second.stats.psh_count;
-        copy.ack_count = it->second.stats.ack_count;
-        copy.urg_count = it->second.stats.urg_count;
-        copy.ece_count = it->second.stats.ece_count;
-        copy.cwr_count = it->second.stats.cwr_count;
-        copy.fwd_psh_flags = it->second.stats.fwd_psh_flags;
-        copy.bwd_psh_flags = it->second.stats.bwd_psh_flags;
-        copy.fwd_urg_flags = it->second.stats.fwd_urg_flags;
-        copy.bwd_urg_flags = it->second.stats.bwd_urg_flags;
-        
-        // Copy header lengths
-        copy.fwd_header_lengths = it->second.stats.fwd_header_lengths;
-        copy.sum_all_lengths = it->second.stats.sum_all_lengths;  // [DDOS-SNAP-D290]
-        copy.len_hist = it->second.stats.len_hist;
-        copy.bwd_header_lengths = it->second.stats.bwd_header_lengths;
-        
-        // time_windows will be created by FlowStatistics() constructor
-        
-        return std::make_optional(std::move(copy));
+        return std::make_optional<FlowStatsCore>(static_cast<const FlowStatsCore&>(it->second.stats));
     }
     return std::nullopt;
 }
 
+// [FLOW-TABLE-D308] Desde la cola de la LRU de cada shard (el flujo cuyo ultimo paquete llego hace mas): mientras la
+// cola este caducada, se borra (O(1) por flujo); se para en la primera que no lo este. Coste O(caducados + shards) y
+// cada lock solo mientras se borra lo de su shard (antes: recorria todos los flujos y borraba de la LRU con
+// list::remove, O(n) por borrado; medido DAY308: 6 s con 72 000 caducados en el defender). La LRU ordena por
+// llegada, no por marca: con marcas desordenadas un caducado puede esperar a una pasada posterior.
 size_t ShardedFlowManager::cleanup_expired_flows(uint64_t current_ns) {
     if (!initialized_.load(std::memory_order_acquire)) {
         return 0;
     }
 
     size_t total_cleaned = 0;
+    uint64_t max_us = 0;
 
     for (auto& shard_ptr : shards_) {
         auto& shard = *shard_ptr;
-        std::unique_lock lock(*shard.mutex);
-
-        auto it = shard.flows->begin();
-        while (it != shard.flows->end()) {
-            if (it->second.stats.should_expire(current_ns, config_.flow_timeout_ns)) {
-                shard.lru_queue->remove(it->first);
-                it = shard.flows->erase(it);
+        const auto t0 = std::chrono::steady_clock::now();
+        {
+            std::unique_lock lock(*shard.mutex);
+            while (!shard.lru_queue->empty()) {
+                auto it = shard.flows->find(shard.lru_queue->back());
+                if (it == shard.flows->end()) {  // no deberia pasar: la LRU y la tabla van juntas
+                    shard.lru_queue->pop_back();
+                    continue;
+                }
+                if (!it->second.stats.should_expire(current_ns, config_.idle_timeout_ns)) {
+                    break;
+                }
+                shard.flows->erase(it);
+                shard.lru_queue->pop_back();
                 ++total_cleaned;
-            } else {
-                ++it;
             }
         }
+        const uint64_t us = static_cast<uint64_t>(
+            std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::steady_clock::now() - t0).count());
+        if (us > max_us) max_us = us;
     }
 
+    caducados_.fetch_add(total_cleaned, std::memory_order_relaxed);
+    uint64_t previo = max_lock_us_.load(std::memory_order_relaxed);
+    while (max_us > previo && !max_lock_us_.compare_exchange_weak(previo, max_us, std::memory_order_relaxed)) {
+    }
     return total_cleaned;
+}
+
+ShardedFlowManager::Counters ShardedFlowManager::take_counters() {
+    Counters c;
+    c.caducados = caducados_.exchange(0, std::memory_order_relaxed);
+    c.cortes_tope = cortes_tope_.exchange(0, std::memory_order_relaxed);
+    c.desalojos_lru = desalojos_lru_.exchange(0, std::memory_order_relaxed);
+    c.marcas_futuras = marcas_futuras_.exchange(0, std::memory_order_relaxed);
+    c.max_lock_us = max_lock_us_.exchange(0, std::memory_order_relaxed);
+    if (initialized_.load(std::memory_order_acquire)) {
+        for (const auto& shard_ptr : shards_) {
+            std::unique_lock lock(*shard_ptr->mutex);
+            c.vivos += shard_ptr->flows->size();
+        }
+    }
+    return c;
 }
 
 void ShardedFlowManager::print_stats() const {

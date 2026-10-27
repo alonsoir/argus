@@ -124,15 +124,22 @@ namespace sniffer {
         }
 
         // ✅ DAY 45: Initialize ShardedFlowManager (thread-safe singleton)
+        // [FLOW-TABLE-D308] desde la seccion flow_table de sniffer.json (antes, 16 x 10000 y 120 s escritos aqui y una
+        // caducidad que nunca se aplicaba)
         auto& flow_manager = sniffer::flow::ShardedFlowManager::instance();
         static std::once_flag init_flag;
         std::call_once(init_flag, [&]() {
+            const auto& ft = config_.flow_table;
             flow_manager.initialize(sniffer::flow::ShardedFlowManager::Config{
-                .shard_count = 16,
-                .max_flows_per_shard = 10000,
-                .flow_timeout_ns = 120000000000ULL  // 120 seconds in ns
+                .shard_count = static_cast<size_t>(ft.shards),
+                .max_flows_per_shard = static_cast<size_t>(ft.max_flows_per_shard),
+                .idle_timeout_ns = ft.idle_timeout_s * 1'000'000'000ULL,
+                .active_timeout_ns = ft.active_timeout_s * 1'000'000'000ULL
             });
-            std::cout << "[INFO] ✅ ShardedFlowManager initialized (16 shards, 10K flows/shard)" << std::endl;
+            std::cout << "[INFO] ✅ ShardedFlowManager initialized (" << ft.shards << " shards, "
+                      << ft.max_flows_per_shard << " flows/shard, idle " << ft.idle_timeout_s << " s, active "
+                      << ft.active_timeout_s << " s" << (ft.active_timeout_s == 0 ? " = sin tope" : "") << ")"
+                      << std::endl;
         });
     }
 
@@ -279,6 +286,9 @@ bool RingBufferConsumer::start() {
 
     // [TIMEBASE-D295] hilo del reloj (ancla, CLOCK_STEP, CLOCK_SLEW)
     consumer_threads_.emplace_back(&RingBufferConsumer::timebase_loop, this);
+
+    // [FLOW-TABLE-D308] hilo de la tabla de flujos (limpieza por inactividad y linea [FLOW-TABLE])
+    consumer_threads_.emplace_back(&RingBufferConsumer::flow_table_loop, this);
 
     // Start statistics display thread
     consumer_threads_.emplace_back(&RingBufferConsumer::stats_display_loop, this);
@@ -549,6 +559,40 @@ void RingBufferConsumer::timebase_loop() {
                       << " (umbral " << umbral_ppm << "): las duraciones en MONOTONIC no son fiables" << std::endl;
         } else if (ev.slew_measured && ev.slewing_changed) {
             std::cerr << "[CLOCK-SLEW] FIN ppm=" << ev.slew_ppm << std::endl;
+        }
+    }
+}
+
+// [FLOW-TABLE-D308] Hilo de la tabla de flujos: cada cleanup_interval_ms borra los flujos inactivos mas de
+// idle_timeout_s (desde la cola de la LRU de cada shard) y cada log_interval_s escribe la linea [FLOW-TABLE] con los
+// contadores del intervalo. Duerme en trozos de 100 ms para que la parada no espere un periodo entero, como
+// timebase_loop. La hora es steady_clock (CLOCK_MONOTONIC), la misma base que las marcas de los paquetes
+// (bpf_ktime_get_ns); si no lo fuera, marcas_futuras deja de ser 0.
+void RingBufferConsumer::flow_table_loop() {
+    using clk = std::chrono::steady_clock;
+    const auto& ft = config_.flow_table;
+    const auto paso_limpieza = std::chrono::milliseconds(ft.cleanup_interval_ms);
+    const auto paso_log = std::chrono::seconds(ft.log_interval_s);
+    const uint64_t capacidad = ft.shards * ft.max_flows_per_shard;
+    auto& mgr = sniffer::flow::ShardedFlowManager::instance();
+    auto proxima_limpieza = clk::now() + paso_limpieza;
+    auto proximo_log = clk::now() + paso_log;
+    while (!should_stop_) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        const auto ahora = clk::now();
+        if (ahora >= proxima_limpieza) {
+            mgr.cleanup_expired_flows(mgr.now_ns());
+            proxima_limpieza += paso_limpieza;
+            if (proxima_limpieza < ahora) proxima_limpieza = ahora + paso_limpieza;
+        }
+        if (ahora >= proximo_log) {
+            const auto c = mgr.take_counters();
+            std::cout << "[FLOW-TABLE] vivos=" << c.vivos << " capacidad=" << capacidad << " caducados=" << c.caducados
+                      << " cortes_tope=" << c.cortes_tope << " desalojos_lru=" << c.desalojos_lru
+                      << " marcas_futuras=" << c.marcas_futuras << " max_lock_us=" << c.max_lock_us
+                      << " (ultimos " << ft.log_interval_s << " s)" << std::endl;
+            proximo_log += paso_log;
+            if (proximo_log < ahora) proximo_log = ahora + paso_log;
         }
     }
 }
@@ -937,7 +981,11 @@ void RingBufferConsumer::populate_protobuf_event(const SimpleEvent& event,
 		if (!ml_extractor_.has_aggregator() && ransomware_processor_) {
     		ml_extractor_.set_aggregator(ransomware_processor_->get_aggregator());
 		}
-		ml_extractor_.populate_ml_defender_features(flow_stats, proto_event);
+		// [D308-PASO1, D1] la entropia de longitudes viene de la foto DDoS v2 (mismo calculo, en el lock, en el
+		// instante del paquete): la copia del flujo ya no lleva el histograma. Sin foto -> centinela.
+		const float len_entropy = (queued && queued->flow.valid) ? queued->flow.packet_size_entropy
+		                                                          : MISSING_FEATURE_SENTINEL;
+		ml_extractor_.populate_ml_defender_features(flow_stats, len_entropy, proto_event);
 		// [DDOS-V2-D286] reflection_signature: depende de la tupla del paquete, no de FlowStatistics
 		proto_event.mutable_network_features()->mutable_ddos_embedded()->set_reflection_signature(
 		    ::argus::ddos::reflection_signature(event.protocol, event.src_port, event.dst_port));

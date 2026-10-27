@@ -258,7 +258,6 @@
     "xdp_mode": "skb",
     "ring_buffer_size": 1048576,
     "max_flows_in_kernel": 500000,
-    "flow_timeout_seconds": 300,
     "kernel_features": [
       "source_ip",
       "destination_ip",
@@ -290,42 +289,20 @@
     "slew_ppm_threshold": 10000.0,
     "stepped_recent_s": 60.0
   },
-  "user_space": {
-    "flow_table_size": 1000000,
-    "time_window_buffer_size": 10000,
-    "user_features": [
-      "ddos_feature_group",
-      "ransomware_feature_group",
-      "rf_feature_group",
-      "internal_traffic_feature_group"
-    ],
-    "memory_management": {
-      "flow_eviction_policy": "lru",
-      "max_memory_usage_mb": 2048,
-      "gc_interval_seconds": 60
-    }
-  },
-  "feature_groups": {
-    "ddos_feature_group": {
-      "count": 83,
-      "reference": "config/features/ddos_83_features.json",
-      "description": "DDOS detection features including packet rates, flag patterns, timing analysis"
-    },
-    "ransomware_feature_group": {
-      "count": 20,
-      "reference": "config/features/ransomware_20_features.json",
-      "description": "Ransomware detection features (20 critical features optimized for RPi)"
-    },
-    "rf_feature_group": {
-      "count": 23,
-      "reference": "config/features/rf_23_features.json",
-      "description": "Random Forest general attack detection (Level 1)"
-    },
-    "internal_traffic_feature_group": {
-      "count": 4,
-      "reference": "config/features/internal_4_features.json",
-      "description": "Internal traffic classification features"
-    }
+  "flow_table": {
+    "_doc": "[FLOW-TABLE-D308] Tabla de flujos del sniffer (ShardedFlowManager): unico sitio de su configuracion. Cada campo: si falta, no es entero o esta fuera de rango, se usa el defecto (el valor de aqui, tambien escrito en el codigo, flow_table_params.hpp) con aviso [CONFIG-DEFAULT] y el sniffer arranca igual. La linea [FLOW-TABLE] del arranque dice el valor de cada campo y si sale del JSON o del defecto. Cada log_interval_s, la linea [FLOW-TABLE] da vivos, caducados, cortes_tope, desalojos_lru (tabla llena: si no es 0, la tabla se queda corta), marcas_futuras (debe ser 0: si no, la marca de los paquetes y la hora de la tabla no son el mismo reloj) y max_lock_us. Defectos SEGUROS, no optimos: los optimos se miden por instalacion (barrido, rama propia).",
+    "_doc_shards": "entero, rango [1, 256], defecto 16. Shards de la tabla, cada uno con su lock.",
+    "shards": 16,
+    "_doc_max_flows_per_shard": "entero, rango [100, 10000000], defecto 10000. Flujos por shard; con el shard lleno, la LRU echa al flujo de paquete mas antiguo (desalojos_lru). Capacidad = shards x max_flows_per_shard.",
+    "max_flows_per_shard": 10000,
+    "_doc_idle_timeout_s": "entero, rango [1, 86400], defecto 300. Un flujo sin paquetes durante mas de este tiempo caduca; si vuelve, empieza de cero (flow_packet_count de ddos_v2 incluido). Regla: idle_timeout_s x 1000 > cleanup_interval_ms.",
+    "idle_timeout_s": 300,
+    "_doc_active_timeout_s": "entero, 0 o rango [1, 604800], defecto 0 = sin tope. Duracion maxima de un flujo: al cumplirla, el flujo se cierra y el siguiente paquete abre uno nuevo con la misma clave y el estado a cero. Desactivado hasta medir su efecto en ddos_v2 (entrenada sin tope). Regla: 0 o >= idle_timeout_s.",
+    "active_timeout_s": 0,
+    "_doc_cleanup_interval_ms": "entero, rango [100, 60000], defecto 1000. Cada cuanto pasa la limpieza por inactividad (desde la cola de la LRU de cada shard, O(caducados)).",
+    "cleanup_interval_ms": 1000,
+    "_doc_log_interval_s": "entero, rango [1, 3600], defecto 60. Cada cuanto se escribe la linea [FLOW-TABLE] con los contadores del intervalo.",
+    "log_interval_s": 60
   },
   "sniffer_time_windows": {
     "flow_tracking_window_seconds": 300,
@@ -432,7 +409,6 @@
       "enabled": false,
       "extract_all_features": true,
       "cache_flow_states": true,
-      "flow_timeout_seconds": 300,
       "max_concurrent_flows": 1000000,
       "statistics_engine": "high_performance_cpp",
       "simd_optimization": true

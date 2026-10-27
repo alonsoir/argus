@@ -273,9 +273,6 @@ set(SNIFFER_SOURCES
         src/userspace/thread_manager.cpp
         src/userspace/compression_handler.cpp
         src/userspace/etcd_client.cpp
-        src/userspace/flow_manager.cpp
-        src/userspace/feature_extractor.cpp
-        src/userspace/time_window_manager.cpp
         src/userspace/feature_logger.cpp
         src/userspace/dual_nic_manager.cpp
         # ====================================================================
@@ -512,7 +509,6 @@ endif()
 
 # Create necessary directories
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config)
-file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/config/features)
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/logs)
 
 # Copy configuration files
@@ -521,12 +517,6 @@ configure_file(
         ${CMAKE_BINARY_DIR}/config/sniffer.json
         COPYONLY
 )
-
-# Create feature group placeholder files
-set(FEATURE_GROUPS ddos_83 ransomware_83 rf_23 internal_4)
-foreach(GROUP ${FEATURE_GROUPS})
-    file(WRITE ${CMAKE_BINARY_DIR}/config/features/${GROUP}_features.json "[]")
-endforeach()
 
 # ============================================================================
 # INSTALL RULES
@@ -693,8 +683,6 @@ add_executable(test_sharded_flow_full_contract
 
         # ShardedFlowManager components
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
-        src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
 
         src/userspace/flow_tracker.cpp
@@ -714,6 +702,7 @@ target_link_libraries(test_sharded_flow_full_contract
         gtest_main
 )
 
+add_test(NAME test_sharded_flow_full_contract COMMAND test_sharded_flow_full_contract)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_sharded_flow_full_contract configured (Day 46 - ISSUE-003)")
 
 # ============================================================================
@@ -725,8 +714,6 @@ add_executable(test_ring_consumer_protobuf
 
         # ShardedFlowManager + ML Defender extractor
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
-        src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
         src/userspace/ml_defender_features.cpp
 
@@ -753,14 +740,13 @@ target_link_libraries(test_ring_consumer_protobuf
         gtest_main
 )
 
+add_test(NAME test_ring_consumer_protobuf COMMAND test_ring_consumer_protobuf)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_ring_consumer_protobuf configured (Day 46 - 40 features)")
 
 # [DDOS-SNAP-D290] Foto DDoS v2 incremental == extraccion de lote de produccion, bit a bit
 add_executable(test_ddos_flow_snap
         tests/test_ddos_flow_snap.cpp
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
-        src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
         src/userspace/ml_defender_features.cpp
         src/userspace/flow_tracker.cpp
@@ -782,6 +768,26 @@ target_link_libraries(test_ddos_flow_snap
 add_test(NAME test_ddos_flow_snap COMMAND test_ddos_flow_snap)
 message(STATUS "🧪 Unit Test: test_ddos_flow_snap configured (DAY 290 - foto DDoS v2 incremental) [DDOS-SNAP-D290]")
 
+# [FLOW-TABLE-D308] caducidad de la tabla de flujos: lector de flow_table (sniffer.json) y ShardedFlowManager
+add_executable(test_flow_expiry
+        tests/test_flow_expiry.cpp
+        src/flow/sharded_flow_manager.cpp
+        src/userspace/flow_tracker.cpp
+)
+target_include_directories(test_flow_expiry PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+        ${CMAKE_SOURCE_DIR}/include/flow
+        ${CMAKE_SOURCE_DIR}/src
+        ${JSONCPP_INCLUDE_DIRS}
+)
+target_link_directories(test_flow_expiry PRIVATE ${JSONCPP_LIBRARY_DIRS})
+target_link_libraries(test_flow_expiry
+        Threads::Threads
+        ${JSONCPP_LIBRARIES}
+)
+add_test(NAME test_flow_expiry COMMAND test_flow_expiry)
+message(STATUS "🧪 Unit Test: test_flow_expiry configured (DAY 308 - caducidad de la tabla de flujos) [FLOW-TABLE-D308]")
+
 # ============================================================================
 # PROTO3 EMBEDDED SERIALIZATION TEST — DAY 75 regression
 # Validates: all-zero float submessage trap + sentinel fix for send_ransomware_features
@@ -800,6 +806,7 @@ target_link_libraries(test_proto3_embedded_serialization
         gtest
         gtest_main
 )
+add_test(NAME test_proto3_embedded_serialization COMMAND test_proto3_embedded_serialization)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_proto3_embedded_serialization configured (DAY 75 regression)")
 
 # ============================================================================
@@ -832,8 +839,6 @@ add_executable(test_sharded_flow_multithread
 
         # ShardedFlowManager + ML Defender extractor
         src/flow/sharded_flow_manager.cpp
-        src/userspace/flow_manager.cpp
-        src/userspace/time_window_manager.cpp
         src/userspace/time_window_aggregator.cpp
         src/userspace/ml_defender_features.cpp
 
@@ -860,6 +865,7 @@ target_link_libraries(test_sharded_flow_multithread
         gtest_main
 )
 
+add_test(NAME test_sharded_flow_multithread COMMAND test_sharded_flow_multithread)  # [TESTS-REG-D309] DEBT-SNIFFER-TESTS-NOT-REGISTERED-001
 message(STATUS "🧪 Unit Test: test_sharded_flow_multithread configured (Day 46 - Concurrency)")
 
 # ============================================================================
