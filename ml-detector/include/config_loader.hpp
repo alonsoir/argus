@@ -307,14 +307,6 @@ struct DetectorConfig {
         int cache_line_size;
     } performance;
 
-    // CSV Writer
-    struct {
-        bool enabled = true;  // [WRITERS-D285] opcional en el JSON
-        std::string base_dir;
-        float min_score_threshold;
-        int max_events_per_file;
-    } csv_writer;
-
     // Correlation Writer (bronce correlation_v1) — DAY 201/203
     // DEBT-CONFIG-BRONZE-HARDCODE-001 + DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001
     struct {

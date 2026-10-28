@@ -3,8 +3,7 @@
 // Authors: Alonso Isidoro Roman + Claude (Anthropic)
 //
 // Registro mínimo de correlación: lo que el grafo Kuzu necesita para materializar
-// :NetworkFlow + :Alert, nada más. Un contrato, una responsabilidad. NO toca el
-// CSV de 127 columnas del RAG (csv_event_writer, contrato sellado v1.0).
+// :NetworkFlow + :Alert, nada más. Un contrato, una responsabilidad.
 //
 // CONTRATO correlation_v1 — 19 columnas, sin header (validación por fila):
 //    0 schema_version       1 source_sensor        2 event_id
@@ -48,7 +47,7 @@ static constexpr size_t CORRELATION_TOTAL_COLS = 19;
 
 struct CorrelationWriterConfig {
     std::string base_dir;                 // p.ej. /vagrant/logs/correlation (PLANO, multi-sensor)
-    std::string hmac_key_hex;             // 64-char hex (32 bytes), igual que CsvEventWriter
+    std::string hmac_key_hex;             // 64-char hex (32 bytes), clave de /secrets/ml-detector
     size_t      max_events_per_file = 10000;
     int         rotation_seconds    = 30;  // DAY 203 -- cierre por tiempo absoluto desde
                                             // apertura (no desde ultima escritura).

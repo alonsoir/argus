@@ -26,8 +26,6 @@
 #include <crypto_transport/transport.hpp>
 #include <lz4.h>
 
-// Day 63: CSV Event Writer
-#include "csv_event_writer.hpp"
 #include "correlation_writer.hpp"
 #include "ddos_dataset_writer.hpp"  // [DDOS-DATASET-D287]
 #include "plugin_loader/plugin_loader.hpp"  // ADR-012 PHASE 2d
@@ -62,7 +60,7 @@ public:
         std::shared_ptr<ml_defender::InternalDetector> internal_detector,
         // DEPRECATED DAY 98 — crypto_manager eliminado (ADR-013)
         // std::shared_ptr<crypto::CryptoManager> crypto_manager,
-        std::string hmac_key_hex = ""   // Day 63: CSV integrity key from etcd
+        std::string hmac_key_hex = ""   // clave HMAC del bronce (/secrets/ml-detector, del etcd-server)
     );
 
     ~ZMQHandler();
@@ -137,8 +135,6 @@ private:
     bool force_all_heads_ = false;
     std::chrono::system_clock::time_point start_time_;
 
-    // Day 66: CsvEventWriter standalone (activo aunque RAG Logger falle)
-    std::shared_ptr<ml_defender::CsvEventWriter> csv_writer_;
     // DAY 175: CorrelationWriter (zona bronce, contrato correlation_v1)
     std::shared_ptr<ml_defender::CorrelationWriter> correlation_writer_;
     std::unique_ptr<ml_defender::DdosDatasetWriter> ddos_dataset_writer_;  // [DDOS-DATASET-D287]
@@ -148,6 +144,6 @@ private:
     std::atomic<bool> memory_monitor_running_{false};
     std::atomic<double> current_memory_mb_{0.0};
 
-    std::string hmac_key_hex_;  // Day 63: stored for CsvEventWriter init
+    std::string hmac_key_hex_;  // clave HMAC del bronce (correlation_writer_)
 };
 } // namespace ml_detector

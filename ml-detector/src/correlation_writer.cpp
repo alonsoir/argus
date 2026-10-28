@@ -1,6 +1,6 @@
 // correlation_writer.cpp
 // aRGus NDR — Correlation Writer implementation (zona BRONCE, contrato correlation_v1)
-// Clona el patrón probado de csv_event_writer.cpp (HMAC OpenSSL, rotación fecha+tamaño,
+// Nació clonando el patrón del csv_event_writer.cpp (retirado DAY310): HMAC OpenSSL, rotación fecha+tamaño,
 // append no-atómico, thread-safe). Authors: Alonso Isidoro Roman + Claude (Anthropic)
 
 #include "correlation_writer.hpp"
@@ -22,7 +22,7 @@ namespace ml_defender {
 
 namespace {
 
-// Idéntico a csv_event_writer: 64 hex chars -> 32 bytes.
+// 64 hex chars -> 32 bytes.
 std::vector<uint8_t> hex_decode(const std::string& hex) {
     if (hex.size() != 64) {
         throw std::invalid_argument(

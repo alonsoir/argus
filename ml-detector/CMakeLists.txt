@@ -255,7 +255,6 @@ set(SOURCES
         src/traffic_detector.cpp
         src/internal_detector.cpp
         src/etcd_client.cpp
-        src/csv_event_writer.cpp
         src/correlation_writer.cpp
         ${PROTO_SOURCES}
 )
@@ -402,7 +401,7 @@ target_link_libraries(ml-detector PRIVATE
         ${SEED_CLIENT_LIB}
         ${CORRELATION_V1_LIB}
         ${LZ4_LIBRARIES}
-        OpenSSL::SSL          # Day 63: HMAC-SHA256 para CsvEventWriter
+        OpenSSL::SSL          # HMAC-SHA256 del bronce (correlation_writer)
         OpenSSL::Crypto       # Day 63
 )
 

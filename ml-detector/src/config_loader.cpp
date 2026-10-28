@@ -485,16 +485,10 @@ DetectorConfig ConfigLoader::load() {
         config.performance.cache_line_size = get_required<int>(perf, "cache_line_size", "performance");
     }
 
-    // ========================================
-    // CSV Writer (Day 66)
-    // ========================================
-    {
-        auto& csv = json_["csv_writer"];
-        config.csv_writer.base_dir = get_required<std::string>(csv, "base_dir", "csv_writer");
-        config.csv_writer.min_score_threshold = get_required<float>(csv, "min_score_threshold", "csv_writer");
-        config.csv_writer.max_events_per_file = get_required<int>(csv, "max_events_per_file", "csv_writer");
-        // [WRITERS-D285] interruptor opcional (por defecto true: otras configs no cambian)
-        config.csv_writer.enabled = csv.value("enabled", true);
+    // [CSV-WRITER-RETIRE-D310] el CsvEventWriter se retiro: si el JSON aun trae su bloque, se avisa y se ignora
+    if (json_.contains("csv_writer")) {
+        std::cerr << "[CONFIG-OBSOLETO] csv_writer: el CsvEventWriter se retiro (DAY310); el bloque se ignora. "
+                     "Quitelo del JSON. Los CSV que se generan son los que salen de consultar el grafo\n";
     }
 
     // [RAG-LOGGER-RETIRE-D310] el RAG Logger se retiro: si el JSON aun trae su bloque, se avisa y se ignora

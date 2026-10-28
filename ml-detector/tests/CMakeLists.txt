@@ -152,12 +152,10 @@ if(GTest_FOUND AND
 endif()
 
 # ============================================================================
-# DAY 64 — CSV Pipeline Tests
+# DAY 64 — test_etcd_client_hmac (clave HMAC del bronce desde el etcd-server)
 # ============================================================================
-# These three tests verify the CsvEventWriter schema (127 columns) and
-# the HMAC key retrieval from etcd.  They require:
-#   test_csv_event_writer      → csv_event_writer.cpp, proto, OpenSSL, spdlog
-#   test_csv_feature_extraction → csv_event_writer.cpp, proto, OpenSSL, spdlog
+# [CSV-WRITER-RETIRE-D310] test_csv_event_writer y test_csv_feature_extraction se retiraron con el
+# CsvEventWriter (DAY310).
 #   test_etcd_client_hmac      → etcd_client.cpp, httplib, nlohmann_json, spdlog
 
 # Helper: spdlog target name varies by how it was found
@@ -176,25 +174,6 @@ macro(ml_link_nlohmann TARGET)
         target_link_libraries(${TARGET} PRIVATE nlohmann_json)
     endif()
 endmacro()
-
-# ── test_csv_event_writer ─────────────────────────────────────────────────────
-if(GTest_FOUND AND
-        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_csv_event_writer.cpp")
-
-    ml_gtest(test_csv_event_writer
-            integration/test_csv_event_writer.cpp
-            ../src/csv_event_writer.cpp
-            ${PROTO_SOURCES}
-    )
-    target_link_libraries(test_csv_event_writer PRIVATE
-            ${Protobuf_LIBRARIES}
-            OpenSSL::SSL
-            OpenSSL::Crypto
-    )
-    ml_link_spdlog(test_csv_event_writer)
-
-    message(STATUS "✅ test_csv_event_writer registered")
-endif()
 
 # ── test_correlation_roundtrip — DAY 175 PRUEBA DE ORO contrato correlation_v1 ──
 if(GTest_FOUND AND
@@ -219,25 +198,6 @@ if(GTest_FOUND AND
     endif()
     ml_link_spdlog(test_correlation_roundtrip)
     message(STATUS "✅ test_correlation_roundtrip registered")
-endif()
-
-# ── test_csv_feature_extraction ───────────────────────────────────────────────
-if(GTest_FOUND AND
-        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_csv_feature_extraction.cpp")
-
-    ml_gtest(test_csv_feature_extraction
-            integration/test_csv_feature_extraction.cpp
-            ../src/csv_event_writer.cpp
-            ${PROTO_SOURCES}
-    )
-    target_link_libraries(test_csv_feature_extraction PRIVATE
-            ${Protobuf_LIBRARIES}
-            OpenSSL::SSL
-            OpenSSL::Crypto
-    )
-    ml_link_spdlog(test_csv_feature_extraction)
-
-    message(STATUS "✅ test_csv_feature_extraction registered")
 endif()
 
 # ── test_etcd_client_hmac ─────────────────────────────────────────────────────
@@ -282,9 +242,7 @@ message(STATUS "    test_detectors               (standalone + ctest: traffic e 
 message(STATUS "  Integration:")
 message(STATUS "    test_ransomware_detector_integration")
 message(STATUS "    test_pipeline                (stub)")
-message(STATUS "  Day 64 — CSV pipeline:")
-message(STATUS "    test_csv_event_writer")
-message(STATUS "    test_csv_feature_extraction")
+message(STATUS "  Day 64 — clave HMAC:")
 message(STATUS "    test_etcd_client_hmac")
 message(STATUS "─────────────────────────────────────────────")
 message(STATUS "")

@@ -1,5 +1,4 @@
 #include "ml_defender/ddos_v2_head.hpp"  // [DDOS-V2-D293]
-#include "csv_event_writer.hpp"
 #include <crypto_transport/contexts.hpp>
 #include <filesystem>
 #include <reason_codes.hpp>
@@ -119,41 +118,7 @@ ZMQHandler::ZMQHandler(
         throw;
     }
 
-    // =========================================================================
-    // Day 66: CsvEventWriter — standalone, NO depende del RAG Logger
-    // Política: CSV activo siempre que haya HMAC key, independientemente del RAG
-    // =========================================================================
-    if (!config_.csv_writer.enabled) {  // [WRITERS-D285]
-        logger_->info("CsvEventWriter desactivado por configuracion (csv_writer.enabled=false)");
-    } else if (!hmac_key_hex_.empty()) {
-        try {
-            std::string csv_dir = config_.csv_writer.base_dir;
-            std::filesystem::create_directories(csv_dir);
-
-            ml_defender::CsvEventWriterConfig csv_cfg;
-            csv_cfg.base_dir            = csv_dir;
-            csv_cfg.hmac_key_hex        = hmac_key_hex_;
-            csv_cfg.max_events_per_file = static_cast<size_t>(config_.csv_writer.max_events_per_file);
-            csv_cfg.min_score_threshold = config_.csv_writer.min_score_threshold;
-
-			csv_writer_ = std::make_shared<ml_defender::CsvEventWriter>(csv_cfg, logger_);
-
-            logger_->info("✅ CsvEventWriter initialized (standalone)");
-            logger_->info("   Output: {}/YYYY-MM-DD.csv", csv_dir);
-            logger_->info("   Threshold: {:.2f}", csv_cfg.min_score_threshold);
-            logger_->info("   Columns: {} (14 meta + 105 features + 1 hmac)",
-                         ml_defender::CSV_TOTAL_COLS);
-
-        } catch (const std::exception& e) {
-            logger_->error("❌ Failed to initialize CsvEventWriter: {}", e.what());
-            logger_->warn("⚠️  Continuing without CSV output");
-            csv_writer_ = nullptr;
-        }
-    } else {
-        logger_->warn("⚠️  CsvEventWriter disabled — no HMAC key available");
-    }
-
-    // DAY 175: CorrelationWriter (zona bronce). Misma clave HMAC que csv → cero divergencia.
+    // DAY 175: CorrelationWriter (zona bronce), firmado con la clave HMAC de /secrets/ml-detector.
     // DAY 201: base_dir desde JSON (DEBT-CONFIG-BRONZE-HARDCODE-001, mitad writer).
     if (!hmac_key_hex_.empty()) {
         try {
@@ -186,12 +151,6 @@ ZMQHandler::ZMQHandler(
 
 ZMQHandler::~ZMQHandler() {
     stop();
-
-    // Flush CSV antes de destruir
-    if (csv_writer_) {
-        logger_->info("🔄 Flushing CsvEventWriter...");
-        csv_writer_->flush();
-    }
 }
 
 void ZMQHandler::start() {
@@ -609,14 +568,6 @@ void ZMQHandler::process_event(const std::string& message) {
             (event.event_kind() != protobuf::EVENT_KIND_FAST_ALERT ||
              config_.correlation_writer.include_fast_alerts)) {  // [BRONZE-FASTALERT-D296]
             correlation_writer_->write_record(event);
-        }
-
-        // [RAG-LOGGER-RETIRE-D310] CsvEventWriter: unico camino (sin RAG Logger)
-        if (csv_writer_) {
-            bool written = csv_writer_->write_event(event);
-            if (written) {
-                logger_->debug("📝 Event written to CSV (standalone): {}", event.event_id());
-            }
         }
 
         // Level 2 & 3: Specialized detectors (si Level 1 detectó ATTACK)

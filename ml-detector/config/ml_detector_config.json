@@ -387,13 +387,6 @@
     "enable_avx2": true,
     "cache_line_size": 64
   },
-  "csv_writer": {
-    "_comment": "[WRITERS-D285] Desactivado: su unico consumidor era make parquet-convert (Parquet antiguo, DEBT-PARQUET-SCHEMA-001).",
-    "enabled": false,
-    "base_dir": "/vagrant/logs/ml-detector/events",
-    "min_score_threshold": 0.5,
-    "max_events_per_file": 10000
-  },
   "correlation_writer": {
     "_doc": "[BRONZE-FASTALERT-D296] include_fast_alerts: true|false (defecto false). Las fast-alerts (EVENT_KIND_FAST_ALERT) no van al bronce correlation_v1 hasta que sean fiables (decision DAY296): hoy no traen flow_start (0) y eran el 48 % de las filas. Ausente o no booleano: false con [CONFIG-DEFAULT] y el ml-detector arranca igual.",
     "base_dir": "/vagrant/logs/correlation",
