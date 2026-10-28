@@ -45,7 +45,7 @@ namespace ml_detector {
          * @brief Get the bronze HMAC key from etcd-server
          *
          * Calls GET /secrets/ml-detector — returns 64-char hex key (32 bytes).
-         * Called at startup; the key signs the bronze (correlation_writer).
+         * Called at startup and every bronze_key.check_interval_seconds (ZMQHandler); the key signs the bronze.
          *
          * @return 64-char hex string, empty string on failure
          */

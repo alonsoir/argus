@@ -89,10 +89,9 @@ struct EtcdClient::Impl {
         for (uint8_t b : result.value()) {
             hex << std::setw(2) << static_cast<unsigned int>(b);
         }
-        std::string key_hex = hex.str();
-        std::cout << "[etcd] HMAC key received for " << key_path
-                  << " (" << key_hex.size() << " chars)" << std::endl;
-        return key_hex;
+        // [BRONCE-CLAVE-D310] sin linea de exito: se pide cada intervalo y la recepcion la registra ZMQHandler
+        // ([BRONCE-CLAVE], con la huella). El fallo sigue saliendo por cerr.
+        return hex.str();
     }
 };  // ← cierre de struct Impl
 

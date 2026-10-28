@@ -7,6 +7,9 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <condition_variable>  // [BRONCE-CLAVE-D310]
+#include <functional>          // [BRONCE-CLAVE-D310]
+#include <string>
 #include <time.h>  // [TIMEBASE-D296] clock_gettime(CLOCK_MONOTONIC)
 #include <spdlog/spdlog.h>
 
@@ -60,7 +63,9 @@ public:
         std::shared_ptr<ml_defender::InternalDetector> internal_detector,
         // DEPRECATED DAY 98 — crypto_manager eliminado (ADR-013)
         // std::shared_ptr<crypto::CryptoManager> crypto_manager,
-        std::string hmac_key_hex = ""   // clave HMAC del bronce (/secrets/ml-detector, del etcd-server)
+        // [BRONCE-CLAVE-D310] devuelve la clave HMAC del bronce (/secrets/ml-detector) o "" si el etcd-server no la da.
+        // Se llama al construir y cada bronze_key.check_interval_seconds desde un hilo propio.
+        std::function<std::string()> bronze_key_provider = {}
     );
 
     ~ZMQHandler();
@@ -87,6 +92,9 @@ private:
     void log_periodic_stats();
     void periodic_health_check();
     void memory_monitor_loop();
+    // [BRONCE-CLAVE-D310] pide la clave del bronce, la aplica al CorrelationWriter y lo cuenta en el log
+    void bronze_key_check(bool arranque);
+    void bronze_key_loop();
     // [HEADS-SWITCH-D305] estado EFECTIVO de cada cabeza; siempre visible (arranque + informe de estadisticas)
     void log_heads_state(const char* momento) const;
 
@@ -144,6 +152,18 @@ private:
     std::atomic<bool> memory_monitor_running_{false};
     std::atomic<double> current_memory_mb_{0.0};
 
-    std::string hmac_key_hex_;  // clave HMAC del bronce (correlation_writer_)
+    // [BRONCE-CLAVE-D310] clave del bronce. El estado bk_* solo lo tocan el constructor (antes de start) y
+    // bronze_key_thread_.
+    std::function<std::string()> bronze_key_provider_;
+    std::thread bronze_key_thread_;
+    std::atomic<bool> bronze_key_running_{false};
+    std::mutex bronze_key_mutex_;
+    std::condition_variable bronze_key_cv_;
+    bool bk_sin_clave_ = false;           // nunca ha habido clave (o no la hay)
+    bool bk_sin_confirmar_ = false;       // hay clave vigente pero el etcd-server no responde (modo extendido)
+    std::chrono::system_clock::time_point bk_sin_clave_desde_{};
+    std::chrono::system_clock::time_point bk_sin_confirmar_desde_{};
+    uint64_t bk_sin_clave_base_ = 0;      // records_sin_clave al empezar el hueco
+    std::string bk_huella_;               // huella de la clave vigente (nunca la clave)
 };
 } // namespace ml_detector

@@ -25,6 +25,9 @@
 // absoluto desde apertura, config correlation_writer.rotation_seconds, o por
 // max_events_per_file). El lector aguas abajo (BronzeDirWatcher, IN_MOVED_TO)
 // SOLO ve el nombre final tras el rename -- nunca una linea a medias.
+// [BRONCE-CLAVE-D310] CLAVE: nunca se escribe bronce sin firma. El writer puede existir sin clave (no escribe y cuenta
+// records_sin_clave); set_key() la pone o la cambia. Al cambiar, cierra antes el segmento abierto: cada segmento va
+// firmado con UNA sola clave. Dos segmentos abiertos en el mismo segundo ya no se pisan (sufijo -N en el nombre).
 #pragma once
 
 #include <string>
@@ -47,7 +50,7 @@ static constexpr size_t CORRELATION_TOTAL_COLS = 19;
 
 struct CorrelationWriterConfig {
     std::string base_dir;                 // p.ej. /vagrant/logs/correlation (PLANO, multi-sensor)
-    std::string hmac_key_hex;             // 64-char hex (32 bytes), clave de /secrets/ml-detector
+    std::string hmac_key_hex;             // 64-char hex (32 bytes), clave de /secrets/ml-detector; vacia = sin clave
     size_t      max_events_per_file = 10000;
     int         rotation_seconds    = 30;  // DAY 203 -- cierre por tiempo absoluto desde
                                             // apertura (no desde ultima escritura).
@@ -68,10 +71,20 @@ public:
 
     void flush();
 
+    // [BRONCE-CLAVE-D310] pone o cambia la clave del bronce (hilo seguro). Primera: no habia clave. Igual: la misma,
+    // no se toca nada. Cambiada: se cierra antes el segmento abierto (su ruta final va a *segmento_cerrado si hay uno).
+    // Invalida: no son 64 hex; se conserva la clave anterior.
+    enum class KeyChange { Primera, Igual, Cambiada, Invalida };
+    KeyChange set_key(const std::string& hex, std::string* segmento_cerrado = nullptr);
+    bool has_key() const;
+    // Huella para el log: 8 hex del SHA-256 de los 32 bytes de la clave. Nunca se registra la clave.
+    static std::string fingerprint(const std::string& hex);
+
     struct Stats {
         uint64_t records_written;
         uint64_t records_skipped;   // community_id vacío
         uint64_t rows_failed;
+        uint64_t records_sin_clave;  // [BRONCE-CLAVE-D310] no escritos por falta de clave (nunca bronce sin firma)
         std::string current_file;        // .tmp del segmento actualmente abierto (DAY 203)
         std::string current_final_path;  // path final post-rename (DAY 204, DEBT-CORRELATION-ROUNDTRIP-ORPHANED-001)
     };
@@ -108,6 +121,7 @@ private:
     std::atomic<uint64_t> records_written_{0};
     std::atomic<uint64_t> records_skipped_{0};
     std::atomic<uint64_t> rows_failed_{0};
+    std::atomic<uint64_t> records_sin_clave_{0};  // [BRONCE-CLAVE-D310]
     std::atomic<size_t>   events_in_current_file_{0};
 };
 

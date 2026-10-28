@@ -200,6 +200,33 @@ if(GTest_FOUND AND
     message(STATUS "✅ test_correlation_roundtrip registered")
 endif()
 
+# ── test_bronze_key — DAY310 [BRONCE-CLAVE-D310]: clave del bronce en el CorrelationWriter ──
+# Nunca bronce sin firma; cada segmento una sola clave; cambio de clave cierra el segmento; clave invalida no
+# sustituye a la vigente; dos segmentos en el mismo segundo no se pisan. Verifica con parse_and_verify REAL.
+if(GTest_FOUND AND
+        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_bronze_key.cpp")
+    ml_gtest(test_bronze_key
+            integration/test_bronze_key.cpp
+            ../src/correlation_writer.cpp
+            ../../correlation-engine/src/correlation_reader.cpp
+            ${PROTO_SOURCES}
+    )
+    target_include_directories(test_bronze_key PRIVATE
+            ../../correlation-engine/include
+    )
+    target_link_libraries(test_bronze_key PRIVATE
+            ${Protobuf_LIBRARIES}
+            ${CORRELATION_V1_LIB}
+            OpenSSL::SSL
+            OpenSSL::Crypto
+    )
+    if(DEFINED LIBSODIUM_LIBRARIES)
+        target_link_libraries(test_bronze_key PRIVATE ${LIBSODIUM_LIBRARIES})
+    endif()
+    ml_link_spdlog(test_bronze_key)
+    message(STATUS "✅ test_bronze_key registered")
+endif()
+
 # ── test_etcd_client_hmac ─────────────────────────────────────────────────────
 # etcd_client.cpp depends on: httplib.h (header-only), nlohmann_json, crypto_transport
 if(GTest_FOUND AND

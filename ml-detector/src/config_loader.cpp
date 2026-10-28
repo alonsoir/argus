@@ -515,6 +515,28 @@ DetectorConfig ConfigLoader::load() {
         }
     }
 
+    // [BRONCE-CLAVE-D310] bronze_key.check_interval_seconds: el JSON manda y se registra siempre de donde sale el valor;
+    // ausente o invalido -> defecto validado (el mismo que trae el JSON) con [CONFIG-DEFAULT] y el ml-detector arranca igual.
+    {
+        constexpr int kDef = 60;
+        constexpr int kMin = 10;
+        constexpr int kMax = 3600;
+        config.bronze_key.check_interval_seconds = kDef;
+        const bool hay = json_.contains("bronze_key") && json_["bronze_key"].is_object() &&
+                         json_["bronze_key"].contains("check_interval_seconds");
+        const bool valido = hay && json_["bronze_key"]["check_interval_seconds"].is_number_integer() &&
+                            json_["bronze_key"]["check_interval_seconds"].get<long long>() >= kMin &&
+                            json_["bronze_key"]["check_interval_seconds"].get<long long>() <= kMax;
+        if (valido) {
+            config.bronze_key.check_interval_seconds = json_["bronze_key"]["check_interval_seconds"].get<int>();
+            std::cerr << "[CONFIG] bronze_key.check_interval_seconds=" << config.bronze_key.check_interval_seconds
+                      << " (del JSON)\n";
+        } else {
+            std::cerr << "[CONFIG-DEFAULT] bronze_key.check_interval_seconds " << (hay ? "mal formado" : "ausente")
+                      << " (formato: entero en [" << kMin << ", " << kMax << "]): se usa " << kDef << "\n";
+        }
+    }
+
     // [DDOS-DATASET-D287] opcional: sin bloque en el JSON queda apagado
     if (json_.contains("ddos_dataset_writer")) {
         const auto& dd = json_["ddos_dataset_writer"];

@@ -393,6 +393,10 @@
     "rotation_seconds": 30,
     "include_fast_alerts": false
   },
+  "bronze_key": {
+    "_doc": "[BRONCE-CLAVE-D310] check_interval_seconds: entero en [10, 3600], defecto 60. Cada intervalo el ml-detector pide su clave HMAC del bronce (/secrets/ml-detector) al etcd-server, en un hilo propio (nunca en el que procesa eventos). Sin clave no escribe bronce (nunca bronce sin firma) y avisa con [BRONCE-SIN-CLAVE]; si la clave cambia, cierra el segmento abierto y firma con la nueva ([BRONCE-CLAVE-CAMBIADA]); si el etcd-server no contesta, sigue firmando con la vigente y lo marca con [BRONCE-CLAVE-SIN-CONFIRMAR]. Ausente o fuera de rango: 60 con [CONFIG-DEFAULT] y el ml-detector arranca igual.",
+    "check_interval_seconds": 60
+  },
   "ddos_dataset_writer": {
     "_comment": "[DDOS-DATASET-D287] Dataset DDoS v2 de laboratorio (CSV plano, un fichero por arranque). Integridad: sha256 en el manifiesto del entrenamiento.",
     "enabled": false,

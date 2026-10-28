@@ -7,6 +7,10 @@
 #include "contract_validator.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <chrono>
+#include <algorithm>  // [BRONCE-CLAVE-D310]
+#include <cctype>     // [BRONCE-CLAVE-D310]
+#include <ctime>      // [BRONCE-CLAVE-D310]
+#include <iomanip>    // [BRONCE-CLAVE-D310]
 #include <sstream>
 #include <unistd.h>
 #include <cstdio>
@@ -21,7 +25,7 @@ ZMQHandler::ZMQHandler(
     std::shared_ptr<ml_defender::TrafficDetector> traffic_detector,
     std::shared_ptr<ml_defender::InternalDetector> internal_detector,
     // DEPRECATED DAY 98 — crypto_manager eliminado (ADR-013)
-    std::string hmac_key_hex
+    std::function<std::string()> bronze_key_provider
 )
     : config_(config)
     , level1_model_(level1_model)
@@ -35,7 +39,7 @@ ZMQHandler::ZMQHandler(
     , logger_(spdlog::get("ml-detector"))
     , start_time_(std::chrono::system_clock::now())
     // DEPRECATED DAY 98 — crypto_manager ignorado
-    , hmac_key_hex_(std::move(hmac_key_hex))
+    , bronze_key_provider_(std::move(bronze_key_provider))  // [BRONCE-CLAVE-D310]
 {
     if (!logger_) {
         logger_ = spdlog::stdout_color_mt("zmq-handler");
@@ -120,21 +124,25 @@ ZMQHandler::ZMQHandler(
 
     // DAY 175: CorrelationWriter (zona bronce), firmado con la clave HMAC de /secrets/ml-detector.
     // DAY 201: base_dir desde JSON (DEBT-CONFIG-BRONZE-HARDCODE-001, mitad writer).
-    if (!hmac_key_hex_.empty()) {
-        try {
-            ml_defender::CorrelationWriterConfig corr_cfg;
-            corr_cfg.base_dir         = config_.correlation_writer.base_dir;
-            corr_cfg.rotation_seconds = config_.correlation_writer.rotation_seconds;
-            corr_cfg.hmac_key_hex     = hmac_key_hex_;
-            correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
-            logger_->info("[BRONZE-FASTALERT-D296] fast-alerts al bronce: {} (correlation_writer.include_fast_alerts)",
-                          config_.correlation_writer.include_fast_alerts ? "SI" : "NO");
-            logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
-                         corr_cfg.base_dir);
-        } catch (const std::exception& e) {
-            logger_->error("❌ Failed to initialize CorrelationWriter: {}", e.what());
-            correlation_writer_ = nullptr;
-        }
+    // [BRONCE-CLAVE-D310] el writer se crea siempre; la clave la pone bronze_key_check (aqui y cada intervalo).
+    // Sin clave no escribe: nunca bronce sin firma.
+    try {
+        ml_defender::CorrelationWriterConfig corr_cfg;
+        corr_cfg.base_dir         = config_.correlation_writer.base_dir;
+        corr_cfg.rotation_seconds = config_.correlation_writer.rotation_seconds;
+        correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
+        logger_->info("[BRONZE-FASTALERT-D296] fast-alerts al bronce: {} (correlation_writer.include_fast_alerts)",
+                      config_.correlation_writer.include_fast_alerts ? "SI" : "NO");
+        logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
+                     corr_cfg.base_dir);
+    } catch (const std::exception& e) {
+        logger_->error("❌ Failed to initialize CorrelationWriter: {}", e.what());
+        correlation_writer_ = nullptr;
+    }
+    if (correlation_writer_) {
+        logger_->info("[BRONCE-CLAVE] clave del bronce: /secrets/ml-detector, comprobada cada {} s "
+                      "(bronze_key.check_interval_seconds)", config_.bronze_key.check_interval_seconds);
+        bronze_key_check(true);
     }
 
     // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio; no depende de la clave HMAC
@@ -162,6 +170,10 @@ void ZMQHandler::start() {
     logger_->info("🚀 Starting ZMQ Handler");
     running_.store(true);
     worker_thread_ = std::make_unique<std::thread>(&ZMQHandler::run, this);
+    if (correlation_writer_) {  // [BRONCE-CLAVE-D310] la peticion HTTP de la clave nunca va en el hilo de eventos
+        bronze_key_running_.store(true);
+        bronze_key_thread_ = std::thread(&ZMQHandler::bronze_key_loop, this);
+    }
     logger_->info("✅ ZMQ Handler started");
 }
 
@@ -175,6 +187,14 @@ void ZMQHandler::stop() {
 
     if (worker_thread_ && worker_thread_->joinable()) {
         worker_thread_->join();
+    }
+    {  // [BRONCE-CLAVE-D310]
+        std::lock_guard<std::mutex> lock(bronze_key_mutex_);
+        bronze_key_running_.store(false);
+    }
+    bronze_key_cv_.notify_all();
+    if (bronze_key_thread_.joinable()) {
+        bronze_key_thread_.join();
     }
     if (input_socket_)  input_socket_->close();
     if (output_socket_) output_socket_->close();
@@ -1019,6 +1039,116 @@ void ZMQHandler::log_heads_state(const char* momento) const {
 
 double ZMQHandler::get_memory_usage_mb() {
     return current_memory_mb_.load();
+}
+
+
+// ============================================================================
+// [BRONCE-CLAVE-D310] clave del bronce (decisiones de Alonso DAY310: D3, E1, E2, F2, F3)
+// ============================================================================
+namespace {
+std::string bk_hora(std::chrono::system_clock::time_point t) {
+    const std::time_t tt = std::chrono::system_clock::to_time_t(t);
+    std::tm tm{};
+    localtime_r(&tt, &tm);
+    std::ostringstream ss;
+    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return ss.str();
+}
+long long bk_segundos(std::chrono::system_clock::duration d) {
+    return static_cast<long long>(std::chrono::duration_cast<std::chrono::seconds>(d).count());
+}
+bool bk_es_clave(const std::string& hex) {
+    return hex.size() == 64 &&
+           std::all_of(hex.begin(), hex.end(), [](char c) { return std::isxdigit(static_cast<unsigned char>(c)) != 0; });
+}
+}  // namespace
+
+void ZMQHandler::bronze_key_check(bool arranque) {
+    if (!correlation_writer_) return;
+    const auto ahora = std::chrono::system_clock::now();
+    std::string hex;
+    try {
+        if (bronze_key_provider_) hex = bronze_key_provider_();
+    } catch (const std::exception& e) {
+        hex.clear();
+        logger_->error("[BRONCE-CLAVE] fallo al pedir la clave al etcd-server: {}", e.what());
+    }
+
+    if (!bk_es_clave(hex)) {
+        if (!correlation_writer_->has_key()) {
+            // D3: sin clave no hay bronce. La clasificacion y el firewall siguen; el grafo tiene un hueco.
+            if (!bk_sin_clave_) {
+                bk_sin_clave_ = true;
+                bk_sin_clave_desde_ = ahora;
+                bk_sin_clave_base_ = correlation_writer_->get_stats().records_sin_clave;
+            }
+            const uint64_t sin_bronce = correlation_writer_->get_stats().records_sin_clave - bk_sin_clave_base_;
+            logger_->critical("[BRONCE-SIN-CLAVE] el etcd-server no entrega la clave HMAC del bronce (/secrets/ml-detector) "
+                              "desde {} ({} s): {} eventos sin bronce. La clasificacion y el envio al firewall siguen; al "
+                              "grafo no llega nada de aRGus hasta recuperar la clave (nunca se escribe bronce sin firma). "
+                              "Que hacer: comprobar el etcd-server (make pipeline-status; /vagrant/logs/lab/etcd-server.log)",
+                              bk_hora(bk_sin_clave_desde_), bk_segundos(ahora - bk_sin_clave_desde_), sin_bronce);
+        } else {
+            // F2: la clave vigente sigue valiendo aunque el etcd-server no conteste: se sigue firmando con ella.
+            if (!bk_sin_confirmar_) {
+                bk_sin_confirmar_ = true;
+                bk_sin_confirmar_desde_ = ahora;
+            }
+            logger_->warn("[BRONCE-CLAVE-SIN-CONFIRMAR] el etcd-server no responde desde {} ({} s en modo extendido): se "
+                          "sigue firmando el bronce con la clave vigente (huella {}). Si al volver trae otra clave, se "
+                          "cerrara el segmento abierto y se firmara con la nueva",
+                          bk_hora(bk_sin_confirmar_desde_), bk_segundos(ahora - bk_sin_confirmar_desde_), bk_huella_);
+        }
+        return;
+    }
+
+    std::string cerrado;
+    const auto r = correlation_writer_->set_key(hex, &cerrado);
+    const std::string huella = ml_defender::CorrelationWriter::fingerprint(hex);
+    if (bk_sin_confirmar_) {
+        logger_->warn("[BRONCE-CLAVE-CONFIRMADA] el etcd-server vuelve a responder tras {} s en modo extendido (desde {} "
+                      "hasta {}); entrega {} (huella {})",
+                      bk_segundos(ahora - bk_sin_confirmar_desde_), bk_hora(bk_sin_confirmar_desde_), bk_hora(ahora),
+                      r == ml_defender::CorrelationWriter::KeyChange::Igual ? "la misma clave" : "otra clave", huella);
+        bk_sin_confirmar_ = false;
+    }
+    switch (r) {
+        case ml_defender::CorrelationWriter::KeyChange::Primera:
+            if (bk_sin_clave_) {
+                const uint64_t sin_bronce = correlation_writer_->get_stats().records_sin_clave - bk_sin_clave_base_;
+                logger_->warn("[BRONCE-CLAVE-RECUPERADA] clave HMAC del bronce recibida (huella {}) tras {} s sin clave: "
+                              "hueco del grafo de {} a {}, {} eventos sin bronce",
+                              huella, bk_segundos(ahora - bk_sin_clave_desde_), bk_hora(bk_sin_clave_desde_),
+                              bk_hora(ahora), sin_bronce);
+                bk_sin_clave_ = false;
+            } else {
+                logger_->info("[BRONCE-CLAVE] clave HMAC del bronce recibida de /secrets/ml-detector (huella {}){}",
+                              huella, arranque ? " al arrancar" : "");
+            }
+            break;
+        case ml_defender::CorrelationWriter::KeyChange::Cambiada:
+            logger_->warn("[BRONCE-CLAVE-CAMBIADA] el etcd-server entrega otra clave HMAC del bronce (huella {} -> {}): "
+                          "segmento cerrado {}; desde ahora el bronce se firma con la nueva",
+                          bk_huella_, huella, cerrado.empty() ? "(ninguno abierto)" : cerrado);
+            break;
+        case ml_defender::CorrelationWriter::KeyChange::Igual:
+            break;
+        case ml_defender::CorrelationWriter::KeyChange::Invalida:
+            logger_->error("[BRONCE-CLAVE] el CorrelationWriter rechazo la clave entregada; se conserva la vigente");
+            return;
+    }
+    bk_huella_ = huella;
+}
+
+void ZMQHandler::bronze_key_loop() {
+    const auto intervalo = std::chrono::seconds(config_.bronze_key.check_interval_seconds);
+    std::unique_lock<std::mutex> lock(bronze_key_mutex_);
+    while (bronze_key_running_.load()) {
+        if (bronze_key_cv_.wait_for(lock, intervalo, [this] { return !bronze_key_running_.load(); })) break;
+        lock.unlock();
+        bronze_key_check(false);
+        lock.lock();
+    }
 }
 
 } // namespace ml_detector

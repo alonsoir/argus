@@ -315,6 +315,11 @@ struct DetectorConfig {
         bool include_fast_alerts = false;  // [BRONZE-FASTALERT-D296] fast-alerts al bronce solo cuando sean fiables
     } correlation_writer;
 
+    // [BRONCE-CLAVE-D310] cada cuanto el ml-detector pide su clave HMAC del bronce al etcd-server (entero en [10, 3600])
+    struct {
+        int check_interval_seconds = 60;
+    } bronze_key;
+
     // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio (CSV plano); apagado por defecto
     struct {
         bool enabled = false;
