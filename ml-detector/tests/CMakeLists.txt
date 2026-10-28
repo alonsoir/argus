@@ -62,20 +62,6 @@ if(GTest_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_feature_extract
     )
 endif()
 
-# ── test_rag_logger_artifact_save — DAY 75 regression ────────────────────────
-# Validates: proto3 submessage safety + DAY 75 fix sentinels reach artifact save
-if(GTest_FOUND AND
-        EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_rag_logger_artifact_save.cpp")
-    ml_gtest(test_rag_logger_artifact_save
-            unit/test_rag_logger_artifact_save.cpp
-            ${PROTO_SOURCES}
-    )
-    target_link_libraries(test_rag_logger_artifact_save PRIVATE
-            ${Protobuf_LIBRARIES}
-    )
-    message(STATUS "✅ test_rag_logger_artifact_save registered (DAY 75)")
-endif()
-
 # ── test_model_loader (empty stub) ───────────────────────────────────────────
 if(GTest_FOUND AND EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/unit/test_model_loader.cpp")
     ml_gtest(test_model_loader unit/test_model_loader.cpp)

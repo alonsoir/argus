@@ -16,16 +16,10 @@ sniffer_zmq_output_port: 5571
 ml_profile: bare_metal
 ml_log_file: /var/log/ml-defender/detector.log
 ml_csv_base_dir: /var/log/ml-defender/ml-detector/events
-ml_rag_base_dir: /var/log/ml-defender/rag
 ml_models_base_dir: /usr/lib/ml-defender/models/production
 ml_zmq_input: "tcp://127.0.0.1:5571"
 ml_zmq_output: "tcp://0.0.0.0:5572"
 ml_worker_threads: 8
-
-# RAG Logger
-rag_base_path: /var/log/ml-defender/rag
-rag_deployment_id: "ml-defender-prod-{{ inventory_hostname }}"
-rag_node_id: "{{ inventory_hostname }}"
 
 # etcd
 etcd_endpoints:

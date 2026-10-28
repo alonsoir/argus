@@ -244,7 +244,6 @@ set(SOURCES
         src/main.cpp
         src/classifier_tricapa.cpp
         src/feature_extractor.cpp
-        src/rag_logger.cpp
         src/contract_validator.cpp
         src/zmq_handler.cpp
         src/model_loader.cpp

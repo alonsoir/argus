@@ -17,15 +17,13 @@
 .PHONY: test-integration-day13 test-integration-day13-tmux test-dual-score-quick
 .PHONY: clean-day13-logs stats-dual-score
 .PHONY: analyze-dual-scores test-analyze-workflow test-day13-full quick-analyze
-.PHONY: rag-log-init rag-log-clean rag-log-status rag-log-analyze rag-log-tail rag-log-tail-live
-.PHONY: test-rag-integration test-rag-quick rag-watch rag-validate test-rag-small test-rag-neris test-rag-big
-.PHONY: quick-lab-test rag-consolidate detector-debug
+.PHONY: quick-lab-test detector-debug
 .PHONY: etcd-client-build etcd-client-clean etcd-client-test
 .PHONY: verify-etcd-linkage verify-encryption verify-pipeline-config verify-all
 .PHONY: monitor-day23-tmux
-.PHONY: test-day23-full test-day23-stress verify-rag-logs-day23
+.PHONY: test-day23-full test-day23-stress
 .PHONY: day23
-.PHONY: tools-build tools-clean tools-synthetic-gen
+.PHONY: tools-build tools-clean
 .PHONY: crypto-transport-build crypto-transport-clean crypto-transport-test
 .PHONY: plugin-loader-build plugin-loader-clean plugin-loader-test
 .PHONY: plugin-hello-build plugin-hello-clean validate-prod-configs
@@ -51,8 +49,6 @@ validate-prod-configs:
 .PHONY: etcd-server etcd-server-build etcd-server-clean etcd-server-start etcd-server-stop
 .PHONY: etcd-server-status pipeline-start pipeline-stop pipeline-status
 .PHONY: test-hardening test-hardening-build test-hardening-run
-.PHONY: day38-step1 day38-step2 day38-step3 day38-step4 day38-step5
-.PHONY: day38-full day38-status day38-clean day38-pipeline
 .PHONY: tsan-all tsan-quick tsan-clean tsan-summary tsan-status
 .PHONY: etcd-server-status pipeline-start pipeline-stop pipeline-status
 .PHONY: ml-detector-start firewall-start sniffer-start sniffer-libpcap-start
@@ -2262,34 +2258,6 @@ tsan-status:
 	@echo ""
 	@echo "Reports:"
 	@vagrant ssh -c "ls -lh /vagrant/tsan-reports/day48/*.log 2>/dev/null | wc -l | xargs echo '  Log files:'" || echo "  ❌ No reports"
-
-# ============================================================================
-# Day 38 - Synthetic Data Generation
-# ============================================================================
-
-day38-step1:
-	@echo "════════════════════════════════════════════════════════════"
-	@echo "Day 38 - Step 1: etcd-server Bootstrap"
-	@echo "════════════════════════════════════════════════════════════"
-	@$(MAKE) etcd-server-start
-	@sleep 2
-	@vagrant ssh -c "curl -s http://localhost:2379/health > /dev/null 2>&1 && echo '✅ etcd-server ready' || echo '❌ etcd-server not responding'"
-
-day38-step2: tools-build
-	@echo "════════════════════════════════════════════════════════════"
-	@echo "Day 38 - Step 2: Generate 100 Synthetic Events"
-	@echo "════════════════════════════════════════════════════════════"
-	@vagrant ssh -c "mkdir -p /vagrant/logs/rag/synthetic/events /vagrant/logs/rag/synthetic/artifacts"
-	@vagrant ssh -c "cd $(TOOLS_BUILD_DIR) && ./generate_synthetic_events 100 0.20"
-
-day38-step3:
-	@echo "════════════════════════════════════════════════════════════"
-	@echo "Day 38 - Step 3: Validate Artifacts"
-	@echo "════════════════════════════════════════════════════════════"
-	@vagrant ssh -c "find /vagrant/logs/rag/synthetic/artifacts -name 'event_*.pb.enc' | wc -l | xargs echo 'Generated:'"
-
-day38-full: day38-step1 day38-step2 day38-step3
-	@echo "✅ Day 38 workflow complete"
 
 # ============================================================================
 # Test Hardening Suite (Day 46/47)

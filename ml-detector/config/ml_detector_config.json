@@ -387,10 +387,6 @@
     "enable_avx2": true,
     "cache_line_size": 64
   },
-  "rag_logger": {
-    "_comment": "[WRITERS-D285] Solo se lee enabled; el resto de la config vive en ml-detector/config/rag_logger_config.json. Desactivado: el grafo cubre lo que hacia y generaba 2 artefactos cifrados por evento sobre vboxsf.",
-    "enabled": false
-  },
   "csv_writer": {
     "_comment": "[WRITERS-D285] Desactivado: su unico consumidor era make parquet-convert (Parquet antiguo, DEBT-PARQUET-SCHEMA-001).",
     "enabled": false,
@@ -411,9 +407,7 @@
   },
   "scoring": {
     "divergence_warn_threshold": 0.3,
-    "divergence_high_threshold": 0.4,
-    "malicious_threshold": 0.7,
-    "requires_rag_threshold": 0.85
+    "malicious_threshold": 0.7
   },
   "identity": {
     "_comment": "ADR-013 — provision.sh es el unico responsable de crear estas claves.",

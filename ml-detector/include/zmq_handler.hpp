@@ -20,9 +20,6 @@
 
 #include "network_security.pb.h"
 
-// 🎯 DAY 14: RAG Logger
-#include "rag_logger.hpp"
-
 // ADR-013 PHASE 2 — DAY 98: CryptoTransport via SeedClient (sustituye CryptoManager)
 // DEPRECATED DAY 98 — #include <crypto_transport/crypto_manager.hpp>
 #include <seed_client/seed_client.hpp>
@@ -89,9 +86,6 @@ private:
     void process_event(const std::string& message);
     void send_enriched_event(const protobuf::NetworkSecurityEvent& event);
 
-    // 🎯 DAY 14: RAG Logger methods
-    void log_rag_statistics();
-    uint64_t calculate_events_per_minute();
     void log_periodic_stats();
     void periodic_health_check();
     void memory_monitor_loop();
@@ -137,9 +131,6 @@ private:
     // Logging
     std::shared_ptr<spdlog::logger> logger_;
 
-    // 🎯 DAY 14: RAG Logger
-    std::unique_ptr<ml_defender::RAGLogger> rag_logger_;
-    uint64_t events_processed_total_{0};
     // ADR-012 PHASE 2d — plugin_loader (Consejo DAY 111)
     ml_defender::PluginLoader* plugin_loader_ = nullptr;
     // DEBUG DAY271 -- default false: un pipeline-start normal NUNCA abre la compuerta

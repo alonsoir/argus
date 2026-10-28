@@ -497,10 +497,10 @@ DetectorConfig ConfigLoader::load() {
         config.csv_writer.enabled = csv.value("enabled", true);
     }
 
-    // [WRITERS-D285] RAG Logger: solo 'enabled'; el resto de su config vive en rag_logger_config.json
-    {
-        config.rag_logger.enabled = json_.contains("rag_logger")
-            ? json_["rag_logger"].value("enabled", true) : true;
+    // [RAG-LOGGER-RETIRE-D310] el RAG Logger se retiro: si el JSON aun trae su bloque, se avisa y se ignora
+    if (json_.contains("rag_logger")) {
+        std::cerr << "[CONFIG-OBSOLETO] rag_logger: el RAG Logger se retiro (DAY310); el bloque se ignora. "
+                     "Quitelo del JSON. El bronce correlation_v1 y el grafo cubren lo que hacia\n";
     }
 
     // ========================================
@@ -534,9 +534,14 @@ DetectorConfig ConfigLoader::load() {
     {
         auto& sc = json_["scoring"];
         config.scoring.divergence_warn_threshold = get_required<float>(sc, "divergence_warn_threshold", "scoring");
-        config.scoring.divergence_high_threshold = get_required<float>(sc, "divergence_high_threshold", "scoring");
+        // [RAG-LOGGER-RETIRE-D310] solo los usaba el RAG Logger: si el JSON aun los trae, se avisa y se ignoran
+        for (const char* obsoleto : {"divergence_high_threshold", "requires_rag_threshold"}) {
+            if (sc.contains(obsoleto)) {
+                std::cerr << "[CONFIG-OBSOLETO] scoring." << obsoleto << ": solo lo usaba el RAG Logger, "
+                             "retirado (DAY310); el campo se ignora. Quitelo del JSON\n";
+            }
+        }
         config.scoring.malicious_threshold       = get_required<float>(sc, "malicious_threshold",       "scoring");
-        config.scoring.requires_rag_threshold    = get_required<float>(sc, "requires_rag_threshold",    "scoring");
     }
 
     return config;

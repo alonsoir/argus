@@ -5,7 +5,6 @@
 #include <reason_codes.hpp>
 #include "zmq_handler.hpp"
 #include "l2_gate.hpp"     // DEBUG DAY271
-#include "rag_logger.hpp"
 #include "contract_validator.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <chrono>
@@ -183,32 +182,6 @@ ZMQHandler::ZMQHandler(
             ddos_dataset_writer_.reset();
         }
     }
-
-    // =========================================================================
-    // RAG Logger — opcional, su fallo no afecta al CSV
-    // =========================================================================
-    if (!config_.rag_logger.enabled) {  // [WRITERS-D285]
-        logger_->info("RAG Logger desactivado por configuracion (rag_logger.enabled=false)");
-    } else try {
-        rag_logger_ = ml_defender::create_rag_logger_from_config(
-            "../config/rag_logger_config.json",
-            logger_
-            // DEPRECATED DAY 98 — crypto_manager eliminado
-        );
-		logger_->info("✅ RAG Logger initialized successfully (encrypted artifacts enabled)");
-		if (csv_writer_) {
-    		rag_logger_->set_csv_writer(csv_writer_);
-		}
-        // Si RAG Logger está disponible, comparte el csv_writer con él
-        // Nota: RAG Logger no toma ownership — csv_writer_ sigue siendo el owner
-        // Se pasa una referencia lógica; RAG Logger escribe a través de él
-        // (set_csv_writer toma unique_ptr — ver nota abajo)
-
-    } catch (const std::exception& e) {
-        logger_->error("❌ Failed to initialize RAG Logger: {}", e.what());
-        logger_->warn("⚠️  Continuing without RAG logging (CSV still active)");
-        rag_logger_ = nullptr;
-    }
 }
 
 ZMQHandler::~ZMQHandler() {
@@ -218,13 +191,6 @@ ZMQHandler::~ZMQHandler() {
     if (csv_writer_) {
         logger_->info("🔄 Flushing CsvEventWriter...");
         csv_writer_->flush();
-    }
-
-    if (rag_logger_) {
-        logger_->info("🔄 Flushing RAG logger...");
-        rag_logger_->flush();
-        auto stats = rag_logger_->get_statistics();
-        logger_->info("📊 RAG Statistics: {}", stats.dump(2));
     }
 }
 
@@ -545,7 +511,7 @@ void ZMQHandler::process_event(const std::string& message) {
 
         double final_score = std::max(fast_score, ml_score);
         // [DDOS-SHADOW-D293] opción (b): overall_threat_score = p1 de ddos_v2, coherente con final_decision. La puntuación
-        // dual sigue en final_score solo para usos internos (umbral RAG, log, veredicto MALICIOUS/BENIGN).
+        // dual sigue en final_score solo para usos internos (log, veredicto MALICIOUS/BENIGN).
         event.set_overall_threat_score(ddos_v2_score);
 
         double score_divergence = std::abs(fast_score - ml_score);
@@ -566,10 +532,6 @@ void ZMQHandler::process_event(const std::string& message) {
 
         auto* metadata = event.mutable_decision_metadata();
         metadata->set_score_divergence(score_divergence);
-        metadata->set_requires_rag_analysis(
-            score_divergence > config_.scoring.divergence_warn_threshold ||
-            final_score >= config_.scoring.requires_rag_threshold
-        );
         metadata->set_confidence_level(std::min(fast_score, ml_score));
 
         logger_->debug("[DUAL-SCORE] event={}, fast={:.4f}, ml={:.4f}, final={:.4f}, source={}, div={:.4f}",  // [LOG-VERBOSE-D285]
@@ -642,58 +604,15 @@ void ZMQHandler::process_event(const std::string& message) {
             );
         }
 
-        // =====================================================================
-        // RAG Logging (opcional — csv_writer_ funciona aunque rag_logger_ sea null)
-        // =====================================================================
-        ml_defender::MLContext ml_context;
-
-        ml_context.events_processed_total  = ++events_processed_total_;
-        ml_context.events_in_last_minute   = calculate_events_per_minute();
-        ml_context.memory_usage_mb         = get_memory_usage_mb();
-        ml_context.cpu_usage_percent       = 0.0;
-        ml_context.uptime_seconds          = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now() - start_time_
-        ).count());
-
-        ml_context.attack_family           = "RANSOMWARE";  // TODO: Get from detector
-        ml_context.level_1_label           = label_l1 == 1 ? "MALICIOUS" : "BENIGN";
-        ml_context.level_2_category        = "UNKNOWN";
-        ml_context.level_3_subcategory     = "UNKNOWN";
-        ml_context.level_1_confidence      = confidence_l1;
-
-        ml_context.window_start            = std::chrono::system_clock::now() - std::chrono::seconds(30);
-        ml_context.window_end              = std::chrono::system_clock::now();
-        ml_context.events_in_window        = 1;
-
-        if (score_divergence > config_.scoring.divergence_high_threshold) {
-            ml_context.investigation_priority = "HIGH";
-        } else if (score_divergence > config_.scoring.divergence_warn_threshold) {
-            ml_context.investigation_priority = "MEDIUM";
-        } else {
-            ml_context.investigation_priority = "LOW";
-        }
-
-        // DAY 175: zona bronce correlation_v1 — punto UNICO, ANTES de la bifurcacion RAG Logger / sin RAG Logger.
-        // NO va dentro del if(!rag_logger_ && csv_writer_) (bug de los dos caminos).
+        // DAY 175: zona bronce correlation_v1 — punto UNICO de escritura del bronce.
         if (correlation_writer_ && !event.network_features().community_id().empty() &&
             (event.event_kind() != protobuf::EVENT_KIND_FAST_ALERT ||
              config_.correlation_writer.include_fast_alerts)) {  // [BRONZE-FASTALERT-D296]
             correlation_writer_->write_record(event);
         }
 
-        // RAG Logger — escribe JSON artifacts + delega en csv_writer_ si fue conectado
-        if (rag_logger_) {
-            bool logged = rag_logger_->log_event(event, ml_context);
-            if (logged) {
-                logger_->debug("📝 Event logged to RAG: {}", event.event_id());
-            }
-        }
-
-        // =====================================================================
-        // Day 66: CSV standalone — activo aunque rag_logger_ sea null
-        // Escribe directamente si rag_logger_ no está disponible
-        // =====================================================================
-        if (!rag_logger_ && csv_writer_) {
+        // [RAG-LOGGER-RETIRE-D310] CsvEventWriter: unico camino (sin RAG Logger)
+        if (csv_writer_) {
             bool written = csv_writer_->write_event(event);
             if (written) {
                 logger_->debug("📝 Event written to CSV (standalone): {}", event.event_id());
@@ -1077,25 +996,6 @@ void ZMQHandler::reset_stats() {
     stats_ = Stats{};
     last_stats_report_ = std::chrono::steady_clock::now();
     logger_->info("📊 Stats reset");
-}
-
-void ZMQHandler::log_rag_statistics() {
-    if (rag_logger_) {
-        auto stats = rag_logger_->get_statistics();
-        logger_->info("📊 RAG Stats: {} events logged, {} divergent, {} consensus",
-                     stats["events_logged"],
-                     stats["divergent_events"],
-                     stats["consensus_events"]);
-    }
-}
-
-uint64_t ZMQHandler::calculate_events_per_minute() {
-    auto uptime_s = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::system_clock::now() - start_time_
-    ).count();
-
-    if (uptime_s < 60) return events_processed_total_;
-    return events_processed_total_ / static_cast<uint64_t>(uptime_s / 60);
 }
 
 void ZMQHandler::log_periodic_stats() {
