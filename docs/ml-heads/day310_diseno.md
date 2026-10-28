@@ -257,3 +257,113 @@ Lecciones añadidas:
 - Medida nueva en el lab (instrumento commiteado): reiniciar el etcd-server con el pipeline vivo. Predicción a precisar
   cuando esté el instrumento: `[BRONCE-CLAVE-CAMBIADA]` en ≤ `check_interval_seconds`; el conversor con la clave nueva
   acepta todos los segmentos posteriores y rechaza como mucho las filas escritas en esa ventana.
+
+## 11. Paso 3 — decisiones, hallazgo y predicciones (antes de medir en la VM)
+
+Decisiones de Alonso (DAY310):
+
+- F1: sin etcd-server el ml-detector no arranca, y así se queda: sin registro, un componente impostor podría colarse
+  entre dos legítimos e inyectar datagramas fabricados, que es peor que no arrancar. El pipeline arranca fiable y
+  consistente o no arranca. Deuda DEBT-ETCD-HA-TLS-RAFT-001 (justo después de REA): etcd-server con HTTPS y en HA con
+  Raft por instalación, copia de respaldo en un clúster maestro por zona horaria, solo componentes autorizados del
+  despliegue; absorbe la deuda de D4 (persistir claves, no regenerarlas en cada arranque, leer `secrets` del JSON) y
+  enlaza con DEBT-ETCD-REMOTE-ADMIN-001 (acceso de admin por HTTPS).
+- F2: con clave vigente y etcd-server sin responder se sigue firmando con la vigente; se marca en el log el tiempo en
+  modo extendido (`[BRONCE-CLAVE-SIN-CONFIRMAR]` cada intervalo, `[BRONCE-CLAVE-CONFIRMADA]` al volver, con duración).
+- F3: en el log solo la huella (8 hex del SHA-256 de la clave), nunca la clave.
+- Re-verificar el grafo a posteriori es imprescindible; la retención la fija la ley (pueden ser años). Va a la deuda
+  DEBT-BRONZE-KEY-ID-001: identificador de clave por segmento (camino b), historial de claves en Vault (solo
+  versiones de clave) y un registro de ingesta por segmento fuera de Vault. Pendiente medir cuánto vive el bronce en
+  disco y quién depende del formato del nombre del segmento.
+
+Hallazgo medido en el código actual (`test_colision_antes.cpp`, compilado contra la rama en `efab4558`): con
+`max_events_per_file=1` se escriben 3 filas (`write_record` devuelve true las tres) y en disco queda 1 fichero con 1
+fila. El nombre del segmento tiene resolución de segundos y el segundo segmento abierto en el mismo segundo pisa en el
+rename el fichero final del anterior. En producción ocurre con más de `max_events_per_file` (10000) eventos en un
+segundo y, con el paso 3, en cada cambio de clave. Arreglo: sufijo `-1`, `-2`... si el nombre ya existe (el
+BronzeDirWatcher recoge `*.csv`). Mismo test contra el código del paso 3: 3 ficheros, 3 filas.
+
+Lo que ya se midió fuera de la VM (copia desechable de la rama, protobuf 3.21, OpenSSL, spdlog, gtest):
+
+- `test_bronze_key`: 7/7 (sin clave no escribe y cuenta; primera clave escribe y verifica; misma clave no corta;
+  clave distinta cierra el segmento y cada fila verifica con una sola clave; clave inválida conserva la vigente;
+  huella de 8 hex estable y distinta; tres segmentos en el mismo segundo, tres ficheros y tres filas).
+- `test_correlation_roundtrip` contra el writer nuevo: 4/4.
+- `-fsyntax-only -Wall -Wextra -Werror` de los 15 `.cpp` de `ml-detector/src`: OK. `-O3 -Wall -Wextra -Wpedantic
+  -Werror` a objeto de `config_loader`, `zmq_handler`, `correlation_writer`, `etcd_client` y `main` (este último con
+  `-U_FORTIFY_SOURCE`: el `write()` sin comprobar de `main.cpp:37` ya existía y solo salta con el fortify de Ubuntu).
+
+Parcheador `d310_paso3_clave_bronce.py`: 11 ficheros editados (30 ediciones) y 1 creado (`test_bronze_key.cpp`).
+En copia limpia de `efab4558`: 12 pendientes, 12 de 12, todo ya aplicado; diff idéntico al árbol de trabajo.
+
+Predicciones en la VM (base: rama en `efab4558`):
+
+- Q1. `git status --short --untracked-files=no`: 12 líneas (11 `M` + `PROMPT_CONTINUE_CLAUDE.md`); el `.cpp` nuevo
+  aparece como `??` sin ese filtro.
+- Q2. `make pipeline-build PROFILE=production`: rc 0 y 0 diagnósticos.
+- Q3. `make test-components PROFILE=production`: 9, 23, **13**, 3, 82.
+- Q4. `ctest -N` del ml-detector: 13, con `test_bronze_key`.
+- Q5. Protegidos (corrida `lab_protegidos_p3`): PASA, FIN en [10584, 10800], alertas en [5292, 5400].
+- Q6. En `ml-detector.log` tras la corrida: una `[CONFIG] bronze_key.check_interval_seconds=60 (del JSON)`, una
+  `[BRONCE-CLAVE] clave del bronce: /secrets/ml-detector, comprobada cada 60 s`, una `[BRONCE-CLAVE] clave HMAC del
+  bronce recibida de /secrets/ml-detector (huella <8 hex>) al arrancar`; 0 `[csv] HMAC key`, 0 `[etcd] HMAC key
+  received`, 0 `BRONCE-SIN-CLAVE`, 0 `BRONCE-CLAVE-CAMBIADA`, 0 `BRONCE-CLAVE-SIN-CONFIRMAR`.
+- Q7. En `/vagrant/logs/correlation`, segmentos `argus-*.csv` escritos durante la corrida: más de 0 (el bronce se
+  sigue escribiendo firmado).
+
+Medida pendiente, con instrumento propio (siguiente entrega): parar y volver a arrancar el etcd-server con el pipeline
+vivo y tráfico; comprobar `SIN-CONFIRMAR` → `CONFIRMADA` + `CAMBIADA`, el segmento cerrado y qué filas acepta el
+conversor con la clave nueva.
+
+## 12. Paso 3 — resultados (medidos DAY310; las predicciones de §11 no se tocan)
+
+Parcheador `d310_paso3_clave_bronce.py` (sha256 `7073904a…cda7`), aplicado sobre `efab4558`. Corrida `lab_protegidos_p3`
+(binarios del paso 3); la `lab_protegidos_p2` es la del paso 2 (binarios anteriores al paso 3): son el antes y el después.
+
+| Medida | Predicción | Medido |
+|---|---|---|
+| Q1 `git status --short --untracked-files=no` | 12 líneas | 13: `day310_diseno.md` ya estaba modificado (premisa) |
+| Q2 compilación | rc 0, 0 diagnósticos | rc 0, 0 |
+| Q3 test-components | 9/23/13/3/82 | 9/23/13/3/82 |
+| Q4 `ctest -N` ml-detector | 13, con `test_bronze_key` | 13 |
+| Q5 protegidos | PASA; FIN en [10584, 10800], alertas en [5292, 5400] | **FALLA P4**; FIN 10743 y alertas 5370 dentro de rango; P1, P2, P3 y P5 pasan |
+| Q6 log de arranque | `[CONFIG] bronze_key...=60 (del JSON)`, "comprobada cada 60 s", huella al arrancar; 0 del resto | igual (huella `3c813ec7`) |
+| Q7 segmentos `argus-*.csv` | más de 0 | 13 |
+
+Colisión de segmentos: el instrumento `scripts/bronze_key/d310_colision_segmentos.cpp` (sha256 `1d8ec24c…4833`) da en
+la VM 3 ficheros y 3 filas de 3 con el código del paso 3 (antes: 1 fichero, 1 fila).
+
+### P4, abierto
+
+P4 exige `DROP_resumenes = DROP_FIN + alertas`. p3: 16115 frente a 10743 + 5370 = 16113, sobran **2**. p2: 16158 =
+10773 + 5385, cuadra. Cuenta comprobada a mano sobre los `[SOMBRA-DDOS]` de los dos logs (M-P4a/M-P4b).
+
+- H1 (la de OBS-FW-SOMBRA-DROP-FUERA-EPISODIO-001: DROP de una ventana anterior al INICIO que el FIN no cuenta):
+  **refutada en p3**. El "primer DROP recibido" (`19699287310714_51`) es el `primer_evento` del INICIO, no hay
+  resúmenes con DROP > 0 antes de él ni entre el último resumen con DROP (19874-19884) y el FIN.
+- H3 (duplicados o anomalías de tiempo que el resumen cuenta y el episodio descarta): **refutada**. En p3 y en p2 todas
+  las líneas `[TIMEBASE]` dan `seq_dup=0 seq_hueco=0 seq_desorden=0` y todas las anomalías a 0.
+- H2 (efecto del paso 3) **no está descartada**: p2 y p3 son binarios distintos. A favor de algo anterior: DAY300 ya
+  midió una diferencia de 4 en otra corrida (sin el paso 3). En contra de juzgarlo ya: el mecanismo de DAY300 (ventana
+  previa) no es el de hoy. El paso 3 no toca el envío al firewall (solo el bronce y un hilo de clave), pero eso es
+  lectura, no medida.
+
+Siguiente, antes de otra hipótesis: leer en `DdosShadowPolicy` cómo cuentan el resumen y el FIN, y en el comprobador de
+protegidos de dónde sale "alertas"; después, si hace falta, contar los DROP por origen y protocolo en el bronce de p3.
+
+### Hallazgo leído en el código (sin medir aún en el lab)
+
+`etcd-server/src/etcd_server.cpp`: `GET /secrets/{componente}` devuelve la clave HMAC activa y
+`POST /secrets/rotate/{componente}` la rota, ambos por HTTP sin autenticación, escuchando en `0.0.0.0:2379`. Mientras
+sea así, la firma del bronce protege contra la corrupción accidental, no contra quien alcance ese puerto: puede leer la
+clave y firmar filas falsas, o rotarla (y el ml-detector, por E2, adopta la nueva). Medida pendiente: si el client llega
+al puerto. Va a DEBT-ETCD-SECRETS-UNAUTHENTICATED-001.
+
+### Lecciones añadidas
+
+7. Antes de proponer una hipótesis sobre una cuenta, leer el código que cuenta (H1 y H3 se escribieron sin leer
+   `DdosShadowPolicy`).
+8. Nombrar cada corrida por lo que cambió: `p2`/`p3` son pasos de la rama, no fases de una corrida; tratarlas como "el
+   mismo binario" fue un error de lectura.
+9. Una decisión de seguridad se contrasta con lo que el componente del que depende hace hoy, leído en su código: el
+   argumento del impostor (F1) necesita un etcd-server que autentique, y hoy no autentica.
