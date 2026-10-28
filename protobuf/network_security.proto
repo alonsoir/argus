@@ -796,7 +796,10 @@ enum DetectorSource {
 message DecisionMetadata {
     double score_divergence = 1;              // |fast_score - ml_score|
     string divergence_reason = 2;             // Por qué divergen
-    bool requires_rag_analysis = 3;           // ¿Enviar a RAG para investigación?
+    // [RAG-LOGGER-RETIRE-D310] requires_rag_analysis solo lo leia el RAG Logger (retirado): numero y nombre
+    // reservados, NUNCA reutilizarlos. Los mensajes antiguos que lo traigan se leen (campo desconocido).
+    reserved 3;
+    reserved "requires_rag_analysis";
     string investigation_priority = 4;        // "LOW", "MEDIUM", "HIGH", "CRITICAL"
     repeated string anomaly_flags = 5;        // Flags específicos detectados
     double confidence_level = 6;              // Confianza en la decisión (0.0-1.0)
