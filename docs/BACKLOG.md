@@ -8117,18 +8117,23 @@ comprobador de protegidos de donde sale "alertas", antes de otra hipotesis.
 {componente} la rota, por HTTP, sin autenticacion, en 0.0.0.0:2379. Consecuencia: la firma del bronce protege de la
 corrupcion accidental pero no de quien alcance el puerto (leer la clave y firmar filas falsas; rotarla, y el
 ml-detector la adopta por E2). Los adapters de otras VMs piden /secrets/ml-detector por red, asi que escuchar solo en
-127.0.0.1 no basta tal cual. Medida pendiente: si el client llega al puerto. Decision de Alonso pendiente: mitigacion
-antes de REA o dentro de DEBT-ETCD-HA-TLS-RAFT-001. El paper no puede decir que el bronce prueba su origen mientras
+127.0.0.1 no basta tal cual. Medida pendiente: si el client llega al puerto. Decision de Alonso DAY310: se cierra dentro
+de DEBT-ETCD-HA-TLS-RAFT-001, antes de REA. El paper no puede decir que el bronce prueba su origen mientras
 siga asi.
 
-### DEBT-ETCD-HA-TLS-RAFT-001 — ABIERTA (decision de Alonso DAY310: justo despues de REA)
-etcd-server con HTTPS y en HA con Raft por instalacion; copia de respaldo de todos los etcd-server en un cluster
-maestro por zona horaria; solo los componentes autorizados de un despliegue hablan entre ellos. Absorbe la mitad
-etcd-server de E4: persistir las claves y no regenerarlas en cada arranque (hoy viven solo en memoria: tras cada
-reinicio del etcd-server el bronce firmado con la clave anterior ya no se puede verificar), y la desincronizacion con
-adapters y conversor que la pidieron antes del reinicio. Enlaza con DEBT-ETCD-REMOTE-ADMIN-001, DEBT-ETCD-SECRETS-
-CONFIG-HARDCODED-001 y DEBT-ETCD-SECRETS-UNAUTHENTICATED-001. Mientras no exista, F1 (abajo) hace del etcd-server un
-punto unico de fallo del arranque.
+### DEBT-ETCD-HA-TLS-RAFT-001 — ABIERTA, PRIORITARIA (decision de Alonso DAY310: ANTES de REA)
+etcd-server con HTTPS, autenticacion de componentes y en HA con Raft por instalacion, entregando las claves HMAC a los
+componentes en ventana de dos (activa + anterior). Minimo dos PR, puede que mas. Absorbe la mitad etcd-server de E4:
+persistir las claves y no regenerarlas en cada arranque (hoy viven solo en memoria: tras cada reinicio del etcd-server
+el bronce firmado con la clave anterior ya no se puede verificar) y la desincronizacion con adapters y conversor que la
+pidieron antes del reinicio. Cierra DEBT-ETCD-SECRETS-UNAUTHENTICATED-001 y DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001;
+enlaza con DEBT-ETCD-REMOTE-ADMIN-001. Mientras no exista, F1 (abajo) hace del etcd-server un punto unico de fallo del
+arranque. Va antes de REA porque REA lo senalaria de inmediato. El HA del etcd-server se viene pidiendo desde hace mas
+de seis meses.
+
+### DEBT-ETCD-MASTER-CLUSTER-001 — ABIERTA (mas adelante, DAY310)
+Un etcd-server maestro (cluster por zona horaria) capaz de hablar con los etcd-server de cada despliegue y de guardar
+su copia de respaldo. Despues de DEBT-ETCD-HA-TLS-RAFT-001 y de DEBT-FW-HMAC-KEY-ALARM-001.
 
 ### DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001 — ABIERTA (D4, DAY310)
 El etcd-server ignora el bloque `secrets` de su JSON (valores fijos en main.cpp). El JSON es la ley: leerlo, con
@@ -8141,8 +8146,16 @@ segmento; historial de claves en Vault (solo versiones de clave); registro de in
 Antes de disenar: medir cuanto vive el bronce en disco y quien depende del formato del nombre del segmento. Depende de
 la persistencia de claves de DEBT-ETCD-HA-TLS-RAFT-001: sin ella no hay historial que guardar.
 
-### DEBT-FW-HMAC-KEY-ALARM-001 — ABIERTA (E3, DAY310)
-El firewall necesita la misma alarma periodica que el ml-detector cuando le falta su clave HMAC del etcd-server.
+### DEBT-FW-HMAC-KEY-ALARM-001 — ABIERTA, ampliada DAY310: comportamiento identico de los componentes ante el etcd-server
+Decision de Alonso: sniffer, ml-detector y firewall se comportan EXACTAMENTE igual con el etcd-server, en el camino
+feliz y en todos los casos limite. Va justo despues de DEBT-ETCD-HA-TLS-RAFT-001 y antes de REA.
+Hoy (leido en el codigo DAY310) el firewall pide la clave una sola vez al arrancar (zmq_subscriber.cpp); sin clave da
+un solo WARN ("CSV signing disabled") y no escribe filas de su CSV (solo `if (hmac_key_.has_value())`), nunca la vuelve
+a pedir y, si el etcd-server se reinicia con otra clave, sigue firmando con la vieja para siempre (filas que ya nadie
+puede verificar). El ml-detector, con el paso 3, si comprueba, avisa, recupera y corta segmento. Casos a cubrir igual
+en los tres: etcd-server caido al arrancar, responde sin clave, cae con el pipeline en marcha (modo extendido con la
+vigente), vuelve con otra clave (ventana de dos), clave invalida; alarma periodica por intervalo del JSON; solo la
+huella en el log. Medir antes el sniffer (que pide, cuando y que hace sin respuesta).
 
 ### Decision F1 (Alonso DAY310), con su coste anotado
 Sin etcd-server el ml-detector no arranca (ya era asi, main.cpp:154-163): un componente sin registro podria inyectar
@@ -8162,3 +8175,10 @@ sola cosa: cada canal tiene su mecanismo. Antes de inventar un parametro, leer e
 lleva su premisa explicita. Antes de una hipotesis sobre una cuenta, leer el codigo que cuenta. Cada corrida se nombra
 por lo que cambio. Una decision de seguridad se contrasta con lo que hace hoy, en su codigo, el componente del que
 depende.
+
+### Orden de ramas despues de DAY310 (decision de Alonso)
+1. Terminar feat/rag-logger-retire (P4, reinicio del etcd-server, paso 5, EMECAS+++, PR).
+2. DEBT-ETCD-HA-TLS-RAFT-001: HTTPS + autenticacion + claves persistidas en ventana de dos + HA Raft (minimo dos PR).
+3. DEBT-FW-HMAC-KEY-ALARM-001 ampliada: sniffer, ml-detector y firewall identicos ante el etcd-server.
+4. REA (para aprender y porque se usara a menudo).
+Mas adelante: DEBT-ETCD-MASTER-CLUSTER-001. Residuos del repo (DEBT-REPO-RESIDUOS-001): sitio por decidir.

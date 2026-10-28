@@ -33,13 +33,16 @@ español.
    punta de la rama, dos veces cada uno.
 2. **Alcance del etcd-server** (client): `curl -s -o /dev/null -w '%{http_code}\n' -m 3
    http://192.168.100.1:2379/secrets/keys` (esa ruta solo devuelve instrucciones, nunca una clave). Predicción: 200.
-   Con el resultado, Alonso decide: mitigación antes de REA o dentro de DEBT-ETCD-HA-TLS-RAFT-001, y si F1 se revisa.
+   Es un dato para el diseño de DEBT-ETCD-HA-TLS-RAFT-001; la decisión ya está tomada (se cierra ahí, antes de REA).
 3. Instrumento de reinicio del etcd-server con el pipeline vivo y tráfico (predicción en `day310_diseno.md` §10-11).
 4. Paso 5, documentación (`contract_validator.cpp`, "40 embedded (4x10)": medir antes de escribir).
 5. EMECAS+++ production y PR de la rama.
 
-Después, como estaba: residuos del repo (DEBT-REPO-RESIDUOS-001, ampliada DAY310) → REA →
-DEBT-ETCD-HA-TLS-RAFT-001 (decisión de Alonso: justo después de REA) con DEBT-BRONZE-KEY-ID-001.
+Después, por decisión de Alonso DAY310 (sección "Orden de ramas después de DAY310" del BACKLOG):
+DEBT-ETCD-HA-TLS-RAFT-001 (HTTPS + autenticación + claves persistidas entregadas en ventana de dos + HA con Raft; mínimo
+dos PR) → DEBT-FW-HMAC-KEY-ALARM-001 ampliada (sniffer, ml-detector y firewall exactamente iguales ante el etcd-server,
+en el camino feliz y en todos los casos límite) → REA (para aprender; se usará a menudo). Más adelante,
+DEBT-ETCD-MASTER-CLUSTER-001. Residuos del repo: sitio por decidir.
 
 ## Decisiones de Alonso DAY310 (en vigor)
 
