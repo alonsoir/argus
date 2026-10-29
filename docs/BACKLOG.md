@@ -8182,3 +8182,78 @@ depende.
 3. DEBT-FW-HMAC-KEY-ALARM-001 ampliada: sniffer, ml-detector y firewall identicos ante el etcd-server.
 4. REA (para aprender y porque se usara a menudo).
 Mas adelante: DEBT-ETCD-MASTER-CLUSTER-001. Residuos del repo (DEBT-REPO-RESIDUOS-001): sitio por decidir.
+
+## DAY311 — rama feat/rag-logger-retire (P4, reinicio del etcd-server, paso 5)
+
+Documento: `docs/ml-heads/day310_diseno.md`, secciones 13 (P4, etcd alcanzable) y 14 (reinicio, paso 5, test de Kuzu).
+Parcheadores de un solo uso en logs/lab/day311/tools (no se commitean). Commits: 4d152671 (AISLADO + P4) y 7ae4c93c
+(paso 5 + test de Kuzu + instrumento de reinicio).
+
+### DEBT-RAG-LOGGER-BRANCH-001 — EN CURSO (esta rama, pasos 1-5 hechos)
+Hechos DAY311: P4 explicado y cerrado (abajo); instrumento de reinicio del etcd-server medido (R1-R6 como se
+predijo, R7 explicado); paso 5, el resumen del contrato lee el esquema del descriptor [CONTRACT-ESQUEMA-D311].
+EMECAS+++ production sobre 7ae4c93c (punta de codigo): rc 0, los 5 E2E del lab con RESULTADO PASA (reinicio antes,
+ordenada, kill9, protegidos y mitigacion), componentes 9/23/13/3/82, 19 carteles "PASSED". Queda: PR.
+
+### OBS-FW-SOMBRA-DROP-FUERA-EPISODIO-001 — CERRADA DAY311 (4d152671)
+Causa medida en el bronce de p3: los 2 DROP de más eran de 192.168.100.11 → 192.168.100.12 TCP (agente Wazuh de la VM
+de Zeek → wazuh-manager, dport 1514), dos eventos del mismo flujo con p1 0,74 y 0,70: falso positivo aislado de la
+etapa 2, NO efecto del paso 3. El resumen cuenta todo DROP; el FIN solo los de su víctima; una víctima que nunca llega
+a episodio se borraba sin rastro. Arreglo [SOMBRA-AISLADO-D311]: registro AISLADO por víctima que no llega a episodio,
+línea `[SOMBRA-DDOS] aislados:` por resumen (drop, victimas, detalle_omitido, drop_pendientes_fuera/_episodio), P4 =
+FIN + alertas + aislados + pendientes; casos 7-10 en test_ddos_shadow_policy (mutación: fallan los 4). Protegidos p4:
+PASA, 16116 = 10746 + 5370 + 0 + 0. EMECAS+++ DAY311 (3 VMs, sin Zeek ni Wazuh): P4 PASA con 16129 = 10750 + 5375 +
+aislados 4 + 0, y los 4 son OTRA causa: `AISLADO victima=192.168.100.1 proto=17 eventos_drop=4 ventanas_positivas=0`
+de .50, la primera ventana del ataque (5630) con < m DROP; el estado se borraba y el episodio empezaba en la siguiente
+(INICIO 5633). Es el mecanismo que DAY300 sospechaba para los 4 de antes2 (en p3 no era ese; en EMECAS si). Dos
+causas medidas de DROP fuera de episodio, las dos visibles ahora en AISLADO. Sin este arreglo, ese EMECAS daba FALLA en P4.
+
+### DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001 — ABIERTA, dato DAY311
+Segundo caso medido: 2 eventos de un flujo legítimo .11 → .12:1514 (agente Wazuh) con p1 0,74/0,70 durante el ataque de
+protegidos p3; de 45 filas .11 → .12 solo esas 2 pasaron la etapa 1. En p2 y p4 (43 filas) ninguna. En EMECAS (3 VMs)
+no hay Zeek ni Wazuh, asi que este caso no puede salir alli. Con AISLADO, en produccion se ven en el log del firewall.
+
+### DEBT-ETCD-SECRETS-UNAUTHENTICATED-001 — ABIERTA, MEDIDA DAY311
+Desde el client (ml-client, .50/.51): `curl http://192.168.100.1:2379/secrets/keys` → 200. El etcd-server escucha en
+0.0.0.0:2379. La posición del atacante en el lab alcanza el servicio que entrega y rota las claves HMAC sin
+autenticación. (No se pidió /secrets/ml-detector: no hacía falta sacar una clave para el dato.)
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — ABIERTA, PRIORITARIA, datos medidos DAY311
+Reinicio del etcd-server con el pipeline vivo (day311/lab_etcd_reinicio_1): el bronce firmado antes (3380 filas, 11
+segmentos) solo verifica con la clave anterior, que el etcd-server ya no tiene; tras el reinicio no se puede
+re-verificar. El registro vuelve vacío salvo el propio etcd-server: los tres componentes reciben 404 en cada latido y
+nadie se vuelve a registrar. Leído: `get_hmac_key` genera la clave en la primera petición con consulta y generación bajo
+bloqueos separados (dos primeras peticiones simultáneas podrían generar dos claves).
+
+### DEBT-ETCD-HEARTBEAT-LOG-STATUS-001 — ABIERTA (nueva DAY311)
+El endpoint `/v1/heartbeat` del etcd-server escribe `log_request(req, 200, …)` antes de decidir y luego responde 404 si
+el componente no está registrado: el log dice 200 cuando la respuesta es 404. Registrar el estado real.
+
+### DEBT-FW-HMAC-KEY-ALARM-001 — ABIERTA, ampliada DAY311
+Medido: los latidos fallidos no se ven. `http::post` (etcd-client) escribe `HTTP POST connection failed` / `HTTP POST
+failed: 404` y devuelve false; `send_heartbeat()` no lo mira y el `catch` con `Heartbeat failed` nunca salta. Un
+componente que el etcd-server ya no reconoce no lo sabe. Entra en el comportamiento idéntico de los tres ante el
+etcd-server: latido rechazado = re-registro o alarma periódica, igual en sniffer, ml-detector y firewall.
+
+### DEBT-KUZU-TEST-DANGLING-001 — ABIERTA (arreglo DAY311, prueba pendiente)
+test_kuzu_graph_sink guardaba un string_view a un flow_uid temporal (comportamiento indefinido; arreglado
+[KUZU-TEST-DANGLING-D311]). ExplicitCommitPersistsBatch falló 2 de 3 veces DAY311 con el binario entero (1 NetworkFlow
+en vez de 2). La predicción del "antes" con el test aislado falló (0 de 50): aislado no reproduce. Pendiente: binario
+entero viejo frente a nuevo, 50 y 50, y AddressSanitizer. Revisar si otros tests pasan temporales a make_bindings.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY311
+`scripts/timebase/__pycache__/` aparece como `??` (lo genera d311_p4_cuentas.py): añadir `__pycache__/` al .gitignore.
+
+### Lecciones DAY311
+Un recuento por víctima no se compara con uno global sin preguntar qué otras víctimas hay. Un instrumento débil (una
+foto cada 10 s) no refuta nada. Una columna que depende de una función apagada no discrimina. Antes de medir un
+servicio, comprobar que está en marcha. El prompt del terminal no dice en qué máquina se está: hostname primero. Antes
+de predecir el texto de un log, leer la función que lo escribe. Un fallo intermitente se reproduce en las condiciones
+en que falló. Un log puede mentir: el etcd-server escribe 200 y responde 404.
+
+### Orden de ramas después de DAY311 (sin cambios)
+1. Terminar feat/rag-logger-retire (EMECAS+++, PR).
+2. DEBT-ETCD-HA-TLS-RAFT-001 (con los datos medidos DAY311).
+3. DEBT-FW-HMAC-KEY-ALARM-001 ampliada.
+4. REA.
+Más adelante: DEBT-ETCD-MASTER-CLUSTER-001. Residuos: sitio por decidir.

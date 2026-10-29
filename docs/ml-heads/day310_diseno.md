@@ -455,3 +455,114 @@ lanzada en el defender y otra desde el Mac, ambas con el pipeline parado.
    antes de leerla.
 4. Antes de medir un servicio, comprobar que está en marcha: la corrida de protegidos termina con `pipeline-stop`.
 5. El prompt del terminal no dice en qué máquina se está (`vagrant@…`): `hostname` primero.
+
+## 14. DAY311 — reinicio del etcd-server, paso 5 y test de Kuzu (medido; §13 no se toca)
+
+### Reinicio del etcd-server con el pipeline vivo y tráfico
+
+Instrumento `scripts/bronze_key/d311_reinicio_etcd.sh` (Mac, sha256 `9fffe4e4…9133`) +
+`scripts/bronze_key/d311_etcd_defender.sh` (defender, `7e4ab48b…2348`). Tráfico benigno .51 → .1 a 10 pps; 60 s;
+`make etcd-server-stop`; 150 s; `make etcd-server-start PROFILE=production`; 150 s; fin. Cada segmento de la ventana
+se pasa por el conversor real (`bronze_to_gold_converter`) con la clave de antes (A) y la de después (B). Las claves se
+leen en el defender a `/tmp/d311_claves` (solo root, nunca `/vagrant`), en la salida solo la huella, y se borran al
+final (trap). Probado antes en simulador (vagrant/make/etcd falsos y escritor de segmentos), que cazó dos fallos del
+propio guion (`test -x` sobre un fichero no ejecutable; parada del tráfico solo por PID).
+
+Corrida `day311/lab_etcd_reinicio_1`:
+
+| Predicción (escrita antes) | Medido |
+|---|---|
+| R1 puerto 0 tras parar, 1 tras arrancar | 0 y 1 |
+| R2 2 o 3 `SIN-CONFIRMAR` con huella A; 0 `SIN-CLAVE`, 0 `RECUPERADA` | 3 (huella 574cc3de); 0; 0 |
+| R3 1 `CONFIRMADA` ("otra clave") y 1 `CAMBIADA` A → B, ≤ 60 s tras arrancar | 1 y 1 a las 05:49:27 (192 s en modo extendido), 17 s después del primer `/register` del servidor nuevo (05:49:10) |
+| R4 huellas del instrumento = las del log; A ≠ B | 574cc3de → 8037d2d5, iguales |
+| R5 MEZCLA 0, A antes que B, el segmento de `CAMBIADA` es A | 17 segmentos: 11 A (3380 filas), 6 B (1800), MEZCLA 0; `054921` A, 92 filas, cortado a los 6 s |
+| R6 continuidad: eventos ≥ 1 por resumen, seq sin huecos | mínimo 8; seq_dup/hueco/desorden 0 |
+| R7 `Heartbeat failed` > 0 con el servidor caído | **FALLA: 0** (ver abajo) |
+
+El conversor acepta el 100 % de cada segmento con una sola clave. Las filas escritas con el servidor caído verifican
+con A (F2). Cada comprobación fallida de la clave tarda ~4 s (timeout HTTP), por eso las tres no caen en múltiplos
+exactos de 60 s.
+
+**R7.** La predicción buscaba un texto que no existe en ese camino: `http::post` no lanza, escribe `⚠️  HTTP POST
+connection failed` / `⚠️  HTTP POST failed: 404` y devuelve `success=false`, que `send_heartbeat()` no mira; el
+`catch` del `Heartbeat failed` nunca salta. Medido después: los tres componentes laten (también el sniffer); con el
+servidor caído 6 `connection failed` cada uno (~190 s, latido cada ~30 s); al volver, 404 en cada latido hasta el
+final (8/8/7), y el etcd-server cuenta lo mismo en `❌ Componente no encontrado`. Los 17 `✅ Heartbeat registrado`
+son 10 de antes del reinicio (cuatro latidores: el propio etcd-server también late) y 7 de después, todos del
+etcd-server. El único `/register` tras el arranque es el etcd-server registrándose a sí mismo (`component=unknown` en
+el log porque `log_request` no lee ese cuerpo).
+
+**Hallazgos (medidos):**
+1. Tras reiniciar el etcd-server el registro solo contiene al etcd-server. ml-detector, firewall y sniffer siguen
+   funcionando (el canal ZMQ usa `seed.bin` y no se entera) pero para el etcd-server no existen, y ninguno avisa más
+   allá de un `HTTP POST failed: 404` cada 30 s. La defensa del registro frente a un impostor (F1) desaparece en
+   silencio con un reinicio.
+2. El log del etcd-server miente: el endpoint de heartbeat escribe `log_request(req, 200, …)` antes de decidir y luego
+   responde 404.
+3. Todo el bronce A (3380 filas aquí) deja de poder verificarse tras el reinicio: el etcd-server regenera las claves
+   en memoria y A deja de existir. Aquí solo se pudo verificar porque el instrumento la leyó antes de parar (y la
+   borró al final). Es la medida que hace necesarias DEBT-ETCD-HA-TLS-RAFT-001 (claves persistidas) y
+   DEBT-BRONZE-KEY-ID-001, no una mejora.
+4. Leído, sin medir: `get_hmac_key` genera la clave en la primera petición, con la consulta y la generación bajo
+   bloqueos separados; dos primeras peticiones simultáneas podrían generar dos claves.
+
+### Paso 5 — resumen del contrato (`contract_validator.cpp`)
+
+Medido con el descriptor de `network_security.proto` (protobuf 3.21.12): `NetworkFeatures` tiene 73 escalares, 6
+repetidos y 8 submensajes (`flow_start_time` 2, `flow_duration` 2, `ransomware` 20, `ddos_embedded` 9,
+`ransomware_embedded` 10, `traffic_classification` 10, `internal_anomaly` 10, `smb_scan` 3). La línea fija "Baseline: 74
+scalars + 40 embedded (4x10) = 114 minimum" estaba desfasada (ddos_embedded es el contrato v2) y además ningún mínimo
+fijo es cierto: `count_features` cuenta solo los campos presentes (proto3 no lista los ceros) y el tamaño de los
+repetidos. Ahora la línea se calcula del descriptor en tiempo de ejecución, sin cifras escritas a mano
+[CONTRACT-ESQUEMA-D311]. Probado fuera de la VM: compilación con -Wall -Wextra (los mismos 4 avisos de fmt/spdlog con
+GCC 13 que el original, ninguno en el fichero) y ejecución de `log_summary()` con la salida esperada. En la VM:
+compilación rc 0, 0 diagnósticos.
+
+### Test de Kuzu intermitente (`test_kuzu_graph_sink`)
+
+`make test-components` falló una vez tras el paso 5: `KuzuGraphSink.ExplicitCommitPersistsBatch:208`, 1 NetworkFlow
+en vez de 2. Falló también en la primera repetición y pasó en la segunda. No toca el paso 5 (ningún test del
+correlation-engine compila `contract_validator.cpp`).
+
+Leído en el código: `CypherBindings` guarda `string_view` y el test hacía `make_bindings(r1, fuid_of(r1), …)`;
+`fuid_of` devuelve un `std::string` temporal, así que `b1.flow_uid` apunta a memoria liberada al acabar la línea
+(comportamiento indefinido). Si b1 y b2 leen el mismo contenido reciclado, el `MERGE` los funde en un nodo: el fallo
+observado. Producción no está afectada (`kuzu_graph_sink.cpp:171` pasa `e.flow_uid`, que vive en la entrada). Arreglo
+[KUZU-TEST-DANGLING-D311]: el `flow_uid` en variables con nombre, en los dos tests de transacción.
+
+| Predicción | Medido |
+|---|---|
+| antes (binario viejo, test aislado con `--gtest_filter`), 50 veces: > 0 fallos | **FALLA: 0 de 50** |
+| después (aislado), 50 veces: 0 | 0 de 50 |
+| después (binario entero), 50 veces: 0 | 0 de 50 |
+| test-components 9/23/13/3/82 | 9/23/13/3/82 |
+
+La predicción del "antes" falló por un error de diseño del instrumento: aislado, el test no reproduce las condiciones
+del fallo (los dos fallos del día fueron con el binario entero, con los tests anteriores dejando la memoria). Por eso el
+comportamiento indefinido es cierto y el arreglo necesario, pero que sea LA causa de los fallos de hoy es la hipótesis
+principal, no una medida. Pendiente: binario entero viejo frente a nuevo, 50 veces cada uno, y una pasada con
+AddressSanitizer (DEBT-KUZU-TEST-DANGLING-001).
+
+### EMECAS+++ production (punta de código 7ae4c93c)
+
+rc 0: los 5 E2E del lab con `RESULTADO PASA` (reinicio antes, ordenada, kill9, protegidos y mitigación), componentes
+9/23/13/3/82, 19 carteles `PASSED`. Protegidos: `DROP_resumenes 16129 = DROP_FIN 10750 + alertas 5375 + aislados 4 +
+pendientes 0`. Predije aislados en [0, 10] y mi hipótesis (fondo del lab hacia .1) cayó: los 4 son
+`AISLADO victima=192.168.100.1 proto=17 eventos_drop=4 ventanas_positivas=0 origenes=192.168.100.50:4`, la primera
+ventana del ataque (5630) con menos de m DROP. Al cerrarla sin positivas el estado se borraba; el episodio empezaba en la
+siguiente (INICIO 5633, primer_evento del FIN `5631016…`). Es el mecanismo que DAY300 sospechaba para los 4 de antes2
+(H1, refutada en p3 para aquella corrida; medida aquí en otra). Hay dos causas de DROP fuera de episodio, las dos
+visibles ahora en AISLADO: falsos positivos sueltos (Wazuh, p3) y el arranque de un ataque en una ventana débil. Es lo
+que el comprobador ya admitía en P5 ("el primer segundo antes del INICIO"), que antes no se veía. Sin el arreglo de
+§13, este EMECAS habría dado FALLA en P4. EMECAS escribe sus corridas en `logs/lab/day303/` (`LAB_E2E_DIA ?= day303`).
+
+### Lecciones añadidas
+
+6. Antes de predecir el texto de un log, leer la función que lo escribe, no solo la que la llama (`Heartbeat failed`
+   está en un `catch` que nunca salta).
+7. Un fallo intermitente se reproduce en las condiciones en que falló: aislar el test cambia la memoria que lo provoca.
+8. Un comprobador que se apoya en un log tiene que saber si ese log dice la verdad: el etcd-server escribe 200 y
+   responde 404.
+9. `ls -dt` no sirve para encontrar la última corrida si se reutiliza el directorio: sobrescribir ficheros no cambia
+   la fecha del directorio.
