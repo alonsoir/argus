@@ -387,22 +387,15 @@
     "enable_avx2": true,
     "cache_line_size": 64
   },
-  "rag_logger": {
-    "_comment": "[WRITERS-D285] Solo se lee enabled; el resto de la config vive en ml-detector/config/rag_logger_config.json. Desactivado: el grafo cubre lo que hacia y generaba 2 artefactos cifrados por evento sobre vboxsf.",
-    "enabled": false
-  },
-  "csv_writer": {
-    "_comment": "[WRITERS-D285] Desactivado: su unico consumidor era make parquet-convert (Parquet antiguo, DEBT-PARQUET-SCHEMA-001).",
-    "enabled": false,
-    "base_dir": "/vagrant/logs/ml-detector/events",
-    "min_score_threshold": 0.5,
-    "max_events_per_file": 10000
-  },
   "correlation_writer": {
     "_doc": "[BRONZE-FASTALERT-D296] include_fast_alerts: true|false (defecto false). Las fast-alerts (EVENT_KIND_FAST_ALERT) no van al bronce correlation_v1 hasta que sean fiables (decision DAY296): hoy no traen flow_start (0) y eran el 48 % de las filas. Ausente o no booleano: false con [CONFIG-DEFAULT] y el ml-detector arranca igual.",
     "base_dir": "/vagrant/logs/correlation",
     "rotation_seconds": 30,
     "include_fast_alerts": false
+  },
+  "bronze_key": {
+    "_doc": "[BRONCE-CLAVE-D310] check_interval_seconds: entero en [10, 3600], defecto 60. Cada intervalo el ml-detector pide su clave HMAC del bronce (/secrets/ml-detector) al etcd-server, en un hilo propio (nunca en el que procesa eventos). Sin clave no escribe bronce (nunca bronce sin firma) y avisa con [BRONCE-SIN-CLAVE]; si la clave cambia, cierra el segmento abierto y firma con la nueva ([BRONCE-CLAVE-CAMBIADA]); si el etcd-server no contesta, sigue firmando con la vigente y lo marca con [BRONCE-CLAVE-SIN-CONFIRMAR]. Ausente o fuera de rango: 60 con [CONFIG-DEFAULT] y el ml-detector arranca igual.",
+    "check_interval_seconds": 60
   },
   "ddos_dataset_writer": {
     "_comment": "[DDOS-DATASET-D287] Dataset DDoS v2 de laboratorio (CSV plano, un fichero por arranque). Integridad: sha256 en el manifiesto del entrenamiento.",
@@ -411,9 +404,7 @@
   },
   "scoring": {
     "divergence_warn_threshold": 0.3,
-    "divergence_high_threshold": 0.4,
-    "malicious_threshold": 0.7,
-    "requires_rag_threshold": 0.85
+    "malicious_threshold": 0.7
   },
   "identity": {
     "_comment": "ADR-013 — provision.sh es el unico responsable de crear estas claves.",

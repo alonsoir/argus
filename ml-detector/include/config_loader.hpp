@@ -307,19 +307,6 @@ struct DetectorConfig {
         int cache_line_size;
     } performance;
 
-    // CSV Writer
-    struct {
-        bool enabled = true;  // [WRITERS-D285] opcional en el JSON
-        std::string base_dir;
-        float min_score_threshold;
-        int max_events_per_file;
-    } csv_writer;
-
-    // [WRITERS-D285] RAG Logger: solo el interruptor; el resto vive en rag_logger_config.json
-    struct {
-        bool enabled = true;
-    } rag_logger;
-
     // Correlation Writer (bronce correlation_v1) — DAY 201/203
     // DEBT-CONFIG-BRONZE-HARDCODE-001 + DEBT-CIRCUIT-BRONZE-ROTATION-FOLLOW-001
     struct {
@@ -327,6 +314,11 @@ struct DetectorConfig {
         int rotation_seconds;
         bool include_fast_alerts = false;  // [BRONZE-FASTALERT-D296] fast-alerts al bronce solo cuando sean fiables
     } correlation_writer;
+
+    // [BRONCE-CLAVE-D310] cada cuanto el ml-detector pide su clave HMAC del bronce al etcd-server (entero en [10, 3600])
+    struct {
+        int check_interval_seconds = 60;
+    } bronze_key;
 
     // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio (CSV plano); apagado por defecto
     struct {
@@ -337,9 +329,7 @@ struct DetectorConfig {
     // Scoring thresholds (dual-score architecture)
     struct {
         float divergence_warn_threshold;   // score_divergence > X → DIVERGENCE source
-        float divergence_high_threshold;   // investigation_priority HIGH
         float malicious_threshold;         // final_score >= X → "MALICIOUS" / "DROP"
-        float requires_rag_threshold;      // final_score >= X → requires_rag_analysis
     } scoring;
 };
 

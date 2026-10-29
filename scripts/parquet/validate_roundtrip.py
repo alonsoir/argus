@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-# aRGus NDR — Validacion roundtrip Parquet
+# aRGus NDR — Validacion roundtrip Parquet (solo el del firewall)
+# [CSV-WRITER-RETIRE-D310] la mitad ml-detector se retiro con el CsvEventWriter (DAY310)
 # Uso: python3 scripts/parquet/validate_roundtrip.py
 # Makefile: make test-parquet (depende de parquet-convert)
 import sys, os, glob
@@ -9,7 +10,7 @@ import time
 import numpy as np
 import pyarrow.compute as pc
 import pyarrow.parquet as pq
-from schemas import schema_ml_detector, schema_firewall
+from schemas import schema_firewall
 
 OUT_DIR = "/vagrant/logs/parquet"
 errors  = 0
@@ -43,18 +44,6 @@ def check_all_rows(name, col, ms_multiple=False):
             i = int(np.argmax(mask))
             check(False, f"{name}: {int(mask.sum())} de {n} filas no son multiplo de 1_000_000 (ms->ns fallida); primera: fila {i} = {int(a[i])}")
 
-ml_files = sorted(glob.glob(f"{OUT_DIR}/ml-detector/*.parquet"))
-check(len(ml_files) > 0, "No Parquet files found in ml-detector/")
-
-for path in ml_files:
-    t = pq.read_table(path)
-    check(t.schema.equals(schema_ml_detector),
-          f"{os.path.basename(path)}: schema mismatch")
-    if t.num_rows == 0:
-        print(f"  SKIP: {os.path.basename(path)} empty table (CSV vacio)")
-        continue
-    check_all_rows(os.path.basename(path), t["timestamp_utc_ns"])  # [PARQUET-ALLROWS-D296]
-
 fw_path = f"{OUT_DIR}/firewall/firewall_blocks.parquet"
 check(os.path.exists(fw_path), "firewall_blocks.parquet not found")
 if os.path.exists(fw_path):
@@ -67,7 +56,6 @@ print()
 print("╔══════════════════════════════════════════════════════════╗")
 print("║  aRGus NDR — Parquet Roundtrip Validation               ║")
 print("╚══════════════════════════════════════════════════════════╝")
-print(f"  ml-detector files validados: {len(ml_files)}")
 print(f"  firewall files validados:    1")
 if errors == 0:
     print("  ROUNDTRIP PASSED")

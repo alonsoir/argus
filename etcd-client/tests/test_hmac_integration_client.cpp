@@ -58,8 +58,8 @@ bool test_retrieve_hmac_key() {
         }
         std::cout << "   ✅ Connected to etcd-server" << std::endl;
 
-        std::cout << "2️⃣  Retrieving HMAC key from /secrets/rag/log_hmac_key..." << std::endl;
-        auto key_opt = client.get_hmac_key("/secrets/rag/log_hmac_key");
+        std::cout << "2️⃣  Retrieving HMAC key from /secrets/ml-detector..." << std::endl;
+        auto key_opt = client.get_hmac_key("/secrets/ml-detector");  // [RAG-LOGGER-RETIRE-D310] ruta real
 
         if (!key_opt.has_value()) {
             std::cout << "   ❌ Failed to retrieve HMAC key" << std::endl;
@@ -106,7 +106,7 @@ bool test_complete_hmac_workflow() {
             return false;
         }
 
-        auto key_opt = client.get_hmac_key("/secrets/rag/log_hmac_key");
+        auto key_opt = client.get_hmac_key("/secrets/ml-detector");  // [RAG-LOGGER-RETIRE-D310] ruta real
         if (!key_opt.has_value()) {
             std::cout << "   ❌ Key retrieval failed" << std::endl;
             return false;
@@ -170,7 +170,7 @@ bool test_log_consumer_simulation() {
         }
 
         std::cout << "📥 Retrieving HMAC key for log validation..." << std::endl;
-        auto key_opt = client.get_hmac_key("/secrets/rag/log_hmac_key");
+        auto key_opt = client.get_hmac_key("/secrets/ml-detector");  // [RAG-LOGGER-RETIRE-D310] ruta real
         if (!key_opt.has_value()) {
             return false;
         }
@@ -267,7 +267,7 @@ int main() {
     std::cout << std::endl;
     std::cout << YELLOW << "⚠️  REQUIREMENTS:" << RESET << std::endl;
     std::cout << "  - etcd-server must be running: cd /vagrant/etcd-server/build && sudo ./etcd-server" << std::endl;
-    std::cout << "  - SecretsManager must be initialized with /secrets/rag/log_hmac_key" << std::endl;
+    std::cout << "  - SecretsManager serves /secrets/<component> (here: /secrets/ml-detector)" << std::endl;
     std::cout << std::endl;
 
     int passed = 0;

@@ -5,7 +5,7 @@
 // mutable_ddos_embedded(), mutable_traffic_classification() or
 // mutable_internal_anomaly(). In proto3, a submessage only exists on the
 // wire if mutable_*() was called. The receiver got has_ddos_embedded()==false,
-// triggering "Skipping artifact save" in rag_logger.
+// triggering "Skipping artifact save" in the RAG Logger (DAY 75; RAG Logger retired DAY310).
 //
 // FIX (ring_consumer.cpp): Now calls mutable_*() and sets 3 sentinel fields
 // per embedded message to 0.5f (neutral, consistent with Phase 1 TODOs).
@@ -52,7 +52,7 @@ TEST(Proto3EmbeddedSerializationTest, NeverCallingMutableMeansSubmessageAbsentOn
     EXPECT_FALSE(received.network_features().has_internal_anomaly())
         << "internal_anomaly absent — mutable_*() was never called";
 
-    // This is what rag_logger saw → skipped artifact save
+    // This is what the DAY 75 receiver (RAG Logger, retired DAY310) saw → skipped artifact save
     bool has_required =
         received.network_features().has_ddos_embedded() &&
         received.network_features().has_traffic_classification() &&

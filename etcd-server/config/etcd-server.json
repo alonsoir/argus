@@ -48,12 +48,6 @@
     },
     "keys": {
       "_comment": "Default keys auto-generated on startup. Grace period applies to ALL keys system-wide.",
-      "rag_log_hmac": {
-        "path": "/secrets/rag/log_hmac_key",
-        "algorithm": "hmac-sha256",
-        "purpose": "HMAC validation for RAG log files",
-        "rotation_enabled": true
-      },
       "ml_detector_hmac": {
         "_comment": "Future: HMAC for ml-detector outputs",
         "path": "/secrets/ml-detector/log_hmac_key",

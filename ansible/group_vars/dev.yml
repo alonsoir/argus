@@ -15,17 +15,10 @@ sniffer_zmq_output_port: 5571
 # ML Detector
 ml_profile: lab
 ml_log_file: /vagrant/logs/lab/detector.log
-ml_csv_base_dir: /vagrant/logs/ml-detector/events
-ml_rag_base_dir: /vagrant/logs/rag
 ml_models_base_dir: models/production
 ml_zmq_input: "tcp://127.0.0.1:5571"
 ml_zmq_output: "tcp://0.0.0.0:5572"
 ml_worker_threads: 2
-
-# RAG Logger
-rag_base_path: /vagrant/logs/rag
-rag_deployment_id: ml-defender-dev-001
-rag_node_id: defender-node-dev-01
 
 # etcd
 etcd_endpoints:

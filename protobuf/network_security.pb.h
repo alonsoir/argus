@@ -10173,7 +10173,6 @@ class DecisionMetadata final :
     kDecisionTimestampFieldNumber = 7,
     kScoreDivergenceFieldNumber = 1,
     kConfidenceLevelFieldNumber = 6,
-    kRequiresRagAnalysisFieldNumber = 3,
   };
   // repeated string anomaly_flags = 5;
   int anomaly_flags_size() const;
@@ -10263,15 +10262,6 @@ class DecisionMetadata final :
   void _internal_set_confidence_level(double value);
   public:
 
-  // bool requires_rag_analysis = 3;
-  void clear_requires_rag_analysis();
-  bool requires_rag_analysis() const;
-  void set_requires_rag_analysis(bool value);
-  private:
-  bool _internal_requires_rag_analysis() const;
-  void _internal_set_requires_rag_analysis(bool value);
-  public:
-
   // @@protoc_insertion_point(class_scope:protobuf.DecisionMetadata)
  private:
   class _Internal;
@@ -10286,7 +10276,6 @@ class DecisionMetadata final :
     ::PROTOBUF_NAMESPACE_ID::Timestamp* decision_timestamp_;
     double score_divergence_;
     double confidence_level_;
-    bool requires_rag_analysis_;
     mutable ::PROTOBUF_NAMESPACE_ID::internal::CachedSize _cached_size_;
   };
   union { Impl_ _impl_; };
@@ -25045,26 +25034,6 @@ inline void DecisionMetadata::set_allocated_divergence_reason(std::string* diver
   }
 #endif // PROTOBUF_FORCE_COPY_DEFAULT_STRING
   // @@protoc_insertion_point(field_set_allocated:protobuf.DecisionMetadata.divergence_reason)
-}
-
-// bool requires_rag_analysis = 3;
-inline void DecisionMetadata::clear_requires_rag_analysis() {
-  _impl_.requires_rag_analysis_ = false;
-}
-inline bool DecisionMetadata::_internal_requires_rag_analysis() const {
-  return _impl_.requires_rag_analysis_;
-}
-inline bool DecisionMetadata::requires_rag_analysis() const {
-  // @@protoc_insertion_point(field_get:protobuf.DecisionMetadata.requires_rag_analysis)
-  return _internal_requires_rag_analysis();
-}
-inline void DecisionMetadata::_internal_set_requires_rag_analysis(bool value) {
-  
-  _impl_.requires_rag_analysis_ = value;
-}
-inline void DecisionMetadata::set_requires_rag_analysis(bool value) {
-  _internal_set_requires_rag_analysis(value);
-  // @@protoc_insertion_point(field_set:protobuf.DecisionMetadata.requires_rag_analysis)
 }
 
 // string investigation_priority = 4;

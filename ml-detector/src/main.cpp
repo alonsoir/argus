@@ -400,19 +400,6 @@ int main(int argc, char* argv[]) {
         auto feature_extractor = std::make_shared<FeatureExtractor>();
         log->info("✅ Feature Extractor initialized");
 
-        // Day 63: Get HMAC key for CSV integrity
-        std::string hmac_key_hex;
-        {
-            std::string key = etcd_client->get_hmac_key();
-            if (key.size() == 64) {
-                hmac_key_hex = key;
-                log->info("✅ [csv] HMAC key retrieved ({} chars)", key.size());
-            } else {
-                log->warn("⚠️  [csv] HMAC key not available — CSV output disabled");
-                log->warn("   etcd-server SecretsManager may not have key for ml-detector");
-            }
-        }
-
         // ═══════════════════════════════════════════════════════════════════════
         // 7. Create and start ZMQ Handler (with crypto_manager)
         // ═══════════════════════════════════════════════════════════════════════
@@ -440,7 +427,10 @@ int main(int argc, char* argv[]) {
             ransomware_detector,
             traffic_detector,
             internal_detector,
-            hmac_key_hex       // Day 63: CSV HMAC key
+            // [BRONCE-CLAVE-D310] ZMQHandler pide la clave del bronce al construirse y cada
+            // bronze_key.check_interval_seconds (hilo propio). etcd_client vive mas que zmq_handler: mismo ambito,
+            // declarado antes.
+            [etcd = etcd_client.get()]() { return etcd->get_hmac_key(); }
         );
 
         zmq_handler.set_force_all_heads(force_all_heads);   // DEBUG DAY271

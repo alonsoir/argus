@@ -1600,7 +1600,7 @@ void RingBufferConsumer::send_ransomware_features(const protobuf::RansomwareFeat
         // no FlowStatistics is available here, so populate_ml_defender_features()
         // cannot be called. Proto3 does NOT serialize submessages where all float
         // fields equal 0.0f (the default), causing has_ddos_embedded()==false on
-        // the receiver side and "Skipping artifact save" in rag_logger.
+        // the receiver side (DAY 75: "Skipping artifact save" in the RAG Logger, retired DAY310).
         // Sentinel 0.5f matches the Phase 1 TODO neutral used in ml_defender_features.cpp.
         // Phase 2: replace with real values once FlowAggregator is available.
         // DAY 76 FIX: reemplaza bloque DAY75 parcial con helper completo (40 campos)

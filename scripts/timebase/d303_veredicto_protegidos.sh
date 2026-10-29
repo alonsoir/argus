@@ -4,9 +4,11 @@
 #  P1 configuracion: "[CONFIG] ddos_protegidos.intranet += 192.168.100.61/32 (JSON)" y 0 "[CONFIG-DEFAULT] ddos_protegidos"
 #  P2 un solo FIN, y su origenes= es SOLO 192.168.100.50 (ni .61 protegido ni .51 inocente)
 #  P3 ultima linea "protegidos:": alertas > 0, intranet = alertas, dmz = externos_criticos = por_defecto = 0
-#  P4 identidad: DROP_resumenes = DROP_FIN + alertas, diferencia 0 (DAY300: 16113 = 10742 + 5371).
-#     OJO: BACKLOG tiene abierta la discrepancia de 4 DROP de antes2 (primera ventana con < m DROP fuera
-#     del episodio). Si aparece aqui, FALLA: sigue sin explicar.
+#  P4 identidad: DROP_resumenes = DROP_FIN + alertas + DROP_aislados + pendientes, diferencia 0.
+#     [SOMBRA-AISLADO-D311] DROP_aislados = suma de drop= de las lineas "[SOMBRA-DDOS] aislados:" (victimas que no
+#     llegaron a episodio; DAY311: 2 FP de ddos_v2 en .11->.12:1514, agente Wazuh) y pendientes =
+#     drop_pendientes_fuera + drop_pendientes_episodio de la ULTIMA de esas lineas. Un log sin lineas aislados:
+#     (binario anterior) da DROP_aislados = 0 y vale la identidad antigua (DAY300: 16113 = 10742 + 5371).
 #  P5 volumen: DROP_FIN en [98%, 100%] de los paquetes de .50 y alertas en [98%, 100%] de los de .61.
 #     Lo unico que el diseno deja escapar es el primer segundo antes del INICIO (DAY300: 10742/10800, 5371/5400).
 #     Los totales se leen del --limit del propio d300_protegidos_client.sh (no se copian aqui).
@@ -52,11 +54,15 @@ else ko "P3 alertas: alertas=$AL intranet=$IN dmz=$DMZ externos_criticos=$EXT po
 set -- $(awk '
   /\[SOMBRA-DDOS\] resumen:/ { for (i = 1; i <= NF; i++) if ($i ~ /^DROP=/) { split($i, a, "="); res += a[2] } }
   /\[SOMBRA-DDOS\] FIN / { for (i = 1; i <= NF; i++) if ($i ~ /^eventos_drop=/) { split($i, b, "="); fin += b[2] } }
-  END { printf "%d %d\n", res, fin }' "$F")
-RES=$1; FIN=$2
-DIF=$((RES - FIN - AL))
-if [ "$DIF" -eq 0 ]; then ok "P4 identidad: DROP_resumenes $RES = DROP_FIN $FIN + alertas $AL"
-else ko "P4 identidad: DROP_resumenes $RES != DROP_FIN $FIN + alertas $AL (diferencia $DIF)"; fi
+  /\[SOMBRA-DDOS\] aislados:/ { pf = 0; pe = 0
+    for (i = 1; i <= NF; i++) { split($i, c, "=")
+      if (c[1] == "drop") ais += c[2]; if (c[1] == "drop_pendientes_fuera") pf = c[2]
+      if (c[1] == "drop_pendientes_episodio") pe = c[2] } }
+  END { printf "%d %d %d %d\n", res, fin, ais, pf + pe }' "$F")
+RES=$1; FIN=$2; AIS=$3; PEN=$4
+DIF=$((RES - FIN - AL - AIS - PEN))
+if [ "$DIF" -eq 0 ]; then ok "P4 identidad: DROP_resumenes $RES = DROP_FIN $FIN + alertas $AL + aislados $AIS + pendientes $PEN"
+else ko "P4 identidad: DROP_resumenes $RES != DROP_FIN $FIN + alertas $AL + aislados $AIS + pendientes $PEN (diferencia $DIF)"; fi
 
 # P5 (98% = n*98/100 redondeado hacia arriba)
 MIN50=$(( (N50 * 98 + 99) / 100 )); MIN61=$(( (N61 * 98 + 99) / 100 ))

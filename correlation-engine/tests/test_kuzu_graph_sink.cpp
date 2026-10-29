@@ -197,8 +197,11 @@ TEST(KuzuGraphSink, ExplicitCommitPersistsBatch) {
 
     const auto r1 = make_record("ev-c1", "1:commC1", "MALICIOUS", "ATTACK");
     const auto r2 = make_record("ev-c2", "1:commC2", "MALICIOUS", "ATTACK");
-    const auto b1 = make_bindings(r1, fuid_of(r1), 1'000);
-    const auto b2 = make_bindings(r2, fuid_of(r2), 2'000);
+    // [KUZU-TEST-DANGLING-D311] CypherBindings guarda string_view: el flow_uid debe vivir mas que b1/b2
+    const std::string f1 = fuid_of(r1);
+    const std::string f2 = fuid_of(r2);
+    const auto b1 = make_bindings(r1, f1, 1'000);
+    const auto b2 = make_bindings(r2, f2, 2'000);
 
     ASSERT_TRUE(conn->query("BEGIN TRANSACTION")->isSuccess());
     EXPECT_TRUE(exec_alert_row_raw(*conn, prep.get(), b1));
@@ -220,8 +223,11 @@ TEST(KuzuGraphSink, ExplicitRollbackRevertsBatch) {
 
     const auto r1 = make_record("ev-r1", "1:commR1", "MALICIOUS", "ATTACK");
     const auto r2 = make_record("ev-r2", "1:commR2", "MALICIOUS", "ATTACK");
-    const auto b1 = make_bindings(r1, fuid_of(r1), 1'000);
-    const auto b2 = make_bindings(r2, fuid_of(r2), 2'000);
+    // [KUZU-TEST-DANGLING-D311] CypherBindings guarda string_view: el flow_uid debe vivir mas que b1/b2
+    const std::string f1 = fuid_of(r1);
+    const std::string f2 = fuid_of(r2);
+    const auto b1 = make_bindings(r1, f1, 1'000);
+    const auto b2 = make_bindings(r2, f2, 2'000);
 
     ASSERT_TRUE(conn->query("BEGIN TRANSACTION")->isSuccess());
     EXPECT_TRUE(exec_alert_row_raw(*conn, prep.get(), b1));

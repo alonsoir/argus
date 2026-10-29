@@ -8054,3 +8054,206 @@ criterio relativo no sirve con base 0: para positivos aislados se predice una cu
 para la cadena: no se sigue con el paso siguiente. Un analisis que agrupa por origen filtra tambien por protocolo (el
 ping de fondo de esperar ESTABLE sale de .50). Un tail corto puede cortar justo la parte que importa: el analisis va a
 fichero y se lee entero.
+
+## Cierre DAY309 (27-oct-2026) — feat/sniffer-flow-expiry en main
+
+PR #151 mergeada en main (6605c296), etiqueta pre-release-flow-expiry-0.0.8. EMECAS+++ production verde sobre
+69d8f207: 28/28 hitos, los cinco E2E del lab con PASA, 2 h 05 min. test-components: flow_uid 9, sniffer 23,
+ml-detector 15, autonomia 3, firewall 82 = 132, 0 fallos.
+
+### DEBT-SNIFFER-FLOW-EXPIRY-001 — CERRADA DAY309
+Paso 1 (FlowStatistics de tamano fijo, copia por evento O(1)) y paso 2 (caducidad desde la cola de la LRU, tope activo
+perezoso, guarda en should_expire, contadores en [FLOW-TABLE]) en main; antes/despues A, B y C en
+docs/ml-heads/day309_diseno.md: la caducidad cambia el rasgo predicho (flow_packet_count del ataque que vuelve) y no
+cambia ninguna decision. Defectos seguros, no optimos: su valor optimo, en el barrido de rama propia.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY309 (cierre)
+- Parcheadores de un solo uso ya aplicados y commiteados en scripts/flow_expiry/ (d307_*, d308_* y d309_* que solo
+  parchean: d309_registrar_tests.py, d309_backlog.py); los instrumentos de medida se quedan. Desde DAY309 los
+  parcheadores de un solo uso no se commitean.
+- Tres copias del esqueleto de corrida del lab (d302_mitigacion_e2e.sh, d309_hueco_e2e.sh, d309_corrida_e2e.sh): un
+  unico envoltorio con el client como parametro.
+
+### Orden de ramas despues de DAY309 (sin cambios)
+RAG Logger del ml-detector (DEBT-RAG-LOGGER-BRANCH-001, con DEBT-DOCS-CSV-SCHEMA-V1-001) -> residuos del repo -> REA.
+En ramas propias mas adelante: DEBT-SNIFFER-LENHIST-UNBOUNDED-001, barrido de idle_timeout_s/active_timeout_s con
+DEBT-DDOS-V2-LONG-ATTACK-001, DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001, DEBT-SNIFFER-PAYLOAD-ANALYZER-001.
+
+## DAY310 — rama feat/rag-logger-retire (RAG Logger, CsvEventWriter, clave del bronce)
+
+Documento: `docs/ml-heads/day310_diseno.md` (inventario, M0-M4, decisiones D1-D4/E1-E4/F1-F3, predicciones antes de
+medir y resultados aparte, secciones 9 y 12). Parcheadores de un solo uso en logs/lab/day310/tools (no se commitean).
+
+### DEBT-RAG-LOGGER-BRANCH-001 — EN CURSO (esta rama)
+Hechos: paso 1 RAG Logger fuera (9a5ccf0f), 1b restos y `requires_rag_analysis` reservado en el proto (d745b930),
+paso 2 CsvEventWriter fuera (7999008d), paso 3 clave del bronce desde el etcd-server (bloque `bronze_key` en el JSON,
+10-3600 s, defecto 60; comprobacion periodica en hilo propio; [BRONCE-CLAVE], [BRONCE-SIN-CLAVE] critico,
+-RECUPERADA, -CAMBIADA con corte de segmento, -SIN-CONFIRMAR / -CONFIRMADA; en el log solo la huella de 8 hex).
+ml-detector 15 -> 13 tests. El paso 3 se commitea con P4 de protegidos ABIERTO (abajo).
+Quedan: explicar P4; instrumento de reinicio del etcd-server con el pipeline vivo (SIN-CONFIRMAR -> CONFIRMADA +
+CAMBIADA, segmento cerrado, que acepta el conversor con la clave nueva); paso 5 docs (`contract_validator.cpp`,
+resumen "40 embedded (4x10)": medir antes); EMECAS+++ production; PR.
+
+### DEBT-DOCS-CSV-SCHEMA-V1-001 — CERRADA DAY310 (paso 2, 7999008d)
+El CSV del ml-detector y su esquema (`feature_schema.md`, `schemas/ml_detector.py`) se retiran con el CsvEventWriter.
+
+### DEBT-BRONZE-SEGMENT-COLLISION-001 — CERRADA DAY310 (paso 3)
+Hallazgo medido: el nombre del segmento tiene resolucion de segundos; un segundo segmento abierto en el mismo segundo
+pisaba en el rename el fichero final del anterior y se perdian filas sin aviso (`write_record` devolvia true). Pasaba
+con mas de max_events_per_file (10000) eventos en un segundo, y con el paso 3 en cada cambio de clave. Arreglo: sufijo
+-1, -2... si el nombre existe. Instrumento `scripts/bronze_key/d310_colision_segmentos.cpp`: antes 1 fichero y 1 fila
+de 3; despues 3 y 3 (VM). Las filas perdidas antes de DAY310 no se pueden recuperar.
+
+### OBS-FW-SOMBRA-DROP-FUERA-EPISODIO-001 — ABIERTA, actualizada DAY310
+Corrida lab_protegidos_p3 (binarios del paso 3): resumenes 16115 DROP frente a FIN 10743 + alertas 5370 = 16113, sobran
+2. lab_protegidos_p2 (paso 2) cuadra: 16158 = 10773 + 5385. Refutadas en p3: H1 (ventana anterior al INICIO: el primer
+DROP es el primer_evento del INICIO y no hay DROP fuera del episodio) y H3 (duplicados o anomalias: seq_dup, huecos y
+anomalias de [TIMEBASE] a 0 en p3 y en p2). No descartado: efecto del paso 3 (p2 y p3 son binarios distintos), aunque
+DAY300 ya midio una diferencia de 4 sin el. Siguiente: leer en DdosShadowPolicy como cuentan resumen y FIN y en el
+comprobador de protegidos de donde sale "alertas", antes de otra hipotesis.
+
+### DEBT-ETCD-SECRETS-UNAUTHENTICATED-001 — ABIERTA (leido en el codigo DAY310; sin medir en el lab)
+`etcd-server/src/etcd_server.cpp`: GET /secrets/{componente} devuelve la clave HMAC activa y POST /secrets/rotate/
+{componente} la rota, por HTTP, sin autenticacion, en 0.0.0.0:2379. Consecuencia: la firma del bronce protege de la
+corrupcion accidental pero no de quien alcance el puerto (leer la clave y firmar filas falsas; rotarla, y el
+ml-detector la adopta por E2). Los adapters de otras VMs piden /secrets/ml-detector por red, asi que escuchar solo en
+127.0.0.1 no basta tal cual. Medida pendiente: si el client llega al puerto. Decision de Alonso DAY310: se cierra dentro
+de DEBT-ETCD-HA-TLS-RAFT-001, antes de REA. El paper no puede decir que el bronce prueba su origen mientras
+siga asi.
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — ABIERTA, PRIORITARIA (decision de Alonso DAY310: ANTES de REA)
+etcd-server con HTTPS, autenticacion de componentes y en HA con Raft por instalacion, entregando las claves HMAC a los
+componentes en ventana de dos (activa + anterior). Minimo dos PR, puede que mas. Absorbe la mitad etcd-server de E4:
+persistir las claves y no regenerarlas en cada arranque (hoy viven solo en memoria: tras cada reinicio del etcd-server
+el bronce firmado con la clave anterior ya no se puede verificar) y la desincronizacion con adapters y conversor que la
+pidieron antes del reinicio. Cierra DEBT-ETCD-SECRETS-UNAUTHENTICATED-001 y DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001;
+enlaza con DEBT-ETCD-REMOTE-ADMIN-001. Mientras no exista, F1 (abajo) hace del etcd-server un punto unico de fallo del
+arranque. Va antes de REA porque REA lo senalaria de inmediato. El HA del etcd-server se viene pidiendo desde hace mas
+de seis meses.
+
+### DEBT-ETCD-MASTER-CLUSTER-001 — ABIERTA (mas adelante, DAY310)
+Un etcd-server maestro (cluster por zona horaria) capaz de hablar con los etcd-server de cada despliegue y de guardar
+su copia de respaldo. Despues de DEBT-ETCD-HA-TLS-RAFT-001 y de DEBT-FW-HMAC-KEY-ALARM-001.
+
+### DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001 — ABIERTA (D4, DAY310)
+El etcd-server ignora el bloque `secrets` de su JSON (valores fijos en main.cpp). El JSON es la ley: leerlo, con
+[CONFIG]/[CONFIG-DEFAULT] por campo.
+
+### DEBT-BRONZE-KEY-ID-001 — ABIERTA (DAY310)
+Re-verificar el grafo a posteriori es imprescindible y la retencion la fija la ley (pueden ser anos). Hoy un segmento
+no dice con que clave se firmo. Preferencia de Alonso (con dudas): camino b, la huella de la clave en el nombre del
+segmento; historial de claves en Vault (solo versiones de clave); registro de ingesta por segmento fuera de Vault.
+Antes de disenar: medir cuanto vive el bronce en disco y quien depende del formato del nombre del segmento. Depende de
+la persistencia de claves de DEBT-ETCD-HA-TLS-RAFT-001: sin ella no hay historial que guardar.
+
+### DEBT-FW-HMAC-KEY-ALARM-001 — ABIERTA, ampliada DAY310: comportamiento identico de los componentes ante el etcd-server
+Decision de Alonso: sniffer, ml-detector y firewall se comportan EXACTAMENTE igual con el etcd-server, en el camino
+feliz y en todos los casos limite. Va justo despues de DEBT-ETCD-HA-TLS-RAFT-001 y antes de REA.
+Hoy (leido en el codigo DAY310) el firewall pide la clave una sola vez al arrancar (zmq_subscriber.cpp); sin clave da
+un solo WARN ("CSV signing disabled") y no escribe filas de su CSV (solo `if (hmac_key_.has_value())`), nunca la vuelve
+a pedir y, si el etcd-server se reinicia con otra clave, sigue firmando con la vieja para siempre (filas que ya nadie
+puede verificar). El ml-detector, con el paso 3, si comprueba, avisa, recupera y corta segmento. Casos a cubrir igual
+en los tres: etcd-server caido al arrancar, responde sin clave, cae con el pipeline en marcha (modo extendido con la
+vigente), vuelve con otra clave (ventana de dos), clave invalida; alarma periodica por intervalo del JSON; solo la
+huella en el log. Medir antes el sniffer (que pide, cuando y que hace sin respuesta).
+
+### Decision F1 (Alonso DAY310), con su coste anotado
+Sin etcd-server el ml-detector no arranca (ya era asi, main.cpp:154-163): un componente sin registro podria inyectar
+datagramas fabricados. Coste: hasta DEBT-ETCD-HA-TLS-RAFT-001, si el etcd-server no esta al arrancar no hay
+clasificacion ni firewall. Y el argumento del impostor necesita un etcd-server que autentique, que hoy no hay
+(DEBT-ETCD-SECRETS-UNAUTHENTICATED-001). Revisar F1 cuando se decida la mitigacion.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY310
+Del inventario DAY310: parcheadores de d285, d306 y d309 ya aplicados; monitor_day23.sh, tsan_investigation_inside_vm.sh,
+day287_medir_sumidero.sh, d281_fastalert_ts.sh, write_day208_continuity.py. Comprobar con git grep que nada los llama
+antes de borrar.
+
+### Lecciones DAY310
+Un recuento por fichero se hace con git grep -c, no con cut -d: (rutas con ":"). La fecha de un cambio es su llegada a
+la rama que corre. Antes de borrar un componente, mirar quien lo compila, no solo quien lo llama. "Firmado" no es una
+sola cosa: cada canal tiene su mecanismo. Antes de inventar un parametro, leer el validador. Una prediccion de git status
+lleva su premisa explicita. Antes de una hipotesis sobre una cuenta, leer el codigo que cuenta. Cada corrida se nombra
+por lo que cambio. Una decision de seguridad se contrasta con lo que hace hoy, en su codigo, el componente del que
+depende.
+
+### Orden de ramas despues de DAY310 (decision de Alonso)
+1. Terminar feat/rag-logger-retire (P4, reinicio del etcd-server, paso 5, EMECAS+++, PR).
+2. DEBT-ETCD-HA-TLS-RAFT-001: HTTPS + autenticacion + claves persistidas en ventana de dos + HA Raft (minimo dos PR).
+3. DEBT-FW-HMAC-KEY-ALARM-001 ampliada: sniffer, ml-detector y firewall identicos ante el etcd-server.
+4. REA (para aprender y porque se usara a menudo).
+Mas adelante: DEBT-ETCD-MASTER-CLUSTER-001. Residuos del repo (DEBT-REPO-RESIDUOS-001): sitio por decidir.
+
+## DAY311 — rama feat/rag-logger-retire (P4, reinicio del etcd-server, paso 5)
+
+Documento: `docs/ml-heads/day310_diseno.md`, secciones 13 (P4, etcd alcanzable) y 14 (reinicio, paso 5, test de Kuzu).
+Parcheadores de un solo uso en logs/lab/day311/tools (no se commitean). Commits: 4d152671 (AISLADO + P4) y 7ae4c93c
+(paso 5 + test de Kuzu + instrumento de reinicio).
+
+### DEBT-RAG-LOGGER-BRANCH-001 — EN CURSO (esta rama, pasos 1-5 hechos)
+Hechos DAY311: P4 explicado y cerrado (abajo); instrumento de reinicio del etcd-server medido (R1-R6 como se
+predijo, R7 explicado); paso 5, el resumen del contrato lee el esquema del descriptor [CONTRACT-ESQUEMA-D311].
+EMECAS+++ production sobre 7ae4c93c (punta de codigo): rc 0, los 5 E2E del lab con RESULTADO PASA (reinicio antes,
+ordenada, kill9, protegidos y mitigacion), componentes 9/23/13/3/82, 19 carteles "PASSED". Queda: PR.
+
+### OBS-FW-SOMBRA-DROP-FUERA-EPISODIO-001 — CERRADA DAY311 (4d152671)
+Causa medida en el bronce de p3: los 2 DROP de más eran de 192.168.100.11 → 192.168.100.12 TCP (agente Wazuh de la VM
+de Zeek → wazuh-manager, dport 1514), dos eventos del mismo flujo con p1 0,74 y 0,70: falso positivo aislado de la
+etapa 2, NO efecto del paso 3. El resumen cuenta todo DROP; el FIN solo los de su víctima; una víctima que nunca llega
+a episodio se borraba sin rastro. Arreglo [SOMBRA-AISLADO-D311]: registro AISLADO por víctima que no llega a episodio,
+línea `[SOMBRA-DDOS] aislados:` por resumen (drop, victimas, detalle_omitido, drop_pendientes_fuera/_episodio), P4 =
+FIN + alertas + aislados + pendientes; casos 7-10 en test_ddos_shadow_policy (mutación: fallan los 4). Protegidos p4:
+PASA, 16116 = 10746 + 5370 + 0 + 0. EMECAS+++ DAY311 (3 VMs, sin Zeek ni Wazuh): P4 PASA con 16129 = 10750 + 5375 +
+aislados 4 + 0, y los 4 son OTRA causa: `AISLADO victima=192.168.100.1 proto=17 eventos_drop=4 ventanas_positivas=0`
+de .50, la primera ventana del ataque (5630) con < m DROP; el estado se borraba y el episodio empezaba en la siguiente
+(INICIO 5633). Es el mecanismo que DAY300 sospechaba para los 4 de antes2 (en p3 no era ese; en EMECAS si). Dos
+causas medidas de DROP fuera de episodio, las dos visibles ahora en AISLADO. Sin este arreglo, ese EMECAS daba FALLA en P4.
+
+### DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001 — ABIERTA, dato DAY311
+Segundo caso medido: 2 eventos de un flujo legítimo .11 → .12:1514 (agente Wazuh) con p1 0,74/0,70 durante el ataque de
+protegidos p3; de 45 filas .11 → .12 solo esas 2 pasaron la etapa 1. En p2 y p4 (43 filas) ninguna. En EMECAS (3 VMs)
+no hay Zeek ni Wazuh, asi que este caso no puede salir alli. Con AISLADO, en produccion se ven en el log del firewall.
+
+### DEBT-ETCD-SECRETS-UNAUTHENTICATED-001 — ABIERTA, MEDIDA DAY311
+Desde el client (ml-client, .50/.51): `curl http://192.168.100.1:2379/secrets/keys` → 200. El etcd-server escucha en
+0.0.0.0:2379. La posición del atacante en el lab alcanza el servicio que entrega y rota las claves HMAC sin
+autenticación. (No se pidió /secrets/ml-detector: no hacía falta sacar una clave para el dato.)
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — ABIERTA, PRIORITARIA, datos medidos DAY311
+Reinicio del etcd-server con el pipeline vivo (day311/lab_etcd_reinicio_1): el bronce firmado antes (3380 filas, 11
+segmentos) solo verifica con la clave anterior, que el etcd-server ya no tiene; tras el reinicio no se puede
+re-verificar. El registro vuelve vacío salvo el propio etcd-server: los tres componentes reciben 404 en cada latido y
+nadie se vuelve a registrar. Leído: `get_hmac_key` genera la clave en la primera petición con consulta y generación bajo
+bloqueos separados (dos primeras peticiones simultáneas podrían generar dos claves).
+
+### DEBT-ETCD-HEARTBEAT-LOG-STATUS-001 — ABIERTA (nueva DAY311)
+El endpoint `/v1/heartbeat` del etcd-server escribe `log_request(req, 200, …)` antes de decidir y luego responde 404 si
+el componente no está registrado: el log dice 200 cuando la respuesta es 404. Registrar el estado real.
+
+### DEBT-FW-HMAC-KEY-ALARM-001 — ABIERTA, ampliada DAY311
+Medido: los latidos fallidos no se ven. `http::post` (etcd-client) escribe `HTTP POST connection failed` / `HTTP POST
+failed: 404` y devuelve false; `send_heartbeat()` no lo mira y el `catch` con `Heartbeat failed` nunca salta. Un
+componente que el etcd-server ya no reconoce no lo sabe. Entra en el comportamiento idéntico de los tres ante el
+etcd-server: latido rechazado = re-registro o alarma periódica, igual en sniffer, ml-detector y firewall.
+
+### DEBT-KUZU-TEST-DANGLING-001 — ABIERTA (arreglo DAY311, prueba pendiente)
+test_kuzu_graph_sink guardaba un string_view a un flow_uid temporal (comportamiento indefinido; arreglado
+[KUZU-TEST-DANGLING-D311]). ExplicitCommitPersistsBatch falló 2 de 3 veces DAY311 con el binario entero (1 NetworkFlow
+en vez de 2). La predicción del "antes" con el test aislado falló (0 de 50): aislado no reproduce. Pendiente: binario
+entero viejo frente a nuevo, 50 y 50, y AddressSanitizer. Revisar si otros tests pasan temporales a make_bindings.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY311
+`scripts/timebase/__pycache__/` aparece como `??` (lo genera d311_p4_cuentas.py): añadir `__pycache__/` al .gitignore.
+
+### Lecciones DAY311
+Un recuento por víctima no se compara con uno global sin preguntar qué otras víctimas hay. Un instrumento débil (una
+foto cada 10 s) no refuta nada. Una columna que depende de una función apagada no discrimina. Antes de medir un
+servicio, comprobar que está en marcha. El prompt del terminal no dice en qué máquina se está: hostname primero. Antes
+de predecir el texto de un log, leer la función que lo escribe. Un fallo intermitente se reproduce en las condiciones
+en que falló. Un log puede mentir: el etcd-server escribe 200 y responde 404.
+
+### Orden de ramas después de DAY311 (sin cambios)
+1. Terminar feat/rag-logger-retire (EMECAS+++, PR).
+2. DEBT-ETCD-HA-TLS-RAFT-001 (con los datos medidos DAY311).
+3. DEBT-FW-HMAC-KEY-ALARM-001 ampliada.
+4. REA.
+Más adelante: DEBT-ETCD-MASTER-CLUSTER-001. Residuos: sitio por decidir.

@@ -7,6 +7,9 @@
 #include <thread>
 #include <mutex>
 #include <chrono>
+#include <condition_variable>  // [BRONCE-CLAVE-D310]
+#include <functional>          // [BRONCE-CLAVE-D310]
+#include <string>
 #include <time.h>  // [TIMEBASE-D296] clock_gettime(CLOCK_MONOTONIC)
 #include <spdlog/spdlog.h>
 
@@ -20,17 +23,12 @@
 
 #include "network_security.pb.h"
 
-// 🎯 DAY 14: RAG Logger
-#include "rag_logger.hpp"
-
 // ADR-013 PHASE 2 — DAY 98: CryptoTransport via SeedClient (sustituye CryptoManager)
 // DEPRECATED DAY 98 — #include <crypto_transport/crypto_manager.hpp>
 #include <seed_client/seed_client.hpp>
 #include <crypto_transport/transport.hpp>
 #include <lz4.h>
 
-// Day 63: CSV Event Writer
-#include "csv_event_writer.hpp"
 #include "correlation_writer.hpp"
 #include "ddos_dataset_writer.hpp"  // [DDOS-DATASET-D287]
 #include "plugin_loader/plugin_loader.hpp"  // ADR-012 PHASE 2d
@@ -65,7 +63,9 @@ public:
         std::shared_ptr<ml_defender::InternalDetector> internal_detector,
         // DEPRECATED DAY 98 — crypto_manager eliminado (ADR-013)
         // std::shared_ptr<crypto::CryptoManager> crypto_manager,
-        std::string hmac_key_hex = ""   // Day 63: CSV integrity key from etcd
+        // [BRONCE-CLAVE-D310] devuelve la clave HMAC del bronce (/secrets/ml-detector) o "" si el etcd-server no la da.
+        // Se llama al construir y cada bronze_key.check_interval_seconds desde un hilo propio.
+        std::function<std::string()> bronze_key_provider = {}
     );
 
     ~ZMQHandler();
@@ -89,12 +89,12 @@ private:
     void process_event(const std::string& message);
     void send_enriched_event(const protobuf::NetworkSecurityEvent& event);
 
-    // 🎯 DAY 14: RAG Logger methods
-    void log_rag_statistics();
-    uint64_t calculate_events_per_minute();
     void log_periodic_stats();
     void periodic_health_check();
     void memory_monitor_loop();
+    // [BRONCE-CLAVE-D310] pide la clave del bronce, la aplica al CorrelationWriter y lo cuenta en el log
+    void bronze_key_check(bool arranque);
+    void bronze_key_loop();
     // [HEADS-SWITCH-D305] estado EFECTIVO de cada cabeza; siempre visible (arranque + informe de estadisticas)
     void log_heads_state(const char* momento) const;
 
@@ -137,17 +137,12 @@ private:
     // Logging
     std::shared_ptr<spdlog::logger> logger_;
 
-    // 🎯 DAY 14: RAG Logger
-    std::unique_ptr<ml_defender::RAGLogger> rag_logger_;
-    uint64_t events_processed_total_{0};
     // ADR-012 PHASE 2d — plugin_loader (Consejo DAY 111)
     ml_defender::PluginLoader* plugin_loader_ = nullptr;
     // DEBUG DAY271 -- default false: un pipeline-start normal NUNCA abre la compuerta
     bool force_all_heads_ = false;
     std::chrono::system_clock::time_point start_time_;
 
-    // Day 66: CsvEventWriter standalone (activo aunque RAG Logger falle)
-    std::shared_ptr<ml_defender::CsvEventWriter> csv_writer_;
     // DAY 175: CorrelationWriter (zona bronce, contrato correlation_v1)
     std::shared_ptr<ml_defender::CorrelationWriter> correlation_writer_;
     std::unique_ptr<ml_defender::DdosDatasetWriter> ddos_dataset_writer_;  // [DDOS-DATASET-D287]
@@ -157,6 +152,18 @@ private:
     std::atomic<bool> memory_monitor_running_{false};
     std::atomic<double> current_memory_mb_{0.0};
 
-    std::string hmac_key_hex_;  // Day 63: stored for CsvEventWriter init
+    // [BRONCE-CLAVE-D310] clave del bronce. El estado bk_* solo lo tocan el constructor (antes de start) y
+    // bronze_key_thread_.
+    std::function<std::string()> bronze_key_provider_;
+    std::thread bronze_key_thread_;
+    std::atomic<bool> bronze_key_running_{false};
+    std::mutex bronze_key_mutex_;
+    std::condition_variable bronze_key_cv_;
+    bool bk_sin_clave_ = false;           // nunca ha habido clave (o no la hay)
+    bool bk_sin_confirmar_ = false;       // hay clave vigente pero el etcd-server no responde (modo extendido)
+    std::chrono::system_clock::time_point bk_sin_clave_desde_{};
+    std::chrono::system_clock::time_point bk_sin_confirmar_desde_{};
+    uint64_t bk_sin_clave_base_ = 0;      // records_sin_clave al empezar el hueco
+    std::string bk_huella_;               // huella de la clave vigente (nunca la clave)
 };
 } // namespace ml_detector

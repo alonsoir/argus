@@ -5,6 +5,10 @@
 // [TIMEBASE-D295] desde el contrato temporal v1 la marca es time_context.mono_ns / 1e9 (segundos enteros de
 // CLOCK_MONOTONIC del sniffer): 1 ventana = 1 s y un salto del reloj de pared no mueve las ventanas.
 // Uso: advance(ts) con TODO evento recibido (reloj monótono) y add_drop(...) con cada evento final_decision == "DROP".
+// [SOMBRA-AISLADO-D311] Ningun DROP se pierde en silencio: al borrar el estado de una victima que NUNCA llego a
+// episodio y tenia DROP, se guarda un registro AISLADO (take_aislados(), canal aparte: advance() sigue devolviendo
+// solo INICIO/FIN). drop_pendientes_fuera()/drop_pendientes_episodio() dan lo aun no cerrado. Identidad:
+// DROP sumados = DROP de los FIN + DROP de los AISLADO + pendientes (fuera + en episodio).
 // No es thread-safe: la usa solo el hilo receptor del ZMQSubscriber.
 #pragma once
 
@@ -90,6 +94,9 @@ public:
             }
             const bool alguna = std::any_of(s.q.begin(), s.q.end(), [](bool b) { return b; });
             if (!s.blocked && s.counts.empty() && !alguna) {
+                if (s.drops > 0) {  // [SOMBRA-AISLADO-D311] DROP de una victima que no llego a episodio
+                    aislados_.push_back(make(s, false, s.first_w, now_s));
+                }
                 it = st_.erase(it);
             } else {
                 ++it;
@@ -110,6 +117,7 @@ public:
         }
         s.counts[std::max(ts_s, s.next_w)]++;
         if (s.drops == 0) {
+            s.first_w = std::max(ts_s, s.next_w);  // [SOMBRA-AISLADO-D311] ventana del primer DROP del tramo
             s.p1_min = p1;
             s.p1_max = p1;
             s.first_id = event_id;
@@ -133,6 +141,27 @@ public:
         return it != st_.end() && it->second.blocked;
     }
     const DdosShadowParams& params() const noexcept { return p_; }
+    // [SOMBRA-AISLADO-D311] registros AISLADO cerrados desde la ultima llamada (se entregan una sola vez)
+    std::vector<DdosShadowRecord> take_aislados() {
+        std::vector<DdosShadowRecord> v;
+        v.swap(aislados_);
+        return v;
+    }
+    // [SOMBRA-AISLADO-D311] DROP ya sumados que aun no estan en ningun FIN ni AISLADO
+    uint64_t drop_pendientes_fuera() const {
+        uint64_t n = 0;
+        for (const auto& kv : st_) {
+            if (!kv.second.blocked) n += kv.second.drops;
+        }
+        return n;
+    }
+    uint64_t drop_pendientes_episodio() const {
+        uint64_t n = 0;
+        for (const auto& kv : st_) {
+            if (kv.second.blocked) n += kv.second.drops;
+        }
+        return n;
+    }
 
 private:
     static constexpr std::size_t kMaxSources = 4096;
@@ -142,6 +171,7 @@ private:
         std::string dst;
         uint32_t proto = 0;
         int64_t next_w = 0;
+        int64_t first_w = 0;  // [SOMBRA-AISLADO-D311]
         std::map<int64_t, uint64_t> counts;
         std::deque<bool> q;
         bool blocked = false;
@@ -219,6 +249,7 @@ private:
     bool have_clock_ = false;
     int64_t clock_ = 0;
     std::map<std::string, State> st_;
+    std::vector<DdosShadowRecord> aislados_;  // [SOMBRA-AISLADO-D311]
 };
 
 inline std::string format_ddos_shadow_record(const DdosShadowRecord& r) {
@@ -228,6 +259,20 @@ inline std::string format_ddos_shadow_record(const DdosShadowRecord& r) {
         o << " fin_s=" << r.end_s << " duracion_s=" << (r.end_s - r.start_s);
     }
     o << " eventos_drop=" << r.drop_events << " ventanas_positivas=" << r.positive_windows << std::fixed
+      << std::setprecision(4) << " p1_min=" << r.p1_min << " p1_media=" << r.p1_mean << " p1_max=" << r.p1_max
+      << std::setprecision(3) << " ratio_max=" << r.ratio_max << " modelo=" << r.modelo << " origenes=";
+    for (std::size_t i = 0; i < r.top_sources.size(); ++i) {
+        o << (i ? "," : "") << r.top_sources[i].first << ":" << r.top_sources[i].second;
+    }
+    o << " primer_evento=" << r.first_event_id << " ultimo_evento=" << r.last_event_id;
+    return o.str();
+}
+
+// [SOMBRA-AISLADO-D311] linea de un registro AISLADO (victima que no llego a episodio; no se bloquea nada)
+inline std::string format_ddos_shadow_aislado(const DdosShadowRecord& r) {
+    std::ostringstream o;
+    o << "AISLADO victima=" << r.dst_ip << " proto=" << r.proto << " inicio_s=" << r.start_s << " fin_s=" << r.end_s
+      << " eventos_drop=" << r.drop_events << " ventanas_positivas=" << r.positive_windows << std::fixed
       << std::setprecision(4) << " p1_min=" << r.p1_min << " p1_media=" << r.p1_mean << " p1_max=" << r.p1_max
       << std::setprecision(3) << " ratio_max=" << r.ratio_max << " modelo=" << r.modelo << " origenes=";
     for (std::size_t i = 0; i < r.top_sources.size(); ++i) {

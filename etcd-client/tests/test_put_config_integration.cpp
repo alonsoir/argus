@@ -36,9 +36,8 @@ int main() {
                 {"model_a", {{"enabled", true}, {"path", "/models/a.bin"}}},
                 {"model_b", {{"enabled", false}, {"path", "/models/b.bin"}}}
         }},
-        {"rag_logger", {
-                {"enabled", true},
-                {"output_dir", "/logs/rag"}
+        {"correlation_writer", {
+                {"base_dir", "/logs/correlation"}
         }}
     };
 

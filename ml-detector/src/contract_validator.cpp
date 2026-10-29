@@ -196,7 +196,29 @@ void ContractStats::log_summary() {
         
         logger->info("[CONTRACT-SUMMARY] ════════════════════════════");
         logger->info("[CONTRACT-SUMMARY] 🎯 EXPECTED FEATURE COUNT: {}", max_it->first);
-        logger->info("[CONTRACT-SUMMARY] Baseline: 74 scalars + 40 embedded (4x10) = 114 minimum");
+        {   // [CONTRACT-ESQUEMA-D311] el esquema sale del descriptor (antes: "74 scalars + 40 embedded (4x10) = 114
+            // minimum", cifra fija y desfasada). count_features cuenta solo los campos PRESENTES (proto3 no lista los
+            // ceros) y el tamano de los repetidos: no hay un minimo fijo.
+            const google::protobuf::Descriptor* d = protobuf::NetworkFeatures::descriptor();
+            int escalares = 0;
+            int repetidos = 0;
+            std::string submensajes;
+            for (int i = 0; i < d->field_count(); ++i) {
+                const google::protobuf::FieldDescriptor* f = d->field(i);
+                if (f->is_repeated()) {
+                    ++repetidos;
+                } else if (f->type() == google::protobuf::FieldDescriptor::TYPE_MESSAGE) {
+                    submensajes += (submensajes.empty() ? "" : ", ") + std::string(f->name()) + " " +
+                                   std::to_string(f->message_type()->field_count());
+                } else {
+                    ++escalares;
+                }
+            }
+            logger->info("[CONTRACT-SUMMARY] Esquema NetworkFeatures (descriptor): {} escalares, {} repetidos, "
+                         "submensajes: {}. El recuento por evento solo incluye los campos presentes (proto3 no lista "
+                         "los ceros) y el tamano de los repetidos: no hay un minimo fijo",
+                         escalares, repetidos, submensajes);
+        }
         logger->info("[CONTRACT-SUMMARY] ════════════════════════════");
     }
     

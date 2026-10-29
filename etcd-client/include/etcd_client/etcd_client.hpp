@@ -179,11 +179,11 @@ public:
      * Retrieves an HMAC key from etcd-server's SecretsManager.
      * The key is returned as raw bytes for immediate use.
      *
-     * @param key_path Path to key in etcd (e.g., "/secrets/rag/log_hmac_key")
+     * @param key_path Path to key in etcd (e.g., "/secrets/ml-detector")
      * @return Key bytes if successful, nullopt if key not found or error
      *
      * Example:
-     *   auto key = client.get_hmac_key("/secrets/rag/log_hmac_key");
+     *   auto key = client.get_hmac_key("/secrets/ml-detector");
      *   if (key.has_value()) {
      *       // Use key for HMAC operations
      *   }

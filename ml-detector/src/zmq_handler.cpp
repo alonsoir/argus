@@ -1,14 +1,16 @@
 #include "ml_defender/ddos_v2_head.hpp"  // [DDOS-V2-D293]
-#include "csv_event_writer.hpp"
 #include <crypto_transport/contexts.hpp>
 #include <filesystem>
 #include <reason_codes.hpp>
 #include "zmq_handler.hpp"
 #include "l2_gate.hpp"     // DEBUG DAY271
-#include "rag_logger.hpp"
 #include "contract_validator.h"
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <chrono>
+#include <algorithm>  // [BRONCE-CLAVE-D310]
+#include <cctype>     // [BRONCE-CLAVE-D310]
+#include <ctime>      // [BRONCE-CLAVE-D310]
+#include <iomanip>    // [BRONCE-CLAVE-D310]
 #include <sstream>
 #include <unistd.h>
 #include <cstdio>
@@ -23,7 +25,7 @@ ZMQHandler::ZMQHandler(
     std::shared_ptr<ml_defender::TrafficDetector> traffic_detector,
     std::shared_ptr<ml_defender::InternalDetector> internal_detector,
     // DEPRECATED DAY 98 — crypto_manager eliminado (ADR-013)
-    std::string hmac_key_hex
+    std::function<std::string()> bronze_key_provider
 )
     : config_(config)
     , level1_model_(level1_model)
@@ -37,7 +39,7 @@ ZMQHandler::ZMQHandler(
     , logger_(spdlog::get("ml-detector"))
     , start_time_(std::chrono::system_clock::now())
     // DEPRECATED DAY 98 — crypto_manager ignorado
-    , hmac_key_hex_(std::move(hmac_key_hex))
+    , bronze_key_provider_(std::move(bronze_key_provider))  // [BRONCE-CLAVE-D310]
 {
     if (!logger_) {
         logger_ = spdlog::stdout_color_mt("zmq-handler");
@@ -120,57 +122,27 @@ ZMQHandler::ZMQHandler(
         throw;
     }
 
-    // =========================================================================
-    // Day 66: CsvEventWriter — standalone, NO depende del RAG Logger
-    // Política: CSV activo siempre que haya HMAC key, independientemente del RAG
-    // =========================================================================
-    if (!config_.csv_writer.enabled) {  // [WRITERS-D285]
-        logger_->info("CsvEventWriter desactivado por configuracion (csv_writer.enabled=false)");
-    } else if (!hmac_key_hex_.empty()) {
-        try {
-            std::string csv_dir = config_.csv_writer.base_dir;
-            std::filesystem::create_directories(csv_dir);
-
-            ml_defender::CsvEventWriterConfig csv_cfg;
-            csv_cfg.base_dir            = csv_dir;
-            csv_cfg.hmac_key_hex        = hmac_key_hex_;
-            csv_cfg.max_events_per_file = static_cast<size_t>(config_.csv_writer.max_events_per_file);
-            csv_cfg.min_score_threshold = config_.csv_writer.min_score_threshold;
-
-			csv_writer_ = std::make_shared<ml_defender::CsvEventWriter>(csv_cfg, logger_);
-
-            logger_->info("✅ CsvEventWriter initialized (standalone)");
-            logger_->info("   Output: {}/YYYY-MM-DD.csv", csv_dir);
-            logger_->info("   Threshold: {:.2f}", csv_cfg.min_score_threshold);
-            logger_->info("   Columns: {} (14 meta + 105 features + 1 hmac)",
-                         ml_defender::CSV_TOTAL_COLS);
-
-        } catch (const std::exception& e) {
-            logger_->error("❌ Failed to initialize CsvEventWriter: {}", e.what());
-            logger_->warn("⚠️  Continuing without CSV output");
-            csv_writer_ = nullptr;
-        }
-    } else {
-        logger_->warn("⚠️  CsvEventWriter disabled — no HMAC key available");
-    }
-
-    // DAY 175: CorrelationWriter (zona bronce). Misma clave HMAC que csv → cero divergencia.
+    // DAY 175: CorrelationWriter (zona bronce), firmado con la clave HMAC de /secrets/ml-detector.
     // DAY 201: base_dir desde JSON (DEBT-CONFIG-BRONZE-HARDCODE-001, mitad writer).
-    if (!hmac_key_hex_.empty()) {
-        try {
-            ml_defender::CorrelationWriterConfig corr_cfg;
-            corr_cfg.base_dir         = config_.correlation_writer.base_dir;
-            corr_cfg.rotation_seconds = config_.correlation_writer.rotation_seconds;
-            corr_cfg.hmac_key_hex     = hmac_key_hex_;
-            correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
-            logger_->info("[BRONZE-FASTALERT-D296] fast-alerts al bronce: {} (correlation_writer.include_fast_alerts)",
-                          config_.correlation_writer.include_fast_alerts ? "SI" : "NO");
-            logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
-                         corr_cfg.base_dir);
-        } catch (const std::exception& e) {
-            logger_->error("❌ Failed to initialize CorrelationWriter: {}", e.what());
-            correlation_writer_ = nullptr;
-        }
+    // [BRONCE-CLAVE-D310] el writer se crea siempre; la clave la pone bronze_key_check (aqui y cada intervalo).
+    // Sin clave no escribe: nunca bronce sin firma.
+    try {
+        ml_defender::CorrelationWriterConfig corr_cfg;
+        corr_cfg.base_dir         = config_.correlation_writer.base_dir;
+        corr_cfg.rotation_seconds = config_.correlation_writer.rotation_seconds;
+        correlation_writer_ = std::make_shared<ml_defender::CorrelationWriter>(corr_cfg, logger_);
+        logger_->info("[BRONZE-FASTALERT-D296] fast-alerts al bronce: {} (correlation_writer.include_fast_alerts)",
+                      config_.correlation_writer.include_fast_alerts ? "SI" : "NO");
+        logger_->info("✅ CorrelationWriter initialized (bronce correlation_v1, base_dir={})",
+                     corr_cfg.base_dir);
+    } catch (const std::exception& e) {
+        logger_->error("❌ Failed to initialize CorrelationWriter: {}", e.what());
+        correlation_writer_ = nullptr;
+    }
+    if (correlation_writer_) {
+        logger_->info("[BRONCE-CLAVE] clave del bronce: /secrets/ml-detector, comprobada cada {} s "
+                      "(bronze_key.check_interval_seconds)", config_.bronze_key.check_interval_seconds);
+        bronze_key_check(true);
     }
 
     // [DDOS-DATASET-D287] dataset DDoS v2 de laboratorio; no depende de la clave HMAC
@@ -183,49 +155,10 @@ ZMQHandler::ZMQHandler(
             ddos_dataset_writer_.reset();
         }
     }
-
-    // =========================================================================
-    // RAG Logger — opcional, su fallo no afecta al CSV
-    // =========================================================================
-    if (!config_.rag_logger.enabled) {  // [WRITERS-D285]
-        logger_->info("RAG Logger desactivado por configuracion (rag_logger.enabled=false)");
-    } else try {
-        rag_logger_ = ml_defender::create_rag_logger_from_config(
-            "../config/rag_logger_config.json",
-            logger_
-            // DEPRECATED DAY 98 — crypto_manager eliminado
-        );
-		logger_->info("✅ RAG Logger initialized successfully (encrypted artifacts enabled)");
-		if (csv_writer_) {
-    		rag_logger_->set_csv_writer(csv_writer_);
-		}
-        // Si RAG Logger está disponible, comparte el csv_writer con él
-        // Nota: RAG Logger no toma ownership — csv_writer_ sigue siendo el owner
-        // Se pasa una referencia lógica; RAG Logger escribe a través de él
-        // (set_csv_writer toma unique_ptr — ver nota abajo)
-
-    } catch (const std::exception& e) {
-        logger_->error("❌ Failed to initialize RAG Logger: {}", e.what());
-        logger_->warn("⚠️  Continuing without RAG logging (CSV still active)");
-        rag_logger_ = nullptr;
-    }
 }
 
 ZMQHandler::~ZMQHandler() {
     stop();
-
-    // Flush CSV antes de destruir
-    if (csv_writer_) {
-        logger_->info("🔄 Flushing CsvEventWriter...");
-        csv_writer_->flush();
-    }
-
-    if (rag_logger_) {
-        logger_->info("🔄 Flushing RAG logger...");
-        rag_logger_->flush();
-        auto stats = rag_logger_->get_statistics();
-        logger_->info("📊 RAG Statistics: {}", stats.dump(2));
-    }
 }
 
 void ZMQHandler::start() {
@@ -237,6 +170,10 @@ void ZMQHandler::start() {
     logger_->info("🚀 Starting ZMQ Handler");
     running_.store(true);
     worker_thread_ = std::make_unique<std::thread>(&ZMQHandler::run, this);
+    if (correlation_writer_) {  // [BRONCE-CLAVE-D310] la peticion HTTP de la clave nunca va en el hilo de eventos
+        bronze_key_running_.store(true);
+        bronze_key_thread_ = std::thread(&ZMQHandler::bronze_key_loop, this);
+    }
     logger_->info("✅ ZMQ Handler started");
 }
 
@@ -250,6 +187,14 @@ void ZMQHandler::stop() {
 
     if (worker_thread_ && worker_thread_->joinable()) {
         worker_thread_->join();
+    }
+    {  // [BRONCE-CLAVE-D310]
+        std::lock_guard<std::mutex> lock(bronze_key_mutex_);
+        bronze_key_running_.store(false);
+    }
+    bronze_key_cv_.notify_all();
+    if (bronze_key_thread_.joinable()) {
+        bronze_key_thread_.join();
     }
     if (input_socket_)  input_socket_->close();
     if (output_socket_) output_socket_->close();
@@ -545,7 +490,7 @@ void ZMQHandler::process_event(const std::string& message) {
 
         double final_score = std::max(fast_score, ml_score);
         // [DDOS-SHADOW-D293] opción (b): overall_threat_score = p1 de ddos_v2, coherente con final_decision. La puntuación
-        // dual sigue en final_score solo para usos internos (umbral RAG, log, veredicto MALICIOUS/BENIGN).
+        // dual sigue en final_score solo para usos internos (log, veredicto MALICIOUS/BENIGN).
         event.set_overall_threat_score(ddos_v2_score);
 
         double score_divergence = std::abs(fast_score - ml_score);
@@ -566,10 +511,6 @@ void ZMQHandler::process_event(const std::string& message) {
 
         auto* metadata = event.mutable_decision_metadata();
         metadata->set_score_divergence(score_divergence);
-        metadata->set_requires_rag_analysis(
-            score_divergence > config_.scoring.divergence_warn_threshold ||
-            final_score >= config_.scoring.requires_rag_threshold
-        );
         metadata->set_confidence_level(std::min(fast_score, ml_score));
 
         logger_->debug("[DUAL-SCORE] event={}, fast={:.4f}, ml={:.4f}, final={:.4f}, source={}, div={:.4f}",  // [LOG-VERBOSE-D285]
@@ -642,62 +583,11 @@ void ZMQHandler::process_event(const std::string& message) {
             );
         }
 
-        // =====================================================================
-        // RAG Logging (opcional — csv_writer_ funciona aunque rag_logger_ sea null)
-        // =====================================================================
-        ml_defender::MLContext ml_context;
-
-        ml_context.events_processed_total  = ++events_processed_total_;
-        ml_context.events_in_last_minute   = calculate_events_per_minute();
-        ml_context.memory_usage_mb         = get_memory_usage_mb();
-        ml_context.cpu_usage_percent       = 0.0;
-        ml_context.uptime_seconds          = static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::seconds>(
-            std::chrono::system_clock::now() - start_time_
-        ).count());
-
-        ml_context.attack_family           = "RANSOMWARE";  // TODO: Get from detector
-        ml_context.level_1_label           = label_l1 == 1 ? "MALICIOUS" : "BENIGN";
-        ml_context.level_2_category        = "UNKNOWN";
-        ml_context.level_3_subcategory     = "UNKNOWN";
-        ml_context.level_1_confidence      = confidence_l1;
-
-        ml_context.window_start            = std::chrono::system_clock::now() - std::chrono::seconds(30);
-        ml_context.window_end              = std::chrono::system_clock::now();
-        ml_context.events_in_window        = 1;
-
-        if (score_divergence > config_.scoring.divergence_high_threshold) {
-            ml_context.investigation_priority = "HIGH";
-        } else if (score_divergence > config_.scoring.divergence_warn_threshold) {
-            ml_context.investigation_priority = "MEDIUM";
-        } else {
-            ml_context.investigation_priority = "LOW";
-        }
-
-        // DAY 175: zona bronce correlation_v1 — punto UNICO, ANTES de la bifurcacion RAG Logger / sin RAG Logger.
-        // NO va dentro del if(!rag_logger_ && csv_writer_) (bug de los dos caminos).
+        // DAY 175: zona bronce correlation_v1 — punto UNICO de escritura del bronce.
         if (correlation_writer_ && !event.network_features().community_id().empty() &&
             (event.event_kind() != protobuf::EVENT_KIND_FAST_ALERT ||
              config_.correlation_writer.include_fast_alerts)) {  // [BRONZE-FASTALERT-D296]
             correlation_writer_->write_record(event);
-        }
-
-        // RAG Logger — escribe JSON artifacts + delega en csv_writer_ si fue conectado
-        if (rag_logger_) {
-            bool logged = rag_logger_->log_event(event, ml_context);
-            if (logged) {
-                logger_->debug("📝 Event logged to RAG: {}", event.event_id());
-            }
-        }
-
-        // =====================================================================
-        // Day 66: CSV standalone — activo aunque rag_logger_ sea null
-        // Escribe directamente si rag_logger_ no está disponible
-        // =====================================================================
-        if (!rag_logger_ && csv_writer_) {
-            bool written = csv_writer_->write_event(event);
-            if (written) {
-                logger_->debug("📝 Event written to CSV (standalone): {}", event.event_id());
-            }
         }
 
         // Level 2 & 3: Specialized detectors (si Level 1 detectó ATTACK)
@@ -1079,25 +969,6 @@ void ZMQHandler::reset_stats() {
     logger_->info("📊 Stats reset");
 }
 
-void ZMQHandler::log_rag_statistics() {
-    if (rag_logger_) {
-        auto stats = rag_logger_->get_statistics();
-        logger_->info("📊 RAG Stats: {} events logged, {} divergent, {} consensus",
-                     stats["events_logged"],
-                     stats["divergent_events"],
-                     stats["consensus_events"]);
-    }
-}
-
-uint64_t ZMQHandler::calculate_events_per_minute() {
-    auto uptime_s = std::chrono::duration_cast<std::chrono::seconds>(
-        std::chrono::system_clock::now() - start_time_
-    ).count();
-
-    if (uptime_s < 60) return events_processed_total_;
-    return events_processed_total_ / static_cast<uint64_t>(uptime_s / 60);
-}
-
 void ZMQHandler::log_periodic_stats() {
     double memory_mb = get_memory_usage_mb();
     auto stats = get_stats();
@@ -1168,6 +1039,116 @@ void ZMQHandler::log_heads_state(const char* momento) const {
 
 double ZMQHandler::get_memory_usage_mb() {
     return current_memory_mb_.load();
+}
+
+
+// ============================================================================
+// [BRONCE-CLAVE-D310] clave del bronce (decisiones de Alonso DAY310: D3, E1, E2, F2, F3)
+// ============================================================================
+namespace {
+std::string bk_hora(std::chrono::system_clock::time_point t) {
+    const std::time_t tt = std::chrono::system_clock::to_time_t(t);
+    std::tm tm{};
+    localtime_r(&tt, &tm);
+    std::ostringstream ss;
+    ss << std::put_time(&tm, "%Y-%m-%d %H:%M:%S");
+    return ss.str();
+}
+long long bk_segundos(std::chrono::system_clock::duration d) {
+    return static_cast<long long>(std::chrono::duration_cast<std::chrono::seconds>(d).count());
+}
+bool bk_es_clave(const std::string& hex) {
+    return hex.size() == 64 &&
+           std::all_of(hex.begin(), hex.end(), [](char c) { return std::isxdigit(static_cast<unsigned char>(c)) != 0; });
+}
+}  // namespace
+
+void ZMQHandler::bronze_key_check(bool arranque) {
+    if (!correlation_writer_) return;
+    const auto ahora = std::chrono::system_clock::now();
+    std::string hex;
+    try {
+        if (bronze_key_provider_) hex = bronze_key_provider_();
+    } catch (const std::exception& e) {
+        hex.clear();
+        logger_->error("[BRONCE-CLAVE] fallo al pedir la clave al etcd-server: {}", e.what());
+    }
+
+    if (!bk_es_clave(hex)) {
+        if (!correlation_writer_->has_key()) {
+            // D3: sin clave no hay bronce. La clasificacion y el firewall siguen; el grafo tiene un hueco.
+            if (!bk_sin_clave_) {
+                bk_sin_clave_ = true;
+                bk_sin_clave_desde_ = ahora;
+                bk_sin_clave_base_ = correlation_writer_->get_stats().records_sin_clave;
+            }
+            const uint64_t sin_bronce = correlation_writer_->get_stats().records_sin_clave - bk_sin_clave_base_;
+            logger_->critical("[BRONCE-SIN-CLAVE] el etcd-server no entrega la clave HMAC del bronce (/secrets/ml-detector) "
+                              "desde {} ({} s): {} eventos sin bronce. La clasificacion y el envio al firewall siguen; al "
+                              "grafo no llega nada de aRGus hasta recuperar la clave (nunca se escribe bronce sin firma). "
+                              "Que hacer: comprobar el etcd-server (make pipeline-status; /vagrant/logs/lab/etcd-server.log)",
+                              bk_hora(bk_sin_clave_desde_), bk_segundos(ahora - bk_sin_clave_desde_), sin_bronce);
+        } else {
+            // F2: la clave vigente sigue valiendo aunque el etcd-server no conteste: se sigue firmando con ella.
+            if (!bk_sin_confirmar_) {
+                bk_sin_confirmar_ = true;
+                bk_sin_confirmar_desde_ = ahora;
+            }
+            logger_->warn("[BRONCE-CLAVE-SIN-CONFIRMAR] el etcd-server no responde desde {} ({} s en modo extendido): se "
+                          "sigue firmando el bronce con la clave vigente (huella {}). Si al volver trae otra clave, se "
+                          "cerrara el segmento abierto y se firmara con la nueva",
+                          bk_hora(bk_sin_confirmar_desde_), bk_segundos(ahora - bk_sin_confirmar_desde_), bk_huella_);
+        }
+        return;
+    }
+
+    std::string cerrado;
+    const auto r = correlation_writer_->set_key(hex, &cerrado);
+    const std::string huella = ml_defender::CorrelationWriter::fingerprint(hex);
+    if (bk_sin_confirmar_) {
+        logger_->warn("[BRONCE-CLAVE-CONFIRMADA] el etcd-server vuelve a responder tras {} s en modo extendido (desde {} "
+                      "hasta {}); entrega {} (huella {})",
+                      bk_segundos(ahora - bk_sin_confirmar_desde_), bk_hora(bk_sin_confirmar_desde_), bk_hora(ahora),
+                      r == ml_defender::CorrelationWriter::KeyChange::Igual ? "la misma clave" : "otra clave", huella);
+        bk_sin_confirmar_ = false;
+    }
+    switch (r) {
+        case ml_defender::CorrelationWriter::KeyChange::Primera:
+            if (bk_sin_clave_) {
+                const uint64_t sin_bronce = correlation_writer_->get_stats().records_sin_clave - bk_sin_clave_base_;
+                logger_->warn("[BRONCE-CLAVE-RECUPERADA] clave HMAC del bronce recibida (huella {}) tras {} s sin clave: "
+                              "hueco del grafo de {} a {}, {} eventos sin bronce",
+                              huella, bk_segundos(ahora - bk_sin_clave_desde_), bk_hora(bk_sin_clave_desde_),
+                              bk_hora(ahora), sin_bronce);
+                bk_sin_clave_ = false;
+            } else {
+                logger_->info("[BRONCE-CLAVE] clave HMAC del bronce recibida de /secrets/ml-detector (huella {}){}",
+                              huella, arranque ? " al arrancar" : "");
+            }
+            break;
+        case ml_defender::CorrelationWriter::KeyChange::Cambiada:
+            logger_->warn("[BRONCE-CLAVE-CAMBIADA] el etcd-server entrega otra clave HMAC del bronce (huella {} -> {}): "
+                          "segmento cerrado {}; desde ahora el bronce se firma con la nueva",
+                          bk_huella_, huella, cerrado.empty() ? "(ninguno abierto)" : cerrado);
+            break;
+        case ml_defender::CorrelationWriter::KeyChange::Igual:
+            break;
+        case ml_defender::CorrelationWriter::KeyChange::Invalida:
+            logger_->error("[BRONCE-CLAVE] el CorrelationWriter rechazo la clave entregada; se conserva la vigente");
+            return;
+    }
+    bk_huella_ = huella;
+}
+
+void ZMQHandler::bronze_key_loop() {
+    const auto intervalo = std::chrono::seconds(config_.bronze_key.check_interval_seconds);
+    std::unique_lock<std::mutex> lock(bronze_key_mutex_);
+    while (bronze_key_running_.load()) {
+        if (bronze_key_cv_.wait_for(lock, intervalo, [this] { return !bronze_key_running_.load(); })) break;
+        lock.unlock();
+        bronze_key_check(false);
+        lock.lock();
+    }
 }
 
 } // namespace ml_detector

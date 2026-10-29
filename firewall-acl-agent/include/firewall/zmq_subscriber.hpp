@@ -367,6 +367,10 @@ private:
     bool sombra_primer_drop_ = false;
     uint64_t prot_alertas_[4] = {};  // [PROTEGIDOS-D300] ALERTA_PROTEGIDO acumuladas por CategoriaProtegida
     uint64_t prot_detalle_ = 0;      // [PROTEGIDOS-D300] lineas de detalle del periodo (tope anomalias_detalle_max)
+    uint64_t aisl_drop_ = 0;          // [SOMBRA-AISLADO-D311] DROP de los AISLADO cerrados en el periodo
+    uint64_t aisl_victimas_ = 0;      // [SOMBRA-AISLADO-D311] registros AISLADO cerrados en el periodo
+    uint64_t aisl_detalle_ = 0;       // [SOMBRA-AISLADO-D311] lineas de detalle del periodo (tope anomalias_detalle_max)
+    uint64_t aisl_omitidos_ = 0;      // [SOMBRA-AISLADO-D311] registros sin linea de detalle en el periodo
     ::mldefender::firewall::DdosMitigacion ddos_mitigacion_{config_.ddos_mitigacion};  ///< [DDOS-MITIGACION-B2-D302]
     // [DDOS-MITIGACION-B2-D302] contadores del periodo de resumen y acumulados (solo hilo receptor)
     uint64_t mit_bloquear_ = 0;

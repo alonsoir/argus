@@ -46,17 +46,6 @@
     "max_file_size_mb": 200,
     "backup_count": 10
   },
-  "csv_writer": {
-    "base_dir": "{{ ml_csv_base_dir }}",
-    "min_score_threshold": 0.5,
-    "max_events_per_file": 10000
-  },
-  "rag_logger": {
-    "enabled": true,
-    "base_dir": "{{ ml_rag_base_dir }}",
-    "log_detections_only": true,
-    "min_score_threshold": 0.5
-  },
   "identity": {
     "component_id": "ml-detector",
     "keys_dir": "/etc/ml-defender/ml-detector",

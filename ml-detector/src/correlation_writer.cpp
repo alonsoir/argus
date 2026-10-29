@@ -1,6 +1,6 @@
 // correlation_writer.cpp
 // aRGus NDR — Correlation Writer implementation (zona BRONCE, contrato correlation_v1)
-// Clona el patrón probado de csv_event_writer.cpp (HMAC OpenSSL, rotación fecha+tamaño,
+// Nació clonando el patrón del csv_event_writer.cpp (retirado DAY310): HMAC OpenSSL, rotación fecha+tamaño,
 // append no-atómico, thread-safe). Authors: Alonso Isidoro Roman + Claude (Anthropic)
 
 #include "correlation_writer.hpp"
@@ -22,7 +22,7 @@ namespace ml_defender {
 
 namespace {
 
-// Idéntico a csv_event_writer: 64 hex chars -> 32 bytes.
+// 64 hex chars -> 32 bytes.
 std::vector<uint8_t> hex_decode(const std::string& hex) {
     if (hex.size() != 64) {
         throw std::invalid_argument(
@@ -53,7 +53,8 @@ std::vector<uint8_t> hex_decode(const std::string& hex) {
 CorrelationWriter::CorrelationWriter(const CorrelationWriterConfig& config,
                                      std::shared_ptr<spdlog::logger> logger)
     : config_(config), logger_(std::move(logger)) {
-    hmac_key_ = hex_decode(config_.hmac_key_hex);
+    // [BRONCE-CLAVE-D310] vacia = sin clave (no escribe hasta set_key); no vacia y mal formada sigue lanzando
+    if (!config_.hmac_key_hex.empty()) hmac_key_ = hex_decode(config_.hmac_key_hex);
     fs::create_directories(config_.base_dir);
     if (logger_) logger_->info("CorrelationWriter: base_dir={}, rotation_seconds={}",
                                 config_.base_dir, config_.rotation_seconds);
@@ -125,6 +126,14 @@ bool CorrelationWriter::write_record(const protobuf::NetworkSecurityEvent& event
         return false;
     }
 
+    // [BRONCE-CLAVE-D310] la clave puede cambiar desde otro hilo (set_key): se lee y se usa bajo mutex_.
+    // Sin clave no se escribe: nunca bronce sin firma.
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (hmac_key_.empty()) {
+        records_sin_clave_.fetch_add(1, std::memory_order_relaxed);
+        return false;
+    }
+
     // serialize() = validate() + cols 0-17 + HMAC col 18. Rechaza \n/\r (Camino A)
     // y clave HMAC mal formada. Lo que rechaza, NO se emite (frontera de confianza).
     auto sr = serialize(tr.row, hmac_key_);
@@ -135,7 +144,6 @@ bool CorrelationWriter::write_record(const protobuf::NetworkSecurityEvent& event
         return false;
     }
 
-    std::lock_guard<std::mutex> lock(mutex_);
     rotate_if_needed();
     ensure_open();
     if (!current_file_.is_open()) {
@@ -159,7 +167,49 @@ void CorrelationWriter::flush() {
 
 CorrelationWriter::Stats CorrelationWriter::get_stats() const noexcept {
     return Stats{ records_written_.load(), records_skipped_.load(),
-                 rows_failed_.load(), current_tmp_path_, current_final_path_ };
+                 rows_failed_.load(), records_sin_clave_.load(), current_tmp_path_, current_final_path_ };
+}
+
+// ----------------------------------------------------------------------------
+// [BRONCE-CLAVE-D310] clave del bronce
+// ----------------------------------------------------------------------------
+CorrelationWriter::KeyChange CorrelationWriter::set_key(const std::string& hex, std::string* segmento_cerrado) {
+    std::vector<uint8_t> nueva;
+    try {
+        nueva = hex_decode(hex);
+    } catch (const std::invalid_argument&) {
+        return KeyChange::Invalida;
+    }
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (hmac_key_ == nueva) return KeyChange::Igual;
+    const bool primera = hmac_key_.empty();
+    if (!primera) {
+        // Cada segmento, una sola clave: se cierra (rename atomico) el abierto antes de firmar con la nueva.
+        if (segmento_cerrado && current_file_.is_open()) *segmento_cerrado = current_final_path_;
+        finalize_segment_locked();
+    }
+    hmac_key_ = std::move(nueva);
+    return primera ? KeyChange::Primera : KeyChange::Cambiada;
+}
+
+bool CorrelationWriter::has_key() const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    return !hmac_key_.empty();
+}
+
+std::string CorrelationWriter::fingerprint(const std::string& hex) {
+    std::vector<uint8_t> bytes;
+    try {
+        bytes = hex_decode(hex);
+    } catch (const std::invalid_argument&) {
+        return "invalida";
+    }
+    unsigned char md[EVP_MAX_MD_SIZE];
+    unsigned int n = 0;
+    if (EVP_Digest(bytes.data(), bytes.size(), md, &n, EVP_sha256(), nullptr) != 1 || n < 4) return "error";
+    char out[9];
+    std::snprintf(out, sizeof(out), "%02x%02x%02x%02x", md[0], md[1], md[2], md[3]);
+    return std::string(out);
 }
 
 // ----------------------------------------------------------------------------
@@ -198,7 +248,15 @@ std::string CorrelationWriter::get_basename() const {
 void CorrelationWriter::ensure_open() {
     // PRECONDITION: mutex_ held by caller
     if (current_file_.is_open()) return;
-    current_basename_   = get_basename();
+    // [BRONCE-CLAVE-D310] el nombre tiene resolucion de segundos: un segmento abierto en el mismo segundo que otro
+    // (rotacion por tamano o cambio de clave) pisaba el fichero final del anterior y se perdian sus filas (medido
+    // DAY310). Si el nombre ya existe se anade -1, -2, ... El BronzeDirWatcher recoge *.csv: el sufijo no le afecta.
+    const std::string base = get_basename();
+    current_basename_ = base;
+    for (unsigned n = 1; fs::exists(config_.base_dir + "/" + current_basename_ + ".csv") ||
+                         fs::exists(config_.base_dir + "/" + current_basename_ + ".csv.tmp"); ++n) {
+        current_basename_ = base + "-" + std::to_string(n);
+    }
     current_tmp_path_   = config_.base_dir + "/" + current_basename_ + ".csv.tmp";
     current_final_path_ = config_.base_dir + "/" + current_basename_ + ".csv";
     // Segmento NUEVO -> trunc (nunca append cross-segmento; el nombre ya es

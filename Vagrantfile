@@ -542,7 +542,6 @@ alias start-gateway='/vagrant/scripts/gateway/defender/start_gateway_test.sh'
 alias gateway-dash='/vagrant/scripts/gateway/defender/gateway_dashboard.sh'
 
 # Runtime aliases
-alias explore-logs='/vagrant/scripts/explore_rag_logs.sh'
 alias verify-onnx='ls -lh /usr/local/lib/libonnxruntime.so && find /usr/local/include -name "onnxruntime*.h"'
 
 # Provisioning aliases (DAY 95)

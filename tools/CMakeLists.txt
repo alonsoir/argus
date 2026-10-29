@@ -1,5 +1,5 @@
 # /vagrant/tools/CMakeLists.txt
-# Synthetic Event Generator & Validator
+# Inyectores sinteticos: sniffer -> ml-detector y ml-detector -> firewall (E2E sinteticos)
 # Via Appia Quality - Testing Tools
 # Authors: Alonso Isidoro Roman + Claude (Anthropic)
 
@@ -38,7 +38,7 @@ message(STATUS "CXX Flags (from Makefile): ${CMAKE_CXX_FLAGS}")
 # PkgConfig (needed for LZ4)
 find_package(PkgConfig REQUIRED)
 
-# LZ4 (compression — needed by rag_logger.cpp)
+# LZ4 (compression)
 pkg_check_modules(LZ4 REQUIRED liblz4)
 
 # Protobuf
@@ -54,7 +54,7 @@ find_package(nlohmann_json REQUIRED)
 # Threads
 find_package(Threads REQUIRED)
 
-# OpenSSL (for SHA256 in RAGLogger)
+# OpenSSL
 find_package(OpenSSL REQUIRED)
 
 # CURL (for etcd_client HTTP)
@@ -127,28 +127,7 @@ set(PROTO_SOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf/network_security.pb.cc
 set(PROTO_HEADERS ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf/network_security.pb.h)
 
 # ============================================================================
-# 1. Synthetic Event Generator
-# ============================================================================
-
-add_executable(generate_synthetic_events
-        generate_synthetic_events.cpp
-        ${PROTO_SOURCES}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/src/rag_logger.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/src/csv_event_writer.cpp
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/src/etcd_client.cpp
-)
-
-target_include_directories(generate_synthetic_events
-        PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/../ml-detector/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../protobuf
-        ${Protobuf_INCLUDE_DIRS}
-        /usr/local/include
-)
-
-# ============================================================================
-# 2. Synthetic Sniffer Injector (sniffer → ml-detector)
+# 1. Synthetic Sniffer Injector (sniffer → ml-detector)
 # ============================================================================
 
 add_executable(synthetic_sniffer_injector
@@ -191,7 +170,7 @@ target_link_libraries(synthetic_sniffer_injector
 )
 
 # ============================================================================
-# 3. Synthetic ML Output Injector (ml-detector → firewall)
+# 2. Synthetic ML Output Injector (ml-detector → firewall)
 # ============================================================================
 
 add_executable(synthetic_ml_output_injector
@@ -231,43 +210,10 @@ target_link_libraries(synthetic_ml_output_injector
 )
 
 # ============================================================================
-# COMPILER OPTIONS - Warnings Only
-# ============================================================================
-# ⚠️  Optimization flags (-O3, -g, -march, -fsanitize) are controlled by root Makefile
-# ⚠️  Only warnings are set here
-
-target_compile_options(generate_synthetic_events
-        PRIVATE
-        -Wall
-        -Wextra
-        -Wpedantic
-)
-
-# ============================================================================
-# Link Libraries
-# ============================================================================
-
-target_link_libraries(generate_synthetic_events
-        PRIVATE
-        ${Protobuf_LIBRARIES}
-        ${CRYPTO_TRANSPORT_LIB}
-        ${LZ4_LIBRARIES}
-        /usr/local/lib/libseed_client.so
-        ${ETCD_CLIENT_LIB}
-        spdlog::spdlog
-        nlohmann_json::nlohmann_json
-        Threads::Threads
-        OpenSSL::SSL
-        OpenSSL::Crypto
-        ${CURL_LIBRARIES}
-)
-
-# ============================================================================
 # Installation
 # ============================================================================
 
 install(TARGETS
-        generate_synthetic_events
         synthetic_sniffer_injector
         synthetic_ml_output_injector
         RUNTIME DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/build

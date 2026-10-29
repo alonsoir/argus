@@ -23,7 +23,4 @@ constexpr const char* CTX_ML_TO_FIREWALL    = "ml-defender:ml-detector-to-firewa
 constexpr const char* CTX_ETCD_TX           = "ml-defender:etcd:v1:tx";
 constexpr const char* CTX_ETCD_RX           = "ml-defender:etcd:v1:rx";
 
-// Canal: ml-detector / firewall → artefactos RAG (sin consumidor desde DAY304; rama RAG Logger)
-constexpr const char* CTX_RAG_ARTIFACTS     = "ml-defender:rag-artifacts:v1";
-
 } // namespace ml_defender::crypto

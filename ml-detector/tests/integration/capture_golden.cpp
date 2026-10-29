@@ -30,7 +30,7 @@
 
 namespace fs = std::filesystem;
 
-// Misma clave que test_correlation_roundtrip (convención CsvEventWriter): 64 hex.
+// Misma clave que test_correlation_roundtrip: 64 hex.
 static const std::string KEY_HEX =
     "abababababababababababababababababababababababababababababababab";
 

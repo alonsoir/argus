@@ -829,7 +829,6 @@ PROTOBUF_CONSTEXPR DecisionMetadata::DecisionMetadata(
   , /*decltype(_impl_.decision_timestamp_)*/nullptr
   , /*decltype(_impl_.score_divergence_)*/0
   , /*decltype(_impl_.confidence_level_)*/0
-  , /*decltype(_impl_.requires_rag_analysis_)*/false
   , /*decltype(_impl_._cached_size_)*/{}} {}
 struct DecisionMetadataDefaultTypeInternal {
   PROTOBUF_CONSTEXPR DecisionMetadataDefaultTypeInternal()
@@ -1529,7 +1528,6 @@ const uint32_t TableStruct_network_5fsecurity_2eproto::offsets[] PROTOBUF_SECTIO
   ~0u,  // no _inlined_string_donated_
   PROTOBUF_FIELD_OFFSET(::protobuf::DecisionMetadata, _impl_.score_divergence_),
   PROTOBUF_FIELD_OFFSET(::protobuf::DecisionMetadata, _impl_.divergence_reason_),
-  PROTOBUF_FIELD_OFFSET(::protobuf::DecisionMetadata, _impl_.requires_rag_analysis_),
   PROTOBUF_FIELD_OFFSET(::protobuf::DecisionMetadata, _impl_.investigation_priority_),
   PROTOBUF_FIELD_OFFSET(::protobuf::DecisionMetadata, _impl_.anomaly_flags_),
   PROTOBUF_FIELD_OFFSET(::protobuf::DecisionMetadata, _impl_.confidence_level_),
@@ -1595,8 +1593,8 @@ static const ::_pbi::MigrationSchema schemas[] PROTOBUF_SECTION_VARIABLE(protode
   { 597, -1, -1, sizeof(::protobuf::SystemConfiguration)},
   { 615, -1, -1, sizeof(::protobuf::RansomwareFeatures)},
   { 641, -1, -1, sizeof(::protobuf::DecisionMetadata)},
-  { 654, -1, -1, sizeof(::protobuf::Detection)},
-  { 667, -1, -1, sizeof(::protobuf::DetectionBatch)},
+  { 653, -1, -1, sizeof(::protobuf::Detection)},
+  { 666, -1, -1, sizeof(::protobuf::DetectionBatch)},
 };
 
 static const ::_pb::Message* const file_default_instances[] = {
@@ -2034,38 +2032,38 @@ const char descriptor_table_protodef_network_5fsecurity_2eproto[] PROTOBUF_SECTI
   "rate_stddev\030\020 \001(\002\022 \n\030protocol_diversity_"
   "score\030\021 \001(\002\022!\n\031avg_flow_duration_seconds"
   "\030\022 \001(\002\022\025\n\rtcp_rst_ratio\030\023 \001(\002\022\035\n\025syn_wit"
-  "hout_ack_ratio\030\024 \001(\002\"\357\001\n\020DecisionMetadat"
+  "hout_ack_ratio\030\024 \001(\002\"\355\001\n\020DecisionMetadat"
   "a\022\030\n\020score_divergence\030\001 \001(\001\022\031\n\021divergenc"
-  "e_reason\030\002 \001(\t\022\035\n\025requires_rag_analysis\030"
-  "\003 \001(\010\022\036\n\026investigation_priority\030\004 \001(\t\022\025\n"
-  "\ranomaly_flags\030\005 \003(\t\022\030\n\020confidence_level"
-  "\030\006 \001(\001\0226\n\022decision_timestamp\030\007 \001(\0132\032.goo"
-  "gle.protobuf.Timestamp\"\250\001\n\tDetection\022\016\n\006"
-  "src_ip\030\001 \001(\t\022%\n\004type\030\002 \001(\0162\027.protobuf.De"
-  "tectionType\022\022\n\nconfidence\030\003 \001(\002\022\021\n\ttimes"
-  "tamp\030\004 \001(\004\022\023\n\013description\030\005 \001(\t\022\016\n\006actio"
-  "n\030\006 \001(\t\022\030\n\020duration_seconds\030\007 \001(\r\"\200\001\n\016De"
-  "tectionBatch\022\'\n\ndetections\030\001 \003(\0132\023.proto"
-  "buf.Detection\022\020\n\010batch_id\030\002 \001(\004\0223\n\017batch"
-  "_timestamp\030\003 \001(\0132\032.google.protobuf.Times"
-  "tamp*x\n\013VictimState\022\030\n\024VICTIM_STATE_UNKN"
-  "OWN\020\000\022\025\n\021VICTIM_STATE_COLD\020\001\022\027\n\023VICTIM_S"
-  "TATE_NORMAL\020\002\022\037\n\033VICTIM_STATE_UNDER_PRES"
-  "SURE\020\003*R\n\nClockState\022\022\n\016CLOCK_STATE_OK\020\000"
-  "\022\027\n\023CLOCK_STATE_SLEWING\020\001\022\027\n\023CLOCK_STATE"
-  "_STEPPED\020\002*\225\001\n\rDetectionType\022\025\n\021DETECTIO"
-  "N_UNKNOWN\020\000\022\022\n\016DETECTION_DDOS\020\001\022\030\n\024DETEC"
-  "TION_RANSOMWARE\020\002\022 \n\034DETECTION_SUSPICIOU"
-  "S_TRAFFIC\020\003\022\035\n\031DETECTION_INTERNAL_THREAT"
-  "\020\004*]\n\tEventKind\022\023\n\017EVENT_KIND_FLOW\020\000\022\031\n\025"
-  "EVENT_KIND_FAST_ALERT\020\001\022 \n\034EVENT_KIND_RA"
-  "NSOMWARE_WINDOW\020\002*\354\001\n\016DetectorSource\022\033\n\027"
-  "DETECTOR_SOURCE_UNKNOWN\020\000\022\035\n\031DETECTOR_SO"
-  "URCE_FAST_ONLY\020\001\022\033\n\027DETECTOR_SOURCE_ML_O"
-  "NLY\020\002\022!\n\035DETECTOR_SOURCE_FAST_PRIORITY\020\003"
-  "\022\037\n\033DETECTOR_SOURCE_ML_PRIORITY\020\004\022\035\n\031DET"
-  "ECTOR_SOURCE_CONSENSUS\020\005\022\036\n\032DETECTOR_SOU"
-  "RCE_DIVERGENCE\020\006b\006proto3"
+  "e_reason\030\002 \001(\t\022\036\n\026investigation_priority"
+  "\030\004 \001(\t\022\025\n\ranomaly_flags\030\005 \003(\t\022\030\n\020confide"
+  "nce_level\030\006 \001(\001\0226\n\022decision_timestamp\030\007 "
+  "\001(\0132\032.google.protobuf.TimestampJ\004\010\003\020\004R\025r"
+  "equires_rag_analysis\"\250\001\n\tDetection\022\016\n\006sr"
+  "c_ip\030\001 \001(\t\022%\n\004type\030\002 \001(\0162\027.protobuf.Dete"
+  "ctionType\022\022\n\nconfidence\030\003 \001(\002\022\021\n\ttimesta"
+  "mp\030\004 \001(\004\022\023\n\013description\030\005 \001(\t\022\016\n\006action\030"
+  "\006 \001(\t\022\030\n\020duration_seconds\030\007 \001(\r\"\200\001\n\016Dete"
+  "ctionBatch\022\'\n\ndetections\030\001 \003(\0132\023.protobu"
+  "f.Detection\022\020\n\010batch_id\030\002 \001(\004\0223\n\017batch_t"
+  "imestamp\030\003 \001(\0132\032.google.protobuf.Timesta"
+  "mp*x\n\013VictimState\022\030\n\024VICTIM_STATE_UNKNOW"
+  "N\020\000\022\025\n\021VICTIM_STATE_COLD\020\001\022\027\n\023VICTIM_STA"
+  "TE_NORMAL\020\002\022\037\n\033VICTIM_STATE_UNDER_PRESSU"
+  "RE\020\003*R\n\nClockState\022\022\n\016CLOCK_STATE_OK\020\000\022\027"
+  "\n\023CLOCK_STATE_SLEWING\020\001\022\027\n\023CLOCK_STATE_S"
+  "TEPPED\020\002*\225\001\n\rDetectionType\022\025\n\021DETECTION_"
+  "UNKNOWN\020\000\022\022\n\016DETECTION_DDOS\020\001\022\030\n\024DETECTI"
+  "ON_RANSOMWARE\020\002\022 \n\034DETECTION_SUSPICIOUS_"
+  "TRAFFIC\020\003\022\035\n\031DETECTION_INTERNAL_THREAT\020\004"
+  "*]\n\tEventKind\022\023\n\017EVENT_KIND_FLOW\020\000\022\031\n\025EV"
+  "ENT_KIND_FAST_ALERT\020\001\022 \n\034EVENT_KIND_RANS"
+  "OMWARE_WINDOW\020\002*\354\001\n\016DetectorSource\022\033\n\027DE"
+  "TECTOR_SOURCE_UNKNOWN\020\000\022\035\n\031DETECTOR_SOUR"
+  "CE_FAST_ONLY\020\001\022\033\n\027DETECTOR_SOURCE_ML_ONL"
+  "Y\020\002\022!\n\035DETECTOR_SOURCE_FAST_PRIORITY\020\003\022\037"
+  "\n\033DETECTOR_SOURCE_ML_PRIORITY\020\004\022\035\n\031DETEC"
+  "TOR_SOURCE_CONSENSUS\020\005\022\036\n\032DETECTOR_SOURC"
+  "E_DIVERGENCE\020\006b\006proto3"
   ;
 static const ::_pbi::DescriptorTable* const descriptor_table_network_5fsecurity_2eproto_deps[2] = {
   &::descriptor_table_google_2fprotobuf_2fduration_2eproto,
@@ -2073,7 +2071,7 @@ static const ::_pbi::DescriptorTable* const descriptor_table_network_5fsecurity_
 };
 static ::_pbi::once_flag descriptor_table_network_5fsecurity_2eproto_once;
 const ::_pbi::DescriptorTable descriptor_table_network_5fsecurity_2eproto = {
-    false, false, 16944, descriptor_table_protodef_network_5fsecurity_2eproto,
+    false, false, 16942, descriptor_table_protodef_network_5fsecurity_2eproto,
     "network_security.proto",
     &descriptor_table_network_5fsecurity_2eproto_once, descriptor_table_network_5fsecurity_2eproto_deps, 2, 39,
     schemas, file_default_instances, TableStruct_network_5fsecurity_2eproto::offsets,
@@ -20580,7 +20578,6 @@ DecisionMetadata::DecisionMetadata(const DecisionMetadata& from)
     , decltype(_impl_.decision_timestamp_){nullptr}
     , decltype(_impl_.score_divergence_){}
     , decltype(_impl_.confidence_level_){}
-    , decltype(_impl_.requires_rag_analysis_){}
     , /*decltype(_impl_._cached_size_)*/{}};
 
   _internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
@@ -20604,8 +20601,8 @@ DecisionMetadata::DecisionMetadata(const DecisionMetadata& from)
     _this->_impl_.decision_timestamp_ = new ::PROTOBUF_NAMESPACE_ID::Timestamp(*from._impl_.decision_timestamp_);
   }
   ::memcpy(&_impl_.score_divergence_, &from._impl_.score_divergence_,
-    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.requires_rag_analysis_) -
-    reinterpret_cast<char*>(&_impl_.score_divergence_)) + sizeof(_impl_.requires_rag_analysis_));
+    static_cast<size_t>(reinterpret_cast<char*>(&_impl_.confidence_level_) -
+    reinterpret_cast<char*>(&_impl_.score_divergence_)) + sizeof(_impl_.confidence_level_));
   // @@protoc_insertion_point(copy_constructor:protobuf.DecisionMetadata)
 }
 
@@ -20620,7 +20617,6 @@ inline void DecisionMetadata::SharedCtor(
     , decltype(_impl_.decision_timestamp_){nullptr}
     , decltype(_impl_.score_divergence_){0}
     , decltype(_impl_.confidence_level_){0}
-    , decltype(_impl_.requires_rag_analysis_){false}
     , /*decltype(_impl_._cached_size_)*/{}
   };
   _impl_.divergence_reason_.InitDefault();
@@ -20668,8 +20664,8 @@ void DecisionMetadata::Clear() {
   }
   _impl_.decision_timestamp_ = nullptr;
   ::memset(&_impl_.score_divergence_, 0, static_cast<size_t>(
-      reinterpret_cast<char*>(&_impl_.requires_rag_analysis_) -
-      reinterpret_cast<char*>(&_impl_.score_divergence_)) + sizeof(_impl_.requires_rag_analysis_));
+      reinterpret_cast<char*>(&_impl_.confidence_level_) -
+      reinterpret_cast<char*>(&_impl_.score_divergence_)) + sizeof(_impl_.confidence_level_));
   _internal_metadata_.Clear<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>();
 }
 
@@ -20694,14 +20690,6 @@ const char* DecisionMetadata::_InternalParse(const char* ptr, ::_pbi::ParseConte
           ptr = ::_pbi::InlineGreedyStringParser(str, ptr, ctx);
           CHK_(ptr);
           CHK_(::_pbi::VerifyUTF8(str, "protobuf.DecisionMetadata.divergence_reason"));
-        } else
-          goto handle_unusual;
-        continue;
-      // bool requires_rag_analysis = 3;
-      case 3:
-        if (PROTOBUF_PREDICT_TRUE(static_cast<uint8_t>(tag) == 24)) {
-          _impl_.requires_rag_analysis_ = ::PROTOBUF_NAMESPACE_ID::internal::ReadVarint64(&ptr);
-          CHK_(ptr);
         } else
           goto handle_unusual;
         continue;
@@ -20793,12 +20781,6 @@ uint8_t* DecisionMetadata::_InternalSerialize(
       "protobuf.DecisionMetadata.divergence_reason");
     target = stream->WriteStringMaybeAliased(
         2, this->_internal_divergence_reason(), target);
-  }
-
-  // bool requires_rag_analysis = 3;
-  if (this->_internal_requires_rag_analysis() != 0) {
-    target = stream->EnsureSpace(target);
-    target = ::_pbi::WireFormatLite::WriteBoolToArray(3, this->_internal_requires_rag_analysis(), target);
   }
 
   // string investigation_priority = 4;
@@ -20901,11 +20883,6 @@ size_t DecisionMetadata::ByteSizeLong() const {
     total_size += 1 + 8;
   }
 
-  // bool requires_rag_analysis = 3;
-  if (this->_internal_requires_rag_analysis() != 0) {
-    total_size += 1 + 1;
-  }
-
   return MaybeComputeUnknownFieldsSize(total_size, &_impl_._cached_size_);
 }
 
@@ -20949,9 +20926,6 @@ void DecisionMetadata::MergeImpl(::PROTOBUF_NAMESPACE_ID::Message& to_msg, const
   if (raw_confidence_level != 0) {
     _this->_internal_set_confidence_level(from._internal_confidence_level());
   }
-  if (from._internal_requires_rag_analysis() != 0) {
-    _this->_internal_set_requires_rag_analysis(from._internal_requires_rag_analysis());
-  }
   _this->_internal_metadata_.MergeFrom<::PROTOBUF_NAMESPACE_ID::UnknownFieldSet>(from._internal_metadata_);
 }
 
@@ -20981,8 +20955,8 @@ void DecisionMetadata::InternalSwap(DecisionMetadata* other) {
       &other->_impl_.investigation_priority_, rhs_arena
   );
   ::PROTOBUF_NAMESPACE_ID::internal::memswap<
-      PROTOBUF_FIELD_OFFSET(DecisionMetadata, _impl_.requires_rag_analysis_)
-      + sizeof(DecisionMetadata::_impl_.requires_rag_analysis_)
+      PROTOBUF_FIELD_OFFSET(DecisionMetadata, _impl_.confidence_level_)
+      + sizeof(DecisionMetadata::_impl_.confidence_level_)
       - PROTOBUF_FIELD_OFFSET(DecisionMetadata, _impl_.decision_timestamp_)>(
           reinterpret_cast<char*>(&_impl_.decision_timestamp_),
           reinterpret_cast<char*>(&other->_impl_.decision_timestamp_));

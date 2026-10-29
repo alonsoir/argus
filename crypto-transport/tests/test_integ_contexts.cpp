@@ -149,7 +149,6 @@ TEST_F(IntegContextsTest, INTEG1b_AllChannelsRoundTrip) {
         ml_defender::crypto::CTX_ML_TO_FIREWALL,
         ml_defender::crypto::CTX_ETCD_TX,
         ml_defender::crypto::CTX_ETCD_RX,
-        ml_defender::crypto::CTX_RAG_ARTIFACTS,
     };
 
     for (const auto* ctx : channels) {
