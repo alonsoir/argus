@@ -1,0 +1,2004 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-heads/day310_diseno/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>DAY310 — Rama del RAG Logger del ml-detector (diseño y medidas) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day310-rama-del-rag-logger-del-ml-detector-diseno-y-medidas" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY310 — Rama del RAG Logger del ml-detector (diseño y medidas)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-inventario-sacado-contra-el-arbol-no-heredado-de-la-deuda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Inventario (sacado contra el árbol, no heredado de la deuda)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-lo-que-dice-el-codigo-hipotesis-antes-de-medir-tal-como-se-escribieron" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Lo que dice el código (hipótesis antes de medir, tal como se escribieron)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-medidas-m0-m4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Medidas M0-M4
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-quien-firma-que-medido-en-codigo-day310" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Quién firma qué (medido en código, DAY310)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-decisiones-de-alonso-day310" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Decisiones de Alonso (DAY310)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-plan-de-la-rama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Plan de la rama
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-paso-1-retirar-el-rag-logger" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Paso 1 — retirar el RAG Logger
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-lecciones-day310" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Lecciones DAY310
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-resultados-de-los-pasos-1-1b-y-2-medidos-day310-las-predicciones-de-7-no-se-tocan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Resultados de los pasos 1, 1b y 2 (medidos DAY310; las predicciones de §7 no se tocan)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-paso-3-clave-del-bronce-diseno-escrito-antes-del-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10. Paso 3 — clave del bronce (diseño escrito antes del código)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="10. Paso 3 — clave del bronce (diseño escrito antes del código)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-hay-hoy-leido-en-el-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que hay hoy (leído en el código)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#comportamiento-propuesto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Comportamiento propuesto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-pendientes-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones pendientes (Alonso)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pruebas-antes-de-medir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruebas (antes de medir)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#11-paso-3-decisiones-hallazgo-y-predicciones-antes-de-medir-en-la-vm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        11. Paso 3 — decisiones, hallazgo y predicciones (antes de medir en la VM)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#12-paso-3-resultados-medidos-day310-las-predicciones-de-11-no-se-tocan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        12. Paso 3 — resultados (medidos DAY310; las predicciones de §11 no se tocan)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="12. Paso 3 — resultados (medidos DAY310; las predicciones de §11 no se tocan)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#p4-abierto" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        P4, abierto
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hallazgo-leido-en-el-codigo-sin-medir-aun-en-el-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hallazgo leído en el código (sin medir aún en el lab)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-anadidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones añadidas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#13-day311-p4-cerrado-drop-aislados-y-alcance-del-etcd-server-medido-12-no-se-toca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        13. DAY311 — P4 cerrado: DROP aislados y alcance del etcd-server (medido; §12 no se toca)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="13. DAY311 — P4 cerrado: DROP aislados y alcance del etcd-server (medido; §12 no se toca)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lectura-del-codigo-antes-de-la-hipotesis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lectura del código (antes de la hipótesis)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hipotesis-y-prediccion-escritas-antes-de-medir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hipótesis y predicción (escritas antes de medir)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medido-instrumento-scriptstimebased311_p4_cuentaspy-sha256-6e4b33ea3302" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido (instrumento scripts/timebase/d311_p4_cuentas.py, sha256 6e4b33ea…3302)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decision-de-alonso-day311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisión de Alonso (DAY311)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#implementacion-sombra-aislado-d311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Implementación [SOMBRA-AISLADO-D311]
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prediccion-y-medida-del-cambio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predicción y medida del cambio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#alcance-del-etcd-server-debt-etcd-secrets-unauthenticated-001" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Alcance del etcd-server (DEBT-ETCD-SECRETS-UNAUTHENTICATED-001)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day311" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY311
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#14-day311-reinicio-del-etcd-server-paso-5-y-test-de-kuzu-medido-13-no-se-toca" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        14. DAY311 — reinicio del etcd-server, paso 5 y test de Kuzu (medido; §13 no se toca)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="14. DAY311 — reinicio del etcd-server, paso 5 y test de Kuzu (medido; §13 no se toca)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#reinicio-del-etcd-server-con-el-pipeline-vivo-y-trafico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reinicio del etcd-server con el pipeline vivo y tráfico
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-5-resumen-del-contrato-contract_validatorcpp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 5 — resumen del contrato (contract_validator.cpp)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#test-de-kuzu-intermitente-test_kuzu_graph_sink" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Test de Kuzu intermitente (test_kuzu_graph_sink)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#emecas-production-punta-de-codigo-7ae4c93c" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        EMECAS+++ production (punta de código 7ae4c93c)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-anadidas_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones añadidas
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="day310-rama-del-rag-logger-del-ml-detector-diseno-y-medidas">DAY310 — Rama del RAG Logger del ml-detector (diseño y medidas)</h1>
+<p>Deudas: DEBT-RAG-LOGGER-BRANCH-001 y DEBT-DOCS-CSV-SCHEMA-V1-001. Base: <code>main</code> en <code>6605c296</code> (PR #151); el árbol de
+trabajo de Alonso está en <code>cc0b9bc0</code> (= <code>6605c296</code> + un commit de documentación: BACKLOG y <code>prompt_day310.md</code>).
+Marca en el código: <code>[RAG-LOGGER-RETIRE-D310]</code>. Rama propuesta: <code>feat/rag-logger-retire</code>.</p>
+<p>Regla de este documento: las secciones escritas antes de medir no se reescriben; el resultado va aparte.</p>
+<h2 id="1-inventario-sacado-contra-el-arbol-no-heredado-de-la-deuda">1. Inventario (sacado contra el árbol, no heredado de la deuda)</h2>
+<p>Patrón (<code>git grep -i -E</code>): <code>rag_logger|RagLogger|RAGLogger|rag-logger|rag_log|CTX_RAG|logs/rag|secrets/rag|log_hmac_key|explore_rag|test_rag|rag-watch|rag-validate|rag-consolidate|verify-rag|rag-log</code>.</p>
+<p>Recuento corregido (con <code>git grep -c</code>, ver lección 1): en <code>6605c296</code>, <strong>451 líneas en 126 ficheros</strong>; fuera de
+<code>docs/</code>, <code>site/</code> y <code>emecas*.md</code>, <strong>216 líneas en 42 ficheros</strong>. La documentación histórica no se toca.</p>
+<p>Lo vivo, por grupos:</p>
+<ul>
+<li>ml-detector: <code>rag_logger.hpp/.cpp</code>, <code>rag_logger_config.json</code>, su cableado en <code>zmq_handler.hpp/.cpp</code>
+  (<code>rag_logger_</code>, <code>MLContext</code>, <code>log_rag_statistics</code>, <code>calculate_events_per_minute</code>, <code>events_processed_total_</code>),
+  <code>config_loader.hpp/.cpp</code> (<code>rag_logger.enabled</code>, <code>scoring.requires_rag_threshold</code>, <code>scoring.divergence_high_threshold</code>),
+  <code>ml_detector_config.json</code>, <code>CMakeLists.txt</code>, <code>test_rag_logger_artifact_save</code> (no prueba el RAG Logger: semántica proto3).</li>
+<li>tools: <code>generate_synthetic_events.cpp</code> compila <code>ml-detector/src/rag_logger.cpp</code>; <code>tools</code> entra en <code>pipeline-build</code>.
+  Solo lo usaba <code>day38-step2</code>. <code>tools/config/synthetic_generator_config.json</code> solo lo leía él.</li>
+<li>Makefile: 19 entradas <code>.PHONY</code> del RAG sin receta ni uso; familia <code>day38-*</code> (genera artefactos RAG sintéticos).</li>
+<li>Vagrantfile: alias <code>explore-logs</code>. Scripts del RAG: <code>explore_rag_logs.sh</code>, <code>test_rag_logger.sh(.backup)</code>,
+  <code>day15_automated_test.sh</code>, <code>analyze_rag_logs.py</code>, <code>export_rag_to_csv.py</code>.</li>
+<li>ansible: plantilla <code>rag_logger_config.json.j2</code>, su tarea en <code>deploy_configs.yml</code>, el bloque <code>rag_logger</code> de
+  <code>ml_detector_config.json.j2</code> y las variables <code>rag_*</code>/<code>ml_rag_base_dir</code> de los cuatro <code>group_vars</code>.</li>
+<li>crypto-transport: <code>CTX_RAG_ARTIFACTS</code> (<code>contexts.hpp</code>) y su línea en <code>test_integ_contexts.cpp</code>.</li>
+<li>etcd: entrada <code>rag_log_hmac</code> de <code>etcd-server.json</code>; ejemplos <code>/secrets/rag/log_hmac_key</code> en <code>etcd_client.hpp</code> y en
+  <code>test_hmac_integration_client.cpp</code>; bloque de ejemplo <code>rag_logger</code> en <code>test_put_config_integration.cpp</code>.</li>
+<li>sniffer: dos comentarios que nombran al rag_logger (<code>ring_consumer.cpp:1603</code>, <code>test_proto3_embedded_serialization.cpp</code>).</li>
+<li>residuos (van a DEBT-REPO-RESIDUOS-001, no a esta rama): <code>scripts/d285_patch_writers.py</code>, <code>scripts/ddos_v1/*</code>,
+  <code>scripts/flow_expiry/d309_backlog.py</code>, <code>scripts/monitor_day23.sh</code>, <code>scripts/tsan/tsan_investigation_inside_vm.sh</code>.</li>
+</ul>
+<h2 id="2-lo-que-dice-el-codigo-hipotesis-antes-de-medir-tal-como-se-escribieron">2. Lo que dice el código (hipótesis antes de medir, tal como se escribieron)</h2>
+<ol>
+<li>El proceso que no se puede deprecar es la clave HMAC: <code>main.cpp:403</code> la pide "para el CSV", pero sin ella tampoco se
+   crea el <code>correlation_writer</code> (bronce), y en silencio (<code>zmq_handler.cpp:159</code>, sin <code>else</code>). La clave sale de
+   <code>/secrets/ml-detector</code> (generada bajo demanda), no de <code>/secrets/rag/log_hmac_key</code>.</li>
+<li>El etcd-server no lee el bloque <code>secrets</code> de su JSON: lo construye fijo en <code>etcd-server/src/main.cpp:193-199</code>.</li>
+<li><code>rag_logger_config.json</code> anida los umbrales en <code>thresholds</code>/<code>performance</code>; la fábrica lee claves de primer nivel:
+   se aplicaban los defectos del código en silencio.</li>
+<li><code>csv_writer</code> apagado desde <code>9134c5b7</code> (2-oct, DAY285); con el RAG encendido el CSV pasaba por el filtro del RAG (dos
+   caminos); se escribe antes de que corran ransomware/traffic/internal; <code>test-parquet</code> (en <code>test-all</code>) exige Parquet
+   del ml-detector y solo puede pasar con CSV viejos de <code>/vagrant/logs</code>.</li>
+<li>Con todo apagado, cada evento construía <code>MLContext</code> y calculaba <code>requires_rag_analysis</code> sin consumidor.</li>
+<li><code>test_rag_logger_artifact_save</code> no enlaza <code>rag_logger.cpp</code>.</li>
+</ol>
+<h2 id="3-medidas-m0-m4">3. Medidas M0-M4</h2>
+<p>Predicciones escritas antes de medir (texto de la sesión):</p>
+<ul>
+<li>M0 (Mac): "451 y 122".</li>
+<li>M1 (defender, <code>ml-detector.log</code>): por arranque, <code>HMAC key received for /secrets/ml-detector (64 chars)</code>,
+  <code>[csv] HMAC key retrieved (64 chars)</code>, <code>CsvEventWriter desactivado</code>, <code>CorrelationWriter initialized</code>,
+  <code>RAG Logger desactivado</code>; ninguna línea con <code>secrets/rag</code>.</li>
+<li>M2 (defender, <code>etcd-server.log</code>): "solo componentes por su nombre (ml-detector como mínimo); nunca rag".</li>
+<li>M3 (defender): "M3a muestra CSV, todos con fecha anterior al 2-oct; M3b vacío".</li>
+<li>M4 (defender, <code>ctest -N</code>): "Total Tests: 15 ... entre ellos test_rag_logger_artifact_save, test_csv_event_writer y
+  test_csv_feature_extraction".</li>
+<li>M0b (Mac): "122 ... el diff solo muestra ficheros de documentación ... +5 líneas, +2 ficheros".</li>
+</ul>
+<p>Resultados:</p>
+<table>
+<thead>
+<tr>
+<th>Medida</th>
+<th>Resultado</th>
+<th>Veredicto</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M0</td>
+<td>456 líneas, 124 ficheros</td>
+<td>NO coincide → se paró y se midió M0b</td>
+</tr>
+<tr>
+<td>M0b</td>
+<td><code>6605c296</code>: 126 ficheros (no 122). Diff Mac: BACKLOG +1, <code>PROMPT_CONTINUE_CLAUDE.md</code> +2 (sin commitear), <code>prompt_day310.md</code> +2; HEAD <code>cc0b9bc0</code></td>
+<td>El "122" era un error de cuenta (lección 1). Diferencia solo documental: +5 líneas, +2 ficheros, como se predijo</td>
+</tr>
+<tr>
+<td>M1</td>
+<td>Tres arranques del 27-oct, las cinco líneas cada uno, 0 <code>secrets/rag</code></td>
+<td>Coincide</td>
+</tr>
+<tr>
+<td>M2</td>
+<td>Desde el 15-sep solo <code>/secrets/ml-detector</code> y <code>/secrets/firewall</code>; casi cada arranque trae <code>Generating new HMAC key</code></td>
+<td>Coincide. Hecho nuevo: claves solo en memoria, se regeneran en cada arranque del etcd-server</td>
+</tr>
+<tr>
+<td>M3a/M3b</td>
+<td>Último CSV <code>2026-10-10.csv</code>, posterior al 2-oct</td>
+<td>NO coincide (ver abajo)</td>
+</tr>
+<tr>
+<td>M4</td>
+<td>15 tests, los tres citados entre ellos</td>
+<td>Coincide</td>
+</tr>
+</tbody>
+</table>
+<p>M3, explicación escrita tras el fallo (no es predicción): la fecha que cuenta es la llegada a <code>main</code>, no la del commit.
+<code>9134c5b7</code> llegó a <code>main</code> en <code>bc73b831</code> (PR #143, 11-oct). En <code>bc73b831^1</code> el JSON no tenía <code>csv_writer.enabled</code>
+(defecto <code>true</code>) y tenía <code>rag_logger.enabled=true</code>. Encaja: el último CSV es del 10-oct y ninguno después. Queda
+confirmado que <code>test-parquet</code> pasa con CSV viejos.</p>
+<h2 id="4-quien-firma-que-medido-en-codigo-day310">4. Quién firma qué (medido en código, DAY310)</h2>
+<table>
+<thead>
+<tr>
+<th>Fichero</th>
+<th>Lo escribe</th>
+<th>Firma</th>
+<th>Destino</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Bronce <code>correlation_v1</code> (<code>/vagrant/logs/correlation</code>)</td>
+<td><code>CorrelationWriter</code> del ml-detector; mismo contrato en los adapters Suricata/Zeek/Wazuh</td>
+<td>HMAC col 18 (<code>libs/correlation-v1</code>), clave <code>/secrets/ml-detector</code></td>
+<td><code>bronze_to_gold_converter</code> → oro → Kuzu</td>
+</tr>
+<tr>
+<td><code>firewall_blocks.csv</code></td>
+<td>logger del firewall-acl-agent</td>
+<td>clave <code>/secrets/firewall</code></td>
+<td>mitad firewall de <code>parquet-convert</code></td>
+</tr>
+<tr>
+<td>CSV 127 columnas (<code>/vagrant/logs/ml-detector/events</code>)</td>
+<td><code>CsvEventWriter</code></td>
+<td>clave <code>/secrets/ml-detector</code></td>
+<td>se retira (D2)</td>
+</tr>
+<tr>
+<td><code>.jsonl</code> + <code>.pb.enc</code>/<code>.json.enc</code> (<code>/vagrant/logs/rag</code>)</td>
+<td>RAG Logger</td>
+<td>cifrado <code>CTX_RAG_ARTIFACTS</code>, sin HMAC</td>
+<td>se retira (D1)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>El canal ml-detector → firewall no usa la clave del etcd-server: <code>CryptoTransport</code> con la semilla local de
+  <code>SeedClient</code> (HKDF-SHA256 + ChaCha20-Poly1305). Sin etcd-server, las clasificaciones llegan autenticadas.</li>
+<li>Adapters y conversores no tienen clave propia: <code>mitre_start.sh:32</code> y <code>ctu_start.sh:38</code> piden <code>/secrets/ml-detector</code>
+  con <code>curl</code>. Con el etcd-server caído no llega bronce firmado de ningún sensor.</li>
+<li>El firewall sin clave no escribe <code>firewall_blocks.csv</code> (<code>zmq_subscriber.cpp:794</code>) y sigue bloqueando; solo avisa
+  una vez al arrancar.</li>
+</ul>
+<h2 id="5-decisiones-de-alonso-day310">5. Decisiones de Alonso (DAY310)</h2>
+<ul>
+<li>D1: se retira el RAG Logger entero.</li>
+<li>D2: se retira el <code>CsvEventWriter</code> y la mitad ml-detector de <code>parquet-convert</code>/<code>test-parquet</code>; se queda la del firewall.</li>
+<li>D3 (regla): el ml-detector arranca y recibe su clave HMAC del etcd-server para clasificar y escribir bronce firmado.
+  Nunca se escribe bronce sin firma: al grafo solo llegan operaciones firmadas. Sin clave, el firewall sigue actuando
+  (la protección del hospital es la misión prioritaria) y el grafo muestra el hueco; alarma enorme en el log.</li>
+<li>D4: el etcd-server que lee el bloque <code>secrets</code> de su JSON va en deuda propia (DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001).</li>
+<li>E1: el intervalo de la alarma y del reintento va al JSON (rango 10-3600, defecto 60).</li>
+<li>E2: en cuanto el ml-detector obtiene la clave, firma bronce, sea al arrancar o tras reiniciarse el etcd-server. Más
+  adelante: que solo los componentes autorizados de un despliegue puedan hablar entre ellos.</li>
+<li>E3: la alarma periódica del firewall va en otra deuda.</li>
+<li>E4: se parte en dos: la mitad ml-detector (reintento y cambio de clave) va en esta rama dentro de E2; la mitad
+  etcd-server (no regenerar en cada arranque, persistir, adapters y conversor) va con la deuda de D4.</li>
+</ul>
+<h2 id="6-plan-de-la-rama">6. Plan de la rama</h2>
+<ol>
+<li>Retirar el RAG Logger (D1): ml-detector, tools, Makefile, Vagrantfile, scripts, ansible.
+   1b. Lo que cuelga fuera: <code>CTX_RAG_ARTIFACTS</code>, entrada <code>rag_log_hmac</code> de <code>etcd-server.json</code>, ejemplos de
+   etcd-client, comentarios del sniffer, campo protobuf <code>requires_rag_analysis</code> → <code>reserved</code> (como DAY306).</li>
+<li>Retirar el <code>CsvEventWriter</code> y la mitad ml-detector de <code>parquet-convert</code>/<code>test-parquet</code> (D2).</li>
+<li>Clave del bronce (E1/E2): campo <code>bronze_key.check_interval_seconds</code>; sin clave, <code>CRITICAL [BRONCE-SIN-CLAVE]</code>
+   periódico con eventos sin bronce y reintento; con clave, comprobación de cambio y <code>[BRONCE-CLAVE-CAMBIADA]</code> cerrando
+   el segmento. Mensajes <code>[csv] HMAC key</code> → clave del bronce.</li>
+<li>BACKLOG: D4 ampliada (persistencia, desincronización), alarma del firewall (E3),
+   DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001.</li>
+<li>Documentación: <code>feature_schema.md</code>, <code>csv_event_writer.hpp</code> (se va), <code>contract_validator.cpp</code>.</li>
+</ol>
+<p>Cada paso con su antes y su después; EMECAS+++ production al final.</p>
+<h2 id="7-paso-1-retirar-el-rag-logger">7. Paso 1 — retirar el RAG Logger</h2>
+<p>Parcheador de un solo uso <code>d310_paso1_retirar_rag_logger.py</code> (no se commitea), sha256
+<code>9870ba901b3680842de0dc77c946ab0f446f1bbbe9c1017a1e6bb090cee43344</code>. 16 ficheros editados (50 ediciones) y 13 borrados.
+Probado en una copia desechable de <code>6605c296</code>:</p>
+<ul>
+<li><code>--check</code> → 29 pendientes, 0 errores; <code>--apply</code> → 29 de 29 en su estado de llegada; <code>--check</code> → 29 ya aplicados.</li>
+<li><code>git diff</code> idéntico (sha256 <code>34430c1f…</code>) al de una segunda copia parcheada con el mismo plan.</li>
+<li>Con un fichero tocado por fuera: <code>--apply</code> da ERROR y no escribe nada.</li>
+<li>Sintaxis con <code>-std=c++20 -Wall -Wextra -Werror</code> de los 16 <code>.cpp</code> de <code>ml-detector/src</code> contra las cabeceras del repo
+  (protobuf 3.21.12, onnxruntime 1.17.1, <code>-DHAVE_ETCD_CPP_API -DPLUGIN_LOADER_ENABLED</code>): todos OK. No es la
+  compilación del pipeline: esa se mide en la VM.</li>
+<li>Inventario del árbol parcheado (fuera de docs): 17 ficheros, 60 líneas = marcas propias en <code>config_loader.cpp</code> (4)
+  y <code>zmq_handler.cpp</code> (1) + lo de 1b + comentario de la clave propia del firewall + residuos.</li>
+</ul>
+<p>Nuevo en el código: <code>[CONFIG-OBSOLETO] rag_logger</code> y <code>[CONFIG-OBSOLETO] scoring.&lt;campo&gt;</code> para
+<code>divergence_high_threshold</code> y <code>requires_rag_threshold</code> (solo los usaba el RAG Logger), patrón DAY306.
+Se borra también la familia <code>day38-*</code> del Makefile (solo existía para generar artefactos RAG sintéticos; <code>day38-step1</code>
+duplicaba <code>etcd-server-start</code>).</p>
+<p>Predicciones del paso 1 (antes de medir; el "antes" es el de DAY309 sobre <code>69d8f207</code>, mergeado como <code>6605c296</code>):</p>
+<ul>
+<li>P1. <code>git status --short</code>: 30 líneas = 16 <code>M</code> + 13 <code>D</code> del parcheador + <code>PROMPT_CONTINUE_CLAUDE.md</code>.</li>
+<li>P2. <code>make pipeline-build PROFILE=production</code>: rc 0 y 0 líneas de <code>warning</code>/<code>error</code> de compilador.</li>
+<li>P3. <code>make test-components PROFILE=production</code>: cinco líneas, 9, 23, <strong>14</strong>, 3 y 82 (antes 9, 23, 15, 3, 82).</li>
+<li>P4. <code>ctest -N</code> del ml-detector: <code>Total Tests: 14</code>, sin <code>test_rag_logger_artifact_save</code>.</li>
+<li>P5. <code>lab-e2e-mitigacion</code> y <code>lab-e2e-protegidos</code> (<code>LAB_E2E_DIA=day310</code>): PASA los dos.</li>
+<li>P6. En <code>ml-detector.log</code> tras esas corridas: 0 líneas <code>RAG Logger</code>, 0 <code>[CONFIG-OBSOLETO]</code>, una
+  <code>CorrelationWriter initialized</code> por arranque y la <code>[csv] HMAC key retrieved</code> igual que antes (se renombra en el paso 3).</li>
+</ul>
+<h2 id="8-lecciones-day310">8. Lecciones DAY310</h2>
+<ol>
+<li>Un recuento por fichero no se hace con <code>cut -d:</code> si las rutas pueden llevar ":" (cuatro informes del Consejo se
+   fundieron en uno: 122 en vez de 126). Se cuenta con <code>git grep -c</code> o <code>git grep -l</code>.</li>
+<li>La fecha de un cambio es su llegada a la rama que corre, no la del commit (M3).</li>
+<li>Antes de borrar un componente, mirar quién lo compila además de quién lo llama: <code>tools</code> compilaba
+   <code>rag_logger.cpp</code> dentro de <code>pipeline-build</code>.</li>
+<li>"Firmado" no es una sola cosa: el canal al firewall se autentica con la semilla; el bronce y el CSV del firewall,
+   con claves HMAC del etcd-server. Cada consecuencia de una caída se razona por su mecanismo.</li>
+</ol>
+<h2 id="9-resultados-de-los-pasos-1-1b-y-2-medidos-day310-las-predicciones-de-7-no-se-tocan">9. Resultados de los pasos 1, 1b y 2 (medidos DAY310; las predicciones de §7 no se tocan)</h2>
+<p>Paso 1 (commit <code>9a5ccf0f</code>): P1 30 líneas, P2 rc 0 y 0 diagnósticos, P3 9/23/14/3/82, P4 14 tests, P5 mitigación PASA
+(C1-C5) y protegidos PASA (FIN 10762, alertas 5381), P6 sin <code>RAG Logger</code> ni <code>[CONFIG-OBSOLETO]</code>. Todo como se predijo.</p>
+<p>Paso 1b (commit <code>d745b930</code>), parcheador <code>d310_paso1b_retirar_rag_restos.py</code> (sha256 <code>2f0910c9…4112</code>):</p>
+<table>
+<thead>
+<tr>
+<th>Medida</th>
+<th>Predicción</th>
+<th>Medido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A3 <code>test_hmac_integration_client</code> antes</td>
+<td>1/4 (solo <code>test_key_not_found</code>)</td>
+<td>1/4</td>
+</tr>
+<tr>
+<td>B3 compilación</td>
+<td>rc 0, 0 diagnósticos</td>
+<td>rc 0, 0</td>
+</tr>
+<tr>
+<td>B4 <code>grep -c requires_rag_analysis pb.h</code></td>
+<td>0 (antes 20)</td>
+<td>0</td>
+</tr>
+<tr>
+<td>B4 <code>git status</code></td>
+<td>13 líneas</td>
+<td>42: el paso 1 estaba en el índice sin commitear (premisa falsa); las 13 sin indexar, exactamente las predichas</td>
+</tr>
+<tr>
+<td>B5 test-components</td>
+<td>9/23/14/3/82</td>
+<td>igual</td>
+</tr>
+<tr>
+<td>B6 test-libs</td>
+<td>igual a A1 (3, 5, 12/12, 1, 1)</td>
+<td>igual</td>
+</tr>
+<tr>
+<td>B8 test HMAC después</td>
+<td>4/4</td>
+<td>4/4</td>
+</tr>
+<tr>
+<td>B9 protegidos</td>
+<td>PASA</td>
+<td>rc 2 sin veredicto: <code>DIA=day310b</code> no cumple <code>^day[0-9]{3}$</code> (error del comando, C1 lo confirmó)</td>
+</tr>
+<tr>
+<td>C4 protegidos (corrida <code>lab_protegidos_p1b</code>)</td>
+<td>PASA</td>
+<td>PASA (FIN 10767, alertas 5382)</td>
+</tr>
+</tbody>
+</table>
+<p>Paso 2, parcheador <code>d310_paso2_retirar_csv_writer.py</code> (sha256 <code>d18205b4…67ed</code>): A1 <code>test-parquet</code> antes 86 ficheros
+ml-detector + 1 firewall, PASSED; B1-B3 25 pendientes, 25 de 25, 26 líneas; B4 rc 0, 0 diagnósticos; B5 9/23/12/3/82;
+B6 12 tests; B7 solo <code>firewall files validados: 1</code>, PASSED; B9 protegidos PASA (FIN 10773, alertas 5385); B10 sin
+<code>CsvEventWriter</code> ni <code>[CONFIG-OBSOLETO]</code>. Todo como se predijo.</p>
+<p>Lecciones añadidas:</p>
+<ol>
+<li>Antes de inventar un parámetro, leer el validador que lo recibe (<code>day310b</code>).</li>
+<li>Una predicción de <code>git status</code> depende de qué hay commiteado: escribirla con la premisa explícita.</li>
+</ol>
+<h2 id="10-paso-3-clave-del-bronce-diseno-escrito-antes-del-codigo">10. Paso 3 — clave del bronce (diseño escrito antes del código)</h2>
+<h3 id="lo-que-hay-hoy-leido-en-el-codigo">Lo que hay hoy (leído en el código)</h3>
+<ul>
+<li><code>main.cpp</code> pide la clave una vez (<code>get_hmac_key()</code> → <code>GET /secrets/ml-detector</code>) y la pasa al constructor de
+  <code>ZMQHandler</code> como texto. Mensajes <code>[csv] HMAC key ...</code> (nombre heredado del CSV, ya retirado).</li>
+<li><code>ZMQHandler</code> crea el <code>CorrelationWriter</code> solo si la clave no está vacía, y si lo está no avisa (<code>zmq_handler.cpp</code>, sin
+  <code>else</code>). La clave no se vuelve a pedir nunca.</li>
+<li><code>CorrelationWriter</code> exige la clave en el constructor (<code>hex_decode</code> lanza si no son 64 hex) y la usa en <code>serialize()</code>
+  fuera del <code>mutex_</code>; la escritura del segmento sí va bajo <code>mutex_</code>. Ya cierra segmentos con rename atómico
+  (<code>finalize_segment_locked</code>).</li>
+<li>El cliente etcd del ml-detector (<code>etcd_client::EtcdClient::get_hmac_key</code>) toma su propio mutex: se puede llamar
+  desde otro hilo. En <code>main.cpp</code>, <code>etcd_client</code> se declara antes que <code>zmq_handler</code> en el mismo ámbito: vive más.</li>
+<li>El etcd-server regenera las claves en cada arranque y las guarda solo en memoria (M2).</li>
+<li>Si el etcd-server no responde al ARRANCAR, el ml-detector sale (<code>main.cpp:154-163</code>, <code>return 1</code>): ver F1.</li>
+</ul>
+<h3 id="comportamiento-propuesto">Comportamiento propuesto</h3>
+<ol>
+<li>JSON, bloque nuevo (el JSON es la ley; el defecto del código es el mismo valor):
+   <code>"bronze_key": {"_doc": "...", "check_interval_seconds": 60}</code>, entero en [10, 3600]. Al arrancar se registra
+   <code>[CONFIG] bronze_key.check_interval_seconds=60 (del JSON)</code>, o <code>[CONFIG-DEFAULT] ... (ausente | no entero | fuera de
+   [10, 3600]): se usa 60</code> y el ml-detector arranca igual.</li>
+<li><code>CorrelationWriter</code>:</li>
+<li>se construye siempre, con o sin clave;</li>
+<li><code>set_key(hex)</code> bajo <code>mutex_</code> devuelve <code>Primera | Igual | Cambiada | Invalida</code>. <code>Cambiada</code> cierra antes el segmento
+     abierto (rename atómico), así que cada fichero de bronce va firmado con una sola clave. <code>Invalida</code> (no son 64 hex)
+     conserva la clave anterior;</li>
+<li><code>write_record</code> sin clave no escribe y suma <code>records_sin_clave</code>; con clave, <code>serialize()</code> pasa a hacerse dentro del
+     <code>mutex_</code> (la clave puede cambiar desde otro hilo). Un único hilo escribe: la contención es una vez por intervalo.</li>
+<li><code>ZMQHandler</code> recibe un proveedor de clave (<code>std::function&lt;std::string()&gt;</code>) en vez del texto, y un hilo propio
+   (<code>bronze_key_thread_</code>, arrancado en <code>start()</code>, unido en <code>stop()</code>, espera en tramos de 200 ms para parar rápido):</li>
+<li>cada <code>check_interval_seconds</code> llama al proveedor (la llamada HTTP nunca va en el hilo que procesa eventos);</li>
+<li>sin clave: <code>CRITICAL [BRONCE-SIN-CLAVE]</code> en cada intervalo, con desde cuándo, cuántos segundos y cuántos eventos
+     sin bronce, la consecuencia (la clasificación y el firewall siguen; al grafo no llega nada de aRGus) y qué hacer;</li>
+<li>llega la primera clave o vuelve tras faltar: <code>[BRONCE-CLAVE-RECUPERADA]</code> con la duración del hueco y los eventos
+     sin bronce;</li>
+<li>cambia: <code>[BRONCE-CLAVE-CAMBIADA]</code> con el segmento cerrado y la huella de la clave vieja y la nueva (F3);</li>
+<li>igual: nada (no hay nada nuevo que contar).</li>
+<li><code>main.cpp</code>: fuera la petición única y los mensajes <code>[csv]</code>; la primera petición la hace <code>ZMQHandler</code> al construirse
+   (mismo orden que hoy: antes de procesar eventos) y registra <code>[BRONCE-CLAVE] clave recibida (huella …)</code> o
+   <code>[BRONCE-SIN-CLAVE]</code>.</li>
+</ol>
+<h3 id="decisiones-pendientes-alonso">Decisiones pendientes (Alonso)</h3>
+<ul>
+<li>F1. El ml-detector sale si el etcd-server no responde al arrancar: sin clasificación ni firewall. Opciones: (a) deuda
+  propia, ligada al etcd-server en HA y a D4; (b) en esta rama: arrancar sin etcd-server (sin registro, sin clave) y
+  reintentar. Propuesta: (a), porque el registro y la subida de config también dependen del etcd-server y cambia el
+  arranque entero.</li>
+<li>F2. Con clave vigente, el etcd-server no responde: (a) seguir firmando con la vigente y avisar
+  <code>[BRONCE-CLAVE-SIN-CONFIRMAR]</code> en cada intervalo; (b) dejar de escribir bronce hasta confirmarla. Propuesta: (a): que
+  el etcd-server no conteste no invalida la clave. Si vuelve con otra (se reinició), se detecta y se corta el segmento;
+  las filas de la ventana quedan con la vieja (problema de la deuda de D4).</li>
+<li>F3. ¿Huella de la clave en el log (8 hex del sha256 de la clave, nunca la clave)? Propuesta: sí, para auditar
+  cambios sin exponerla.</li>
+</ul>
+<h3 id="pruebas-antes-de-medir">Pruebas (antes de medir)</h3>
+<ul>
+<li>Unitarias nuevas, <code>test_bronze_key</code> (gtest, mismo montaje que <code>test_correlation_roundtrip</code>, verifica con
+  <code>parse_and_verify</code> del lector real): sin clave no escribe y cuenta; primera clave escribe; misma clave no corta
+  segmento; clave distinta cierra el segmento, sus filas verifican con la vieja y no con la nueva, y las siguientes con la
+  nueva; clave inválida conserva la anterior. ml-detector pasa de 12 a 13 tests.</li>
+<li>Regresión: protegidos PASA, log de arranque con <code>[BRONCE-CLAVE] clave recibida</code> y <code>[CONFIG] bronze_key...</code>.</li>
+<li>Medida nueva en el lab (instrumento commiteado): reiniciar el etcd-server con el pipeline vivo. Predicción a precisar
+  cuando esté el instrumento: <code>[BRONCE-CLAVE-CAMBIADA]</code> en ≤ <code>check_interval_seconds</code>; el conversor con la clave nueva
+  acepta todos los segmentos posteriores y rechaza como mucho las filas escritas en esa ventana.</li>
+</ul>
+<h2 id="11-paso-3-decisiones-hallazgo-y-predicciones-antes-de-medir-en-la-vm">11. Paso 3 — decisiones, hallazgo y predicciones (antes de medir en la VM)</h2>
+<p>Decisiones de Alonso (DAY310):</p>
+<ul>
+<li>F1: sin etcd-server el ml-detector no arranca, y así se queda: sin registro, un componente impostor podría colarse
+  entre dos legítimos e inyectar datagramas fabricados, que es peor que no arrancar. El pipeline arranca fiable y
+  consistente o no arranca. Deuda DEBT-ETCD-HA-TLS-RAFT-001 (justo después de REA): etcd-server con HTTPS y en HA con
+  Raft por instalación, copia de respaldo en un clúster maestro por zona horaria, solo componentes autorizados del
+  despliegue; absorbe la deuda de D4 (persistir claves, no regenerarlas en cada arranque, leer <code>secrets</code> del JSON) y
+  enlaza con DEBT-ETCD-REMOTE-ADMIN-001 (acceso de admin por HTTPS).</li>
+<li>F2: con clave vigente y etcd-server sin responder se sigue firmando con la vigente; se marca en el log el tiempo en
+  modo extendido (<code>[BRONCE-CLAVE-SIN-CONFIRMAR]</code> cada intervalo, <code>[BRONCE-CLAVE-CONFIRMADA]</code> al volver, con duración).</li>
+<li>F3: en el log solo la huella (8 hex del SHA-256 de la clave), nunca la clave.</li>
+<li>Re-verificar el grafo a posteriori es imprescindible; la retención la fija la ley (pueden ser años). Va a la deuda
+  DEBT-BRONZE-KEY-ID-001: identificador de clave por segmento (camino b), historial de claves en Vault (solo
+  versiones de clave) y un registro de ingesta por segmento fuera de Vault. Pendiente medir cuánto vive el bronce en
+  disco y quién depende del formato del nombre del segmento.</li>
+</ul>
+<p>Hallazgo medido en el código actual (<code>test_colision_antes.cpp</code>, compilado contra la rama en <code>efab4558</code>): con
+<code>max_events_per_file=1</code> se escriben 3 filas (<code>write_record</code> devuelve true las tres) y en disco queda 1 fichero con 1
+fila. El nombre del segmento tiene resolución de segundos y el segundo segmento abierto en el mismo segundo pisa en el
+rename el fichero final del anterior. En producción ocurre con más de <code>max_events_per_file</code> (10000) eventos en un
+segundo y, con el paso 3, en cada cambio de clave. Arreglo: sufijo <code>-1</code>, <code>-2</code>... si el nombre ya existe (el
+BronzeDirWatcher recoge <code>*.csv</code>). Mismo test contra el código del paso 3: 3 ficheros, 3 filas.</p>
+<p>Lo que ya se midió fuera de la VM (copia desechable de la rama, protobuf 3.21, OpenSSL, spdlog, gtest):</p>
+<ul>
+<li><code>test_bronze_key</code>: 7/7 (sin clave no escribe y cuenta; primera clave escribe y verifica; misma clave no corta;
+  clave distinta cierra el segmento y cada fila verifica con una sola clave; clave inválida conserva la vigente;
+  huella de 8 hex estable y distinta; tres segmentos en el mismo segundo, tres ficheros y tres filas).</li>
+<li><code>test_correlation_roundtrip</code> contra el writer nuevo: 4/4.</li>
+<li><code>-fsyntax-only -Wall -Wextra -Werror</code> de los 15 <code>.cpp</code> de <code>ml-detector/src</code>: OK. <code>-O3 -Wall -Wextra -Wpedantic
+  -Werror</code> a objeto de <code>config_loader</code>, <code>zmq_handler</code>, <code>correlation_writer</code>, <code>etcd_client</code> y <code>main</code> (este último con
+  <code>-U_FORTIFY_SOURCE</code>: el <code>write()</code> sin comprobar de <code>main.cpp:37</code> ya existía y solo salta con el fortify de Ubuntu).</li>
+</ul>
+<p>Parcheador <code>d310_paso3_clave_bronce.py</code>: 11 ficheros editados (30 ediciones) y 1 creado (<code>test_bronze_key.cpp</code>).
+En copia limpia de <code>efab4558</code>: 12 pendientes, 12 de 12, todo ya aplicado; diff idéntico al árbol de trabajo.</p>
+<p>Predicciones en la VM (base: rama en <code>efab4558</code>):</p>
+<ul>
+<li>Q1. <code>git status --short --untracked-files=no</code>: 12 líneas (11 <code>M</code> + <code>PROMPT_CONTINUE_CLAUDE.md</code>); el <code>.cpp</code> nuevo
+  aparece como <code>??</code> sin ese filtro.</li>
+<li>Q2. <code>make pipeline-build PROFILE=production</code>: rc 0 y 0 diagnósticos.</li>
+<li>Q3. <code>make test-components PROFILE=production</code>: 9, 23, <strong>13</strong>, 3, 82.</li>
+<li>Q4. <code>ctest -N</code> del ml-detector: 13, con <code>test_bronze_key</code>.</li>
+<li>Q5. Protegidos (corrida <code>lab_protegidos_p3</code>): PASA, FIN en [10584, 10800], alertas en [5292, 5400].</li>
+<li>Q6. En <code>ml-detector.log</code> tras la corrida: una <code>[CONFIG] bronze_key.check_interval_seconds=60 (del JSON)</code>, una
+  <code>[BRONCE-CLAVE] clave del bronce: /secrets/ml-detector, comprobada cada 60 s</code>, una <code>[BRONCE-CLAVE] clave HMAC del
+  bronce recibida de /secrets/ml-detector (huella &lt;8 hex&gt;) al arrancar</code>; 0 <code>[csv] HMAC key</code>, 0 <code>[etcd] HMAC key
+  received</code>, 0 <code>BRONCE-SIN-CLAVE</code>, 0 <code>BRONCE-CLAVE-CAMBIADA</code>, 0 <code>BRONCE-CLAVE-SIN-CONFIRMAR</code>.</li>
+<li>Q7. En <code>/vagrant/logs/correlation</code>, segmentos <code>argus-*.csv</code> escritos durante la corrida: más de 0 (el bronce se
+  sigue escribiendo firmado).</li>
+</ul>
+<p>Medida pendiente, con instrumento propio (siguiente entrega): parar y volver a arrancar el etcd-server con el pipeline
+vivo y tráfico; comprobar <code>SIN-CONFIRMAR</code> → <code>CONFIRMADA</code> + <code>CAMBIADA</code>, el segmento cerrado y qué filas acepta el
+conversor con la clave nueva.</p>
+<h2 id="12-paso-3-resultados-medidos-day310-las-predicciones-de-11-no-se-tocan">12. Paso 3 — resultados (medidos DAY310; las predicciones de §11 no se tocan)</h2>
+<p>Parcheador <code>d310_paso3_clave_bronce.py</code> (sha256 <code>7073904a…cda7</code>), aplicado sobre <code>efab4558</code>. Corrida <code>lab_protegidos_p3</code>
+(binarios del paso 3); la <code>lab_protegidos_p2</code> es la del paso 2 (binarios anteriores al paso 3): son el antes y el después.</p>
+<table>
+<thead>
+<tr>
+<th>Medida</th>
+<th>Predicción</th>
+<th>Medido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1 <code>git status --short --untracked-files=no</code></td>
+<td>12 líneas</td>
+<td>13: <code>day310_diseno.md</code> ya estaba modificado (premisa)</td>
+</tr>
+<tr>
+<td>Q2 compilación</td>
+<td>rc 0, 0 diagnósticos</td>
+<td>rc 0, 0</td>
+</tr>
+<tr>
+<td>Q3 test-components</td>
+<td>9/23/13/3/82</td>
+<td>9/23/13/3/82</td>
+</tr>
+<tr>
+<td>Q4 <code>ctest -N</code> ml-detector</td>
+<td>13, con <code>test_bronze_key</code></td>
+<td>13</td>
+</tr>
+<tr>
+<td>Q5 protegidos</td>
+<td>PASA; FIN en [10584, 10800], alertas en [5292, 5400]</td>
+<td><strong>FALLA P4</strong>; FIN 10743 y alertas 5370 dentro de rango; P1, P2, P3 y P5 pasan</td>
+</tr>
+<tr>
+<td>Q6 log de arranque</td>
+<td><code>[CONFIG] bronze_key...=60 (del JSON)</code>, "comprobada cada 60 s", huella al arrancar; 0 del resto</td>
+<td>igual (huella <code>3c813ec7</code>)</td>
+</tr>
+<tr>
+<td>Q7 segmentos <code>argus-*.csv</code></td>
+<td>más de 0</td>
+<td>13</td>
+</tr>
+</tbody>
+</table>
+<p>Colisión de segmentos: el instrumento <code>scripts/bronze_key/d310_colision_segmentos.cpp</code> (sha256 <code>1d8ec24c…4833</code>) da en
+la VM 3 ficheros y 3 filas de 3 con el código del paso 3 (antes: 1 fichero, 1 fila).</p>
+<h3 id="p4-abierto">P4, abierto</h3>
+<p>P4 exige <code>DROP_resumenes = DROP_FIN + alertas</code>. p3: 16115 frente a 10743 + 5370 = 16113, sobran <strong>2</strong>. p2: 16158 =
+10773 + 5385, cuadra. Cuenta comprobada a mano sobre los <code>[SOMBRA-DDOS]</code> de los dos logs (M-P4a/M-P4b).</p>
+<ul>
+<li>H1 (la de OBS-FW-SOMBRA-DROP-FUERA-EPISODIO-001: DROP de una ventana anterior al INICIO que el FIN no cuenta):
+  <strong>refutada en p3</strong>. El "primer DROP recibido" (<code>19699287310714_51</code>) es el <code>primer_evento</code> del INICIO, no hay
+  resúmenes con DROP &gt; 0 antes de él ni entre el último resumen con DROP (19874-19884) y el FIN.</li>
+<li>H3 (duplicados o anomalías de tiempo que el resumen cuenta y el episodio descarta): <strong>refutada</strong>. En p3 y en p2 todas
+  las líneas <code>[TIMEBASE]</code> dan <code>seq_dup=0 seq_hueco=0 seq_desorden=0</code> y todas las anomalías a 0.</li>
+<li>H2 (efecto del paso 3) <strong>no está descartada</strong>: p2 y p3 son binarios distintos. A favor de algo anterior: DAY300 ya
+  midió una diferencia de 4 en otra corrida (sin el paso 3). En contra de juzgarlo ya: el mecanismo de DAY300 (ventana
+  previa) no es el de hoy. El paso 3 no toca el envío al firewall (solo el bronce y un hilo de clave), pero eso es
+  lectura, no medida.</li>
+</ul>
+<p>Siguiente, antes de otra hipótesis: leer en <code>DdosShadowPolicy</code> cómo cuentan el resumen y el FIN, y en el comprobador de
+protegidos de dónde sale "alertas"; después, si hace falta, contar los DROP por origen y protocolo en el bronce de p3.</p>
+<h3 id="hallazgo-leido-en-el-codigo-sin-medir-aun-en-el-lab">Hallazgo leído en el código (sin medir aún en el lab)</h3>
+<p><code>etcd-server/src/etcd_server.cpp</code>: <code>GET /secrets/{componente}</code> devuelve la clave HMAC activa y
+<code>POST /secrets/rotate/{componente}</code> la rota, ambos por HTTP sin autenticación, escuchando en <code>0.0.0.0:2379</code>. Mientras
+sea así, la firma del bronce protege contra la corrupción accidental, no contra quien alcance ese puerto: puede leer la
+clave y firmar filas falsas, o rotarla (y el ml-detector, por E2, adopta la nueva). Medida pendiente: si el client llega
+al puerto. Va a DEBT-ETCD-SECRETS-UNAUTHENTICATED-001.</p>
+<h3 id="lecciones-anadidas">Lecciones añadidas</h3>
+<ol>
+<li>Antes de proponer una hipótesis sobre una cuenta, leer el código que cuenta (H1 y H3 se escribieron sin leer
+   <code>DdosShadowPolicy</code>).</li>
+<li>Nombrar cada corrida por lo que cambió: <code>p2</code>/<code>p3</code> son pasos de la rama, no fases de una corrida; tratarlas como "el
+   mismo binario" fue un error de lectura.</li>
+<li>Una decisión de seguridad se contrasta con lo que el componente del que depende hace hoy, leído en su código: el
+   argumento del impostor (F1) necesita un etcd-server que autentique, y hoy no autentica.</li>
+</ol>
+<h2 id="13-day311-p4-cerrado-drop-aislados-y-alcance-del-etcd-server-medido-12-no-se-toca">13. DAY311 — P4 cerrado: DROP aislados y alcance del etcd-server (medido; §12 no se toca)</h2>
+<h3 id="lectura-del-codigo-antes-de-la-hipotesis">Lectura del código (antes de la hipótesis)</h3>
+<ul>
+<li><code>[SOMBRA-DDOS] resumen: DROP=</code> cuenta TODO evento con <code>final_decision == "DROP"</code> (<code>zmq_subscriber.cpp</code>), antes de
+  cualquier filtro.</li>
+<li>El <code>eventos_drop</code> del FIN solo suma los DROP de SU víctima <code>{dst, proto}</code> (<code>DdosShadowPolicy::add_drop</code>). Una víctima
+  con DROP sueltos (&lt; m por ventana) que nunca llega a episodio se borraba en el siguiente <code>advance</code> sin dejar rastro.</li>
+<li>Las alertas (origen protegido) salen antes de <code>add_drop</code>.</li>
+<li>El bronce no lleva <code>final_decision</code>: DROP equivale a col 16 (p1 de ddos_v2 si pasa la etapa 1) &gt; 0,5. No lleva ICMP
+  (community_id vacío).</li>
+</ul>
+<h3 id="hipotesis-y-prediccion-escritas-antes-de-medir">Hipótesis y predicción (escritas antes de medir)</h3>
+<ul>
+<li>H4: los 2 de p3 son DROP de otra víctima que nunca llega a episodio. Bronce p3: .50→.1 UDP 10743, .61→.1 UDP 5370 y
+  2 filas con otra clave (o ninguna si son ICMP). p2: nada más.</li>
+<li>H5: DROP de .50 a {.1, 17} que la política no sumó (bronce .50 = 10745). Sin camino en el código: si sale, PARAR.</li>
+</ul>
+<h3 id="medido-instrumento-scriptstimebased311_p4_cuentaspy-sha256-6e4b33ea3302">Medido (instrumento <code>scripts/timebase/d311_p4_cuentas.py</code>, sha256 <code>6e4b33ea…3302</code>)</h3>
+<table>
+<thead>
+<tr>
+<th>Medida</th>
+<th>p3 (paso 3)</th>
+<th>p2 (paso 2)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>bronce DROP .50→.1 UDP</td>
+<td>10743 (= FIN)</td>
+<td>10773 (= FIN)</td>
+</tr>
+<tr>
+<td>bronce DROP .61→.1 UDP</td>
+<td>5370 (= alertas)</td>
+<td>5385 (= alertas)</td>
+</tr>
+<tr>
+<td>bronce DROP con otra clave</td>
+<td><strong>2: 192.168.100.11 → 192.168.100.12 TCP</strong></td>
+<td>0</td>
+</tr>
+<tr>
+<td>pcap (dst .1)</td>
+<td>.50 10806, .51 3300, .61 5400 UDP; .12 tcp 54</td>
+<td>igual; .12 tcp 52</td>
+</tr>
+</tbody>
+</table>
+<p><strong>H4 confirmada.</strong> .11 es la VM de Zeek (agente Wazuh) y .12 el wazuh-manager. Los 2 DROP son dos eventos del mismo
+flujo <code>sport=43821 → dport=1514</code> (p1 0,74 y 0,70), con <code>flow_start</code> dentro del ataque. De 45 filas .11→.12 solo
+esas 2 pasaron la etapa 1. Es un falso positivo aislado de la etapa 2 sobre tráfico legítimo (familia de
+DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001), <strong>no un efecto del paso 3</strong>. La columna de mitigación del instrumento no
+discriminó (mitigación <code>deshabilitada</code> en protegidos): decidió el bronce. En EMECAS (3 VMs, sin Zeek ni Wazuh) no
+aparece.</p>
+<h3 id="decision-de-alonso-day311">Decisión de Alonso (DAY311)</h3>
+<p>Opción 1: el firewall no pierde ningún DROP en silencio. Descartadas: que el comprobador lea el bronce (no ve ICMP) y
+apagar Zeek/Wazuh en protegidos (esconde el fenómeno).</p>
+<h3 id="implementacion-sombra-aislado-d311">Implementación [SOMBRA-AISLADO-D311]</h3>
+<ul>
+<li><code>DdosShadowPolicy</code>: al borrar el estado de una víctima que nunca llegó a episodio y tenía DROP, guarda un registro
+  AISLADO, que se recoge con <code>take_aislados()</code> (canal aparte: <code>advance()</code> sigue devolviendo solo INICIO/FIN).
+  <code>drop_pendientes_fuera()</code> / <code>drop_pendientes_episodio()</code> dan lo aún no cerrado.</li>
+<li>Suscriptor: detalle <code>[SOMBRA-DDOS] AISLADO victima=… eventos_drop=… origenes=… (no se bloquea)</code> con el tope
+  <code>anomalias_detalle_max</code> por periodo, y una línea propia tras cada resumen: <code>[SOMBRA-DDOS] aislados: drop= victimas=
+  detalle_omitido= drop_pendientes_fuera= drop_pendientes_episodio=</code>. El <code>resumen:</code> no se toca. Sin parámetro nuevo
+  en el JSON (se documenta en el <code>_doc</code> de <code>ddos_shadow</code>).</li>
+<li>P4 (<code>d303_veredicto_protegidos.sh</code> y <code>d300_protegidos_analisis.sh</code>): <code>DROP_resumenes = DROP_FIN + alertas +
+  Σ aislados.drop + pendientes de la última línea aislados:</code>.</li>
+<li><code>test_ddos_shadow_policy</code>: casos 7-10 (4 DROP sueltos; el caso 2 antiguo ahora da 240 en AISLADO; DROP tras un FIN;
+  identidad FIN + AISLADO = todo lo sumado con 3 víctimas y 600 s). Mutación (sin el registro AISLADO): fallan los 4.</li>
+<li>Límite conocido: si el evento que dispara la última impresión es un DROP, P4 podría dar diferencia 1. Si ocurre,
+  sale como FALLA, no se esconde.</li>
+</ul>
+<h3 id="prediccion-y-medida-del-cambio">Predicción y medida del cambio</h3>
+<table>
+<thead>
+<tr>
+<th>Medida</th>
+<th>Predicción</th>
+<th>Medido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Q1 <code>git status --short --untracked-files=no</code></td>
+<td>8 líneas (7 + <code>PROMPT_CONTINUE_CLAUDE.md</code>)</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Q2 compilación production</td>
+<td>rc 0, 0 diagnósticos</td>
+<td>rc 0, 0</td>
+</tr>
+<tr>
+<td>Q3 test-components</td>
+<td>9/23/13/3/82</td>
+<td>9/23/13/3/82</td>
+</tr>
+<tr>
+<td>Q4 protegidos <code>day311/lab_protegidos_p4</code></td>
+<td>PASA P1-P5, P4 diferencia 0; líneas <code>aislados:</code> = <code>resumen:</code>; aislados en [0, 10]</td>
+<td>PASA; 16116 = 10746 + 5370 + 0 + 0; 41 = 41; 0</td>
+</tr>
+<tr>
+<td>bronce p4</td>
+<td>.50 10746, .61 5370, nada más</td>
+<td>igual</td>
+</tr>
+</tbody>
+</table>
+<p>El fondo .11→.12 estaba (43 filas en el bronce de p4) y ninguna pasó la etapa 1: el falso positivo no se repitió por
+azar, como en p2. El camino AISLADO queda cubierto por los tests y la mutación; en el lab no ha salido aún un aislado
+real. Primera corrida parada en el paso 1 (alias .51 perdido tras reiniciar el client); <code>make lab-e2e-prep</code> lo repone.</p>
+<h3 id="alcance-del-etcd-server-debt-etcd-secrets-unauthenticated-001">Alcance del etcd-server (DEBT-ETCD-SECRETS-UNAUTHENTICATED-001)</h3>
+<p><code>ss</code> en el defender: <code>0.0.0.0:2379</code> (etcd-server). Desde el client (<code>ml-client</code>, 192.168.100.50/.51):
+<code>curl http://192.168.100.1:2379/secrets/keys</code> → <strong>200</strong>, como se predijo. El hallazgo de §12 deja de ser solo lectura
+de código: la posición del atacante en el lab alcanza el servicio que entrega y rota las claves HMAC sin autenticación.
+No se pidió <code>/secrets/ml-detector</code>: no hace falta sacar una clave para el dato. Dos medidas anteriores no valen: una
+lanzada en el defender y otra desde el Mac, ambas con el pipeline parado.</p>
+<h3 id="lecciones-day311">Lecciones DAY311</h3>
+<ol>
+<li>Un recuento por víctima no se compara con un recuento global sin preguntar qué otras víctimas hay: el resumen
+   cuenta todo DROP y el FIN solo los de su víctima.</li>
+<li>Un instrumento débil (una foto cada 10 s de <code>victimas_activas</code>) no refuta nada: un estado que vive un segundo no
+   sale en la foto.</li>
+<li>Una columna que depende de una función apagada (mitigación <code>deshabilitada</code>) no discrimina: se comprueba el modo
+   antes de leerla.</li>
+<li>Antes de medir un servicio, comprobar que está en marcha: la corrida de protegidos termina con <code>pipeline-stop</code>.</li>
+<li>El prompt del terminal no dice en qué máquina se está (<code>vagrant@…</code>): <code>hostname</code> primero.</li>
+</ol>
+<h2 id="14-day311-reinicio-del-etcd-server-paso-5-y-test-de-kuzu-medido-13-no-se-toca">14. DAY311 — reinicio del etcd-server, paso 5 y test de Kuzu (medido; §13 no se toca)</h2>
+<h3 id="reinicio-del-etcd-server-con-el-pipeline-vivo-y-trafico">Reinicio del etcd-server con el pipeline vivo y tráfico</h3>
+<p>Instrumento <code>scripts/bronze_key/d311_reinicio_etcd.sh</code> (Mac, sha256 <code>9fffe4e4…9133</code>) +
+<code>scripts/bronze_key/d311_etcd_defender.sh</code> (defender, <code>7e4ab48b…2348</code>). Tráfico benigno .51 → .1 a 10 pps; 60 s;
+<code>make etcd-server-stop</code>; 150 s; <code>make etcd-server-start PROFILE=production</code>; 150 s; fin. Cada segmento de la ventana
+se pasa por el conversor real (<code>bronze_to_gold_converter</code>) con la clave de antes (A) y la de después (B). Las claves se
+leen en el defender a <code>/tmp/d311_claves</code> (solo root, nunca <code>/vagrant</code>), en la salida solo la huella, y se borran al
+final (trap). Probado antes en simulador (vagrant/make/etcd falsos y escritor de segmentos), que cazó dos fallos del
+propio guion (<code>test -x</code> sobre un fichero no ejecutable; parada del tráfico solo por PID).</p>
+<p>Corrida <code>day311/lab_etcd_reinicio_1</code>:</p>
+<table>
+<thead>
+<tr>
+<th>Predicción (escrita antes)</th>
+<th>Medido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>R1 puerto 0 tras parar, 1 tras arrancar</td>
+<td>0 y 1</td>
+</tr>
+<tr>
+<td>R2 2 o 3 <code>SIN-CONFIRMAR</code> con huella A; 0 <code>SIN-CLAVE</code>, 0 <code>RECUPERADA</code></td>
+<td>3 (huella 574cc3de); 0; 0</td>
+</tr>
+<tr>
+<td>R3 1 <code>CONFIRMADA</code> ("otra clave") y 1 <code>CAMBIADA</code> A → B, ≤ 60 s tras arrancar</td>
+<td>1 y 1 a las 05:49:27 (192 s en modo extendido), 17 s después del primer <code>/register</code> del servidor nuevo (05:49:10)</td>
+</tr>
+<tr>
+<td>R4 huellas del instrumento = las del log; A ≠ B</td>
+<td>574cc3de → 8037d2d5, iguales</td>
+</tr>
+<tr>
+<td>R5 MEZCLA 0, A antes que B, el segmento de <code>CAMBIADA</code> es A</td>
+<td>17 segmentos: 11 A (3380 filas), 6 B (1800), MEZCLA 0; <code>054921</code> A, 92 filas, cortado a los 6 s</td>
+</tr>
+<tr>
+<td>R6 continuidad: eventos ≥ 1 por resumen, seq sin huecos</td>
+<td>mínimo 8; seq_dup/hueco/desorden 0</td>
+</tr>
+<tr>
+<td>R7 <code>Heartbeat failed</code> &gt; 0 con el servidor caído</td>
+<td><strong>FALLA: 0</strong> (ver abajo)</td>
+</tr>
+</tbody>
+</table>
+<p>El conversor acepta el 100 % de cada segmento con una sola clave. Las filas escritas con el servidor caído verifican
+con A (F2). Cada comprobación fallida de la clave tarda ~4 s (timeout HTTP), por eso las tres no caen en múltiplos
+exactos de 60 s.</p>
+<p><strong>R7.</strong> La predicción buscaba un texto que no existe en ese camino: <code>http::post</code> no lanza, escribe <code>⚠️  HTTP POST
+connection failed</code> / <code>⚠️  HTTP POST failed: 404</code> y devuelve <code>success=false</code>, que <code>send_heartbeat()</code> no mira; el
+<code>catch</code> del <code>Heartbeat failed</code> nunca salta. Medido después: los tres componentes laten (también el sniffer); con el
+servidor caído 6 <code>connection failed</code> cada uno (~190 s, latido cada ~30 s); al volver, 404 en cada latido hasta el
+final (8/8/7), y el etcd-server cuenta lo mismo en <code>❌ Componente no encontrado</code>. Los 17 <code>✅ Heartbeat registrado</code>
+son 10 de antes del reinicio (cuatro latidores: el propio etcd-server también late) y 7 de después, todos del
+etcd-server. El único <code>/register</code> tras el arranque es el etcd-server registrándose a sí mismo (<code>component=unknown</code> en
+el log porque <code>log_request</code> no lee ese cuerpo).</p>
+<p><strong>Hallazgos (medidos):</strong>
+1. Tras reiniciar el etcd-server el registro solo contiene al etcd-server. ml-detector, firewall y sniffer siguen
+   funcionando (el canal ZMQ usa <code>seed.bin</code> y no se entera) pero para el etcd-server no existen, y ninguno avisa más
+   allá de un <code>HTTP POST failed: 404</code> cada 30 s. La defensa del registro frente a un impostor (F1) desaparece en
+   silencio con un reinicio.
+2. El log del etcd-server miente: el endpoint de heartbeat escribe <code>log_request(req, 200, …)</code> antes de decidir y luego
+   responde 404.
+3. Todo el bronce A (3380 filas aquí) deja de poder verificarse tras el reinicio: el etcd-server regenera las claves
+   en memoria y A deja de existir. Aquí solo se pudo verificar porque el instrumento la leyó antes de parar (y la
+   borró al final). Es la medida que hace necesarias DEBT-ETCD-HA-TLS-RAFT-001 (claves persistidas) y
+   DEBT-BRONZE-KEY-ID-001, no una mejora.
+4. Leído, sin medir: <code>get_hmac_key</code> genera la clave en la primera petición, con la consulta y la generación bajo
+   bloqueos separados; dos primeras peticiones simultáneas podrían generar dos claves.</p>
+<h3 id="paso-5-resumen-del-contrato-contract_validatorcpp">Paso 5 — resumen del contrato (<code>contract_validator.cpp</code>)</h3>
+<p>Medido con el descriptor de <code>network_security.proto</code> (protobuf 3.21.12): <code>NetworkFeatures</code> tiene 73 escalares, 6
+repetidos y 8 submensajes (<code>flow_start_time</code> 2, <code>flow_duration</code> 2, <code>ransomware</code> 20, <code>ddos_embedded</code> 9,
+<code>ransomware_embedded</code> 10, <code>traffic_classification</code> 10, <code>internal_anomaly</code> 10, <code>smb_scan</code> 3). La línea fija "Baseline: 74
+scalars + 40 embedded (4x10) = 114 minimum" estaba desfasada (ddos_embedded es el contrato v2) y además ningún mínimo
+fijo es cierto: <code>count_features</code> cuenta solo los campos presentes (proto3 no lista los ceros) y el tamaño de los
+repetidos. Ahora la línea se calcula del descriptor en tiempo de ejecución, sin cifras escritas a mano
+[CONTRACT-ESQUEMA-D311]. Probado fuera de la VM: compilación con -Wall -Wextra (los mismos 4 avisos de fmt/spdlog con
+GCC 13 que el original, ninguno en el fichero) y ejecución de <code>log_summary()</code> con la salida esperada. En la VM:
+compilación rc 0, 0 diagnósticos.</p>
+<h3 id="test-de-kuzu-intermitente-test_kuzu_graph_sink">Test de Kuzu intermitente (<code>test_kuzu_graph_sink</code>)</h3>
+<p><code>make test-components</code> falló una vez tras el paso 5: <code>KuzuGraphSink.ExplicitCommitPersistsBatch:208</code>, 1 NetworkFlow
+en vez de 2. Falló también en la primera repetición y pasó en la segunda. No toca el paso 5 (ningún test del
+correlation-engine compila <code>contract_validator.cpp</code>).</p>
+<p>Leído en el código: <code>CypherBindings</code> guarda <code>string_view</code> y el test hacía <code>make_bindings(r1, fuid_of(r1), …)</code>;
+<code>fuid_of</code> devuelve un <code>std::string</code> temporal, así que <code>b1.flow_uid</code> apunta a memoria liberada al acabar la línea
+(comportamiento indefinido). Si b1 y b2 leen el mismo contenido reciclado, el <code>MERGE</code> los funde en un nodo: el fallo
+observado. Producción no está afectada (<code>kuzu_graph_sink.cpp:171</code> pasa <code>e.flow_uid</code>, que vive en la entrada). Arreglo
+[KUZU-TEST-DANGLING-D311]: el <code>flow_uid</code> en variables con nombre, en los dos tests de transacción.</p>
+<table>
+<thead>
+<tr>
+<th>Predicción</th>
+<th>Medido</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>antes (binario viejo, test aislado con <code>--gtest_filter</code>), 50 veces: &gt; 0 fallos</td>
+<td><strong>FALLA: 0 de 50</strong></td>
+</tr>
+<tr>
+<td>después (aislado), 50 veces: 0</td>
+<td>0 de 50</td>
+</tr>
+<tr>
+<td>después (binario entero), 50 veces: 0</td>
+<td>0 de 50</td>
+</tr>
+<tr>
+<td>test-components 9/23/13/3/82</td>
+<td>9/23/13/3/82</td>
+</tr>
+</tbody>
+</table>
+<p>La predicción del "antes" falló por un error de diseño del instrumento: aislado, el test no reproduce las condiciones
+del fallo (los dos fallos del día fueron con el binario entero, con los tests anteriores dejando la memoria). Por eso el
+comportamiento indefinido es cierto y el arreglo necesario, pero que sea LA causa de los fallos de hoy es la hipótesis
+principal, no una medida. Pendiente: binario entero viejo frente a nuevo, 50 veces cada uno, y una pasada con
+AddressSanitizer (DEBT-KUZU-TEST-DANGLING-001).</p>
+<h3 id="emecas-production-punta-de-codigo-7ae4c93c">EMECAS+++ production (punta de código 7ae4c93c)</h3>
+<p>rc 0: los 5 E2E del lab con <code>RESULTADO PASA</code> (reinicio antes, ordenada, kill9, protegidos y mitigación), componentes
+9/23/13/3/82, 19 carteles <code>PASSED</code>. Protegidos: <code>DROP_resumenes 16129 = DROP_FIN 10750 + alertas 5375 + aislados 4 +
+pendientes 0</code>. Predije aislados en [0, 10] y mi hipótesis (fondo del lab hacia .1) cayó: los 4 son
+<code>AISLADO victima=192.168.100.1 proto=17 eventos_drop=4 ventanas_positivas=0 origenes=192.168.100.50:4</code>, la primera
+ventana del ataque (5630) con menos de m DROP. Al cerrarla sin positivas el estado se borraba; el episodio empezaba en la
+siguiente (INICIO 5633, primer_evento del FIN <code>5631016…</code>). Es el mecanismo que DAY300 sospechaba para los 4 de antes2
+(H1, refutada en p3 para aquella corrida; medida aquí en otra). Hay dos causas de DROP fuera de episodio, las dos
+visibles ahora en AISLADO: falsos positivos sueltos (Wazuh, p3) y el arranque de un ataque en una ventana débil. Es lo
+que el comprobador ya admitía en P5 ("el primer segundo antes del INICIO"), que antes no se veía. Sin el arreglo de
+§13, este EMECAS habría dado FALLA en P4. EMECAS escribe sus corridas en <code>logs/lab/day303/</code> (<code>LAB_E2E_DIA ?= day303</code>).</p>
+<h3 id="lecciones-anadidas_1">Lecciones añadidas</h3>
+<ol>
+<li>Antes de predecir el texto de un log, leer la función que lo escribe, no solo la que la llama (<code>Heartbeat failed</code>
+   está en un <code>catch</code> que nunca salta).</li>
+<li>Un fallo intermitente se reproduce en las condiciones en que falló: aislar el test cambia la memoria que lo provoca.</li>
+<li>Un comprobador que se apoya en un log tiene que saber si ese log dice la verdad: el etcd-server escribe 200 y
+   responde 404.</li>
+<li><code>ls -dt</code> no sirve para encontrar la última corrida si se reutiliza el directorio: sobrescribir ficheros no cambia
+   la fecha del directorio.</li>
+</ol>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

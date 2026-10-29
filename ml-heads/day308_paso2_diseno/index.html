@@ -1,0 +1,1318 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-heads/day308_paso2_diseno/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>DAY308 — Paso 2: caducidad de flujos (diseño, antes de tocar código) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day308-paso-2-caducidad-de-flujos-diseno-antes-de-tocar-codigo" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY308 — Paso 2: caducidad de flujos (diseño, antes de tocar código)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-lo-que-hay-hoy-leido-en-el-codigo-de-la-rama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Lo que hay hoy (leído en el código de la rama)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Diseño
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Diseño">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-un-solo-sitio-en-el-json-seccion-flow_table-de-snifferjson" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Un solo sitio en el JSON: sección flow_table de sniffer.json
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-shardedflowmanagerconfig" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 ShardedFlowManager::Config
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-tope-de-duracion-activa-perezoso-en-add_packet-o1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Tope de duración activa: perezoso, en add_packet, O(1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-limpieza-por-inactividad-desde-la-cola-de-la-lru-ocaducados" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Limpieza por inactividad: desde la cola de la LRU, O(caducados)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#25-should_expire-con-guarda" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.5 should_expire con guarda
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#26-hilo-de-la-tabla" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.6 Hilo de la tabla
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#27-fuera-lo-que-miente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.7 Fuera lo que miente
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-decisiones-que-te-tocan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Decisiones que te tocan
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-predicciones-escritas-antes-de-medir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Predicciones (escritas antes de medir)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-plan-de-medida-antes-y-despues" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Plan de medida, antes y después
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-resultado-escrito-despues-de-medir-las-secciones-1-5-se-dejan-como-se-escribieron-antes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Resultado (escrito DESPUÉS de medir; las secciones 1-5 se dejan como se escribieron antes)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Resultado (escrito DESPUÉS de medir; las secciones 1-5 se dejan como se escribieron antes)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-decisiones-de-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Decisiones de Alonso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-cambio-sobre-el-diseno-antes-de-escribir-el-parche" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Cambio sobre el diseño, antes de escribir el parche
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-medidas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Medidas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-predicciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Predicciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-siguiente-en-la-rama" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Siguiente en la rama
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="day308-paso-2-caducidad-de-flujos-diseno-antes-de-tocar-codigo">DAY308 — Paso 2: caducidad de flujos (diseño, antes de tocar código)</h1>
+<p>Rama <code>feat/sniffer-flow-expiry</code>, base <code>bef2ac0b</code>. DEBT-SNIFFER-FLOW-EXPIRY-001 + DEBT-SNIFFER-FLOWTABLE-CONFIG-001.
+Decisiones ya tomadas (Alonso, DAY308): tope de duración activa en el JSON, <strong>desactivado por defecto</strong> (0 = sin
+tope) hasta que un barrido mida su efecto en ddos_v2; al vencer, el flujo se cierra y el siguiente paquete abre uno
+nuevo con la misma clave y el estado a cero; en esta rama solo el <strong>mecanismo</strong>; el barrido y su medida en ddos_v2, en
+otra rama junto a la del ataque largo (DEBT-DDOS-V2-LONG-ATTACK-001).</p>
+<h2 id="1-lo-que-hay-hoy-leido-en-el-codigo-de-la-rama">1. Lo que hay hoy (leído en el código de la rama)</h2>
+<ul>
+<li><strong>La tabla está escrita a mano</strong> en <code>ring_consumer.cpp:131-133</code>: 16 shards × 10 000 flujos, <code>flow_timeout_ns</code> 120 s.</li>
+<li><strong>Nada caduca.</strong> <code>ShardedFlowManager::cleanup_expired_flows</code> existe pero nadie la llama. Con la tabla llena, la LRU
+  desaloja el flujo menos reciente al llegar uno nuevo, <strong>sin contarlo ni decirlo en el log</strong>.</li>
+<li><strong>La limpieza es O(n²)</strong>: por cada flujo caducado hace <code>lru_queue-&gt;remove(key)</code>, que recorre la lista entera; la
+  entrada ya guarda <code>lru_pos</code>, con el que el borrado sería O(1).</li>
+<li><strong><code>should_expire</code> resta sin signo</strong>: si la última marca de un flujo es posterior a la hora de la limpieza, la resta da
+  la vuelta y caduca un flujo vivo.</li>
+<li><strong>Relojes</strong>: la marca del paquete es <code>bpf_ktime_get_ns()</code> (<code>sniffer.bpf.c:328</code>, CLOCK_MONOTONIC) y la hora de la
+  tabla es <code>steady_clock</code> (CLOCK_MONOTONIC en libstdc++). Misma base según la documentación; <strong>se mide en el E2E</strong>
+  (contador de marcas futuras, §2.5), no se da por hecho.</li>
+<li><strong>Tres configuraciones de caducidad mienten</strong> (ninguna llega a la tabla; inventario con <code>git grep</code>, 0 consumidores):
+  <code>kernel_space.flow_timeout_seconds</code> (300), <code>processing.feature_extraction.flow_timeout_seconds</code> (300) y el bloque
+  <code>user_space</code> entero (<code>flow_table_size</code> 1 000 000, <code>time_window_buffer_size</code>, <code>memory_management</code> con
+  <code>gc_interval_seconds</code> 60). Se leen con <code>get(campo, defecto)</code> en silencio y se copian entre los dos modelos de
+  configuración; nadie las usa.</li>
+<li><code>FlowTracker</code> (<code>flow_tracker.cpp</code>) tiene su propia <code>cleanup_expired_flows</code>: es del procesador de ransomware, no de
+  esta tabla. Fuera de alcance.</li>
+</ul>
+<h2 id="2-diseno">2. Diseño</h2>
+<h3 id="21-un-solo-sitio-en-el-json-seccion-flow_table-de-snifferjson">2.1 Un solo sitio en el JSON: sección <code>flow_table</code> de <code>sniffer.json</code></h3>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Rango</th>
+<th>Defecto</th>
+<th>Qué es</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>shards</code></td>
+<td>entero [1, 256]</td>
+<td>16</td>
+<td>número de shards (cada uno con su lock)</td>
+</tr>
+<tr>
+<td><code>max_flows_per_shard</code></td>
+<td>entero [100, 10 000 000]</td>
+<td>10 000</td>
+<td>tope de flujos por shard; al llegar, la LRU desaloja</td>
+</tr>
+<tr>
+<td><code>idle_timeout_s</code></td>
+<td>entero [1, 86 400]</td>
+<td><strong>decisión P1</strong></td>
+<td>inactividad que caduca un flujo</td>
+</tr>
+<tr>
+<td><code>active_timeout_s</code></td>
+<td>entero 0 o [1, 604 800]</td>
+<td>0</td>
+<td>duración máxima de un flujo; <strong>0 = sin tope</strong></td>
+</tr>
+<tr>
+<td><code>cleanup_interval_ms</code></td>
+<td>entero [100, 60 000]</td>
+<td>1 000</td>
+<td>cada cuánto pasa la limpieza</td>
+</tr>
+<tr>
+<td><code>log_interval_s</code></td>
+<td>entero [1, 3 600]</td>
+<td>60</td>
+<td>cada cuánto escribe la línea <code>[FLOW-TABLE]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Con <code>_doc_&lt;campo&gt;</code> para cada uno (rango, formato, defecto, "defecto SEGURO, no óptimo"), como la EWMA y timebase.
+Reglas cruzadas: <code>idle_timeout_s * 1000 &gt; cleanup_interval_ms</code>; si <code>active_timeout_s &gt; 0</code>, <code>active_timeout_s &gt;=
+idle_timeout_s</code>. Si se rompen: defectos de los campos implicados + <code>[CONFIG-DEFAULT]</code>.</p>
+<p><strong>Mismo patrón que timebase (DAY295)</strong>, sin inventar otro:
+- <code>include/flow_table_config.hpp</code>: <code>FlowTableParams</code> con los defectos y las constantes de rango (<code>kShardsMin</code>...),
+  <code>params_ok()</code>. Los defectos viven en un solo sitio del código.
+- <code>config_manager.cpp</code>: <code>parse_flow_table()</code>. Campo ausente, no entero o fuera de rango → defecto +
+  <code>[CONFIG-DEFAULT] flow_table.&lt;campo&gt; ... rango=[a, b]</code>; el sniffer arranca siempre; al final, si hubo alguno,
+  <code>[CONFIG-DEFAULT] N ajustes con valor por defecto en flow_table: revisar sniffer.json</code>.
+- Se copia por el mismo camino que <code>timebase</code>: <code>config_manager</code> → <code>config_types.cpp</code> → <code>main.cpp</code> →
+  <code>RingBufferConsumer::config_</code>.
+- Al arrancar, <strong>siempre</strong> (también si todo es correcto): <code>[FLOW-TABLE] shards=16 max_por_shard=10000
+  capacidad=160000 idle_timeout_s=… active_timeout_s=0 (sin tope) cleanup_interval_ms=1000 log_interval_s=60</code>.</p>
+<h3 id="22-shardedflowmanagerconfig">2.2 <code>ShardedFlowManager::Config</code></h3>
+<p><code>flow_timeout_ns</code> → <code>idle_timeout_ns</code> y <code>active_timeout_ns</code> (0 = sin tope). <code>ring_consumer.cpp</code> deja de escribir
+la tabla a mano y la inicializa con <code>config_.flow_table</code>. Inventario de <code>.flow_timeout_ns</code> fuera del código del
+sniffer (<code>git grep</code>, sin truncar): 4 tests (<code>test_ddos_flow_snap</code>, <code>test_ring_consumer_protobuf</code>,
+<code>test_sharded_flow_full_contract</code>, <code>test_sharded_flow_multithread</code>) y 4 instrumentos de <code>scripts/flow_expiry/</code>
+(<code>d307_paridad_rasgos</code>, <code>d307_ram_flujo</code>, <code>d308_paridad_tolerancia</code>, <code>d308_ram_hist</code>); el resto son páginas viejas de
+<code>site/</code>. Los tests y los tres instrumentos vivos pasan a <code>.idle_timeout_ns</code> en el mismo parche.
+<code>d307_paridad_rasgos.cpp</code> ya no compila desde el paso 1 (populate cambió de firma) y <code>d308_paridad_tolerancia.cpp</code>
+reproduce su salida byte a byte: decisión P4.</p>
+<h3 id="23-tope-de-duracion-activa-perezoso-en-add_packet-o1">2.3 Tope de duración activa: perezoso, en <code>add_packet</code>, O(1)</h3>
+<p>Al llegar un paquete a un flujo existente, si <code>active_timeout_ns &gt; 0</code> y <code>ts &gt;= flow_start_ns</code> y `ts - flow_start_ns</p>
+<blockquote>
+<p>= active_timeout_ns<code>: el estado del flujo vuelve a cero (núcleo e histograma) **y después** se añade el paquete, que
+abre el flujo nuevo. Usa solo marcas de paquete (mismo reloj). No necesita recorrer la tabla. Contador</code>cortes_tope`.
+Un flujo cortado que luego queda inactivo lo recoge la limpieza por inactividad.</p>
+</blockquote>
+<h3 id="24-limpieza-por-inactividad-desde-la-cola-de-la-lru-ocaducados">2.4 Limpieza por inactividad: desde la cola de la LRU, O(caducados)</h3>
+<p>La LRU de cada shard pone delante el flujo del último paquete; la cola es el de paquete más antiguo. Por shard, con su
+lock: mientras la cola esté caducada (<code>now - last_seen &gt; idle_timeout_ns</code>), borrar con <code>lru_pos</code> (O(1)) y <code>pop_back</code>;
+parar en la primera que no lo esté. Coste O(caducados + shards), y el lock de cada shard solo mientras borra lo suyo.</p>
+<p>Matiz: la LRU ordena por <strong>llegada</strong>, no por marca. Con marcas desordenadas, un flujo caducado puede quedar detrás de
+uno vivo y esperar a una pasada posterior. Se acepta y se documenta; el contador permite verlo.</p>
+<h3 id="25-should_expire-con-guarda">2.5 <code>should_expire</code> con guarda</h3>
+<p>Si <code>last_seen &gt; now</code>, el flujo no caduca y se cuenta en <code>marcas_futuras</code>. Si en el E2E sale distinto de 0, los dos
+relojes no son la misma base y hay que parar (mide la suposición de §1).</p>
+<h3 id="26-hilo-de-la-tabla">2.6 Hilo de la tabla</h3>
+<p><code>flow_table_loop</code> en <code>RingBufferConsumer</code>, junto a <code>timebase_loop</code> y con su mismo esquema (duerme a trozos de 100 ms
+para que la parada no espere): cada <code>cleanup_interval_ms</code> limpia; cada <code>log_interval_s</code> escribe</p>
+<p><code>[FLOW-TABLE] vivos=N capacidad=C caducados=X cortes_tope=Y desalojos_lru=Z marcas_futuras=F max_lock_us=L</code></p>
+<p>con contadores del intervalo. <code>desalojos_lru</code> hace visible lo que hoy pasa en silencio con la tabla llena; si no es 0,
+la tabla se queda corta para el tráfico y el admin lo ve. Política de logs DAY284: línea mínima y periódica por
+defecto.</p>
+<h3 id="27-fuera-lo-que-miente">2.7 Fuera lo que miente</h3>
+<ul>
+<li><code>sniffer.json</code>: fuera <code>kernel_space.flow_timeout_seconds</code>, <code>processing.feature_extraction.flow_timeout_seconds</code> y el
+  bloque <code>user_space</code>.</li>
+<li>Código: sus campos en <code>config_manager.hpp</code> (<code>KernelSpaceConfig::flow_timeout_seconds</code>, <code>UserSpaceConfig</code> entero,
+  <code>parse_user_space</code>, el <code>flow_timeout_seconds</code> de <code>feature_extraction</code>) y en <code>config_types.h/.cpp</code>.</li>
+<li>Si un <code>sniffer.json</code> antiguo los trae: <code>[CONFIG-OBSOLETO] &lt;campo&gt; ya no se usa desde DAY308: la tabla de flujos se
+  configura en flow_table</code> (precedente: <code>ddos_victim_ewma_tau_s</code>, DAY298). Decisión P3.</li>
+<li>El resto de campos ceremoniales de <code>processing.feature_extraction</code> (<code>max_concurrent_flows</code>, ...) no se tocan aquí:
+  DEBT-SNIFFER-CONFIG-CEREMONIAL-001, rama propia.</li>
+</ul>
+<h2 id="3-decisiones-que-te-tocan">3. Decisiones que te tocan</h2>
+<ul>
+<li><strong>P1. Defecto de <code>idle_timeout_s</code>.</strong> El código decía 120 s (<code>ring_consumer.cpp</code>); el JSON decía 300 s en dos sitios.
+  Ninguno se aplicaba: hoy un flujo inactivo no caduca nunca (solo lo saca la LRU con la tabla llena). Cualquier valor
+  cambia lo que ve ddos_v2: un flujo que vuelve tras estar inactivo más que el tope empieza con
+  <code>flow_packet_count</code> a cero. Propongo <strong>300 s</strong>: es el mayor de los dos declarados, el que menos cambia la semántica
+  respecto a hoy, y su valor óptimo lo medirá el mismo barrido que el tope activo.</li>
+<li><strong>P2. Intervalos.</strong> <code>cleanup_interval_ms</code> 1 000 y <code>log_interval_s</code> 60. ¿De acuerdo?</li>
+<li><strong>P3. Campos antiguos.</strong> ¿Aviso <code>[CONFIG-OBSOLETO]</code> si aparecen (propuesto), o silencio?</li>
+<li><strong>P4. <code>d307_paridad_rasgos.cpp</code>.</strong> No compila desde el paso 1 y lo sustituye <code>d308_paridad_tolerancia.cpp</code>, que da la
+  misma salida. Propongo borrarlo en este parche (la historia de git lo conserva y el documento de DAY307 dice qué
+  hacía).</li>
+</ul>
+<h2 id="4-predicciones-escritas-antes-de-medir">4. Predicciones (escritas antes de medir)</h2>
+<ul>
+<li><strong>Paridad</strong>: con los defectos, el instrumento de paridad no cambia ni un byte (<code>fbc2b693…</code> sin banderas): no llama a
+  la limpieza y su generador no deja huecos de más de 2 s dentro de una conversación, así que ni el tope (desactivado)
+  ni la inactividad tocan sus flujos.</li>
+<li><strong>Coste de la limpieza</strong> (instrumento nuevo <code>d308_limpieza.cpp</code>, tabla llena de 160 000 flujos, todos caducados,
+  antes y después, <strong>escribiendo en <code>/tmp</code></strong>):</li>
+<li>Antes (O(n²)): del orden de segundos en total. No sé el valor; la cuenta (~5·10⁷ pasos de lista por shard) dice
+    entre 0,5 y 10 s.</li>
+<li>Después: entre 10 y 100 ms en total y por debajo de 10 ms de lock por shard.</li>
+<li>Con nada caducado, después: por debajo de 50 µs por pasada (una comprobación por shard).</li>
+<li><strong>E2E del lab</strong>: <code>marcas_futuras=0</code>; <code>vivos</code> se estabiliza en lugar de crecer hasta la capacidad; <code>desalojos_lru=0</code>
+  en la corrida normal.</li>
+<li><strong>Tests</strong>: 82/82 más el test nuevo, y los 3 tests sin registrar en verde.</li>
+</ul>
+<h2 id="5-plan-de-medida-antes-y-despues">5. Plan de medida, antes y después</h2>
+<ol>
+<li>Instrumento <code>d308_limpieza.cpp</code> contra el código de HOY (la <code>cleanup_expired_flows</code> O(n²) existe): coste con la
+   tabla llena y todo caducado, y con nada caducado. Salida en <code>/tmp</code>.</li>
+<li>Parcheador (<code>--check</code>/<code>--apply</code>, sha256, anclas únicas, probado en copia desechable).</li>
+<li>Test nuevo registrado en ctest, <code>test_flow_expiry</code>: inactividad (con hora inyectada), tope activo (corte y flujo
+   nuevo con estado a cero), guarda de marcas futuras, borrado desde la cola con marcas desordenadas, contadores y
+   el parser de <code>flow_table</code> (ausente, no entero, fuera de rango, reglas cruzadas → defecto y aviso).</li>
+<li><code>make pipeline-build PROFILE=production</code>, <code>make test-components PROFILE=production</code>, tests sin registrar, paridad
+   en los dos perfiles, instrumento de limpieza después, y E2E del lab con la línea <code>[FLOW-TABLE]</code>.</li>
+</ol>
+<h2 id="6-resultado-escrito-despues-de-medir-las-secciones-1-5-se-dejan-como-se-escribieron-antes">6. Resultado (escrito DESPUÉS de medir; las secciones 1-5 se dejan como se escribieron antes)</h2>
+<p>Commit del paso: <code>97e48add</code> (<code>feat(sniffer): DAY308 paso 2 — caducidad de la tabla de flujos, configurada en
+flow_table</code>). Medidas en el defender.</p>
+<h3 id="61-decisiones-de-alonso">6.1 Decisiones de Alonso</h3>
+<p>P1: <code>idle_timeout_s</code> 300 s, también como defecto en el código. P2: <code>cleanup_interval_ms</code> 1 000 y <code>log_interval_s</code> 60,
+con el mismo criterio: el JSON se lee siempre; si un campo falta, no es entero o está fuera de rango, se aplica el
+defecto escrito en el código (igual al del JSON) y se avisa. P3: aviso <code>[CONFIG-OBSOLETO]</code>, y la línea <code>[FLOW-TABLE]</code>
+del arranque dice el valor de cada campo y de dónde sale (JSON o defecto, y por qué). P4: fuera
+<code>d307_paridad_rasgos.cpp</code>.</p>
+<h3 id="62-cambio-sobre-el-diseno-antes-de-escribir-el-parche">6.2 Cambio sobre el diseño, antes de escribir el parche</h3>
+<p>Los parámetros (<code>flow_table_params.hpp</code>, sin JSON) se separan del lector (<code>flow_table_config.hpp</code>, con jsoncpp): el
+<code>ShardedFlowManager</code> incluye solo los parámetros, para que los tests y los instrumentos que lo enlazan no necesiten
+jsoncpp. El lector sigue el patrón de <code>heads_config.hpp</code> (DAY305): sin estado y probado suelto.</p>
+<h3 id="63-medidas">6.3 Medidas</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Antes</th>
+<th>Paso 2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Limpieza, 80 000 flujos, nada caducado (por pasada)</td>
+<td>8,7-9,1 ms</td>
+<td>1,2 µs</td>
+</tr>
+<tr>
+<td>Limpieza, 8 000 caducados</td>
+<td>1,49-1,57 s</td>
+<td>2,5-2,6 ms</td>
+</tr>
+<tr>
+<td>Limpieza, 72 000 caducados</td>
+<td>6,0-6,1 s</td>
+<td>32 ms</td>
+</tr>
+<tr>
+<td>Paridad sin banderas (contra <code>antes.tsv</code>)</td>
+<td>—</td>
+<td>idéntica (<code>fbc2b693…</code>)</td>
+</tr>
+<tr>
+<td>Paridad con banderas de producción (contra el paso 1)</td>
+<td>—</td>
+<td>0 eventos distintos</td>
+</tr>
+<tr>
+<td>Tests del sniffer en ctest</td>
+<td>18</td>
+<td>19 (<code>test_flow_expiry</code>)</td>
+</tr>
+<tr>
+<td>Tests sin registrar (4 / 6 / 3)</td>
+<td>pasan</td>
+<td>pasan</td>
+</tr>
+</tbody>
+</table>
+<p><code>test_flow_expiry</code>: 26 pruebas; detecta las cuatro mutaciones probadas (sin guarda en <code>should_expire</code>, tope roto,
+desalojo sin contar, limpieza que no para en la cola).</p>
+<p><strong>E2E del lab</strong> (pipeline completo, 7 minutos, tráfico de fondo): la línea <code>[FLOW-TABLE]</code> del arranque con los seis
+campos de origen <code>(JSON)</code>; ningún <code>[CONFIG-DEFAULT] flow_table</code> ni <code>[CONFIG-OBSOLETO]</code>; 7 líneas periódicas con
+<code>marcas_futuras=0</code> y <code>desalojos_lru=0</code> en todas; vivos de 22 a 72; 12 y 13 caducados en las líneas 6 y 7 (los
+primeros flujos en pasar 300 s sin paquetes); <code>max_lock_us</code> entre 10 y 277.</p>
+<p><strong><code>marcas_futuras=0</code> mide la suposición de §1:</strong> la marca del paquete (<code>bpf_ktime_get_ns</code>) y la hora de la tabla
+(<code>steady_clock</code>) son el mismo reloj.</p>
+<h3 id="64-predicciones">6.4 Predicciones</h3>
+<ul>
+<li><strong>Se cumplieron:</strong> paridad en los dos perfiles; caducados exactos; limpieza con 8 000 y 72 000 caducados (2-5 ms y
+  20-40 ms predichos); E2E (orígenes JSON, <code>marcas_futuras=0</code>, <code>desalojos_lru=0</code>, caducados hacia la 6.ª línea).</li>
+<li><strong>Fallaron:</strong></li>
+<li><strong>Limpieza sin caducados (2-4 µs predichos, 1,2 µs medidos).</strong> Apliqué el factor del defender en trabajo con
+    memoria a una pasada que solo mira la cola de 16 shards.</li>
+<li><strong>Antes de la limpieza con 72 000 caducados (2,7-4,5 s predichos, 6 s medidos).</strong> El mismo error en sentido
+    contrario: <code>list::remove</code> persigue punteros por memoria, y ahí la VM castiga más que el factor del microbanco
+    (×3,4).</li>
+<li><strong>"83 de 83" en <code>make test-components</code>: mal planteada.</strong> El "82" del log es el número de tests del firewall, no
+    el total (9 + 19 + 15 + 3 + 82 = 128). La regla de comprobación de DAY307 (<code>grep 'out of 82'</code>) solo miraba al
+    firewall: se corrige comprobando las cinco líneas de resumen, cada una con su número esperado, y que todas digan
+    <code>0 tests failed</code>.</li>
+<li><strong>Diferencia con el diseño:</strong> el instrumento de limpieza llena la tabla a la mitad (80 000 flujos), no entera, para
+  que la LRU no desaloje y los caducados esperados sean exactos.</li>
+</ul>
+<h3 id="65-siguiente-en-la-rama">6.5 Siguiente en la rama</h3>
+<p>Batería de la etapa 2 (ddos_v2) y E2E antes/después; registrar en ctest los tres tests sin registrar
+(DEBT-SNIFFER-TESTS-NOT-REGISTERED-001); EMECAS+++ production; PR.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

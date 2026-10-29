@@ -1,0 +1,1052 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-heads/day306_retirar_ddos_v1/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>DAY306 — Retirada de la cabeza DDoS v1 (DEBT-DDOS-V1-RETIRE-001) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day306-retirada-de-la-cabeza-ddos-v1-debt-ddos-v1-retire-001" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY306 — Retirada de la cabeza DDoS v1 (DEBT-DDOS-V1-RETIRE-001)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#por-que" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Por qué
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#inventario-medido-antes-de-tocar-nada" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Inventario medido (antes de tocar nada)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#commits" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commits
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#verificacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Verificación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lecciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deudas-que-deja-o-abre" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas que deja o abre
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="day306-retirada-de-la-cabeza-ddos-v1-debt-ddos-v1-retire-001">DAY306 — Retirada de la cabeza DDoS v1 (DEBT-DDOS-V1-RETIRE-001)</h1>
+<p>Rama <code>feat/ddos-v1-retire</code>, desde main con el merge de DAY305 (<code>9dcf014e</code>). Marca en el código: <code>[DDOS-V1-RETIRE-D306]</code>.
+Herramientas del día en <code>scripts/ddos_v1/</code>.</p>
+<h2 id="por-que">Por qué</h2>
+<p>La cabeza DDoS v1 (bosque sintético de 9 rasgos, detrás de level1) estaba apagada desde DAY305, pero su código, su
+configuración, sus campos del proto y su manivela de entrenamiento seguían en el repo. ddos_v2 es la única cabeza
+entrenada y certificada. Decisión de Alonso: retirar todo lo que use la v1, respetar lo que use la v2 y, por ahora,
+lo que usen las demás cabezas (ransomware, traffic, internal), que están apagadas a sabiendas porque se reescribirán
+desde cero.</p>
+<h2 id="inventario-medido-antes-de-tocar-nada">Inventario medido (antes de tocar nada)</h2>
+<p><code>inventario_ddos_v1_d306.sh</code> (quién nombra cada símbolo, por clase de fichero) y <code>lectura2_d306.sh</code> (cruces y, para
+cada candidato a borrar, si lo cita el paper y quién más lo usa). Predicciones que NO se cumplieron y cambiaron el plan:</p>
+<ul>
+<li>La compuerta <code>l2_gate</code> / <code>FORCE_ALL_HEADS</code> no era solo de la v1: abre también ransomware, traffic e internal. Se
+  queda. ddos_v2 no pasa por ella (corre en todo evento de flujo).</li>
+<li><code>source_ip_dispersion</code> no tenía un segundo significado con ese nombre: solo lo consumía la v1. Alonso: si la v2 no
+  lo usa, no tiene sentido capturarlo. Fuera.</li>
+<li>Más restos de los previstos: el CSV del ml-detector escribía los diez rasgos v1 como columnas 76-85.</li>
+</ul>
+<p>Hallazgos de la lectura completa:</p>
+<ul>
+<li>Quitar el bloque del JSON a secas tumbaba el ml-detector por dos sitios: <code>config_loader</code> (<code>get_required</code>) y
+  <code>etcd_client.cpp:155</code>, donde <code>operator[]</code> sobre un JSON no constante crea un null y <code>value()</code> lanza.</li>
+<li>El CSV elegía la predicción level2 por POSICIÓN (0 = DDoS, 1 = ransomware). Con ddos_v2 en la posición 0, la v1
+  caía en la columna de ransomware. Ahora elige por <code>model_type</code>.</li>
+<li>Ninguno de los 40 ficheros borrados de <code>ml-training</code>, <code>models</code> y la raíz lo nombra código vivo ni lo cita el paper
+  (<code>docs/latex/main.tex</code>, <code>docs/paper/v26-pre.tex</code>).</li>
+</ul>
+<h2 id="commits">Commits</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Commit</th>
+<th>Qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td><code>349a3a63</code></td>
+<td>ml-detector: fuera <code>DDoSDetector</code>, <code>ddos_trees_inline.hpp</code>, el extractor v1, su paso en zmq_handler y <code>ml.level2.ddos</code> / <code>thresholds.level2_ddos</code>. <code>[CONFIG-OBSOLETO]</code> si un JSON aún los trae (el ml-detector arranca igual). <code>[HEADS]</code> sin <code>ddos_v1</code>, <code>[DETECCIONES]</code> sin <code>ddos</code>, <code>[HEAD-SCORES]</code> con <code>ddos_v2</code>. CSV por <code>model_type</code>. Dataset DDoS v2: <code>old_ddos_*</code> = -1. <code>test_detectors</code> con traffic e internal.</td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>1195f91a</code></td>
+<td>Proto: <code>reserved 2, 3, 4, 6, 8, 9, 10</code> y los siete nombres. Sniffer sin los siete extractores ni sus centinelas. CSV: columnas 77-79, 81 y 83-85 vacías hasta la rama del RAG Logger. Tests y herramientas sintéticas sin campos v1. <code>.pb.*</code> y <code>_pb2.py</code> regenerados con <code>make proto</code>.</td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>dfa5e0b1</code></td>
+<td><code>sniffer.json</code> sin el bloque <code>fast_detector.ddos</code> PLANNED (nadie lo leía). <strong>Por un error de orden en los comandos, este commit lleva también los 40 borrados</strong> (ver abajo).</td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>76cecd17</code></td>
+<td>Makefile (fuera la firma de <code>xgboost_ddos.ubj</code> en <code>sign-models</code> y el target <code>ddos-regen</code>) y <code>.gitignore</code>. Su mensaje describe los 40 borrados, que en realidad entraron en el commit 3.</td>
+</tr>
+<tr>
+<td>5</td>
+<td>—</td>
+<td>Este documento, el BACKLOG y el prompt de DAY307.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Erratum de los commits 3 y 4.</strong> <code>git rm</code> mete los borrados en el índice en el acto. Los comandos de Claude pedían
+<code>git rm</code> antes del commit 3, así que el commit 3 (<code>dfa5e0b1</code>) se llevó los 40 borrados con un mensaje que solo habla
+de <code>sniffer.json</code>, y el commit 4 (<code>76cecd17</code>) solo lleva Makefile y <code>.gitignore</code>, con un mensaje que describe los
+borrados. El contenido de la rama es el correcto; lo que no casa es qué mensaje describe qué cambio. No se reescribe
+la historia: queda anotado aquí y en la PR.</p>
+<h2 id="verificacion">Verificación</h2>
+<ul>
+<li>Cada parcheador valida todo antes de escribir: sha256 de cada fichero de partida, anclas únicas, sha256 de cada
+  bloque borrado, estado "ya aplicado" reconocido. Los tres dieron <code>[OK]</code> a la primera.</li>
+<li>Compilación <code>pipeline-build PROFILE=production</code> y <code>tools-build</code>: 0 diagnósticos en los dos commits de código.</li>
+<li><code>test-components PROFILE=production</code>: 100 % (82/82 en la suite grande).</li>
+<li><code>.pb.h</code> regenerado: 0 apariciones de <code>packet_symmetry</code>; los campos v2 presentes.</li>
+<li>Regresión <code>lab-e2e-protegidos</code> (ddos_v2), PASA en las tres corridas:</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Corrida</th>
+<th>FIN (DROP de .50)</th>
+<th>Alertas .61</th>
+<th>Identidad</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>tras commit 1</td>
+<td>10 765</td>
+<td>5383</td>
+<td>exacta</td>
+</tr>
+<tr>
+<td>tras commit 2</td>
+<td>10 778</td>
+<td>5388</td>
+<td>exacta</td>
+</tr>
+<tr>
+<td>tras commits 3 y 4</td>
+<td>10 753</td>
+<td>5377</td>
+<td>exacta</td>
+</tr>
+</tbody>
+</table>
+<p>Referencia de corridas previas: DAY303 10 782 / 5391, DAY305 10 770 / 5384, ocho corridas de EMECAS 10 741-10 787 /
+5369-5393. Las tres de hoy caen dentro.</p>
+<h2 id="lecciones">Lecciones</h2>
+<ul>
+<li><strong>Una regresión de replay se predice como rango, no como identidad.</strong> Predije "idéntico a DAY305" y salió 5 por
+  debajo; la comparación con las corridas guardadas mostró que el replay varía ±25 entre corridas. La predicción
+  correcta era "dentro de [10 741, 10 787] / [5369, 5393]".</li>
+<li><strong><code>git rm</code> toca el índice al momento.</strong> Si hay que partir borrados y ediciones en commits distintos, el <code>git rm</code> va
+  justo antes del commit que debe llevarlos, no antes.</li>
+<li><strong>Leer el fichero entero sigue mandando.</strong> Los dos puntos que habrían tumbado el ml-detector (<code>etcd_client</code> y el
+  cargador) solo aparecían leyendo los ficheros completos, no en los conteos del inventario.</li>
+<li><strong>En el Mac, <code>cat -A</code> no existe</strong> (BSD): <code>cat -vet</code>.</li>
+</ul>
+<h2 id="deudas-que-deja-o-abre">Deudas que deja o abre</h2>
+<ul>
+<li>DEBT-DDOS-V1-RETIRE-001: CERRADA (pendiente EMECAS+++ y merge).</li>
+<li>DEBT-PROTO-CONTRACTS-SPLIT-001 (nueva, Alonso): contratos protobuf propios sniffer→ml-detector y
+  ml-detector→firewall, para repartir la carga; el contrato actual quedará deprecado. Rama propia, más adelante.</li>
+<li>DEBT-DDOS-V2-PINNED-ENV-001 (nueva): <code>ml-training/requirements-ddos-pinned.txt</code> lo instala el Vagrantfile; su
+  comentario habla del sha de la manivela v1 (<code>56f0c5ae</code>). Medir con qué entorno se entrena la v2
+  (<code>export_ddos_v2_fact_rf.py</code>) y reescribir el comentario o el pin.</li>
+<li>DEBT-REPO-RESIDUOS-001 (ampliada): <code>tools/generate_synthetic_events</code> y los targets <code>day38-step2/3</code> (escriben a
+  <code>logs/rag/</code>, RAG retirado); scripts de análisis que parsean formatos de log viejos (<code>scripts/d279_*</code>,
+  <code>scripts/d282_head_scores.sh</code>, <code>join_flood_escalation*.py</code>); parcheadores históricos de la raíz;
+  <code>run_crank_sandbox.sh</code> (sin trackear, en disco local).</li>
+<li>Documentación desfasada (rama del RAG Logger): <code>ml-detector/docs/feature_schema.md</code> y los comentarios de
+  <code>csv_event_writer.hpp</code> describen las columnas v1; <code>contract_validator.cpp</code> resume "40 embedded (4x10)".</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

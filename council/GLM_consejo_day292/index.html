@@ -1,0 +1,990 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/council/GLM_consejo_day292/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>GLM consejo day292 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hallazgos-transversales" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              GLM consejo day292
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#hallazgos-transversales" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hallazgos transversales
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-b-sin-victim_pps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. ¿B sin victim_pps?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-basta-diversificar-generadores" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. ¿Basta diversificar generadores?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-cablear-antes-o-iterar-dataset-antes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. ¿Cablear antes o iterar dataset antes?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-politica-de-agregacion-cero-bloqueos-falsos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Política de agregación (cero bloqueos falsos)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-regla-arbol-poco-profundo-o-bosque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. ¿Regla, árbol poco profundo o bosque?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-sacar-el-arranque-del-entrenamiento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. ¿Sacar el arranque del entrenamiento?
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-lo-que-se-os-ha-pasado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Lo que se os ha pasado
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+  <h1>GLM consejo day292</h1>
+
+<p>El Consejo se reúne. Antes de las siete preguntas, cinco hallazgos que las atraviesan; después, respuesta por pregunta. Como vosotros: no votamos, dejamos predicciones falsables.</p>
+<h2 id="hallazgos-transversales">Hallazgos transversales</h2>
+<p><strong>A. Vuestra evidencia "fría" aún no es válida.</strong> Las corridas frías son de otro código (otro contrato de rasgos). Cualquier conclusión sobre víctima fría —incluida la comparación B vs B-sin-victim_pps— está confundida por el cambio de contrato. Re-capturad el escenario frío con código v2 antes de cerrar la pregunta 1. Es barato y es bloqueante.</p>
+<p><strong>B. El fallo frío predecible es auto-absorción, no "el ratio no sirve en frío".</strong> Clave nueva, α = 0,1, suelo 10 pps, ataque de 60 pps: ratio por ventana ≈ 6 → 6 → 5,3 → 3,7 → 2,9. Cruza 3 en ~4 ventanas, pero la clave no es elegible para presión hasta la ventana 30. Techo de recall ≈ 4/90 ≈ <strong>4-5 %</strong>. Observado: 8 % (y con 100 pps: mismo cálculo, ~4 %; observado 13 %). Mismo orden; la discrepancia de 2-3× es justo lo que el plot de ratio(t) debe explicar (sospechamos el código viejo). Predicción falsable: si congeláis la EWMA en el suelo hasta que la clave tenga 30 ventanas, el recall frío a 60/100 pps salta a ~90-100 % sin tocar el modelo.</p>
+<p><strong>C. Falta la métrica que más importa en un hospital: el colateral</strong> (FP sobre el inocente .51 concurrente al ataque). Los rasgos de víctima son compartidos por atacante e inocente; lo único que separa sus paquetes son los rasgos de flujo/paquete — es decir, las firmas que queréis de-empezar a ignorar. La dependencia de firma no es solo un riesgo de generalización: <strong>está cargando el cero-colateral</strong>. ¿Está .51 dentro del cálculo de FP de B, o solo contáis el contraste de .50? Publicadlo como columna en todas las evaluaciones, incluido el leave-family-out.</p>
+<p><strong>D. Ataques desde una sola IP no son DDoS, y el contrato carece del rasgo estructural que generaliza entre familias:</strong> la tasa de fuentes nuevas por víctima y ventana. Reflexión y SYN spoofeado traen muchas fuentes primera-visita; un backup DICOM de 200 pps es UNA fuente. Propuesta de contrato v2.1: <code>victim_src_newness</code> (fracción de paquetes de fuentes no vistas en las últimas W ventanas). Coste kernel acotado (LRU/bloom por clave). Es la adición de mayor valor por byte de contrato: resuelve "backup legítimo vs ataque a la misma tasa" sin depender del tamaño de paquete.</p>
+<p><strong>E. La pata benigna es el cuello de botella.</strong> Hoy: DNS 5-20 pps + ambiente. Faltan, por orden de daño: TCP benigno de primera clase (vuestro LOFO sin SYN ya lo demostró: 99 % del TCP inocente marcado), benigno a escala 10/50/200/1000 pps, benigno bulk (pocos flujos, cuentas enormes, minutos — el FP clásico de detectores volumétricos en hospitales) y benigno raro legítimo (tormentas SNMP, burst NTP post-reinicio).</p>
+<h2 id="1-b-sin-victim_pps">1. ¿B sin victim_pps?</h2>
+<p>Sí como candidato de sombra, pero el dilema absoluto/relativo está mal planteado:</p>
+<ul>
+<li>El umbral 30-40 de B tiene margen benigno_máx/ataque_mín = 20/30 = <strong>1,5×</strong>. Un margen de 1,5× en el único eje decisivo no sobrevive a ningún despliegue con benigno &gt; 30 pps, que es casi todos. Reportad siempre el margen del umbral, no solo el umbral.</li>
+<li>La regla absoluta "solo en frío" que proponéis es matemáticamente el suelo del ratio: ratio ≥ 3 con denominador congelado en 10 pps ≡ pps ≥ 30. No necesitáis un híbrido: necesitáis arreglar el warm-up. Recomendación: <strong>EWMA congelada en el suelo hasta 30 ventanas de edad</strong>, dinámica actual después. Coste medible: una subida legítima en clave joven da ratio alto hasta ~30 s — aceptable si la política exige clave madura para el tier duro (pregunta 4).</li>
+<li>Decisión con números: tras re-capturar frío con v2 y congelar la EWMA, objetivo recall frío 60/100 ≥ 90 % del cálido. Si se cumple, sin regla absoluta. Si no, regla absoluta solo-para-claves-jóvenes con umbral = 3×suelo, el suelo como parámetro de despliegue ("debajo de esto la víctima está silenciosa"), y contador de disparos separado y alarmado. Una regla absoluta silenciosa falla en silencio; una contada, no.</li>
+</ul>
+<h2 id="2-basta-diversificar-generadores">2. ¿Basta diversificar generadores?</h2>
+<p>Necesario, no suficiente:</p>
+<ul>
+<li><strong>Health-check del dataset (barato y demoledor):</strong> stump de un solo rasgo sobre el dataset. Si algún rasgo alcanza AUC &gt; 0,9 solo, tenéis un atajo, no un modelo. Hoy <code>mean_packet_size</code> seguro la viola. Objetivo tras el rediseño: ninguno &gt; 0,9.</li>
+<li><strong>Cruzar marginales deliberadamente:</strong> benigno con la misma distribución lognormal de tamaños que el ataque, incluyendo el 1442 B (vuestro único FP no transitorio fue exactamente esa colisión); benigno a 200-1000 pps contra ataques a 30; TCP benigno completo (SYN+datos+FIN) y UDP unidireccional (syslog, SNMP).</li>
+<li><strong>Generalización como métrica de primera clase:</strong> CICDDoS2019 tiene 12 familias. Entrenad con 5-6, dejad 4 held-out (SSDP/MSSQL/LDAP/NetBIOS) y reportad recall Y colateral en held-out en cada iteración. Objetivo declarado, p. ej. ≥ 80 % en reflexión no vista. Hoy es 0 %; ese número en el dashboard gobierna el rediseño.</li>
+<li><strong>Ejes que cambian rasgos en producción:</strong> fragmentación aleatorizada (ya tenéis udpB), encapsulación (+4 B VLAN, +24-78 B de túnel desplazan <code>mean_packet_size</code> y rompen umbrales en bytes — test de invarianza re-evaluando con offsets), y jitter temporal en los generadores: un generador CBR es una firma por sí mismo aunque no midáis inter-llegadas (estabiliza victim_pps y flow_packet_count).</li>
+</ul>
+<h2 id="3-cablear-antes-o-iterar-dataset-antes">3. ¿Cablear antes o iterar dataset antes?</h2>
+<p>Cablear ya, <strong>en sombra con bloqueo desactivado</strong>, e iterar el dataset en paralelo. Razón medible: las preguntas 1 y 2 dependen de distribuciones que el lab no puede muestrear (pps benigno real por clave, frecuencia real de claves frías, tamaños reales). La sombra las mide; el trabajo de paridad/latencia se reutiliza entero entre versiones del modelo.</p>
+<p>Puertas que añadir a vuestra lista: (a) determinismo — mismo pcap replay dos veces → decisiones idénticas; (b) fixtures de frontera — serialización de umbrales float con precisión completa (el codegen que imprime con dígitos de menos es EL bug clásico de paridad; se manifiesta solo en paquetes exactamente en el umbral); (c) fixtures de inicio de flujo — vuestros 6 FP en los primeros 0,5 s de A huelen a rasgos degenerados (entropía de 1 paquete, completion desconocida); el contrato debe definir la política NaN y la paridad debe probarla; (d) criterio de promoción cuantitativo: 30 días de sombra, 0 falsos bloqueos sobre tráfico real, colateral &lt; 1 % de paquetes inocentes en ataques sintéticos inyectados, revisión manual de cada disparo del tier duro.</p>
+<p>Dejad victim_pps calculándose y logueándose aunque el modelo no lo use: es el dato con el que calibraréis el suelo por despliegue.</p>
+<h2 id="4-politica-de-agregacion-cero-bloqueos-falsos">4. Política de agregación (cero bloqueos falsos)</h2>
+<p>Dos tiers; el modelo por paquete no bloquea nada por sí solo:</p>
+<ul>
+<li><strong>Tier suave (automático, por víctima):</strong> rate-limit/deprioritizar cuando la víctima esté en presión Y la fracción marcada de la ventana supere x %, sostenido ≥ 2 ventanas. Métrica de éxito: supervivencia de paquetes inocentes ≥ 99 % en replay del escenario .51-durante-ataque. El rate-limit no tiene semántica de bloqueo falso: degrada, no corta.</li>
+<li><strong>Tier duro (por par origen→víctima, nunca por víctima), condiciones en AND:</strong> víctima en presión; ≥ k de los últimos n paquetes de ese origen marcados; origen fuera de allowlist; clave de víctima madura. k se deriva del benigno: medid la racha máxima de marcados consecutivos por origen en todo el corpus benigno (incluido bulk y rarezas) y poned k &gt; 3× esa racha.</li>
+<li><strong>La aritmética que hace tractable el cero:</strong> un FP por paquete de 10⁻³ (vuestra cota superior con 0 de ~900 filas, regla de tres: 3/n) son decenas de miles de paquetes marcados al día. k-de-n solo no lo arregla porque el FP benigno está correlacionado por flujo (vuestro DNS de 1442 B: se marca el flujo entero). Lo que compra seguridad es el <strong>AND con presión</strong>: un falso bloqueo duro exige (flujo benigno con firma del ataque) Y (víctima bajo ataque real) simultáneos. El residuo es exactamente el colateral — medirlo es la puerta, no asumirlo.</li>
+<li><strong>Hold-down</strong> con backoff (60 s, ×2, máx 1 h), liberación por silencio, log con snapshot de rasgos por bloqueo.</li>
+<li><strong>Disyuntor de saturación:</strong> si &gt; 20 % del tráfico total va marcado &gt; 10 s, alarma y caída a solo-tier-suave. Vuestro propio LOFO sin SYN (99 % del TCP inocente) demuestra que el modelo PUEDE entrar en ese modo con un dataset desplazado; el disyuntor convierte esa clase de fallo en incidente ruidoso, no en apagón del hospital.</li>
+<li>Cobertura: contra fuentes spoofeadas aleatorias el tier duro por origen nunca acumula k — el tier suave por víctima es la única respuesta; contra reflexión, bloquear por reflector funciona.</li>
+</ul>
+<h2 id="5-regla-arbol-poco-profundo-o-bosque">5. ¿Regla, árbol poco profundo o bosque?</h2>
+<p>Es una pregunta empírica y depende de la métrica que hoy no reportáis (colateral). Protocolo: mismos folds, comparad stump de ratio / regla "ratio &gt; K Y firma" / árbol de profundidad 3-4 / el bosque, con columnas: recall cálido, FP contraste, colateral, LOFO held-out, frío, nodos/latencia. Predicción del Consejo: la regla de ratio gana o empata en recall cálido y <strong>pierde el colateral al ~100 %</strong> (marca también al inocente .51, que comparte todos los rasgos de víctima). Si el bosque solo iguala en recall cálido y no gana en colateral y LOFO, la regla gana por auditable: en un hospital, "bloqueado porque ratio 6, puerto 123, 468 B" vale más que 3714 nodos.</p>
+<p>Alternativa estructural que consideramos la correcta para v3: <strong>factorizad</strong>. Etapa 1: estado de presión — regla explícita y auditable sobre la EWMA que ya vive en el kernel (y donde el warm-up frío se arregla sin re-entrenar nada). Etapa 2: clasificador condicional que separa flujos atacantes de inocentes DENTRO de una víctima en presión, entrenado solo con filas en presión. El bosque actual mezcla las dos preguntas y por eso re-aprende la lógica de umbral. Medid flat vs factorizado en la misma tabla; esperamos bosque más pequeño, frío arreglado en etapa 1 y etapa 2 posiblemente un árbol de profundidad 3.</p>
+<h2 id="6-sacar-el-arranque-del-entrenamiento">6. ¿Sacar el arranque del entrenamiento?</h2>
+<p>Del entrenamiento: correcto — esas filas son benignas-equivalentes y entrenar con ellas enseña a marcar rasgos benignos. Pero el titular debe ser la <strong>latencia y el recall integral</strong>: reportad tiempo-hasta-primera-marca por ataque (p50/p95 — vuestro 0,5-1,5 s), paquetes/bytes de ataque antes de la primera marca, y recall con y sin arranque. 1,4 s sobre 90 s = 1,6 %; los mismos 1,4 s sobre un burst de 5 s = 28 %. Reportad recall frente a duración del ataque.</p>
+<p>Enmascara solo si publicáis el condicional sin el integral. Dos condiciones para que sea limpio: que los 2 s deriven del lag medido (1 ventana + margen), no constante mágica — verificadlo con el plot de disponibilidad de rasgos vs onset; y que el contrato defina qué ve un paquete de la ventana en curso (snapshot de la ventana completada anterior), porque es fuente clásica de divergencia Python/C++ si no se fija.</p>
+<h2 id="7-lo-que-se-os-ha-pasado">7. Lo que se os ha pasado</h2>
+<ol>
+<li>Todo lo de los hallazgos A-D: evidencia fría invalidada por contrato, colateral sin medir, ausencia de rasgos de diversidad de fuentes.</li>
+<li><strong>IC y semillas:</strong> 0 FP en n filas → cota 3/n. Vuestro "0 %" con ~900 filas es ≤ 0,33 % — el diseño lo aguanta solo por el AND de presión. Y las comparaciones 99,45 vs 100 con una sola semilla: repetid con ≥ 10 semillas y reportad dispersión antes de declarar diferencias.</li>
+<li><strong><code>flow_packet_count</code> es un umbral de escala escondido:</strong> vuestros flujos de ataque tienen 5-9·10³ paquetes, el inocente 2·10³; un backup real llega a 10⁵-10⁶. Sin benigno bulk en el entrenamiento, ese rasgo vota "ataque" en producción justo cuando más duele. Normalizadlo (tasa por flujo o log1p) o cruzadlo en el dataset.</li>
+<li><strong>Rampas lentas:</strong> para una rampa exponencial de constante T (ventanas), el ratio en régimen es ≈ 1 + 1/(αT). Con α = 0,1, toda rampa con T ≥ 10 s mantiene ratio ≤ 2: nunca entra en presión y absorbe la línea base. Un atacante que suba ×10 en un minuto es invisible por diseño. Si importa, segunda línea base lenta (τ ~ 1 h) como rasgo v3; si no, declaradlo como exclusión de alcance.</li>
+<li><strong>Alcance declarado:</strong> esta cabeza es volumétrica/reflexión. Slowloris y low-rate aplicacional quedan fuera por construcción — ponedlo por escrito para que nadie confunda "cabeza DDoS" con "todo el DDoS".</li>
+<li>La ponderación 50/50 rompe la calibración: no uséis probabilidades del bosque como riesgo; decisión binaria + política, como ya hacéis.</li>
+<li>Lo que está bien y no conviene tocar: etiqueta por origen (el .51 durante el ataque es la etiqueta correcta y es la que hace medible el colateral), split por corridas completas, 0 pérdidas de captura medidas, y el diagnóstico propio de que aprendéis firmas — es correcto y es la mitad de la solución.</li>
+</ol>
+<p><strong>Veredicto:</strong> B sin victim_pps ratificado para sombra. Condiciones: re-captura fría con v2, EWMA congelada en suelo hasta madurez, colateral en el dashboard, stump-AUC como health-check del dataset, disyuntor de saturación en el E2E, y la factorización presión+condicional como v3. El Consejo no vota: deja arriba las predicciones para que las matéis o las confirméis con datos.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>

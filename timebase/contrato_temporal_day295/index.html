@@ -1,0 +1,1462 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/timebase/contrato_temporal_day295/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.0">
+    
+    
+      
+        <title>Contrato temporal de aRGus — DAY295 (rama fix/event-timestamp-timebase) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#contrato-temporal-de-argus-day295-rama-fixevent-timestamp-timebase" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Contrato temporal de aRGus — DAY295 (rama fix/event-timestamp-timebase)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-inventario-medido-day295-git-grep" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Inventario medido (DAY295, git grep)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-medidas-day295-scriptsd295_suspensionpy-scriptsd295_slew_ratepy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Medidas DAY295 (scripts/d295_suspension.py, scripts/d295_slew_rate.py)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-contrato-version-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Contrato (versión 1)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-aceptacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Aceptación
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-orden-de-los-patchers-atomicos-check-apply-marca-timebase-d295" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Orden de los patchers (atómicos, --check / --apply, marca [TIMEBASE-D295])
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-fuera-de-alcance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Fuera de alcance
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-anexo-day295-tarde-lo-implementado-y-lo-que-no-estaba-en-el-inventario-de-la-manana" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Anexo DAY295 (tarde): lo implementado y lo que no estaba en el inventario de la mañana
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#8-anexo-day296-medido-rama-fixevent-timestamp-timebase" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8. Anexo DAY296 — medido (rama fix/event-timestamp-timebase)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="8. Anexo DAY296 — medido (rama fix/event-timestamp-timebase)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#81-perfil-del-lab" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.1 Perfil del lab
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#82-d17-retraso-partido-en-tramos-mismo-nodo-clock_monotonic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.2 D17: retraso partido en tramos (mismo nodo, CLOCK_MONOTONIC)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#83-saltos-de-pared-de-5-s-en-mitad-de-un-ataque-chrony-parado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.3 Saltos de pared de +-5 s en mitad de un ataque (chrony parado)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#84-correccion-gradual-provocada-adjtimex-chrony-parado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.4 Correccion gradual provocada (adjtimex, chrony parado)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#85-suspension-real-del-mac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.5 Suspension real del Mac
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#86-parquet-y-bronce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.6 Parquet y bronce
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#87-no-verificado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        8.7 No verificado
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#9-anexo-day297-aceptacion-d15-a1-a2-a5-y-secuencia-por-productor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9. Anexo DAY297 — aceptacion D15 (A1, A2, A5) y secuencia por productor
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="9. Anexo DAY297 — aceptacion D15 (A1, A2, A5) y secuencia por productor">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#91-orquestador-de-corridas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.1 Orquestador de corridas
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#92-a1-contabilidad-ntp-60-pps-desde-50-base-51-a-10-pps" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.2 A1 contabilidad (ntp 60 pps desde .50 + base .51 a 10 pps)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#93-orden-de-entrega-corrige-el-orden-intacto-de-87-no-verificable-en-day296" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.3 Orden de entrega (corrige el "orden intacto" de 8.7, no verificable en DAY296)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#94-arranque-en-frio-de-la-etapa-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.4 Arranque en frio de la etapa 1
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#95-a2-gemelo-61-mismos-paquetes-que-el-ataque-otra-ip-tcprewrite-srcipmap-fixcsum" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.5 A2 gemelo .61 (mismos paquetes que el ataque, otra IP; tcprewrite --srcipmap, --fixcsum)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#96-a5-ataque-largo-offline-contra-la-funcion-de-produccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.6 A5 ataque largo (offline contra la funcion de produccion)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#97-no-verificado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        9.7 No verificado
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="contrato-temporal-de-argus-day295-rama-fixevent-timestamp-timebase">Contrato temporal de aRGus — DAY295 (rama fix/event-timestamp-timebase)</h1>
+<p>Árbitro: Alonso. Origen: D16 y D17 (consejo_day294_sintesis.md); aceptación D15.
+Decisiones DAY295: T1 base MONOTONIC; T2 detector [CLOCK-SLEW] + regla del lab; T3 target <code>lab-clock-step</code> en esta rama.</p>
+<h2 id="1-inventario-medido-day295-git-grep">1. Inventario medido (DAY295, git grep)</h2>
+<table>
+<thead>
+<tr>
+<th>Dónde</th>
+<th>Reloj</th>
+<th>Destino</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Flujo Variant A (<code>ring_consumer.cpp:939</code>)</td>
+<td><code>bpf_ktime_get_ns</code> (<code>sniffer.bpf.c:328</code>) = CLOCK_MONOTONIC</td>
+<td><code>event_timestamp</code></td>
+</tr>
+<tr>
+<td>Fast-alert (<code>ring_consumer.cpp:1340</code>)</td>
+<td>idem (event.timestamp del kernel)</td>
+<td><code>event_timestamp</code></td>
+</tr>
+<tr>
+<td>Ventana ransomware (<code>ring_consumer.cpp:1446</code>)</td>
+<td><code>system_clock</code> (epoch)</td>
+<td><code>event_timestamp</code></td>
+</tr>
+<tr>
+<td>Flujo Variant B (<code>main_libpcap.cpp:160</code>)</td>
+<td><code>system_clock</code> al EMITIR (no al capturar)</td>
+<td><code>event_timestamp</code></td>
+</tr>
+<tr>
+<td><code>event_id</code> (<code>:927</code>, <code>:1337</code>)</td>
+<td>monotónico + <code>src^dst</code></td>
+<td>PK del grafo (fuera de alcance, §6)</td>
+</tr>
+<tr>
+<td>Ventanas DDoS kernel, tablero de víctimas</td>
+<td>CLOCK_MONOTONIC / <code>steady_clock</code></td>
+<td>internos</td>
+</tr>
+<tr>
+<td><code>ddos_windows.csv</code> (<code>ddos_kernel_reader.hpp:222</code>)</td>
+<td><code>system_clock</code></td>
+<td>sello epoch</td>
+</tr>
+<tr>
+<td>CSV ml-detector (<code>csv_event_writer.cpp:221</code>)</td>
+<td>copia <code>event_timestamp</code> sin mirar la base</td>
+<td>Parquet <code>timestamp_utc_ns</code> (<code>generate_parquet.py:33</code>)</td>
+</tr>
+<tr>
+<td>CSV firewall (<code>logger.cpp:267/313</code>)</td>
+<td><code>system_clock</code> (ms)</td>
+<td>Parquet firewall (<code>generate_parquet.py:65</code>)</td>
+</tr>
+<tr>
+<td>Reloj de la sombra (<code>zmq_subscriber.cpp:588</code>)</td>
+<td><code>event_timestamp</code> (solo eventos de flujo, parche D293)</td>
+<td>hold, INICIO/FIN</td>
+</tr>
+<tr>
+<td><code>detection.set_timestamp</code> (<code>zmq_subscriber.cpp:712</code>)</td>
+<td><code>event_timestamp.seconds()</code> — TRUNCA los ns</td>
+<td>detección del firewall</td>
+</tr>
+<tr>
+<td>Validador Parquet (<code>validate_roundtrip.py:30/40</code>)</td>
+<td>lee solo la fila <code>[0]</code></td>
+<td>EMECAS</td>
+</tr>
+</tbody>
+</table>
+<p>Hoy <code>event_timestamp</code> (un único <code>google.protobuf.Timestamp</code>, <code>network_security.proto:592</code>) mezcla dos bases:
+flujo y fast-alert en monotónico; ventana ransomware y Variant B en epoch. Origen del 99 % monotónico del Parquet
+2026-10-01 y de la congelación de la sombra en DAY293.</p>
+<h2 id="2-medidas-day295-scriptsd295_suspensionpy-scriptsd295_slew_ratepy">2. Medidas DAY295 (scripts/d295_suspension.py, scripts/d295_slew_rate.py)</h2>
+<ul>
+<li>M1 Suspensión del Mac ~4 min: la VM se CONGELA. REALTIME, MONOTONIC y BOOTTIME pierden lo mismo (B−M cambia
+  0,000000 s). El lab no distingue MONOTONIC de BOOTTIME.</li>
+<li>M2 Tras despertar, chrony (defender) detecta 257,6 s y CORRIGE GRADUALMENTE pese a <code>makestep 1 -1</code>: MONOTONIC y
+  REALTIME corren +81 300 ppm (8,1 %) frente a MONOTONIC_RAW durante ~45 min. R−M no cambia: la corrección
+  gradual es INVISIBLE a R−M. Un hold de 30 s dura 27,7 s reales.</li>
+<li>M3 <code>chronyc makestep</code> manual: REALTIME salta +208,878 s; MONOTONIC y BOOTTIME no (un par: dR 209,4 s, dM 0,547 s).
+  Firma de CLOCK_STEP = cambio brusco de R−M. Tras el salto, MONOTONIC frente a RAW = −1875,5 ppm (corrección de
+  frecuencia de base de chrony, constante).</li>
+<li>M4 El client saltó solo (+257,7 s, 4 min después de detectarlo) ANTES que el defender: chrony sirve su hora
+  corregida, no su reloj. Durante ~4 min client y defender discreparon en ~210-230 s.</li>
+</ul>
+<h2 id="3-contrato-version-1">3. Contrato (versión 1)</h2>
+<p>C1. Base interna única: CLOCK_MONOTONIC. Kernel <code>bpf_ktime_get_ns</code>; espacio de usuario <code>std::chrono::steady_clock</code>
+    (libstdc++ en Linux = CLOCK_MONOTONIC; un test lo comprueba). Ventanas, hold, time_to_block, retrasos y orden se
+    calculan SOLO en esta base, y solo entre eventos con el mismo <code>boot_id</code>.
+C2. Campos nuevos en el evento (nombres provisionales; números al leer el .proto; <code>schema_version</code> sube):
+    - <code>mono_ns</code> (uint64): instante del evento en CLOCK_MONOTONIC.
+    - <code>boot_id</code> (string, /proc/sys/kernel/random/boot_id). <code>originating_node_id</code> ya existe.
+    - <code>producer_start_mono_ns</code> (uint64) + <code>producer_seq</code> (uint64, +1 por evento): orden total y duplicados (A1).
+      La clave (node_id, boot_id, producer_start_mono_ns, producer_seq) es única.
+    - <code>wall_anchor_ns</code> (int64): REALTIME − MONOTONIC vigente al emitir. Epoch = mono_ns + wall_anchor_ns.
+    - <code>clock_state</code> (enum): OK / SLEWING / STEPPED (último salto hace menos de N s, N en el JSON).
+    - <code>time_contract_version</code> (uint32) = 1.
+    - Retraso por salto (D17): <code>sniffer_send_mono_ns</code>, <code>mld_recv_mono_ns</code>, <code>mld_send_mono_ns</code>; el firewall calcula
+      el suyo al recibir. Mismo nodo y mismo boot_id → restas válidas.
+C3. <code>event_timestamp</code> vuelve a significar SIEMPRE epoch (semántica de google.protobuf.Timestamp) = mono_ns +
+    wall_anchor_ns, en todos los tipos de evento y en las dos variantes. Nadie calcula duraciones con él.
+C4. Ancla por proceso productor: muestrea REALTIME − MONOTONIC cada <code>anchor_period_s</code>; si cambia más de
+    <code>step_threshold_s</code> → nueva ancla, log <code>[CLOCK-STEP] delta=… s</code> y contador. Medido: en reposo R−M varía
+    &lt; 0,00001 s en 720 s.
+C5. Detector <code>[CLOCK-SLEW]</code> (uno por nodo, en el sniffer): ppm de MONOTONIC frente a MONOTONIC_RAW por ventana de
+    <code>slew_window_s</code>; si |ppm| &gt; <code>slew_ppm_threshold</code> → aviso periódico y <code>clock_state = SLEWING</code>. Medido: base
+    −1876 ppm, corrección gradual +81 300 ppm. RAW no se usa para medir (el XDP no tiene RAW).
+C6. Bordes: CSV del ml-detector, dataset DDoS, Parquet y logs escriben epoch derivado (C3) y, además, mono_ns,
+    boot_id, producer_seq y clock_state. El firewall deja de truncar (<code>:712</code>) y su sombra usa mono_ns.
+C7. Parámetros en el JSON (el JSON manda; defecto validado + <code>[CONFIG-DEFAULT]</code>; valores de LABORATORIO):
+    anchor_period_s=1 [0,1–60], step_threshold_s=0,05 [0,001–10], slew_window_s=10 [1–300],
+    slew_ppm_threshold=10000 [1000–500000], stepped_recent_s=60 [1–3600].
+C8. Regla del lab: tras suspender el Mac, <code>make lab-clock-step</code> (defender y después client: <code>chronyc makestep</code>;
+    verificación DENTRO de las VMs con chronyc, desfase &lt; 1 ms) antes de cualquier medida.</p>
+<h2 id="4-aceptacion">4. Aceptación</h2>
+<ul>
+<li>Salto inyectado <code>sudo date -s "+5 seconds"</code> y <code>-5</code> en mitad de un ataque: hold 30 ± 0,1 s (en mono_ns), orden
+  intacto por (boot_id, producer_seq), <code>[CLOCK-STEP]</code> registrado, Parquet 100 % en rango.</li>
+<li>Corrección gradual real (suspensión de ~3 min SIN lab-clock-step): <code>[CLOCK-SLEW]</code> y <code>clock_state = SLEWING</code>
+  mientras dure; después, <code>lab-clock-step</code> y vuelta a OK.</li>
+<li>Validador de Parquet sobre TODAS las filas (epoch entre 2020-01-01 y ahora + 1 día).</li>
+<li>Test: steady_clock y clock_gettime(CLOCK_MONOTONIC) difieren &lt; 1 ms.</li>
+<li>D15 (A1 contabilidad con producer_seq, A2 gemelo .61, A5 ataque largo) con los relojes ya fiables.</li>
+</ul>
+<h2 id="5-orden-de-los-patchers-atomicos-check-apply-marca-timebase-d295">5. Orden de los patchers (atómicos, --check / --apply, marca [TIMEBASE-D295])</h2>
+<p>1 proto + <code>make proto</code> → 2 sniffer (flujo, fast-alert, ventana ransomware, Variant B, ancla, CLOCK-STEP, CLOCK-SLEW)
+→ 3 ml-detector (recepción/envío, CSV, dataset DDoS) → 4 firewall (sombra en mono_ns, <code>:712</code>, retraso)
+→ 5 Parquet (esquemas, generate_parquet, validador sobre todas las filas) → 6 Makefile <code>lab-clock-step</code>
+→ 7 pruebas. Compilar y probar con PROFILE=production.</p>
+<h2 id="6-fuera-de-alcance">6. Fuera de alcance</h2>
+<ul>
+<li><code>event_id</code> y <code>community_id</code> no cambian. <code>community_id</code> es el estándar compartido con Suricata y Zeek;
+  <code>event_id</code> es propio de cada sensor (adapters: <code>suricata:</code>, <code>zeek:</code>, <code>wz1:</code> deterministas). La colisión
+  (DEBT-EVENT-ID-COLLISION-001) y la reproducibilidad entre replays (consulta al Consejo DAY180) van en un diseño
+  propio: reacuñar con boot_id/seq resolvería la colisión pero empeoraría la reproducibilidad.</li>
+<li>BOOTTIME (no distinguible en el lab; solo importa si se suspende el nodo del pipeline). TAI (descartado D16).</li>
+<li>Sincronización entre nodos físicos (boot_id y node_id dejan el sitio preparado).</li>
+<li>DEBT-LAB-CHRONY-NO-AUTOSTEP-001: el defender no saltó en 14 min con <code>makestep 1 -1</code>; el client sí (4 min).
+  Evidencia: journals de chrony DAY295. Mitigado por C8.</li>
+</ul>
+<h2 id="7-anexo-day295-tarde-lo-implementado-y-lo-que-no-estaba-en-el-inventario-de-la-manana">7. Anexo DAY295 (tarde): lo implementado y lo que no estaba en el inventario de la mañana</h2>
+<p>Implementado y verificado E2E (commits 1e285785, ad439698, 82e99666, a8bdb27b, df376a42):
+- Proto: enum ClockState, message TimeContext, NetworkSecurityEvent.time_context = 38 (solo añade campos).
+- Sniffer Variant A: timebase.hpp (lógica pura, test_timebase 33/33); sección "timebase" en sniffer.json con
+  [CONFIG-DEFAULT]; hilo del reloj ([CLOCK-STEP], [CLOCK-SLEW]); stamp_time_context en flujo, fast-alert y ventana
+  ransomware; event_timestamp = mono_ns + ancla en los tres; schema_version 32. Log de arranque:
+  "[TIMEBASE] contrato v1 activos: ..." con los valores que llegan al consumidor.
+- Firewall: sombra DDoS sobre time_context.mono_ns; validación de time_context; retraso sniffer-&gt;firewall.</p>
+<p>Correcciones al inventario (§1):
+- Faltaban DOS tiempos más del sniffer, ambos monotónicos: NetworkFeatures.flow_start_time (campo 11) y
+  TimeWindow.window_start (ring_consumer.cpp populate_protobuf_event). flow_start_time es el que el ml-detector
+  copia al bronce correlation_v1 (columnas 5-6) -&gt; el bronce de aRGus iba en segundos desde el arranque (~10427)
+  mientras Suricata, Zeek, los tests del bronce, flow_uid y ADR-057 esperan epoch. Arreglado [TIMEBASE-D295:FLOWSTART]:
+  ambos en epoch derivado. Verificado: flow_start_sec 1791786093,530362835 = mono 12865,876550181 + ancla (dif 23 ns).
+  TimeWindow.sequence_number sigue siendo event.timestamp (es un contador, no un instante).
+- csv_writer del ml-detector está APAGADO desde DAY285 (único consumidor: el Parquet antiguo de parquet-convert).
+  La ruta "CSV ml-detector -&gt; Parquet timestamp_utc_ns" no está viva; el borde vivo hacia el grafo es
+  correlation_writer (bronce). El validador de Parquet sigue mirando solo la fila [0] (pendiente).
+- Detection.timestamp (firewall :712): sin consumidores en todo el repo; se queda en segundos epoch.
+- sniffer_send_mono_ns = instante de SERIALIZACIÓN (entrada en send_queue_), no el envío por socket.
+- Cadena de configuración del sniffer: sniffer.json -&gt; ConfigManager (SnifferConfig) -&gt; config_types.cpp copia a
+  g_config (StrictSnifferConfig) -&gt; main.cpp copia campo a campo a un SnifferConfig nuevo -&gt; RingBufferConsumer.
+  Un eslabón olvidado = defectos en silencio; la línea [TIMEBASE] del arranque es la prueba de que llegó.</p>
+<p>Decisiones del árbitro (DAY295):
+- La sombra cuenta VENTANAS, no segundos: hold_s -&gt; hold_windows en firewall.json (un JSON antiguo con hold_s avisa
+  y se ignora). 1 ventana = 1 s de CLOCK_MONOTONIC del sniffer (mono_ns / 1e9, entero); es la única constante fija
+  (window_ms configurable exigiría recalibrar m, k/n y hold: BACKLOG).
+- Criterio de aceptación de D16 REFORMULADO: el hold dura exactamente hold_windows ventanas (29-30 s medidos en
+  mono_ns, cuantizado por diseño; explica el FIN a 29,3 s de DAY294) y un salto de +-5 s del reloj de pared en mitad de
+  un ataque no lo cambia.
+- time_context con formato inusual: se registra y se marca para estudio, nunca se usa para procesar el evento ni se
+  castiga a la IP del paquete (no es quien lo rompió: el time_context lo escribe nuestro sniffer y viaja por el ZMQ
+  interno; una anomalía apunta a un fallo nuestro, a un productor sin contrato o a un componente comprometido).
+  8 causas: sin_time_context, version, mono_cero, boot_id, futuro, retraso_otro_boot, retraso_negativo,
+  retraso_absurdo. Detalle [TIMEBASE-ANOMALIA] limitado por causa y periodo (anomalias_detalle_max) + recuento en el
+  resumen [TIMEBASE]; si hubo anomalías, también por stderr.
+- Supuesto de la v1: sniffer y firewall en el MISMO nodo (retraso_otro_boot = anomalía). Multinodo: BACKLOG.</p>
+<p>Medido con el pipeline en reposo (DAY295 09:57): retraso sniffer-&gt;firewall media 12-26 ms, máximo 22-90 ms por
+periodo de 10 s; 0 anomalías en las 8 causas. Línea base para el 0,55x bajo dns100.</p>
+<p>Pendiente en esta rama: lab-clock-step; sellos mld_recv/mld_send del ml-detector (D17, partir el retraso en dos
+tramos); validador de Parquet sobre todas las filas; aceptación (saltos +-5 s, corrección gradual real, D15 A1/A2/A5);
+EMECAS+++, PR, merge.</p>
+<h2 id="8-anexo-day296-medido-rama-fixevent-timestamp-timebase">8. Anexo DAY296 — medido (rama fix/event-timestamp-timebase)</h2>
+<h3 id="81-perfil-del-lab">8.1 Perfil del lab</h3>
+<ul>
+<li>El lab ejecutaba binarios de DEBUG (-O0) desde el 2026-10-11: pipeline-start usa build-$(PROFILE) (PROFILE ?= debug), no
+  build-active. Las medidas en reposo del DAY295 (12-26 ms) son de debug. Regla nueva: compilar, probar Y ARRANCAR con
+  PROFILE=production. set-build-profile.sh aceptaba debug|release (build-release no existia); ahora debug|production|tsan|asan.</li>
+</ul>
+<h3 id="82-d17-retraso-partido-en-tramos-mismo-nodo-clock_monotonic">8.2 D17: retraso partido en tramos (mismo nodo, CLOCK_MONOTONIC)</h3>
+<ul>
+<li>ml-detector sella mld_recv_mono_ns (tras el recv, antes de descifrar) y mld_send_mono_ns (antes de serializar), solo si el
+  evento trae time_context. El firewall parte el retraso: sniffer_mld / mld_interno / mld_fw. Causas de anomalia nuevas:
+  8 mld_sin_sello, 9 mld_orden (sniffer_send &lt;= mld_recv &lt;= mld_send &lt;= ahora). Identidad de tramos exacta (&lt;= 0,0001 ms).</li>
+<li>Hallazgo: el firewall escribia ~25 lineas DEBUG por evento a vboxsf con doble vaciado; logging.level del JSON se leia y no se
+  usaba. Arreglado ([LOG-LEVEL-D296], defecto info). Retraso sniffer-&gt;firewall en reposo, production:
+  log debug: media 14-39 ms, max 85 ms (mld_fw 8-25 ms)  -&gt;  log info: media 3,3-5,9 ms, max &lt;= 11 ms (mld_fw 0,3-2,4 ms).
+  Bajo ataque ntp 60 pps: media 2,2-7,6 ms, max &lt;= 18,5 ms. Tramo dominante ahora: sniffer_mld (1,4-4,3 ms).</li>
+</ul>
+<h3 id="83-saltos-de-pared-de-5-s-en-mitad-de-un-ataque-chrony-parado">8.3 Saltos de pared de +-5 s en mitad de un ataque (chrony parado)</h3>
+<ul>
+<li>Ataque ntp 60 pps (.50 -&gt; .1) sobre base .51 10 pps; +5 s a los 43 s del ataque; -5 s a los 27,6 s del hold.</li>
+<li>Sniffer: [CLOCK-STEP] +4,9986 s y -5,0001 s.</li>
+<li>Sombra: primer DROP ventana 14399 (~1,7 s tras el inicio), INICIO 14401 (k=3), ultimo DROP 14489, FIN 14519 = 14489 + 30
+  (hold_windows exacto, sin efecto del salto de -5 s); 5364 DROP, todos de .50; 0 del inocente; 0 anomalias.</li>
+<li>Bronce: inicios de flujo del atacante con hueco de 5,015 s (5 s + 1/60 s), es decir sigue al reloj de pared. El hueco
+  aparece 0,20 s despues del salto: anchor_period_s = 1,0, asi que tras un salto hasta 1 s de flujos lleva el ancla vieja.</li>
+<li>El FIN se emitio 5,6 s de pared despues de su ventana: la sombra decide al llegar eventos y la base acababa justo en la
+  ventana 14519. El reloj de pared no gobierna la exportacion de flujos del sniffer (revisado en el codigo).</li>
+</ul>
+<h3 id="84-correccion-gradual-provocada-adjtimex-chrony-parado">8.4 Correccion gradual provocada (adjtimex, chrony parado)</h3>
+<ul>
+<li>tick 10030 (el de chrony) -&gt; 10530 durante 90 s de monotonico (85,50 s de RAW): [CLOCK-SLEW] 52993,7 ppm (esperado 53000),
+  sin [CLOCK-STEP]; al restaurar, [CLOCK-SLEW] FIN ppm=2993,71 (la base del tick de chrony). Vuelta: un unico [CLOCK-STEP]
+  -4,27485 s = 90,0346 x (1 - 10030/10530), aplicado por chrony al arrancar. 0 anomalias.</li>
+</ul>
+<h3 id="85-suspension-real-del-mac">8.5 Suspension real del Mac</h3>
+<ul>
+<li>Mac dormido 118 s (pmset); la VM quedo 134 s atrasada. chrony lo detecto ~2 min despues de despertar y SALTO +133,994 s
+  (en DAY295 corrigio gradualmente 14 min: no siempre igual). Durante esos ~2 min la epoca del defender va 134 s atrasada.
+  Regla del lab: make lab-clock-step justo al despertar.</li>
+</ul>
+<h3 id="86-parquet-y-bronce">8.6 Parquet y bronce</h3>
+<ul>
+<li>validate_roundtrip.py comprobaba solo la fila [0]: 32 ficheros del ml-detector (691461 de 774069 filas, 89 %) llevaban
+  timestamp_utc_ns monotonico desde 2026-03-08. Ahora se comprueban todas las filas; datos borrados. csv_writer esta
+  apagado desde DAY285: ese gate vigila un camino historico. El camino vivo es el bronce correlation_v1.</li>
+<li>Bronce: 48 % de las filas eran fast-alerts con flow_start = 0 (sin tiempo). Fuera del bronce hasta que sean fiables
+  (correlation_writer.include_fast_alerts = false). Bajo replay DNS hay ~1 fast-alert por paquete.</li>
+</ul>
+<h3 id="87-no-verificado">8.7 No verificado</h3>
+<ul>
+<li>Orden por (boot_id, producer_seq): ningun log ni el bronce llevan producer_seq.</li>
+<li>El salto de -5 s en el bronce (cayo en el hold, solo con la base .51).</li>
+</ul>
+<h2 id="9-anexo-day297-aceptacion-d15-a1-a2-a5-y-secuencia-por-productor">9. Anexo DAY297 — aceptacion D15 (A1, A2, A5) y secuencia por productor</h2>
+<h3 id="91-orquestador-de-corridas">9.1 Orquestador de corridas</h3>
+<ul>
+<li>scripts/timebase/lab_corrida.sh (Mac) + lab_corrida_defender.sh: lab-clock-step, parada, nada vivo, logs a cero,
+  arranque PROFILE=production, ESTABLE, tcpdump en eth2 del defender, client, parada y contabilidad
+  (a1_contabilidad.sh). Para al primer fallo. ~7 min por corrida; resultados en logs/lab/day297/<nombre>/.</li>
+<li>Falso positivo corregido el mismo dia: el eco del comando de comprobacion de etcd en pipeline-start contiene
+  "STOPPED"; solo cuentan las lineas de estado que empiezan por la cruz.</li>
+<li>Entorno DAY297: las cinco VMs levantadas (defender, client, suricata, zeek, wazuh). El agente Wazuh del client habla
+  con el manager .12:1514 por el intnet: aparece en el cable y en el sniffer.</li>
+</ul>
+<h3 id="92-a1-contabilidad-ntp-60-pps-desde-50-base-51-a-10-pps">9.2 A1 contabilidad (ntp 60 pps desde .50 + base .51 a 10 pps)</h3>
+<ul>
+<li>Cable (tcpdump en eth2, 0 descartados por el kernel): ataque de .50 = 5400 exactos (udp src port 123); .50 lleva
+  ademas 69-72 paquetes legitimos (agente Wazuh -&gt; .12:1514, NTP de chrony a .1, ARP). .51 = 2100.</li>
+<li>DROP de los resumenes [SOMBRA-DDOS] = eventos_drop del registro de la sombra, al evento (5350 y 5360).</li>
+<li>Un evento de flujo por paquete del cliente (diferencia explicada por el reposo, ~1-2 flujos/s). Los eventos no-flujo
+  van ~1 a 1 con los paquetes UDP del client (fast-alerts; DEBT-FIREWALL-NONFLOW-EVENTS-001).</li>
+<li>event_id del flujo = event.timestamp (ns, bpf_ktime_get_ns) + "_" + (src_ip XOR dst_ip): no es una identidad (XOR
+  simetrico y sin puertos; en el ataque solo la marca de tiempo distingue eventos) ni distingue duplicado de colision.
+  DEBT-SNIFFER-EVENT-ID-NOT-UNIQUE-001.</li>
+<li>Contadores [TIMEBASE-SEQ-D297] en el firewall (clave nodo|boot_id|producer_start_mono_ns, acumulados, linea propia
+  "[TIMEBASE] secuencia"): seq_dup = 0 y seq_hueco = 0 en 15262, 17129 y 26110 eventos; seq_recibidos = suma de
+  "eventos" de los resumenes, diferencia 0 en las tres corridas. Ningun evento perdido ni duplicado entre sniffer y
+  firewall, a 70, 80 y 130 pps hacia la victima.</li>
+<li>Los 5357 DROP de DAY294 frente al maximo de 5292-5352 (Consejo, A1) no se pueden reconstruir (sin producer_seq
+  visible entonces); con el binario actual hay 0 duplicados medidos.</li>
+</ul>
+<h3 id="93-orden-de-entrega-corrige-el-orden-intacto-de-87-no-verificable-en-day296">9.3 Orden de entrega (corrige el "orden intacto" de 8.7, no verificable en DAY296)</h3>
+<ul>
+<li>producer_seq garantiza unicidad y deteccion de perdidas; NO garantiza orden de entrega.</li>
+<li>seq_desorden: 1 (60 pps), 0 (70 pps) y 12 (120 pps). Los detallados ([TIMEBASE-SEQ-DET-D297]): siempre un flujo
+  (kind 0) adelantado por la fast-alert siguiente (kind 1), distancia 1. El sniffer numera en orden; la inversion
+  ocurre despues del sellado. Hipotesis sin medir: ml-detector (2 hilos de trabajo; la fast-alert no pasa por los
+  modelos desde DAY285). Las ventanas de la sombra avanzan solo con flujos; los casos vistos no las afectan.</li>
+<li>Siguiente paso: mld_recv_mono_ns / mld_send_mono_ns en la linea de detalle. DEBT-TIMEBASE-SEQ-DELIVERY-ORDER-001.</li>
+</ul>
+<h3 id="94-arranque-en-frio-de-la-etapa-1">9.4 Arranque en frio de la etapa 1</h3>
+<ul>
+<li>Primera corrida: 32 DROP en el primer segundo tras arrancar el pipeline (primer origen 192.168.100.12, manager Wazuh,
+  -&gt; .1 TCP, ratio = 14, p1 = 0,86); sin INICIO (k/n los absorbio). No se repitio en las tres corridas siguientes:
+  depende de que haya trafico hacia una victima en los primeros segundos.</li>
+<li>Causa en el codigo: warm_windows solo condiciona la ENTRADA en bajo_presion (ddos_contract_v2.hpp:103); la etapa 1
+  del ml-detector compara el ratio crudo con K = 3 (ddos_v2_head.hpp:39) y nadie consume bajo_presion.
+  DEBT-DDOS-COLDSTART-ETAPA1-001 (siguiente rama, decision de Alonso).</li>
+</ul>
+<h3 id="95-a2-gemelo-61-mismos-paquetes-que-el-ataque-otra-ip-tcprewrite-srcipmap-fixcsum">9.5 A2 gemelo .61 (mismos paquetes que el ataque, otra IP; tcprewrite --srcipmap, --fixcsum)</h3>
+<table>
+<thead>
+<tr>
+<th>Gemelo</th>
+<th>DROP .50</th>
+<th>DROP .61</th>
+<th>ratio_max</th>
+<th>NTP legitimo de .51 (446 paquetes, src port 123)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10 pps</td>
+<td>5381/5400 = 0,9965</td>
+<td>896/900 = 0,9956</td>
+<td>8,00</td>
+<td>0 DROP</td>
+</tr>
+<tr>
+<td>60 pps</td>
+<td>5356/5400 = 0,9919</td>
+<td>5355/5400 = 0,9917</td>
+<td>13,07</td>
+<td>0 DROP</td>
+</tr>
+<tr>
+<td>- Afirmacion correcta: la cabeza discrimina el TIPO de trafico (NTP de reflexion frente a NTP legitimo pequeno), no el</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>comportamiento del origen. Base de D19 (rasgos por origen) y de aplazar la mitigacion real (D20).</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<h3 id="96-a5-ataque-largo-offline-contra-la-funcion-de-produccion">9.6 A5 ataque largo (offline contra la funcion de produccion)</h3>
+<ul>
+<li>scripts/timebase/a5_ataque_largo.cpp incluye sniffer/include/ddos_contract_v2.hpp y llama a victim_ewma_step con sus
+  parametros por defecto (alpha 0,1; alpha_lento 1/3600; k_in 3; k_out 1,5; warm 30; floor 10). 10 min de base y
+  2 h de base + ataque.</li>
+<li>La etapa 1 (ratio &gt;= 3) deja de pasar a los 905-1459 s y la sombra daria FIN a los 15,6-24,8 min de un ataque
+  sostenido (antes cuanto mas debil); la salida de bajo_presion (k_out = 1,5) llega a los 3400-3954 s. Todas las
+  celdas a +-1 ventana de la prediccion analitica t = tau * ln((P - e0) / (P - P/K)); el ratio inicial coincide con el
+  medido en vivo (6,99 / 8,00 / 13,07).</li>
+<li>Causa comun con 9.4: la etapa 1 no consume el estado de histeresis. Con bajo_presion el corte pasaria a 57-66 min;
+  cuanto debe durar es calibracion (D22). DEBT-DDOS-V2-LONG-ATTACK-001 confirmada offline; la corrida en vivo (~20 min,
+  necesita --loop) va a la siguiente rama como prueba de antes y despues (decision de Alonso).</li>
+</ul>
+<h3 id="97-no-verificado">9.7 No verificado</h3>
+<ul>
+<li>Origen de los ~140 pps hacia .1 en el primer segundo de la primera corrida (ratio 14).</li>
+<li>Los 2 desordenes no detallados de la corrida a 120 pps (tope de detalle por periodo).</li>
+<li>En que etapa ocurre el desorden (cola de envio del sniffer, ml-detector o transporte).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.c21346df.min.js"></script>
+      
+    
+  </body>
+</html>
