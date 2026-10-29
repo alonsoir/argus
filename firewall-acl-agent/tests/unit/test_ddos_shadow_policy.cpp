@@ -94,6 +94,77 @@ int main() {
         tick(p, 50, out);
         CHECK(out.empty() && p.victims() == 1);
     }
+    {  // 7. [SOMBRA-AISLADO-D311] DROP aislados (4 en una ventana, m=5): sin INICIO, un AISLADO con los 4
+        DdosShadowPolicy p(P);
+        std::vector<DdosShadowRecord> out;
+        rafaga(p, 100, 4, "192.168.100.12", "192.168.100.11", out);
+        CHECK(p.drop_pendientes_fuera() == 4 && p.drop_pendientes_episodio() == 0);
+        tick(p, 105, out);
+        auto a = p.take_aislados();
+        CHECK(out.empty() && a.size() == 1 && p.victims() == 0);
+        if (a.size() == 1) {
+            CHECK(a[0].drop_events == 4 && a[0].start_s == 100 && a[0].end_s == 105 && a[0].dst_ip == "192.168.100.12");
+            CHECK(!a[0].top_sources.empty() && a[0].top_sources[0].first == "192.168.100.11" &&
+                  a[0].top_sources[0].second == 4);
+            CHECK(mldefender::firewall::format_ddos_shadow_aislado(a[0]).rfind("AISLADO victima=192.168.100.12 ", 0) == 0);
+        }
+        CHECK(p.take_aislados().empty() && p.drop_pendientes_fuera() == 0);  // se entregan una sola vez
+    }
+    {  // 8. [SOMBRA-AISLADO-D311] el caso 2 (4 DROP/s 60 s, nunca empieza) ya no pierde nada: 240 en AISLADO
+        DdosShadowPolicy p(P);
+        std::vector<DdosShadowRecord> out;
+        uint64_t aisl = 0;
+        for (int64_t t = 100; t < 160; ++t) {
+            rafaga(p, t, 4, "192.168.100.1", "10.0.0.1", out);
+            for (auto& r : p.take_aislados()) aisl += r.drop_events;
+        }
+        tick(p, 300, out);
+        for (auto& r : p.take_aislados()) aisl += r.drop_events;
+        CHECK(out.empty() && aisl == 240 && p.drop_pendientes_fuera() == 0);
+    }
+    {  // 9. [SOMBRA-AISLADO-D311] un episodio no deja AISLADO; DROP sueltos tras su FIN si (3 en 300)
+        DdosShadowPolicy p(P);
+        std::vector<DdosShadowRecord> out;
+        for (int64_t t = 100; t < 190; ++t) rafaga(p, t, 30, "192.168.100.1", "192.168.100.50", out);
+        CHECK(p.drop_pendientes_episodio() > 0);
+        tick(p, 250, out);
+        CHECK(out.size() == 2 && p.take_aislados().empty());
+        rafaga(p, 300, 3, "192.168.100.1", "192.168.100.50", out);
+        tick(p, 302, out);
+        auto a = p.take_aislados();
+        CHECK(out.size() == 2 && a.size() == 1 && !a.empty() && a[0].drop_events == 3 && a[0].start_s == 300);
+        if (out.size() == 2) CHECK(out[1].drop_events == 2700);
+    }
+    {  // 10. [SOMBRA-AISLADO-D311] identidad: todo DROP sumado acaba en un FIN o en un AISLADO (secuencia fija)
+        DdosShadowPolicy p(P);
+        std::vector<DdosShadowRecord> out;
+        uint64_t sumados = 0, aisl = 0;
+        uint32_t x = 12345u;
+        const char* vict[3] = {"10.1.0.1", "10.1.0.2", "10.1.0.3"};
+        for (int64_t t = 1000; t < 1600; ++t) {
+            tick(p, t, out);
+            for (auto& r : p.take_aislados()) aisl += r.drop_events;
+            for (int v = 0; v < 3; ++v) {
+                x = x * 1103515245u + 12345u;
+                int n = static_cast<int>((x >> 16) % 9);  // 0-8 DROP por ventana y victima: unas veces episodio, otras no
+                if (v == 2 && t > 1300) n = 0;            // una victima se calla antes del final
+                for (int i = 0; i < n; ++i) {
+                    p.add_drop(vict[v], 17, t, "203.0.113.7", 0.8, 5.0, "e", "m");
+                    ++sumados;
+                }
+            }
+        }
+        tick(p, 100000, out);
+        for (auto& r : p.take_aislados()) aisl += r.drop_events;
+        uint64_t fin = 0;
+        int nfin = 0;
+        for (auto& r : out) {
+            if (!r.inicio) { fin += r.drop_events; ++nfin; }
+        }
+        CHECK(nfin > 0 && aisl > 0);
+        CHECK(fin + aisl == sumados);
+        CHECK(p.drop_pendientes_fuera() == 0 && p.drop_pendientes_episodio() == 0 && p.victims() == 0);
+    }
     std::printf("[DDOS-SHADOW-TEST] %s (%d fallos)\n", fallos ? "FALLA" : "OK", fallos);
     return fallos ? 1 : 0;
 }

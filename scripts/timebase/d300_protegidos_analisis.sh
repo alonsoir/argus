@@ -19,5 +19,10 @@ awk '
   /\[SOMBRA-DDOS\] resumen:/ { for (i = 1; i <= NF; i++) if ($i ~ /^DROP=/) { split($i, a, "="); res += a[2] } }
   /\[SOMBRA-DDOS\] FIN / { for (i = 1; i <= NF; i++) if ($i ~ /^eventos_drop=/) { split($i, b, "="); fin += b[2] } }
   /\[SOMBRA-DDOS\] protegidos:/ { for (i = 1; i <= NF; i++) if ($i ~ /^alertas=/) { split($i, c, "="); al = c[2] } }
-  END { printf "DROP_resumenes=%d DROP_FIN=%d alertas_protegido=%d diferencia=%d\n", res, fin, al, res - fin - al }
+  /\[SOMBRA-DDOS\] aislados:/ { pf = 0; pe = 0  # [SOMBRA-AISLADO-D311]
+    for (i = 1; i <= NF; i++) { split($i, d, "=")
+      if (d[1] == "drop") ais += d[2]; if (d[1] == "drop_pendientes_fuera") pf = d[2]
+      if (d[1] == "drop_pendientes_episodio") pe = d[2] } }
+  END { printf "DROP_resumenes=%d DROP_FIN=%d alertas_protegido=%d DROP_aislados=%d pendientes=%d diferencia=%d\n",
+        res, fin, al, ais, pf + pe, res - fin - al - ais - pf - pe }
 ' "$F"

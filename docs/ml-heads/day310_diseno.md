@@ -367,3 +367,91 @@ al puerto. Va a DEBT-ETCD-SECRETS-UNAUTHENTICATED-001.
    mismo binario" fue un error de lectura.
 9. Una decisión de seguridad se contrasta con lo que el componente del que depende hace hoy, leído en su código: el
    argumento del impostor (F1) necesita un etcd-server que autentique, y hoy no autentica.
+
+## 13. DAY311 — P4 cerrado: DROP aislados y alcance del etcd-server (medido; §12 no se toca)
+
+### Lectura del código (antes de la hipótesis)
+
+- `[SOMBRA-DDOS] resumen: DROP=` cuenta TODO evento con `final_decision == "DROP"` (`zmq_subscriber.cpp`), antes de
+  cualquier filtro.
+- El `eventos_drop` del FIN solo suma los DROP de SU víctima `{dst, proto}` (`DdosShadowPolicy::add_drop`). Una víctima
+  con DROP sueltos (< m por ventana) que nunca llega a episodio se borraba en el siguiente `advance` sin dejar rastro.
+- Las alertas (origen protegido) salen antes de `add_drop`.
+- El bronce no lleva `final_decision`: DROP equivale a col 16 (p1 de ddos_v2 si pasa la etapa 1) > 0,5. No lleva ICMP
+  (community_id vacío).
+
+### Hipótesis y predicción (escritas antes de medir)
+
+- H4: los 2 de p3 son DROP de otra víctima que nunca llega a episodio. Bronce p3: .50→.1 UDP 10743, .61→.1 UDP 5370 y
+  2 filas con otra clave (o ninguna si son ICMP). p2: nada más.
+- H5: DROP de .50 a {.1, 17} que la política no sumó (bronce .50 = 10745). Sin camino en el código: si sale, PARAR.
+
+### Medido (instrumento `scripts/timebase/d311_p4_cuentas.py`, sha256 `6e4b33ea…3302`)
+
+| Medida | p3 (paso 3) | p2 (paso 2) |
+|---|---|---|
+| bronce DROP .50→.1 UDP | 10743 (= FIN) | 10773 (= FIN) |
+| bronce DROP .61→.1 UDP | 5370 (= alertas) | 5385 (= alertas) |
+| bronce DROP con otra clave | **2: 192.168.100.11 → 192.168.100.12 TCP** | 0 |
+| pcap (dst .1) | .50 10806, .51 3300, .61 5400 UDP; .12 tcp 54 | igual; .12 tcp 52 |
+
+**H4 confirmada.** .11 es la VM de Zeek (agente Wazuh) y .12 el wazuh-manager. Los 2 DROP son dos eventos del mismo
+flujo `sport=43821 → dport=1514` (p1 0,74 y 0,70), con `flow_start` dentro del ataque. De 45 filas .11→.12 solo
+esas 2 pasaron la etapa 1. Es un falso positivo aislado de la etapa 2 sobre tráfico legítimo (familia de
+DEBT-DDOS-V2-ETAPA2-FP-BENIGNOS-001), **no un efecto del paso 3**. La columna de mitigación del instrumento no
+discriminó (mitigación `deshabilitada` en protegidos): decidió el bronce. En EMECAS (3 VMs, sin Zeek ni Wazuh) no
+aparece.
+
+### Decisión de Alonso (DAY311)
+
+Opción 1: el firewall no pierde ningún DROP en silencio. Descartadas: que el comprobador lea el bronce (no ve ICMP) y
+apagar Zeek/Wazuh en protegidos (esconde el fenómeno).
+
+### Implementación [SOMBRA-AISLADO-D311]
+
+- `DdosShadowPolicy`: al borrar el estado de una víctima que nunca llegó a episodio y tenía DROP, guarda un registro
+  AISLADO, que se recoge con `take_aislados()` (canal aparte: `advance()` sigue devolviendo solo INICIO/FIN).
+  `drop_pendientes_fuera()` / `drop_pendientes_episodio()` dan lo aún no cerrado.
+- Suscriptor: detalle `[SOMBRA-DDOS] AISLADO victima=… eventos_drop=… origenes=… (no se bloquea)` con el tope
+  `anomalias_detalle_max` por periodo, y una línea propia tras cada resumen: `[SOMBRA-DDOS] aislados: drop= victimas=
+  detalle_omitido= drop_pendientes_fuera= drop_pendientes_episodio=`. El `resumen:` no se toca. Sin parámetro nuevo
+  en el JSON (se documenta en el `_doc` de `ddos_shadow`).
+- P4 (`d303_veredicto_protegidos.sh` y `d300_protegidos_analisis.sh`): `DROP_resumenes = DROP_FIN + alertas +
+  Σ aislados.drop + pendientes de la última línea aislados:`.
+- `test_ddos_shadow_policy`: casos 7-10 (4 DROP sueltos; el caso 2 antiguo ahora da 240 en AISLADO; DROP tras un FIN;
+  identidad FIN + AISLADO = todo lo sumado con 3 víctimas y 600 s). Mutación (sin el registro AISLADO): fallan los 4.
+- Límite conocido: si el evento que dispara la última impresión es un DROP, P4 podría dar diferencia 1. Si ocurre,
+  sale como FALLA, no se esconde.
+
+### Predicción y medida del cambio
+
+| Medida | Predicción | Medido |
+|---|---|---|
+| Q1 `git status --short --untracked-files=no` | 8 líneas (7 + `PROMPT_CONTINUE_CLAUDE.md`) | 8 |
+| Q2 compilación production | rc 0, 0 diagnósticos | rc 0, 0 |
+| Q3 test-components | 9/23/13/3/82 | 9/23/13/3/82 |
+| Q4 protegidos `day311/lab_protegidos_p4` | PASA P1-P5, P4 diferencia 0; líneas `aislados:` = `resumen:`; aislados en [0, 10] | PASA; 16116 = 10746 + 5370 + 0 + 0; 41 = 41; 0 |
+| bronce p4 | .50 10746, .61 5370, nada más | igual |
+
+El fondo .11→.12 estaba (43 filas en el bronce de p4) y ninguna pasó la etapa 1: el falso positivo no se repitió por
+azar, como en p2. El camino AISLADO queda cubierto por los tests y la mutación; en el lab no ha salido aún un aislado
+real. Primera corrida parada en el paso 1 (alias .51 perdido tras reiniciar el client); `make lab-e2e-prep` lo repone.
+
+### Alcance del etcd-server (DEBT-ETCD-SECRETS-UNAUTHENTICATED-001)
+
+`ss` en el defender: `0.0.0.0:2379` (etcd-server). Desde el client (`ml-client`, 192.168.100.50/.51):
+`curl http://192.168.100.1:2379/secrets/keys` → **200**, como se predijo. El hallazgo de §12 deja de ser solo lectura
+de código: la posición del atacante en el lab alcanza el servicio que entrega y rota las claves HMAC sin autenticación.
+No se pidió `/secrets/ml-detector`: no hace falta sacar una clave para el dato. Dos medidas anteriores no valen: una
+lanzada en el defender y otra desde el Mac, ambas con el pipeline parado.
+
+### Lecciones DAY311
+
+1. Un recuento por víctima no se compara con un recuento global sin preguntar qué otras víctimas hay: el resumen
+   cuenta todo DROP y el FIN solo los de su víctima.
+2. Un instrumento débil (una foto cada 10 s de `victimas_activas`) no refuta nada: un estado que vive un segundo no
+   sale en la foto.
+3. Una columna que depende de una función apagada (mitigación `deshabilitada`) no discrimina: se comprueba el modo
+   antes de leerla.
+4. Antes de medir un servicio, comprobar que está en marcha: la corrida de protegidos termina con `pipeline-stop`.
+5. El prompt del terminal no dice en qué máquina se está (`vagrant@…`): `hostname` primero.

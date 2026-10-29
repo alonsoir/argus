@@ -630,6 +630,17 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                     }
                     prot_detalle_ = 0;
                 }
+                {   // [SOMBRA-AISLADO-D311] linea propia: DROP de victimas que no llegaron a episodio (cerrados en el
+                    // periodo) y DROP aun no cerrados al imprimir. Ningun DROP se pierde en silencio.
+                    std::cout << "[SOMBRA-DDOS] aislados: drop=" << aisl_drop_ << " victimas=" << aisl_victimas_
+                              << " detalle_omitido=" << aisl_omitidos_
+                              << " drop_pendientes_fuera=" << ddos_shadow_.drop_pendientes_fuera()
+                              << " drop_pendientes_episodio=" << ddos_shadow_.drop_pendientes_episodio() << std::endl;
+                    aisl_drop_ = 0;
+                    aisl_victimas_ = 0;
+                    aisl_detalle_ = 0;
+                    aisl_omitidos_ = 0;
+                }
                 {   // [DDOS-MITIGACION-B2-D302] resumen de la mitigacion (linea propia; en dry_run es la unica salida, D2)
                     const std::size_t purgadas = ddos_mitigacion_.purgar(
                         [this](const std::string& d, uint32_t p) { return ddos_shadow_.en_episodio(d, p); });
@@ -711,6 +722,17 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                 FIREWALL_LOG_WARN("[SOMBRA-DDOS]", "registro", ::mldefender::firewall::format_ddos_shadow_record(rec));
                 std::cout << "[SOMBRA-DDOS] " << ::mldefender::firewall::format_ddos_shadow_record(rec)
                           << std::endl;  // [DDOS-SHADOW-OBS-D293]
+            }
+            for (const auto& rec : ddos_shadow_.take_aislados()) {  // [SOMBRA-AISLADO-D311]
+                ++aisl_victimas_;
+                aisl_drop_ += rec.drop_events;
+                if (aisl_detalle_ < static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) {
+                    ++aisl_detalle_;
+                    std::cout << "[SOMBRA-DDOS] " << ::mldefender::firewall::format_ddos_shadow_aislado(rec)
+                              << " (no se bloquea)" << std::endl;
+                } else {
+                    ++aisl_omitidos_;
+                }
             }
         }
         const bool drop = event.has_provenance() && event.provenance().final_decision() == "DROP";
