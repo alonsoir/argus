@@ -165,3 +165,102 @@ Rama `feat/etcd-mtls-vault` (sobre `main` `cabac77`). Commits: `e7309db2` (Vault
 - Una validación que pasa sobre una entrada vacía no vale: control negativo (nft sobre un fichero vacío daba OK).
 - El aprovisionador `file` de Vagrant no admite `name:`; el nombre va como primer argumento con `type: "file"`.
 - Un `grep` que busca un secreto lleva el secreto en sus argumentos: no se comprueba así.
+
+## Diseño del paso 4b (código del etcd-server) — DAY312, escrito ANTES de tocar código
+
+Base: rama `feat/etcd-mtls-vault` en `b5227f85` (4a: el etcd-server actual corre en la VM etcd). Lo que sigue es la
+propuesta; las decisiones abiertas están en 4b.0 y nada se escribe hasta tenerlas.
+
+### Medido para este diseño
+
+- etcd-cpp-apiv3 v0.15.3 (la que fija el Vagrantfile): `SyncClient(url, ca, cert, privkey, target_name_override)`
+  con TLS y certificado de cliente; `url` admite varios endpoints separados por coma (sirve para el PR2). Sus
+  dependencias de ejecución son todas paquetes Debian (gRPC 1.51, protobuf 32, cpprest 2.10, abseil): la herramienta
+  de despliegue de 4a las resuelve con `dpkg -S` sin cambios.
+- La pasarela JSON de etcd 3.6.16 rechaza toda petición con certificado de cliente ("CommonName … will be ignored"):
+  con RBAC por CN, el etcd-server habla con etcd solo por gRPC.
+- `common/vault_client` es específico de la semilla de familia (token, libcurl, `fetch_seed`): no sirve tal cual
+  para KV v2 con auth por certificado.
+
+### 4b.0 Decisiones abiertas para Alonso
+
+- **B1. Cliente de Vault.** (a) clase pequeña nueva en el etcd-server sobre cpp-httplib `SSLClient` (ya enlazado,
+  sin dependencias nuevas): login por certificado + KV v2 leer/escribir; (b) extender `common/vault_transport`
+  (libcurl) con una interfaz nueva. Propuesta: a.
+- **B2. Tabla de autorización por ruta en el JSON** (el JSON es la ley; defectos iguales en el código; cada fila
+  registrada en el log al arrancar con `[CONFIG]`/`[CONFIG-DEFAULT]`) frente a fija en el código. Propuesta: JSON.
+- **B3. Instancias del registro.** Hoy el nombre con que se registra cada componente está fijo en su `main.cpp`. En
+  4b el etcd-server toma la identidad del certificado (CN = instancia, OU = rol) y **rechaza** un registro cuyo nombre
+  no coincida con el CN (403). Los componentes no cambian (CN = nombre actual). Propuesta: así.
+- **B4. Clave HMAC del firewall** pasa a `/secrets/firewall-acl-agent` (P4). Antes de cambiarlo: `git grep` de
+  quién verifica hoy el CSV del firewall con `/secrets/firewall`.
+
+### 4b.1 Configuración: el JSON es la ley
+
+`etcd-server.json` pasa a tener, con rango y formato documentados en el propio JSON (`_doc`), y leído campo a campo:
+
+| Bloque | Campos |
+|---|---|
+| `server` | `listen_host` (IPv4), `port` (1-65535) |
+| `tls` | `ca_file`, `cert_file`, `key_file` (rutas que deben existir) |
+| `authz` | tabla ruta → identidades permitidas (CN propio, OU, `admin`) |
+| `etcd` | `endpoints` (lista https://…), `ca_file`, `cert_file`, `key_file`, `prefix` (`/argus/`), `timeout_ms` |
+| `vault` | `addr`, `ca_file`, `cert_file`, `key_file`, `kv_mount` (`argus-hmac`), `cert_role` (`etcd-server`), `aviso_intervalo_s` |
+| `secrets` | los de hoy (`grace_period_seconds`, `rotation_interval_hours`, `default_key_length_bytes`, `min_rotation_interval_seconds`) |
+| `heartbeat` | `interval_seconds`, `timeout_multiplier`, `check_interval_seconds` |
+
+Campo ausente o mal formado → defecto (igual al del JSON) + aviso con campo, formato y límites; el log de arranque
+recoge la configuración efectiva completa y de dónde sale cada valor. Campos que no hacen nada (`auto_restart.*`,
+`security.*`, `server.worker_threads`, `secrets.storage`, `secrets.keys`) → `[CONFIG-OBSOLETO]` y fuera del JSON.
+Cierra DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001. `--check-config` local: lee, valida, imprime la configuración
+efectiva y sale (rc 0 / 1).
+
+### 4b.2 Arranque
+
+Orden corregido: `/run/argus` antes del `AutonomyPublisher` (medido 4a). Sin Vault ni etcd alcanzables el proceso
+arranca igual y sirve lo que tenga (ver 4b.5), con aviso periódico; sin certificados TLS válidos no arranca
+(no hay forma segura de servir).
+
+### 4b.3 HTTPS + mTLS y autorización
+
+- `httplib::SSLServer` con la CA del lab y verificación del certificado de cliente obligatoria. Sin certificado
+  válido no hay TLS (no llega a ninguna ruta).
+- Un único punto de autorización antes del enrutado (`set_pre_routing_handler`): CN y OU del certificado del par →
+  tabla `authz`. Denegado → 403 y `[ETCD-AUTHZ-DENEGADO] cn=… ou=… metodo=… ruta=…`.
+- Rutas que se borran: `/seed`, `/secrets/keys` (sin uso; medido en el inventario).
+- `log_request` registra el estado REAL, después de decidir (DEBT-ETCD-HEARTBEAT-LOG-STATUS-001).
+
+### 4b.4 Registro, configuración y época en etcd
+
+`ComponentRegistry` deja de guardar en un `unordered_map` sin mutex: interfaz `IRegistryStore` con dos
+implementaciones, `EtcdRegistryStore` (gRPC, prefijo `/argus/`) y `MemoriaRegistryStore` (solo tests). Claves:
+`/argus/registro/<CN>`, `/argus/config/<CN>`, `/argus/latido/<CN>`, `/argus/epoca`. El registro sobrevive a un
+reinicio del etcd-server (medido DAY311: hoy vuelve vacío).
+
+### 4b.5 Claves HMAC en Vault (ventana de dos)
+
+- Una entrada inmutable por clave: `argus-hmac/<CN>/<huella8>` = {clave, creada}; un puntero
+  `argus-hmac/<CN>/ventana` = {activa, anterior, expira_anterior}. Nunca se borra una clave (la política no lo
+  permite: medido M2d).
+- Leer-o-crear bajo UN solo bloqueo (la carrera de DAY311: dos primeras peticiones podían crear dos claves).
+- Caché en memoria de la ventana. Vault no disponible: se sirve la ventana en caché, `[ETCD-VAULT-NO-DISPONIBLE]`
+  cada `aviso_intervalo_s`, no se rota. Sin caché (arranque con Vault caído): no se sirve clave; el ml-detector ya da
+  `[BRONCE-SIN-CLAVE]` y el firewall sigue actuando.
+- En el log, solo la huella (8 hex del SHA-256), nunca la clave.
+
+### 4b.6 Fuera (código muerto o peligroso)
+
+`auto_restart` + `system("systemctl restart …")`, `get_encryption_seed/key`, `rotate_encryption_key`,
+`set_compression_mode/set_encryption_mode` sin uso, el `HttpEtcdRegistrar` del etcd-server hacia sí mismo si deja de
+hacer falta (comprobar con `git grep` quién lee `/v1/epoch` aparte de él), `etcd_client_base.cpp`,
+`etcd_client_manual.cpp`, `*.day54_*` (DEBT-ETCD-CLIENT-DEAD-VARIANTS-001).
+
+### 4b.7 Pruebas y predicciones
+
+- Tests unitarios nuevos del etcd-server (sin red): lectura del JSON (campo bueno, ausente, mal formado, fuera de
+  rango), tabla de autorización, ventana de dos con almacén falso (crear, rotar, expirar, Vault caído). Línea nueva
+  en `make test-components PROFILE=production`; las cinco de hoy (9/23/13/3/82) no cambian.
+- En la VM etcd (instrumento nuevo `d312_es_medir.sh`): sin certificado → TLS falla; sniffer pide
+  `/secrets/ml-detector` → 403; ml-detector pide `/secrets/ml-detector` → 200 y huella; latido de no registrado →
+  log con 404; reinicio del etcd-server → misma huella y registro conservado.
+- Compilación completa en producción con 0 diagnósticos.
