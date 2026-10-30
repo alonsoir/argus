@@ -93,6 +93,40 @@ WAZUH_AGENT_INSTALL = <<-'WAZUH_AGENT_INSTALL_SHELL'
   echo "✅ WAZUH_AGENT_INSTALL — '${AGENT_NAME}' instalado y arrancado"
 WAZUH_AGENT_INSTALL_SHELL
 
+# ══════════════════════════════════════════════════════════════════════════════
+# VAULT_INSTALL — [VAULT-INSTALL-D312] un único sitio donde se instala Vault, con la versión FIJADA (determinismo de
+# EMECAS: dos up separados por una publicación de HashiCorp no deben dar versiones distintas). Lo usan el defender y la
+# VM etcd. Repo y clave de HashiCorp como hasta DAY311. Versión medida en el defender DAY312: 2.2.1-1.
+# ══════════════════════════════════════════════════════════════════════════════
+VAULT_INSTALL = <<-'VAULT_INSTALL_SHELL'
+  set -e
+  export DEBIAN_FRONTEND=noninteractive
+  VAULT_PIN="2.2.1-1"
+  ACTUAL=$(dpkg-query -W -f='${Version}' vault 2>/dev/null || true)
+  if [ "$ACTUAL" = "$VAULT_PIN" ]; then
+    apt-mark hold vault > /dev/null
+    echo "✅ Vault ${VAULT_PIN} ya instalado y fijado"; exit 0
+  fi
+  echo "📦 Instalando HashiCorp Vault ${VAULT_PIN} (instalado antes: ${ACTUAL:-ninguno})..."
+  if ! command -v wget > /dev/null || ! command -v gpg > /dev/null; then apt-get update -qq; apt-get install -y wget gnupg; fi
+  wget -O - https://apt.releases.hashicorp.com/gpg 2>/dev/null | \
+    gpg --dearmor | \
+    tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bookworm main" | \
+    tee /etc/apt/sources.list.d/hashicorp.list
+  apt-get update -qq
+  apt-mark unhold vault > /dev/null 2>&1 || true
+  apt-get install -y --allow-downgrades "vault=${VAULT_PIN}"
+  apt-mark hold vault > /dev/null
+  GOT=$(dpkg-query -W -f='${Version}' vault)
+  [ "$GOT" = "$VAULT_PIN" ] || { echo "❌ VAULT_INSTALL: instalado ${GOT}, se exige ${VAULT_PIN}"; exit 1; }
+  echo "✅ Vault $(vault version | head -1) instalado y fijado (apt-mark hold)"
+VAULT_INSTALL_SHELL
+
+# [VAULT-SERVER-D312] PKI del lab en el Mac (scripts/etcd_ha/d312_pki.sh). Fuera del repo: llega a la VM etcd por el
+# aprovisionador file, nunca por /vagrant. Solo se lee al aprovisionar la VM etcd.
+ARGUS_PKI_DIR = ENV.fetch("ARGUS_PKI_DIR", File.join(Dir.home, "argus-pki"))
+
 Vagrant.configure("2") do |config|
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -627,20 +661,7 @@ BASHRC_EOF
       fi
 
       # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
-      # Fix DAY 160: repo hashicorp OK con dearmor directo
-      if ! command -v vault &>/dev/null; then
-        echo "📦 Instalando HashiCorp Vault..."
-        wget -O - https://apt.releases.hashicorp.com/gpg 2>/dev/null | \
-          gpg --dearmor | \
-          tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bookworm main" | \
-          tee /etc/apt/sources.list.d/hashicorp.list
-        apt-get update -qq
-        apt-get install -y vault
-        echo "✅ Vault $(vault version | head -1) instalado"
-      else
-        echo "✅ Vault ya instalado: $(vault version | head -1)"
-      fi
+      # [VAULT-INSTALL-D312] se instala en el aprovisionador vault-install (VAULT_INSTALL, versión fijada), tras este bloque
 
       # ── Java 21 via SDKMAN (requerido por Jenkins 2.555+) ──────────────────
       # Fix DAY 160: Java 21 no está en repos Bookworm — SDKMAN + Temurin
@@ -772,6 +793,9 @@ BASHRC_EOF
                     apt-mark hold libarrow-dev libparquet-dev >/dev/null 2>&1 || true
                   fi
     DEPENDENCIES_EOF
+
+    # [VAULT-INSTALL-D312] Vault con la versión fijada; antes de vault-enterprise-bootstrap, que lo usa
+    defender.vm.provision "shell", name: "vault-install", inline: VAULT_INSTALL
 
     # ════════════════════════════════════════════════════════════════════════
     # Provisioning: directorio de runtime del grafo Kuzu (DAY 180)
@@ -1507,6 +1531,132 @@ NFT
       echo "✅ etcd-base OK: $(chronyc -n tracking | grep 'Reference ID'); nftables argus_etcd cargada"
     ETCD_BASE
 
+
+    # [VAULT-SERVER-D312] PKI: directorio de entrada 0700 y copia desde ARGUS_PKI_DIR (Mac); vault-server la instala y borra
+    etcd.vm.provision "shell", name: "pki-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki"
+    %w[ca.crt vault.crt vault.key etcd-server.crt etcd-server.key].each do |f|
+      etcd.vm.provision "pki-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki/#{f}"
+    end
+    etcd.vm.provision "shell", name: "vault-install", inline: VAULT_INSTALL
+
+    # [VAULT-SERVER-D312] Vault en modo servidor: raft 1 nodo, solo 127.0.0.1, mTLS obligatorio, desellado c (SOLO lab),
+    # kv v2 argus-hmac/ (sin borrado), auth cert para CN=etcd-server, root revocado. docs/ml-heads/day312_diseno.md
+    etcd.vm.provision "shell", name: "vault-server", inline: <<-'VAULT_SERVER'
+      set -e
+      umask 077
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== etcd VM: Vault en modo servidor (raft 1 nodo, TLS + mTLS, desellado c) [VAULT-SERVER-D312] ==="
+      command -v python3 >/dev/null || { echo "❌ vault-server: falta python3"; exit 1; }
+      command -v curl    >/dev/null || apt-get install -y curl
+
+      # 1. PKI del lab (copiada desde el Mac por los aprovisionadores file; nunca pasa por /vagrant)
+      PKI_IN=/tmp/argus-pki
+      if [ -d "$PKI_IN" ]; then
+        install -d -m 0700 -o root -g root /etc/argus-pki
+        for f in ca.crt etcd-server.crt; do install -m 0644 -o root -g root "$PKI_IN/$f" /etc/argus-pki/$f; done
+        install -m 0600 -o root -g root "$PKI_IN/etcd-server.key" /etc/argus-pki/etcd-server.key
+        install -d -m 0750 -o vault -g vault /etc/vault.d/tls
+        install -m 0644 -o vault -g vault "$PKI_IN/ca.crt"    /etc/vault.d/tls/ca.crt
+        install -m 0644 -o vault -g vault "$PKI_IN/vault.crt" /etc/vault.d/tls/vault.crt
+        install -m 0600 -o vault -g vault "$PKI_IN/vault.key" /etc/vault.d/tls/vault.key
+        rm -rf "$PKI_IN"
+      fi
+      for f in /etc/vault.d/tls/ca.crt /etc/vault.d/tls/vault.crt /etc/vault.d/tls/vault.key /etc/argus-pki/etcd-server.crt /etc/argus-pki/etcd-server.key; do
+        [ -s "$f" ] || { echo "❌ vault-server: falta $f (¿existe la PKI del lab en el Mac? ARGUS_PKI_DIR)"; exit 1; }
+      done
+
+      # 2. Configuración: raft en /opt/vault/data, solo 127.0.0.1, TLS con certificado de cliente obligatorio
+      install -d -m 0700 -o vault -g vault /opt/vault/data
+      cat > /etc/vault.d/vault.hcl <<'HCL'
+# [VAULT-SERVER-D312] generado por el Vagrantfile; no editar a mano
+ui            = false
+disable_mlock = true
+api_addr      = "https://127.0.0.1:8200"
+cluster_addr  = "https://127.0.0.1:8201"
+storage "raft" {
+  path    = "/opt/vault/data"
+  node_id = "argus-etcd-1"
+}
+listener "tcp" {
+  address                            = "127.0.0.1:8200"
+  cluster_address                    = "127.0.0.1:8201"
+  tls_cert_file                      = "/etc/vault.d/tls/vault.crt"
+  tls_key_file                       = "/etc/vault.d/tls/vault.key"
+  tls_client_ca_file                 = "/etc/vault.d/tls/ca.crt"
+  tls_require_and_verify_client_cert = "true"
+}
+HCL
+      chown root:vault /etc/vault.d/vault.hcl; chmod 0640 /etc/vault.d/vault.hcl
+
+      # 3. Desellado c (SOLO laboratorio): la clave vive en /etc/vault.d/unseal.key (root 0600); sale por stdin, nunca por argv
+      cat > /usr/local/sbin/argus-vault-unseal <<'UNSEAL'
+#!/bin/bash
+# [VAULT-SERVER-D312] desellado del Vault del lab (opción c: clave en disco). No apto para producción.
+set -u
+C="--cacert /etc/vault.d/tls/ca.crt --cert /etc/argus-pki/etcd-server.crt --key /etc/argus-pki/etcd-server.key"
+U=https://127.0.0.1:8200
+for i in $(seq 1 30); do curl -s $C -o /dev/null "$U/v1/sys/seal-status" && break; sleep 1; done
+SELLADO=$(curl -s $C "$U/v1/sys/seal-status" | python3 -c 'import sys,json; print(json.load(sys.stdin)["sealed"])') || { echo "[VAULT-UNSEAL] FALLA: Vault no responde"; exit 1; }
+if [ "$SELLADO" = "True" ]; then
+  [ -s /etc/vault.d/unseal.key ] || { echo "[VAULT-UNSEAL] FALLA: sellado y sin /etc/vault.d/unseal.key"; exit 1; }
+  python3 -c 'import json; print(json.dumps({"key": open("/etc/vault.d/unseal.key").read().strip()}))' \
+    | curl -s $C -X PUT -d @- -o /dev/null "$U/v1/sys/unseal"
+fi
+SELLADO=$(curl -s $C "$U/v1/sys/seal-status" | python3 -c 'import sys,json; print(json.load(sys.stdin)["sealed"])')
+[ "$SELLADO" = "False" ] || { echo "[VAULT-UNSEAL] FALLA: sigue sellado"; exit 1; }
+echo "[VAULT-UNSEAL] Vault desellado"
+UNSEAL
+      chmod 0755 /usr/local/sbin/argus-vault-unseal
+      cat > /etc/systemd/system/argus-vault-unseal.service <<'UNIT'
+[Unit]
+Description=Desellado del Vault del lab (opcion c, solo laboratorio) [VAULT-SERVER-D312]
+After=vault.service
+Requires=vault.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/argus-vault-unseal
+[Install]
+WantedBy=multi-user.target
+UNIT
+      systemctl daemon-reload
+      systemctl enable vault argus-vault-unseal
+      systemctl restart vault
+
+      export VAULT_ADDR=https://127.0.0.1:8200 VAULT_CACERT=/etc/vault.d/tls/ca.crt
+      export VAULT_CLIENT_CERT=/etc/argus-pki/etcd-server.crt VAULT_CLIENT_KEY=/etc/argus-pki/etcd-server.key
+      rc=1; for i in $(seq 1 30); do rc=0; vault status >/dev/null 2>&1 || rc=$?; [ "$rc" -ne 1 ] && break; sleep 1; done
+      [ "$rc" -ne 1 ] || { echo "❌ vault-server: Vault no responde en 30 s (ver journalctl -u vault)"; exit 1; }
+
+      # 4. Primera vez: init 1/1, guardar SOLO la clave de desellado, configurar con el root y revocarlo
+      set +e; vault operator init -status >/dev/null 2>&1; INIT_RC=$?; set -e
+      if [ "$INIT_RC" = "2" ]; then
+        INIT_JSON=$(vault operator init -key-shares=1 -key-threshold=1 -format=json)
+        echo "$INIT_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["unseal_keys_b64"][0])' > /etc/vault.d/unseal.key
+        chmod 0600 /etc/vault.d/unseal.key; chown root:root /etc/vault.d/unseal.key
+        ROOT=$(echo "$INIT_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["root_token"])')
+        unset INIT_JSON
+        systemctl start argus-vault-unseal
+        export VAULT_TOKEN="$ROOT"
+        vault secrets enable -path=argus-hmac -version=2 kv >/dev/null
+        vault policy write etcd-server - >/dev/null <<'POL'
+# [VAULT-SERVER-D312] el etcd-server crea y lee claves HMAC; nunca las borra (re-verificar el grafo años después)
+path "argus-hmac/data/*"     { capabilities = ["create", "read", "update"] }
+path "argus-hmac/metadata/*" { capabilities = ["read", "list"] }
+POL
+        vault auth enable cert >/dev/null
+        vault write auth/cert/certs/etcd-server display_name=etcd-server policies=etcd-server \
+          certificate=@/etc/vault.d/tls/ca.crt allowed_common_names=etcd-server token_ttl=3600 >/dev/null
+        vault token revoke -self >/dev/null
+        unset VAULT_TOKEN ROOT
+        echo "✅ vault-server: inicializado (1/1), argus-hmac (kv v2), política etcd-server, auth cert; root revocado"
+      elif [ "$INIT_RC" = "0" ]; then
+        systemctl start argus-vault-unseal
+        echo "✅ vault-server: ya inicializado; desellado comprobado"
+      else
+        echo "❌ vault-server: vault operator init -status rc=$INIT_RC"; exit 1
+      fi
+      vault status -format=json | python3 -c 'import sys,json; s=json.load(sys.stdin); print("✅ vault-server: sealed=%s storage=%s version=%s" % (s["sealed"], s["storage_type"], s["version"]))'
+    VAULT_SERVER
   end  # End etcd VM
 
 end  # End Vagrant configuration
