@@ -2,6 +2,7 @@
 # d312_pki.sh — PKI del laboratorio para el etcd-server con mTLS (DAY312, paso 0 de DEBT-ETCD-HA-TLS-RAFT-001)
 # Se ejecuta en el Mac. Las claves privadas NUNCA entran en el repo: el directorio debe estar fuera de cualquier repo git.
 #   bash d312_pki.sh init    DIR [IP_VM_ETCD]   crea la CA y los certificados de servidor y de cliente
+#   bash d312_pki.sh reemitir DIR etcd|vault    reemite un certificado de servidor de perfil fijo con la CA existente
 #   bash d312_pki.sh cliente DIR ROL [INSTANCIA] añade un certificado de cliente (CN=INSTANCIA, defecto ROL; OU=ROL)
 # Identidad (DAY312): CN = instancia (clave HMAC propia, /secrets/{CN}); OU = rol (permisos de todo el rol).
 # Parámetros (entorno): PKI_DIAS_CA (defecto 3650, rango 365-7300), PKI_DIAS_HOJA (defecto 397, rango 30-825).
@@ -67,7 +68,7 @@ fuera_de_git() {  # el directorio (o su padre si no existe) no puede estar dentr
 }
 
 MODO=${1:-}; D=${2:-}
-[ -n "$MODO" ] && [ -n "$D" ] || falla "uso: $0 init DIR [IP_VM_ETCD] | $0 cliente DIR ROL [INSTANCIA]"
+[ -n "$MODO" ] && [ -n "$D" ] || falla "uso: $0 init DIR [IP_VM_ETCD] | $0 reemitir DIR etcd|vault | $0 cliente DIR ROL [INSTANCIA]"
 command -v openssl >/dev/null || falla "no hay openssl"
 log "openssl: $(openssl version)"
 exec 3>/tmp/d312_pki_val.$$
@@ -94,7 +95,8 @@ case "$MODO" in
     # Servidores
     firmar etcd-server   etcd-server   etcd-server "serverAuth,clientAuth" "DNS:etcd,DNS:localhost,IP:$IP,IP:127.0.0.1"
     firmar vault         vault         vault       serverAuth              "DNS:localhost,IP:127.0.0.1"
-    firmar etcd          etcd          etcd        serverAuth              "DNS:localhost,IP:127.0.0.1"
+    # etcd necesita también clientAuth: su pasarela interna se conecta a su propio puerto (medido DAY312) y, en el PR2, los peers
+    firmar etcd          etcd          etcd        "serverAuth,clientAuth" "DNS:localhost,IP:127.0.0.1"
     # Clientes: una instancia por rol en el PR1 (CN = OU = nombre con el que cada componente se registra hoy)
     for r in sniffer ml-detector firewall-acl-agent admin; do firmar "$r" "$r" "$r" clientAuth ""; done
     comprobar
@@ -110,6 +112,21 @@ case "$MODO" in
     firmar "$CN" "$CN" "$ROL" clientAuth ""
     comprobar
     ;;
-  *) falla "modo '$MODO' desconocido (init | cliente)";;
+  reemitir)
+    N=${3:-}
+    case "$N" in
+      etcd)  EKU="serverAuth,clientAuth"; SAN="DNS:localhost,IP:127.0.0.1" ;;
+      vault) EKU="serverAuth";            SAN="DNS:localhost,IP:127.0.0.1" ;;
+      *) falla "reemitir solo admite etcd o vault (perfiles fijos); '$N' no" ;;
+    esac
+    [ -f "$D/ca.crt" ] && [ -f "$D/ca.key" ] || falla "$D no tiene CA: primero init"
+    fuera_de_git "$D"
+    [ -e "$D/$N.nuevo.crt" ] && falla "$D/$N.nuevo.crt existe (reemisión a medias): revisar a mano"
+    log "reemitiendo $N (EKU=$EKU) con la CA existente; antes huella=$([ -f "$D/$N.crt" ] && huella "$D/$N.crt" | cut -c1-16 || echo ninguna)"
+    firmar "$N.nuevo" "$N" "$N" "$EKU" "$SAN"
+    mv -f "$D/$N.nuevo.key" "$D/$N.key"; mv -f "$D/$N.nuevo.crt" "$D/$N.crt"
+    comprobar
+    ;;
+  *) falla "modo '$MODO' desconocido (init | reemitir | cliente)";;
 esac
 log "HECHO en $D"

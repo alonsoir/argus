@@ -1657,6 +1657,114 @@ POL
       fi
       vault status -format=json | python3 -c 'import sys,json; s=json.load(sys.stdin); print("✅ vault-server: sealed=%s storage=%s version=%s" % (s["sealed"], s["storage_type"], s["version"]))'
     VAULT_SERVER
+
+    # [ETCD-LOCAL-D312] etcd real de 1 nodo (binario oficial v3.6.16, sha256 fijado, como Kuzu), solo 127.0.0.1:2381/2382,
+    # TLS de cliente obligatorio y RBAC por CN (etcd-server: readwrite /argus/). El PR2 añade los peers (HA Raft).
+    etcd.vm.provision "shell", name: "pki-etcd-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-etcd"
+    %w[ca.crt etcd.crt etcd.key].each do |f|
+      etcd.vm.provision "pki-etcd-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki-etcd/#{f}"
+    end
+    etcd.vm.provision "shell", name: "etcd-install", inline: <<-'ETCD_INSTALL'
+  set -e
+  ETCD_VER="v3.6.16"
+  ETCD_SHA256="c8c0d96d8292ef085deabbf735e9561d3d396768e4d606df005aa25964f21911"
+  ETCD_URL="https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz"
+  if [ -x /usr/local/bin/etcd ] && /usr/local/bin/etcd --version 2>/dev/null | grep -q "^etcd Version: ${ETCD_VER#v}$"; then
+    echo "✅ etcd ${ETCD_VER} ya instalado"; exit 0
+  fi
+  echo "📦 Instalando etcd ${ETCD_VER} (binario oficial, sha256 fijado)..."
+  command -v curl > /dev/null || { apt-get update -qq; apt-get install -y curl; }
+  T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
+  curl -fsSL "$ETCD_URL" -o "$T/etcd.tgz"
+  GOT=$(sha256sum "$T/etcd.tgz" | awk '{print $1}')
+  [ "$GOT" = "$ETCD_SHA256" ] || { echo "❌ ETCD_INSTALL: sha256 ${GOT}, se exige ${ETCD_SHA256}"; exit 1; }
+  tar xzf "$T/etcd.tgz" -C "$T"
+  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcd"    /usr/local/bin/etcd
+  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcdctl" /usr/local/bin/etcdctl
+  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcdutl" /usr/local/bin/etcdutl
+  /usr/local/bin/etcd --version | grep -q "^etcd Version: ${ETCD_VER#v}$" || { echo "❌ ETCD_INSTALL: versión instalada inesperada"; exit 1; }
+  echo "✅ etcd $(/usr/local/bin/etcd --version | head -1 | awk '{print $3}') instalado (sha256 verificado)"
+    ETCD_INSTALL
+    etcd.vm.provision "shell", name: "etcd-local", inline: <<-'ETCD_LOCAL'
+      set -e
+      umask 077
+      echo "=== etcd VM: etcd 1 nodo (solo 127.0.0.1, TLS de cliente obligatorio) [ETCD-LOCAL-D312] ==="
+      id etcd > /dev/null 2>&1 || useradd --system --home-dir /var/lib/etcd --shell /usr/sbin/nologin etcd
+      install -d -m 0700 -o etcd -g etcd /var/lib/etcd
+      PKI_IN=/tmp/argus-pki-etcd
+      if [ -d "$PKI_IN" ]; then
+        install -d -m 0750 -o etcd -g etcd /etc/etcd/tls
+        install -m 0644 -o etcd -g etcd "$PKI_IN/ca.crt"   /etc/etcd/tls/ca.crt
+        install -m 0644 -o etcd -g etcd "$PKI_IN/etcd.crt" /etc/etcd/tls/etcd.crt
+        install -m 0600 -o etcd -g etcd "$PKI_IN/etcd.key" /etc/etcd/tls/etcd.key
+        rm -rf "$PKI_IN"
+      fi
+      for f in /etc/etcd/tls/ca.crt /etc/etcd/tls/etcd.crt /etc/etcd/tls/etcd.key /etc/argus-pki/etcd-server.crt /etc/argus-pki/etcd-server.key; do
+        [ -s "$f" ] || { echo "❌ etcd-local: falta $f"; exit 1; }
+      done
+      cat > /etc/etcd/etcd.conf.yml <<'YML'
+# [ETCD-LOCAL-D312] generado por el Vagrantfile; no editar a mano. Un nodo (PR1); el PR2 añade los peers.
+name: argus-etcd-1
+data-dir: /var/lib/etcd
+listen-client-urls: https://127.0.0.1:2381
+advertise-client-urls: https://127.0.0.1:2381
+listen-peer-urls: https://127.0.0.1:2382
+initial-advertise-peer-urls: https://127.0.0.1:2382
+initial-cluster: argus-etcd-1=https://127.0.0.1:2382
+initial-cluster-state: new
+initial-cluster-token: argus-lab
+client-transport-security:
+  cert-file: /etc/etcd/tls/etcd.crt
+  key-file: /etc/etcd/tls/etcd.key
+  trusted-ca-file: /etc/etcd/tls/ca.crt
+  client-cert-auth: true
+peer-transport-security:
+  cert-file: /etc/etcd/tls/etcd.crt
+  key-file: /etc/etcd/tls/etcd.key
+  trusted-ca-file: /etc/etcd/tls/ca.crt
+  client-cert-auth: true
+YML
+      chown root:etcd /etc/etcd/etcd.conf.yml; chmod 0640 /etc/etcd/etcd.conf.yml
+      cat > /etc/systemd/system/etcd.service <<'UNIT'
+[Unit]
+Description=etcd del lab (1 nodo, solo 127.0.0.1) [ETCD-LOCAL-D312]
+After=network-online.target
+Wants=network-online.target
+[Service]
+User=etcd
+Group=etcd
+ExecStart=/usr/local/bin/etcd --config-file /etc/etcd/etcd.conf.yml
+Restart=on-failure
+RestartSec=2
+LimitNOFILE=65536
+[Install]
+WantedBy=multi-user.target
+UNIT
+      systemctl daemon-reload
+      systemctl enable etcd
+      systemctl restart etcd
+      E="etcdctl --endpoints=https://127.0.0.1:2381 --cacert=/etc/etcd/tls/ca.crt --cert=/etc/argus-pki/etcd-server.crt --key=/etc/argus-pki/etcd-server.key"
+      ok=0; for i in $(seq 1 30); do if $E endpoint health > /dev/null 2>&1; then ok=1; break; fi; sleep 1; done
+      [ "$ok" = "1" ] || { echo "❌ etcd-local: etcd no responde en 30 s (ver journalctl -u etcd)"; exit 1; }
+      # RBAC: el CN del certificado es el usuario. etcd-server solo lee/escribe bajo /argus/; root sin contraseña y sin
+      # certificado CN=root emitido: nadie administra salvo que se emita uno a propósito.
+      # Sin auth, auth status lo puede pedir cualquiera; con auth, a etcd-server se le niega: las dos cosas dicen "activado".
+      AUTH=$($E auth status 2>&1 || true)
+      if ! echo "$AUTH" | grep -qE 'Authentication Status: true|permission denied'; then
+        echo "$AUTH" | grep -q 'Authentication Status: false' || { echo "❌ etcd-local: auth status inesperado"; exit 1; }
+        $E user get root > /dev/null 2>&1        || $E user add root --no-password > /dev/null
+        $E user grant-role root root > /dev/null
+        $E role get argus-rw > /dev/null 2>&1    || $E role add argus-rw > /dev/null
+        $E role grant-permission argus-rw readwrite /argus/ --prefix=true > /dev/null
+        $E user get etcd-server > /dev/null 2>&1 || $E user add etcd-server --no-password > /dev/null
+        $E user grant-role etcd-server argus-rw > /dev/null
+        $E auth enable > /dev/null
+        echo "✅ etcd-local: RBAC activado (etcd-server: readwrite /argus/; root sin certificado emitido)"
+      else
+        echo "✅ etcd-local: RBAC ya activado"
+      fi
+      echo "✅ etcd-local: $($E endpoint status -w json | python3 -c 'import sys,json; s=json.load(sys.stdin)[0]["Status"]; print("version=%s lider=%s" % (s["version"], "si" if s["leader"] == s["header"]["member_id"] else "no"))')"
+    ETCD_LOCAL
   end  # End etcd VM
 
 end  # End Vagrant configuration
