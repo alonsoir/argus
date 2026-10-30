@@ -110,3 +110,58 @@ del Mac medida:
 - tres nodos en VMs pequeñas (si bookworm + etcd + Vault caben en ~512 MB; medir);
 - tres nodos en una sola VM, cada uno en su espacio de red (`ip netns`): Raft, caída de nodo y particiones medibles
   de verdad; la caída de la VM entera no.
+
+## Resultados DAY312 (medidos; se añaden aparte, sin reescribir las secciones de diseño escritas antes de medir)
+
+Rama `feat/etcd-mtls-vault` (sobre `main` `cabac77`). Commits: `e7309db2` (Vault dev en loopback + diseño + PKI),
+`a3ad992d` (paso 1, VM etcd), `7df8914e` (paso 2, Vault en modo servidor).
+
+### R0. Exposición del Vault dev del defender
+
+- M0 (client → 192.168.100.1:8200/v1/sys/health): predicción 200, `sealed:false`. Resultado: `ml-client`, 200,
+  `initialized:true`, `sealed:false`, 2.2.1. **PASA**. El Vault dev se alcanzaba sin token desde la posición del
+  atacante, con el token root `argus-dev-token` escrito en el repo público.
+- M0-b, ¿algo de fuera del defender usa el 8200? Primera captura (180 s): `syn_total=0`, **no válida**: la ventana se
+  cerró antes de que `pipeline-start` llegara al `vault status` (diario: 07:56:41–07:59:41 CET; el arranque terminó
+  hacia las 08:00:30). Control positivo (30 s + `vault status`): 1 SYN desde 127.0.0.1, el instrumento ve loopback.
+  Repetición (600 s, parada + arranque + ~6 min): 1 SYN, desde 127.0.0.1 (el `vault status` del final). **PASA**:
+  0 SYN no-loopback. Además, el etcd-server no habla con Vault en la compilación actual (0 conexiones en su arranque
+  ni en su vigilancia cada 5 s). `git grep` coincide: todo lo que usa 127.0.0.1:8200 corre dentro del defender.
+- Cambio (camino a, decisión de Alonso): Vault dev solo en 127.0.0.1 (Vagrantfile y Makefile), fuera el
+  forwarded_port 8200. Resultado tras `vagrant reload defender`: escucha solo `127.0.0.1:8200`; defender 200; client
+  `http=000` rc=7; Mac `http=000` rc=7; pipeline 4/4 RUNNING y `vault: RUNNING [dev]`. **PASA**.
+  DEBT-VAULT-DEV-EXPOSED-001 cerrada para el Vault dev; el resto de secretos del Vault dev sigue en el defender
+  hasta DEBT-VAULT-REST-SECRETS-001.
+
+### R1. Paso 1, VM etcd
+
+- `vagrant up etcd` rc=0; `etcd-base OK`, hora de 192.168.100.1, nftables `argus_etcd` cargada.
+- Primera medida del cortafuegos: defender rc=7 (rechazo), predicho 200. **PARADA**. Hipótesis escritas antes de
+  mirar: H1 ventana de 120 s cerrada; H2 servidor de prueba muerto; H3 regla `reject`. Diario: servidor de prueba
+  07:54:06–07:56:06 UTC, `status=124` → H1. El rechazo prueba que el paquete del defender sí cruzaba nftables.
+- Repetición (600 s): defender `http=200` rc=0; client `http=000` rc=28 (descartado). **PASA**.
+
+### R2. Paso 2, Vault en modo servidor en la VM etcd
+
+- Versión medida en el defender: `2.2.1-1` (predicho). Fijada en `VAULT_INSTALL`, compartido por defender y etcd.
+- Primer `vagrant provision etcd`: rc=1 sin ejecutar nada (`File provisioner: The following settings shouldn't
+  exist: name`). Corregido (`provision "pki-…", type: "file"`). Segundo: rc=0, Vault 2.2.1 (0e7c41b9, el mismo build
+  que el defender) instalado y fijado, inicializado 1/1, root revocado, `sealed=False storage=raft`.
+- `d312_vault_medir.sh`: M1-M6 **PASA** (login CN=etcd-server; escribir y releer; borrar 403; fuera de argus-hmac/
+  403; certificado de sniffer 400; sin certificado sin TLS, curl rc 55/56; escucha solo 127.0.0.1:8200; unseal.key
+  600 root). 8200 de la VM etcd desde defender y client: rc=28.
+- Tras `vagrant reload etcd`, sin intervención: desellado, y `argus-hmac/d312/prueba` sigue con `d312abcd`
+  (**persiste**). La entrada de prueba no se puede borrar (política): queda como rastro de la medida.
+- Defender: `vault-install` → `✅ Vault 2.2.1-1 ya instalado y fijado` (el cambio de sitio no altera nada).
+- Residuo anotado: el paquete genera un certificado autofirmado en `/opt/vault/tls` que no se usa.
+
+### Lecciones DAY312
+
+- La predicción del hostname se saca del Vagrantfile: el defender no tiene `vm.hostname` y se llama `bookworm`.
+- Un instrumento que puede no ver nada no refuta nada: control positivo antes de interpretar un 0.
+- Las ventanas de medida, con margen amplio y la hora UTC en cada línea: 120 s no alcanzan a ritmo humano con
+  `vagrant ssh` (~15 s cada uno).
+- Un parcheador se prueba sin los ficheros de trabajo de quien lo escribe (uno leía `/home/claude/work/…`).
+- Una validación que pasa sobre una entrada vacía no vale: control negativo (nft sobre un fichero vacío daba OK).
+- El aprovisionador `file` de Vagrant no admite `name:`; el nombre va como primer argumento con `type: "file"`.
+- Un `grep` que busca un secreto lleva el secreto en sus argumentos: no se comprueba así.
