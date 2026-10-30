@@ -1588,13 +1588,14 @@ vault-fault-inject:
 	@echo "║  ✅ VAULT-FAULT-INJECT PASSED                            ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
+# [VAULT-DEV-LOOPBACK-D312] Vault dev solo en 127.0.0.1, igual que el bootstrap del Vagrantfile y provision_crypto.sh
 vault-dev-start:
 	@echo "=== Arrancando Vault dev mode ==="
 	@vagrant ssh defender -c " \
 	  pgrep -x vault > /dev/null && echo 'Vault ya corriendo' || \
 	  (nohup vault server -dev \
 	    -dev-root-token-id=argus-dev-token \
-	    -dev-listen-address=0.0.0.0:8200 \
+	    -dev-listen-address=127.0.0.1:8200 \
 	    > /tmp/vault-dev.log 2>&1 &) ; \
 	  sleep 3 && \
 	  VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token \

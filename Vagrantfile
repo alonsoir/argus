@@ -139,7 +139,7 @@ Vagrant.configure("2") do |config|
     defender.vm.network "forwarded_port", guest: 5572, host: 5572
     defender.vm.network "forwarded_port", guest: 2379, host: 2379
     defender.vm.network "forwarded_port", guest: 8080, host: 8080  # Jenkins
-    defender.vm.network "forwarded_port", guest: 8200, host: 8200  # Vault
+    # [VAULT-DEV-LOOPBACK-D312] sin forwarded_port 8200: el Vault dev escucha solo en 127.0.0.1 del defender (nada fuera lo usa, medido DAY312)
 
     defender.vm.synced_folder ".", "/vagrant", type: "virtualbox",
         mount_options: ["dmode=775,fmode=775,exec"]
@@ -991,12 +991,13 @@ BASHRC_EOF
       export VAULT_ADDR=http://127.0.0.1:8200
       export VAULT_TOKEN=argus-dev-token
 
+      # [VAULT-DEV-LOOPBACK-D312] solo 127.0.0.1: el Vault dev no se alcanza desde la red del lab (DEBT-VAULT-DEV-EXPOSED-001)
       # ── 1. Vault dev ──────────────────────────────────────────────────
       if ! pgrep -x vault > /dev/null; then
         echo "🔐 Arrancando Vault dev mode..."
         nohup vault server -dev \
           -dev-root-token-id=argus-dev-token \
-          -dev-listen-address=0.0.0.0:8200 \
+          -dev-listen-address=127.0.0.1:8200 \
           > /tmp/vault-dev.log 2>&1 &
         sleep 3
         echo "✅ Vault dev OK"
