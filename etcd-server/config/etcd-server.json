@@ -1,8 +1,9 @@
 {
+  "_doc": "[ETCD-CONFIG-D312] El JSON es la ley: si un campo de server/secrets/heartbeat falta, tiene otro tipo o est\u00e1 fuera de rango, el etcd-server avisa con [CONFIG-DEFAULT] y usa el defecto (el valor de este fichero). Comprobar sin arrancar: etcd-server -c RUTA --check-config.",
   "server": {
+    "_doc": "host: IPv4 con puntos (0.0.0.0 = todas). port: entero [1024, 65535].",
     "port": 2379,
-    "host": "0.0.0.0",
-    "worker_threads": 4
+    "host": "0.0.0.0"
   },
   "identity": {
     "_comment": "ADR-013 \u2014 provision.sh es el \u00fanico responsable de crear estas claves.",
@@ -14,57 +15,16 @@
     "seed_bin": "/etc/ml-defender/etcd-server/seed.bin"
   },
   "heartbeat": {
-    "enabled": true,
+    "_doc": "Enteros. interval_seconds [1, 3600], timeout_multiplier [2, 10], check_interval_seconds [1, 3600]. Regla: check_interval_seconds <= interval_seconds * timeout_multiplier (si no, los tres van a defecto).",
     "interval_seconds": 30,
     "timeout_multiplier": 3,
     "check_interval_seconds": 10
   },
-  "auto_restart": {
-    "enabled": true,
-    "max_attempts": 3,
-    "delay_seconds": 5,
-    "commands": {
-      "sniffer": "cd /vagrant/sniffer/build && sudo ./sniffer -c ../config/sniffer.json",
-      "ml-detector": "cd /vagrant/ml-detector/build && ./ml-detector -c ../config/ml_detector_config.json",
-      "firewall-acl-agent": "cd /vagrant/firewall-acl-agent/build && sudo ./firewall-acl-agent -c ../config/firewall.json"
-    }
-  },
-  "security": {
-    "encryption_enabled": true,
-    "compression_enabled": true
-  },
   "secrets": {
-    "_comment": "Day 56: HMAC secrets management for log integrity",
-    "enabled": true,
+    "_doc": "HMAC (ADR-004). Enteros. default_key_length_bytes [32, 64], grace_period_seconds [1, 86400], min_rotation_interval_seconds [1, 86400]. Regla: min_rotation_interval_seconds >= grace_period_seconds (si no, los dos van a defecto).",
     "default_key_length_bytes": 32,
-    "rotation_interval_hours": 168,
     "grace_period_seconds": 300,
-    "min_rotation_interval_seconds": 300,
-    "auto_generate_on_startup": true,
-    "storage": {
-      "_comment": "Future: Persistent storage path for secrets (not implemented yet)",
-      "path": "/var/lib/etcd-server/secrets",
-      "encryption": "aes-256-gcm"
-    },
-    "keys": {
-      "_comment": "Default keys auto-generated on startup. Grace period applies to ALL keys system-wide.",
-      "ml_detector_hmac": {
-        "_comment": "Future: HMAC for ml-detector outputs",
-        "path": "/secrets/ml-detector/log_hmac_key",
-        "algorithm": "hmac-sha256",
-        "purpose": "HMAC validation for ML detector event logs",
-        "rotation_enabled": true,
-        "auto_generate": false
-      },
-      "firewall_hmac": {
-        "_comment": "Future: HMAC for firewall logs",
-        "path": "/secrets/firewall/log_hmac_key",
-        "algorithm": "hmac-sha256",
-        "purpose": "HMAC validation for firewall ACL agent logs",
-        "rotation_enabled": true,
-        "auto_generate": false
-      }
-    }
+    "min_rotation_interval_seconds": 300
   },
   "alerting": {
     "enabled": false,

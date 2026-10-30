@@ -15,7 +15,6 @@ namespace etcd_server {
     SecretsManager::SecretsManager(const nlohmann::json& config)
         : logger_(spdlog::get("etcd_server") ? spdlog::get("etcd_server") : spdlog::default_logger()),
           grace_period_seconds_(config["secrets"]["grace_period_seconds"].get<int>()),
-          rotation_interval_hours_(config["secrets"]["rotation_interval_hours"].get<int>()),
           default_key_length_bytes_(config["secrets"]["default_key_length_bytes"].get<int>()),
           min_rotation_interval_seconds_(config["secrets"]["min_rotation_interval_seconds"].get<int>())
     {
@@ -36,7 +35,6 @@ namespace etcd_server {
         logger_->info("SecretsManager initialized from JSON config:");
         logger_->info("  - Grace period: {}s (system-wide)", grace_period_seconds_);
         logger_->info("  - min_rotation_interval_seconds: {}s (system-wide)", min_rotation_interval_seconds_);
-        logger_->info("  - Rotation interval: {}h", rotation_interval_hours_);
         logger_->info("  - Default key length: {} bytes", default_key_length_bytes_);
 }
 

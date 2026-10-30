@@ -42,16 +42,17 @@ private:
     std::atomic<bool> monitor_running_{false};
     mutable std::mutex heartbeat_mutex_;  // mutable para permitir lock en métodos const
 
-    // Heartbeat config (hardcoded por ahora, refactor después)
-    int heartbeat_interval_seconds_ = 30;
-    int timeout_multiplier_ = 3;
-    int check_interval_seconds_ = 10;
+    // Latidos [ETCD-CONFIG-D312]: de etcd-server.json vía argus::etcdcfg (validados allí), fijados en el constructor
+    const int heartbeat_interval_seconds_;
+    const int timeout_multiplier_;
+    const int check_interval_seconds_;
     bool auto_restart_enabled_ = false;  // Default false hasta implementar restart
     int max_restart_attempts_ = 3;
     int restart_delay_seconds_ = 5;
 
 public:
-    ComponentRegistry();
+    ComponentRegistry(const std::string& config_path, int heartbeat_interval_seconds, int timeout_multiplier,
+                      int check_interval_seconds);
     ~ComponentRegistry();
 
     // Gestión de componentes

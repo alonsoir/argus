@@ -6,6 +6,7 @@
 #include <thread>
 #include <atomic>
 #include <unordered_map>
+#include "etcd_server/etcd_server_config.hpp"
 
 // Forward declaration for SecretsManager
 namespace etcd_server {
@@ -20,11 +21,14 @@ private:
     std::unique_ptr<ComponentRegistry> component_registry_;
     etcd_server::SecretsManager* secrets_manager_ = nullptr;  // Non-owning pointer
     std::atomic<bool> running_{false};
+    std::string host_;
     int port_;
     std::thread server_thread_;
 
 public:
-    EtcdServer(int port = 2379);
+    // [ETCD-CONFIG-D312] host, puerto y latidos salen de etcd-server.json (argus::etcdcfg, ya validados);
+    // config_path es ese mismo JSON (SeedClient lee de él identity)
+    EtcdServer(const argus::etcdcfg::EtcdServerConfig& cfg, const std::string& config_path);
     ~EtcdServer();
 
     void set_secrets_manager(etcd_server::SecretsManager* manager) {

@@ -7,11 +7,14 @@
 
 //etcd-server/src/component_registry.cpp
 
-ComponentRegistry::ComponentRegistry() {
+ComponentRegistry::ComponentRegistry(const std::string& config_path, int heartbeat_interval_seconds,
+                                     int timeout_multiplier, int check_interval_seconds)
+    : heartbeat_interval_seconds_(heartbeat_interval_seconds),
+      timeout_multiplier_(timeout_multiplier),
+      check_interval_seconds_(check_interval_seconds) {
     try {
-        // ADR-013 PHASE 2 — CryptoTransport via SeedClient (DAY 98)
-        seed_client_ = std::make_unique<ml_defender::SeedClient>(
-            "/etc/ml-defender/etcd-server/etcd-server.json");
+        // ADR-013 PHASE 2 — CryptoTransport via SeedClient (DAY 98); el JSON es el de -c/--config [ETCD-CONFIG-D312]
+        seed_client_ = std::make_unique<ml_defender::SeedClient>(config_path);
         seed_client_->load();
         tx_ = std::make_unique<crypto_transport::CryptoTransport>(
             *seed_client_, ml_defender::crypto::CTX_ETCD_RX);

@@ -40,8 +40,11 @@ static void log_request(const httplib::Request& req, int status,
 // etcd-server/src/etcd_server.cpp
 using json = nlohmann::json;
 
-EtcdServer::EtcdServer(int port) : port_(port) {
-    component_registry_ = std::make_unique<ComponentRegistry>();
+EtcdServer::EtcdServer(const argus::etcdcfg::EtcdServerConfig& cfg, const std::string& config_path)
+    : host_(cfg.host), port_(cfg.port) {
+    component_registry_ = std::make_unique<ComponentRegistry>(
+        config_path, cfg.heartbeat_interval_seconds, cfg.heartbeat_timeout_multiplier,
+        cfg.heartbeat_check_interval_seconds);
 }
 
 EtcdServer::~EtcdServer() {
@@ -49,7 +52,7 @@ EtcdServer::~EtcdServer() {
 }
 
 bool EtcdServer::initialize() {
-    std::cout << "[ETCD-SERVER] 🔧 Inicializando servidor en puerto " << port_ << std::endl;
+    std::cout << "[ETCD-SERVER] 🔧 Inicializando servidor en " << host_ << ":" << port_ << std::endl;
     return true;
 }
 
@@ -703,11 +706,11 @@ server.Get(R"(/secrets/valid/([^/]+))", [this](const httplib::Request& req, http
     }
 });
 
-    std::cout << "[ETCD-SERVER] 🌐 Iniciando servidor HTTP en 0.0.0.0:" << port_ << std::endl;
+    std::cout << "[ETCD-SERVER] 🌐 Iniciando servidor HTTP en " << host_ << ":" << port_ << std::endl;
 
     try {
-        if (!server.listen("0.0.0.0", port_)) {
-            std::cerr << "[ETCD-SERVER] ❌ Error iniciando servidor en puerto " << port_ << std::endl;
+        if (!server.listen(host_, port_)) {
+            std::cerr << "[ETCD-SERVER] ❌ Error iniciando servidor en " << host_ << ":" << port_ << std::endl;
         }
     } catch (const std::exception& e) {
         std::cerr << "[ETCD-SERVER] 💥 Excepción en servidor: " << e.what() << std::endl;

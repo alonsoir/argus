@@ -341,6 +341,12 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
             OpenSSL::Crypto
             fmt
     )
+
+    # [ETCD-CONFIG-D312] lector de etcd-server.json (server/secrets/heartbeat): defectos, tipos, rangos, reglas, obsoletos
+    add_executable(test_etcd_server_config tests/test_etcd_server_config.cpp)
+    target_include_directories(test_etcd_server_config PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_link_libraries(test_etcd_server_config PRIVATE GTest::gtest_main)
+    add_test(NAME test_etcd_server_config COMMAND test_etcd_server_config)
     # target_include_directories(test_hmac_integration
     #         PRIVATE
     #         ${CMAKE_CURRENT_SOURCE_DIR}/include

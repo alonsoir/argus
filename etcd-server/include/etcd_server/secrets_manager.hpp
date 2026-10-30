@@ -53,23 +53,10 @@ public:
      * {
      *   "secrets": {
      *     "grace_period_seconds": 300,
-     *     "rotation_interval_hours": 168,
      *     "default_key_length_bytes": 32
      *   }
      * }
      */
-    struct Config {
-        bool enabled = true;
-        int default_key_length = 32;
-        int rotation_interval_hours = 168;
-        bool auto_generate_on_startup = true;
-
-        // Day 54: AÑADIR ESTA LÍNEA
-        int grace_period_seconds = 300;
-		// Day 56: Cooldown window (ADR-004)
-    	int min_rotation_interval_seconds = 300;
-    };
-
     explicit SecretsManager(const nlohmann::json& config);
 
     /**
@@ -153,7 +140,6 @@ private:
 
     // Configuration (immutable after construction, from JSON)
     const int grace_period_seconds_;       // System-wide grace period
-    const int rotation_interval_hours_;
     const int default_key_length_bytes_;
     const int min_rotation_interval_seconds_;
 

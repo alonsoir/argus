@@ -6,6 +6,7 @@
 
 #include "etcd_server/etcd_server.hpp"
 #include "etcd_server/secrets_manager.hpp"
+#include "etcd_server/etcd_server_config.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <csignal>
@@ -35,13 +36,55 @@ void signal_handler(int signal) {
     exit(0);
 }
 
-int main() {
+int main(int argc, char** argv) {
     // SET_TERMINATE — DAY 100 (ADR-022: fail-closed, unhandled exceptions)
     std::set_terminate([]() {
         std::cerr << "[FATAL] std::terminate() called — unhandled exception or contract violation\n";
         std::abort();
     });
     std::cout << "🚀 Iniciando etcd-server v0.3 - Day 54 Grace Period..." << std::endl;
+
+    // [ETCD-CONFIG-D312] -c/--config RUTA (defecto: la de siempre) y --check-config (lee y valida el JSON y sale:
+    // 0 sin defectos, 1 con alguno; los obsoletos solo avisan). El JSON es la ley: si no se puede leer, o un campo
+    // falta o está mal, se avisa ([CONFIG-DEFAULT]) y se usa el defecto validado.
+    std::string config_path = "/etc/ml-defender/etcd-server/etcd-server.json";
+    bool check_only = false;
+    for (int i = 1; i < argc; ++i) {
+        const std::string a = argv[i];
+        if ((a == "-c" || a == "--config") && i + 1 < argc) {
+            config_path = argv[++i];
+        } else if (a == "--check-config") {
+            check_only = true;
+        } else {
+            std::cerr << "Uso: etcd-server [-c|--config RUTA] [--check-config]" << std::endl;
+            return 2;
+        }
+    }
+    nlohmann::json root = nlohmann::json::object();
+    bool fichero_ok = false;
+    {
+        std::ifstream f(config_path);
+        if (!f.good()) {
+            std::cerr << "[CONFIG-DEFAULT] no se puede abrir " << config_path
+                      << ": se usan los defectos de todos los campos" << std::endl;
+        } else {
+            try {
+                root = nlohmann::json::parse(f);
+                fichero_ok = true;
+            } catch (const std::exception& e) {
+                std::cerr << "[CONFIG-DEFAULT] " << config_path << " no es JSON válido (" << e.what()
+                          << "): se usan los defectos de todos los campos" << std::endl;
+            }
+        }
+    }
+    const auto leida = argus::etcdcfg::parse_etcd_server_config(root);
+    const auto& cfg = leida.cfg;
+    if (check_only) {
+        const bool limpio = fichero_ok && leida.defectos == 0;
+        std::cout << "[ETCD-CONFIG-CHECK] " << config_path << ": " << (limpio ? "OK" : "CON DEFECTOS")
+                  << " (defectos=" << leida.defectos << ", obsoletos=" << leida.obsoletos << ")" << std::endl;
+        return limpio ? 0 : 1;
+    }
 
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
@@ -61,6 +104,9 @@ int main() {
         // DEBT-AUTONOMY-CRYPTO-INTEGRATION-001
         // etcd-server es el único publisher de autonomía en el nodo (Q1 DAY 155).
         // ═══════════════════════════════════════════════════════════
+        // [ETCD-CONFIG-D312] /run/argus ANTES del AutonomyPublisher: su socket ipc vive ahí. Si faltaba (VM etcd,
+        // DAY312) el arranque moría con "No such file or directory"; se creaba más abajo, tarde.
+        std::filesystem::create_directories("/run/argus");
         const std::string autonomy_endpoint = "ipc:///run/argus/autonomy.sock";
         ml_defender::common::AutonomyPublisher autonomy_pub(
             autonomy_endpoint, "etcd-server", 0
@@ -118,8 +164,6 @@ int main() {
         // Se borra tras g_server->start().
         const std::string bootstrap_path = "/run/argus/etcd-bootstrap-status.json";
         try {
-            std::filesystem::create_directories("/run/argus");
-
             // DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 (DAY 157)
             // Construir JSON canónico a firmar (sin signature_hex, claves ordenadas)
             const std::string provider_str =
@@ -190,14 +234,14 @@ int main() {
         std::cout << "  Initializing SecretsManager (Day 54)" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        nlohmann::json config = {
-    		{"secrets", {
-        	{"grace_period_seconds", 300},
-        	{"rotation_interval_hours", 168},
-        	{"default_key_length_bytes", 32},
-        	{"min_rotation_interval_seconds", 300}  // AÑADIR (ADR-004)
-    	}}
-		};
+        // [ETCD-CONFIG-D312] del JSON (validado por argus::etcdcfg), no fijo en el código
+        const nlohmann::json config = {
+            {"secrets", {
+                {"grace_period_seconds", cfg.grace_period_seconds},
+                {"default_key_length_bytes", cfg.default_key_length_bytes},
+                {"min_rotation_interval_seconds", cfg.min_rotation_interval_seconds}
+            }}
+        };
 
         g_secrets_manager = std::make_shared<etcd_server::SecretsManager>(config);
 
@@ -213,12 +257,7 @@ int main() {
         std::cout << "  Initializing EtcdServer" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        g_server = std::make_unique<EtcdServer>(2379);
-
-        // NOTA: set_secrets_manager espera etcd::SecretsManager*
-        // Esto puede causar incompatibilidad de tipos
-        // TODO Day 55: Actualizar EtcdServer para aceptar etcd_server::SecretsManager
-        // Por ahora, comentamos esta línea para que compile
+        g_server = std::make_unique<EtcdServer>(cfg, config_path);
         g_server->set_secrets_manager(g_secrets_manager.get());
 
         if (!g_server->initialize()) {
@@ -232,7 +271,7 @@ int main() {
         // ═══════════════════════════════════════════════════════════
         // STEP 3: Display Available Endpoints
         // ═══════════════════════════════════════════════════════════
-        std::cout << "🌐 Servidor HTTP escuchando en: http://0.0.0.0:2379" << std::endl;
+        std::cout << "🌐 Servidor HTTP escuchando en: http://" << cfg.host << ":" << cfg.port << std::endl;
         std::cout << "📚 Endpoints disponibles:" << std::endl;
         std::cout << "   POST /register      - Registrar componente" << std::endl;
         std::cout << "   POST /unregister    - Desregistrar componente" << std::endl;
@@ -265,7 +304,9 @@ int main() {
         // Registra etcd-server en el servidor de configuración y
         // observa /v1/epoch para coordinar rotaciones de época.
         // ═══════════════════════════════════════════════════════════
-        const std::string etcd_server_url = "http://127.0.0.1:2379";
+        // [ETCD-CONFIG-D312] mismo host:puerto que el servidor; si escucha en todas (0.0.0.0) se entra por loopback
+        const std::string etcd_server_url = "http://" + (cfg.host == "0.0.0.0" ? std::string("127.0.0.1") : cfg.host)
+                                          + ":" + std::to_string(cfg.port);
         ml_defender::HttpEtcdRegistrar epoch_registrar(
             etcd_server_url, "etcd-server",
             /*keepalive_ms=*/30000,
@@ -296,11 +337,9 @@ int main() {
         bool   was_vault_healthy = true;
 
         // ── AlertClient (DEBT-ALERTING-EDGE-SOS-001) ─────────────────────────────
+        // [ETCD-CONFIG-D312] el mismo JSON ya leído (-c/--config), no una segunda lectura de una ruta fija
         argus::AlertClient alert_client([&]() -> nlohmann::json {
-            try {
-                std::ifstream f("/etc/ml-defender/etcd-server/etcd-server.json");
-                if (f.good()) return nlohmann::json::parse(f);
-            } catch (...) {}
+            if (root.is_object() && root.contains("alerting")) return root;
             return nlohmann::json{{"alerting", {{"enabled", false}}}};
         }());
         while (g_server->is_running()) {
