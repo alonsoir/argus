@@ -1434,4 +1434,79 @@ BASHRC_EOF
 
   end  # End wazuh VM
 
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # ETCD VM — etcd-server (fachada HTTPS + mTLS), etcd y Vault en modo servidor
+  # [VM-ETCD-D312] DEBT-ETCD-HA-TLS-RAFT-001, PR1 (un nodo). docs/ml-heads/day312_diseno.md
+  # El etcd-server sale del defender (decisión de Alonso DAY312). Solo el defender habla con el 2379.
+  # ════════════════════════════════════════════════════════════════════════════
+  config.vm.define "etcd", autostart: false do |etcd|
+    etcd.vm.box         = "debian/bookworm64"
+    etcd.vm.box_version = "12.20240905.1"
+    etcd.vm.hostname    = "argus-etcd"
+
+    etcd.vm.provider "virtualbox" do |vb|
+      vb.name   = "argus-etcd"
+      vb.memory = "1024"
+      vb.cpus   = 2
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+    end
+
+    etcd.vm.network "private_network",
+      ip: "192.168.100.20",
+      virtualbox__intnet: "ml_defender_gateway_lan"
+
+    etcd.vm.synced_folder ".", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    # [VM-ETCD-D312] hora del defender (TLS y logs necesitan relojes alineados) y cortafuegos de entrada.
+    etcd.vm.provision "shell", name: "etcd-base", run: "always", inline: <<-'ETCD_BASE'
+      set -e
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== etcd VM: base (chrony + nftables) [VM-ETCD-D312] ==="
+      if ! command -v nft >/dev/null || ! command -v chronyc >/dev/null; then
+        apt-get update -qq
+        apt-get install -y nftables chrony curl
+      fi
+
+      CHRONY_CONF=/etc/chrony/chrony.conf
+      sed -i 's/^pool /#pool /' "$CHRONY_CONF"
+      sed -i 's/^makestep 1 3$/makestep 1 -1/' "$CHRONY_CONF"
+      grep -q '^server 192.168.100.1 iburst' "$CHRONY_CONF" || echo 'server 192.168.100.1 iburst' >> "$CHRONY_CONF"
+      systemctl restart chrony
+      chronyc waitsync 30 0.1 0 1 || echo "⚠️  etcd-base: sin sincronizar con 192.168.100.1 en 30 s"
+
+      # Entrada: loopback, conexiones ya establecidas, ICMP, SSH (gestión de Vagrant) y 2379 SOLO desde el defender.
+      cat > /etc/nftables.conf <<'NFT'
+#!/usr/sbin/nft -f
+# [VM-ETCD-D312] generado por el Vagrantfile; no editar a mano
+flush ruleset
+table inet argus_etcd {
+  chain input {
+    type filter hook input priority 0; policy drop;
+    iif "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+    meta l4proto { icmp, ipv6-icmp } accept
+    tcp dport 22 accept
+    ip saddr 192.168.100.1 tcp dport 2379 accept
+  }
+  chain forward { type filter hook forward priority 0; policy drop; }
+  chain output  { type filter hook output priority 0; policy accept; }
+}
+NFT
+      nft -c -f /etc/nftables.conf
+      systemctl enable nftables
+      systemctl restart nftables
+      nft list chain inet argus_etcd input | grep -q 'ip saddr 192.168.100.1 tcp dport 2379 accept' \
+        || { echo "❌ etcd-base: la regla del 2379 no quedó cargada"; exit 1; }
+      echo "✅ etcd-base OK: $(chronyc -n tracking | grep 'Reference ID'); nftables argus_etcd cargada"
+    ETCD_BASE
+
+  end  # End etcd VM
+
 end  # End Vagrant configuration
