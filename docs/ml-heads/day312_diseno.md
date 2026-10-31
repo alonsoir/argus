@@ -264,3 +264,90 @@ hacer falta (comprobar con `git grep` quién lee `/v1/epoch` aparte de él), `et
   `/secrets/ml-detector` → 403; ml-detector pide `/secrets/ml-detector` → 200 y huella; latido de no registrado →
   log con 404; reinicio del etcd-server → misma huella y registro conservado.
 - Compilación completa en producción con 0 diagnósticos.
+
+## Resultados DAY313 — paso 4b.2 (medidos; sección aparte, sin reescribir el diseño de 4b escrito antes de medir)
+
+Rama `feat/etcd-mtls-vault` sobre `7a666174`. Parcheador de un solo uso `d313_4b2_parche.py` v2 (sha256
+`b12e5e25…e170f`, no se commitea): 11 ficheros. Instrumentos nuevos: `scripts/etcd_ha/d313_es_vm.sh` (arrancar/parar
+en la VM etcd, con `--check-config` previo y tiempo de parada) y `scripts/etcd_ha/d313_es_medir.sh` (20 medidas desde
+el defender; nunca imprime una clave).
+
+### Decisiones de Alonso (DAY313, antes de escribir código)
+
+- **T1 = modo `http` explícito para la transición.** `tls.modo` en el JSON: `mtls` (defecto) o `http`. El JSON del
+  repo (defender, cuyos clientes siguen en HTTP hasta el paso 5) lleva `http` con aviso `[ETCD-TLS-DESACTIVADO]` al
+  arrancar y cada `tls.aviso_http_intervalo_s`. La VM etcd usa `etcd-server.etcd-vm.json` (`mtls`, mismo contenido
+  salvo `tls.modo`: lo comprueba un test). Un modo ausente o mal escrito va a `mtls`: una errata nunca rebaja a HTTP.
+  Con `mtls` y certificados ilegibles o inválidos el proceso no arranca (`[ETCD-TLS-FATAL]`, §4b.2). El modo `http`
+  se borra en el paso 6.
+- **T3 = registro en proceso.** `git grep`: `HttpEtcdRegistrar` solo lo usaba en producción el propio etcd-server
+  contra sí mismo (registro, latido cada 30 s, sondeo de `/v1/epoch` cada 2 s; el callback de época solo escribía en el
+  log). Fuera `HttpEtcdRegistrar` y `CryptoEpochCoordinator` del etcd-server (adelanta parte de 4b.6); se registra y
+  late directamente en su `ComponentRegistry`. `PUT`/`GET /v1/epoch` siguen como rutas.
+
+### Lo que hace 4b.2
+
+- `httplib::SSLServer` con la CA del lab como CA de cliente (certificado de cliente obligatorio).
+- Autorización en `set_pre_routing_handler` con la tabla `authz` del JSON (15 reglas; defecto idéntico en
+  `etcd_server_authz.hpp`, comprobado por test): plantillas por segmentos (`/secrets/{c}`, `{c}` = un segmento
+  `[a-z0-9-]{1,63}`), `permitir` = `propio` | `ou:<rol>` | `cualquiera`; denegar por defecto; una regla mal formada
+  invalida la tabla entera (defecto + aviso de cada error). Identidad: exactamente un CN y un OU con forma de nombre.
+- `[ETCD←]` desde `set_logger`, después de responder: status real, CN y OU (DEBT-ETCD-HEARTBEAT-LOG-STATUS-001).
+- Servidor como miembro: `stop()` llama a `server_->stop()` (antes `listen()` no volvía nunca).
+- Fuera `/seed` y `/secrets/keys` (sin regla: 403 con mTLS, 404 en http). Resumen `[CONFIG-DEFAULT]` con la ruta real
+  y el total de todos los bloques. `next_heartbeat_expected` desde `heartbeat.interval_seconds`. JSON de error de
+  `PUT /config` bien formado.
+- Test nuevo `test_etcd_server_authz` (17 casos; tres mutaciones del código hacen fallar los suyos).
+
+### Medido
+
+- M0 (defender): cpp-httplib **0.63.0** (clonado sin etiqueta). El código se probó con 0.12, 0.18, 0.26, 0.63 y 0.64.
+- Primer `pipeline-start` tras el parche: `ETCD-TLS-DESACTIVADO` 0 veces, predicho ≥ 1. **PARADA.** Medido: el binario
+  no contenía la cadena (H1) y el JSON no tenía `tls`: el `--apply` no se había ejecutado (`--check`: 11 pendientes).
+- Compilación con el parche v1: **FALLA** en `etcd_server_authz.hpp:312:70`, `-Werror=stringop-overflow=` de GCC 12 con
+  LTO. **PARADA.** Reproducido en un Debian 12 real (debootstrap; GCC 12.2.0, fmt 9.1, spdlog 1.10, libsodium 1.0.19,
+  httplib 0.63.0) con las opciones de production del Makefile; el original compila (control). Causa: falso positivo con
+  el temporal `const char* + std::string`; reescrito con dos `+=`. Parcheador v2: acepta la rama limpia o la v1
+  aplicada (solo reescribe ese fichero); probado en clones limpios (rama limpia, v1 aplicada, v1 + otro fichero
+  alterado → rechaza sin escribir).
+- `make pipeline-build PROFILE=production`: compila. `make test-components PROFILE=production`: 9 / 23 / 13 / **5** / 82,
+  todo verde (el etcd-server pasa de 4 a 5; la predicción «total 83» era errónea: 82 es otro componente y no cambia).
+- Defender en modo `http`: `pipeline-start` 6/6 RUNNING, `/health` 200, 3 líneas `ETCD-TLS-DESACTIVADO`. **PASA.**
+- Despliegue: `d312_etcd_vm_deploy.sh` **FALLA** (`vagrant ssh-config`): la VM etcd estaba `aborted`. **PARADA.**
+  `VBox.log.1`: abierto 2026-10-30T08:47:32Z, cierre ordenado (`DESTROYING → TERMINATED`) a las 4 h 10 min 30 s =
+  12:58Z; `pmset`: el Mac arrancó a las 14:07:25 (13:07Z) con Setup Assistant = reinicio por actualización de macOS. El
+  resto de VMs se levantó con `make up`, que no incluye la VM etcd. Tras `vagrant up etcd`: Vault `Sealed false` sin
+  intervención, 2379 libre, despliegue `RESULTADO PASA` (6 de 6 ficheros, manifiesto OK, binario `e22cfcc1f31fe7b9`).
+- VM etcd con `etcd-server.etcd-vm.json`: `--check-config` OK (`tls.modo=mtls`, 0 ficheros TLS ilegibles), escucha en
+  0.0.0.0:2379, 15 reglas, registrado en proceso.
+- `d313_es_medir.sh` desde el defender contra `https://192.168.100.20:2379`: **20/20 PASA.**
+  - Sin TLS válido no hay respuesta HTTP: sin certificado (rc 56), certificado de otra CA (rc 56), `vault.crt` con solo
+    `serverAuth` (rc 56), HTTP en claro (rc 52).
+  - admin `/health` y `/components` 200; sniffer `/health` 200; sniffer `/secrets/sniffer` 200 y `/secrets/ml-detector`
+    403; latido de ml-detector sin registrar 404; admin `/seed` y `/secrets/keys` 403; sniffer rotar 403 y
+    `/components` 403; `/secrets/sniffer%2Fx` y `/secrets/sniffer/` 403; sniffer-2 (OU sniffer) `/secrets/sniffer` 403;
+    converter `/secrets/valid/ml-detector` 200 y `/secrets/ml-detector` 403; `/components` incluye `etcd-server`.
+- Log de la VM etcd: 9 `[ETCD-AUTHZ-DENEGADO]` (predicho 9); el latido aparece como `status=404 | cn=ml-detector |
+  ou=ml-detector`; 0 cadenas de 64 hex. **PASA.**
+- Parada: 5,2 s tras SIGTERM, sin SIGKILL. Predicción inicial «< 2 s» **errónea**: el monitor de latidos duerme
+  `heartbeat.check_interval_seconds` (10 s) antes de salir; corregida a ≤ 11 s antes de medir en el laboratorio
+  (medido en el entorno de prueba 2,3–10,4 s). Se arregla al reescribir `ComponentRegistry` (4b.3).
+
+### Lecciones DAY313
+
+- Probar lo que se va a compilar en el mismo sistema y con las mismas opciones: Debian 12, GCC 12 y production
+  (`-O3 -march=native -flto -Werror`). Un GCC 13 sin LTO no ve el falso `-Wstringop-overflow` de GCC 12.
+- Un parcheador no se da por aplicado hasta que `--check` diga «ya aplicado (11/11)».
+- Etiquetar el sitio de cada comando no basta: `bookworm` es el defender. Para la VM etcd, comandos del Mac con
+  `vagrant ssh etcd -c`.
+- `ssh -F <(vagrant ssh-config …)` dentro de una tubería falla en zsh interactivo (`/dev/fd/12: Bad file
+  descriptor`); en bash, dentro de un script, funciona. En la terminal: fichero con `mktemp` y `rm` al terminar.
+- Una VM nueva que no levanta `make up` puede quedarse caída sin que nadie lo vea (reinicio del Mac por actualización).
+
+### Deudas y pendientes nuevos
+
+- Fijar cpp-httplib en `v0.63.0` en el Vagrantfile.
+- `make up` debe levantar también la VM etcd (antes del paso 8).
+- `test_autonomy_integration` falló una vez en el bookworm de prueba (0,00 s) y no se repitió en 10 vueltas; el
+  `LastTest.log` se sobrescribió. Vigilar.
+- `tar` desde el Mac: `COPYFILE_DISABLE=1 tar --no-xattrs` (atributos `com.apple.provenance`).

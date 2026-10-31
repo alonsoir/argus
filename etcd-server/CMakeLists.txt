@@ -156,8 +156,6 @@ set(SOURCES
         src/crypto_manager.cpp
         src/compression_lz4.cpp
         src/secrets_manager.cpp
-        ../common/http_etcd_registrar.cpp
-        ../common/crypto_epoch_coordinator.cpp
 )
 
 # ============================================================================
@@ -347,6 +345,15 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
     target_include_directories(test_etcd_server_config PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
     target_link_libraries(test_etcd_server_config PRIVATE GTest::gtest_main)
     add_test(NAME test_etcd_server_config COMMAND test_etcd_server_config)
+
+    # [ETCD-AUTHZ-D313] tls y authz de etcd-server.json: tabla, plantillas, CN/OU de certificados creados en el test,
+    # casos ambiguos, y que los defectos del código sean los que traen los JSON del repo
+    add_executable(test_etcd_server_authz tests/test_etcd_server_authz.cpp)
+    target_include_directories(test_etcd_server_authz PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_definitions(test_etcd_server_authz PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_etcd_server_authz PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_etcd_server_authz COMMAND test_etcd_server_authz)
     # target_include_directories(test_hmac_integration
     #         PRIVATE
     #         ${CMAKE_CURRENT_SOURCE_DIR}/include

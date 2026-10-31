@@ -1,9 +1,128 @@
 {
-  "_doc": "[ETCD-CONFIG-D312] El JSON es la ley: si un campo de server/secrets/heartbeat falta, tiene otro tipo o est\u00e1 fuera de rango, el etcd-server avisa con [CONFIG-DEFAULT] y usa el defecto (el valor de este fichero). Comprobar sin arrancar: etcd-server -c RUTA --check-config.",
+  "_doc": "[ETCD-CONFIG-D312] El JSON es la ley: si un campo de server/secrets/heartbeat falta, tiene otro tipo o est\u00e1 fuera de rango, el etcd-server avisa con [CONFIG-DEFAULT] y usa el defecto (el valor de este fichero). Comprobar sin arrancar: etcd-server -c RUTA --check-config. Bloques tls y authz [ETCD-AUTHZ-D313]: ver su _doc.",
   "server": {
     "_doc": "host: IPv4 con puntos (0.0.0.0 = todas). port: entero [1024, 65535].",
     "port": 2379,
     "host": "0.0.0.0"
+  },
+  "tls": {
+    "_doc": "modo: \"mtls\" (HTTPS con certificado de cliente obligatorio, CA = ca_file; autorizaci\u00f3n por la tabla authz) o \"http\" (HTTP en claro sin autenticaci\u00f3n: SOLO transici\u00f3n, defender hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001; avisa con [ETCD-TLS-DESACTIVADO] al arrancar y cada aviso_http_intervalo_s). Un modo ausente o mal escrito va a \"mtls\": una errata nunca rebaja a HTTP. ca_file, cert_file, key_file: rutas absolutas; en mtls, si no se pueden leer o no valen, el etcd-server NO arranca ([ETCD-TLS-FATAL]). aviso_http_intervalo_s: entero [10, 3600].",
+    "modo": "http",
+    "ca_file": "/etc/argus-pki/ca.crt",
+    "cert_file": "/etc/argus-pki/etcd-server.crt",
+    "key_file": "/etc/argus-pki/etcd-server.key",
+    "aviso_http_intervalo_s": 60
+  },
+  "authz": {
+    "_doc": "Solo con tls.modo=mtls. Denegar por defecto: lo que no casa con ninguna regla es 403 y [ETCD-AUTHZ-DENEGADO]. Regla: {metodo: GET|POST|PUT|DELETE, ruta: plantilla por segmentos que empieza por / (literales [A-Za-z0-9._-]{1,63}; {c} = un segmento [a-z0-9-]{1,63}, como mucho uno), permitir: lista de \"propio\" (CN del certificado == {c}; exige {c}), \"ou:<rol>\" (OU del certificado) o \"cualquiera\" (cualquier certificado de la CA)}. Se permite si alguna regla que casa lo permite. Identidad: exactamente un CN (instancia) y un OU (rol) con forma [a-z0-9-]{1,63}. Una regla mal formada invalida la tabla ENTERA: se avisa de cada error y se usa la tabla por defecto (la de este fichero).",
+    "reglas": [
+      {
+        "metodo": "GET",
+        "ruta": "/health",
+        "permitir": [
+          "cualquiera"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/v1/epoch",
+        "permitir": [
+          "cualquiera"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/register",
+        "permitir": [
+          "cualquiera"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/unregister",
+        "permitir": [
+          "cualquiera"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/v1/heartbeat/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "PUT",
+        "ruta": "/v1/config/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/config/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "PUT",
+        "ruta": "/config/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/secrets/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/secrets/valid/{c}",
+        "permitir": [
+          "propio",
+          "ou:bronze-to-gold-converter"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/secrets/rotate/{c}",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "PUT",
+        "ruta": "/v1/epoch",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/components",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/validate",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/info",
+        "permitir": [
+          "ou:admin"
+        ]
+      }
+    ]
   },
   "identity": {
     "_comment": "ADR-013 \u2014 provision.sh es el \u00fanico responsable de crear estas claves.",

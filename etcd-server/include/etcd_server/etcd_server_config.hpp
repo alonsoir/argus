@@ -177,9 +177,8 @@ inline Resultado parse_etcd_server_config(const nlohmann::json& root, std::ostre
     detalle::obsoleto(root.is_object() ? root : kVacio, "", "security",
                       "cifrado y compresión los decide la petición; nunca se leyó", ob, aviso);
 
-    if (n > 0) {
-        aviso << "[CONFIG-DEFAULT] " << n << " ajustes con valor por defecto en etcd-server.json: revisarlo" << std::endl;
-    }
+    // [ETCD-AUTHZ-D313] el resumen "[CONFIG-DEFAULT] N ajustes con valor por defecto en <ruta>" lo escribe main.cpp
+    // con la ruta real (-c) y el total de todos los bloques (server/secrets/heartbeat, tls y authz).
     info << "[ETCD-CONFIG] server.host=" << c.host << " (" << o_host << ") server.port=" << c.port << " (" << o_port
          << ") secrets.grace_period_seconds=" << c.grace_period_seconds << " (" << o_grace
          << ") secrets.default_key_length_bytes=" << c.default_key_length_bytes << " (" << o_klen

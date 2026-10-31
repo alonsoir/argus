@@ -7,6 +7,7 @@
 #include "etcd_server/etcd_server.hpp"
 #include "etcd_server/secrets_manager.hpp"
 #include "etcd_server/etcd_server_config.hpp"
+#include "etcd_server/etcd_server_authz.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <csignal>
@@ -20,8 +21,6 @@
 #include <sodium.h>
 #include <sstream>
 #include "alert_client.hpp"
-#include <vault_client/http_etcd_registrar.h>
-#include <vault_client/crypto_epoch_coordinator.h>
 #include <iomanip>
 #include <cstdio>
 
@@ -79,10 +78,31 @@ int main(int argc, char** argv) {
     }
     const auto leida = argus::etcdcfg::parse_etcd_server_config(root);
     const auto& cfg = leida.cfg;
+    // [ETCD-AUTHZ-D313] bloques tls y authz del mismo JSON
+    const auto leida_tls = argus::etcdcfg::parse_tls_config(root);
+    const auto& tls = leida_tls.cfg;
+    auto leida_authz = argus::etcdauthz::parse_authz(root);
+    const int defectos = leida.defectos + leida_tls.defectos + leida_authz.defectos;
+    if (defectos > 0) {
+        std::cerr << "[CONFIG-DEFAULT] " << defectos << " ajustes con valor por defecto en " << config_path
+                  << ": revisarlo" << std::endl;
+    }
+    // En mtls, los tres ficheros deben poder leerse: si no, el servidor no arranca ([ETCD-TLS-FATAL])
+    int tls_ilegibles = 0;
+    if (tls.modo == "mtls") {
+        for (const auto* r : {&tls.ca_file, &tls.cert_file, &tls.key_file}) {
+            std::ifstream f(*r, std::ios::binary);
+            if (!f.good() || f.peek() == std::ifstream::traits_type::eof()) {
+                std::cerr << "[ETCD-TLS-FATAL] no se puede leer " << *r << " (o está vacío)" << std::endl;
+                ++tls_ilegibles;
+            }
+        }
+    }
     if (check_only) {
-        const bool limpio = fichero_ok && leida.defectos == 0;
+        const bool limpio = fichero_ok && defectos == 0 && tls_ilegibles == 0;
         std::cout << "[ETCD-CONFIG-CHECK] " << config_path << ": " << (limpio ? "OK" : "CON DEFECTOS")
-                  << " (defectos=" << leida.defectos << ", obsoletos=" << leida.obsoletos << ")" << std::endl;
+                  << " (defectos=" << defectos << ", obsoletos=" << leida.obsoletos << ", tls.modo=" << tls.modo
+                  << ", ficheros_tls_ilegibles=" << tls_ilegibles << ")" << std::endl;
         return limpio ? 0 : 1;
     }
 
@@ -257,7 +277,7 @@ int main(int argc, char** argv) {
         std::cout << "  Initializing EtcdServer" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        g_server = std::make_unique<EtcdServer>(cfg, config_path);
+        g_server = std::make_unique<EtcdServer>(cfg, tls, std::move(leida_authz.reglas), config_path);
         g_server->set_secrets_manager(g_secrets_manager.get());
 
         if (!g_server->initialize()) {
@@ -269,62 +289,33 @@ int main(int argc, char** argv) {
         std::cout << std::endl;
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 3: Display Available Endpoints
+        // STEP 3: Start Server ([ETCD-AUTHZ-D313] rutas y permisos: las líneas [ETCD-AUTHZ] de arriba)
         // ═══════════════════════════════════════════════════════════
-        std::cout << "🌐 Servidor HTTP escuchando en: http://" << cfg.host << ":" << cfg.port << std::endl;
-        std::cout << "📚 Endpoints disponibles:" << std::endl;
-        std::cout << "   POST /register      - Registrar componente" << std::endl;
-        std::cout << "   POST /unregister    - Desregistrar componente" << std::endl;
-        std::cout << "   GET  /components    - Listar componentes" << std::endl;
-        std::cout << "   GET  /config/*      - Obtener configuración" << std::endl;
-        std::cout << "   PUT  /config/*      - Actualizar configuración" << std::endl;
-        std::cout << "   GET  /seed          - Obtener seed de cifrado ChaCha20" << std::endl;
-        std::cout << "   GET  /validate      - Validar configuración global" << std::endl;
-        std::cout << "   GET  /health        - Estado del servidor" << std::endl;
-        std::cout << "   GET  /info          - Información del sistema" << std::endl;
-        std::cout << std::endl;
-        std::cout << "🔐 Secrets Endpoints (Day 54 - NEW):" << std::endl;
-        std::cout << "   (SecretsManager activo pero NO integrado aún con EtcdServer)" << std::endl;
-        std::cout << "   TODO Day 55: Integrar etcd_server::SecretsManager con EtcdServer" << std::endl;
-        std::cout << std::endl;
-
-        // ═══════════════════════════════════════════════════════════
-        // STEP 4: Start Server
-        // ═══════════════════════════════════════════════════════════
-        std::cout << "🚀 Starting HTTP server..." << std::endl;
-        std::cout << "💡 ChaCha20 seed encryption: ACTIVE (EtcdServer)" << std::endl;
-        std::cout << "💡 HMAC Grace Period: READY (etcd_server::SecretsManager)" << std::endl;
-        std::cout << "⚠️  SecretsManager NO integrado aún (namespace mismatch)" << std::endl;
-        std::cout << std::endl;
-
+        std::cout << "🌐 Escuchando en " << (tls.modo == "mtls" ? "https://" : "http://") << cfg.host << ":"
+                  << cfg.port << std::endl;
         g_server->start();
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 4b: CryptoEpochCoordinator (ADR-045 v2 — DAY 164)
-        // Registra etcd-server en el servidor de configuración y
-        // observa /v1/epoch para coordinar rotaciones de época.
+        // STEP 4: registro y latido del propio etcd-server, EN PROCESO ([ETCD-AUTHZ-D313], decisión de Alonso DAY313)
+        // Antes: HttpEtcdRegistrar + CryptoEpochCoordinator contra sí mismo por HTTP (registro, latido cada 30 s y
+        // sondeo de /v1/epoch cada 2 s, cuyo callback solo escribía en el log). Con HTTPS ese bucle fallaba; ahora va
+        // directo a su ComponentRegistry y GET /components sigue mostrándolo. PUT/GET /v1/epoch siguen como rutas.
         // ═══════════════════════════════════════════════════════════
-        // [ETCD-CONFIG-D312] mismo host:puerto que el servidor; si escucha en todas (0.0.0.0) se entra por loopback
-        const std::string etcd_server_url = "http://" + (cfg.host == "0.0.0.0" ? std::string("127.0.0.1") : cfg.host)
-                                          + ":" + std::to_string(cfg.port);
-        ml_defender::HttpEtcdRegistrar epoch_registrar(
-            etcd_server_url, "etcd-server",
-            /*keepalive_ms=*/30000,
-            /*poll_ms=*/2000);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // esperar servidor listo
-        epoch_registrar.register_status(crypto_material, "etcd-server");
-        epoch_registrar.start_keepalive();
-
-        ml_defender::CryptoEpochCoordinator epoch_coordinator(
-            epoch_registrar, "etcd-server");
-        epoch_coordinator.start([&](uint16_t eid, const std::string& nb) {
-            std::cout << "[epoch] 🔄 Nueva época " << eid
-                      << " not_before=" << nb
-                      << " — handle.reload() pendiente FASE 3" << std::endl;
-            // FASE 3 (BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001):
-            // handle.reload(CryptoProvider::create(new_cfg));
-        });
-        std::cout << "✅ CryptoEpochCoordinator arrancado (watch /v1/epoch)" << std::endl;
+        {
+            const nlohmann::json yo = {
+                {"component", "etcd-server"},
+                {"key_version", crypto_material.key_version},
+                {"family", crypto_material.family},
+                {"started_with_cache", false}
+            };
+            if (g_server->register_component("etcd-server", yo.dump())) {
+                std::cout << "✅ etcd-server registrado en proceso (sin red)" << std::endl;
+            } else {
+                std::cerr << "❌ etcd-server no se pudo registrar en proceso" << std::endl;
+            }
+        }
+        auto last_self_heartbeat = std::chrono::steady_clock::now();
+        auto last_tls_warning = std::chrono::steady_clock::now();
 
         // Borrar bootstrap status — servidor activo y aceptando conexiones
         try {
@@ -346,6 +337,21 @@ int main(int argc, char** argv) {
             auto now     = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                                now - last_vault_check).count();
+
+            // [ETCD-AUTHZ-D313] latido propio en proceso, cada heartbeat.interval_seconds
+            if (std::chrono::duration_cast<std::chrono::seconds>(now - last_self_heartbeat).count() >=
+                cfg.heartbeat_interval_seconds) {
+                g_server->update_heartbeat("etcd-server");
+                last_self_heartbeat = now;
+            }
+            // [ETCD-AUTHZ-D313] en modo http, aviso periódico: que nadie lo olvide encendido
+            if (tls.modo != "mtls" &&
+                std::chrono::duration_cast<std::chrono::seconds>(now - last_tls_warning).count() >=
+                    tls.aviso_http_intervalo_s) {
+                std::cerr << "[ETCD-TLS-DESACTIVADO] sirviendo HTTP en claro sin autenticación en " << cfg.host << ":"
+                          << cfg.port << " (tls.modo=http, solo transición hasta el paso 6)" << std::endl;
+                last_tls_warning = now;
+            }
 
             if (elapsed >= 5) {
                 const bool healthy = crypto_provider->is_healthy();

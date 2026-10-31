@@ -8,9 +8,15 @@
 #include <iomanip>
 #include <chrono>
 #include "etcd_server/secrets_manager.hpp"
+#include <fstream>
+#include <openssl/ssl.h>
+#include <openssl/x509.h>
+#include <openssl/x509_vfy.h>
 
 // ============================================================================
 // Day 62: Contextual request logging helper
+// [ETCD-AUTHZ-D313] se llama desde set_logger, DESPUÉS de responder: el status es el real
+// (DEBT-ETCD-HEARTBEAT-LOG-STATUS-001: antes cada ruta escribía 200 antes de decidir)
 // ============================================================================
 static std::string server_iso8601_now() {
     auto now = std::chrono::system_clock::now();
@@ -23,25 +29,52 @@ static std::string server_iso8601_now() {
     return ss.str();
 }
 
-static void log_request(const httplib::Request& req, int status,
-                        const std::string& context = "") {
+// [ETCD-AUTHZ-D313] identidad (CN, OU) del certificado de cliente de la conexión. req.ssl es "const SSL*" en las
+// versiones antiguas de cpp-httplib y "const void*" (sesión del backend; OpenSSL aquí) en las nuevas: static_cast vale
+// para las dos. Sin sesión TLS (modo http) o con una verificación que no sea X509_V_OK, identidad no válida.
+static argus::etcdauthz::Identidad identidad_de_peticion(const httplib::Request& req) {
+    argus::etcdauthz::Identidad id;
+    const SSL* s = static_cast<const SSL*>(req.ssl);
+    if (s == nullptr) {
+        id.motivo = "sin sesión TLS";
+        return id;
+    }
+    if (SSL_get_verify_result(s) != X509_V_OK) {
+        id.motivo = "verificación del certificado de cliente no superada";
+        return id;
+    }
+    X509* cert = SSL_get1_peer_certificate(s);
+    id = argus::etcdauthz::identidad_de_certificado(cert);
+    if (cert != nullptr) X509_free(cert);
+    return id;
+}
+
+static void log_request(const httplib::Request& req, const httplib::Response& res, bool con_tls) {
+    using argus::etcdauthz::para_log;
     std::string component = req.get_header_value("X-Component-Name");
     std::string client_ts  = req.get_header_value("X-Request-Timestamp");
     if (component.empty()) component = "unknown";
     if (client_ts.empty())  client_ts  = "unknown";
-    std::cout << "[ETCD←] " << req.method << " " << req.path
-              << " | status=" << status
-              << " | component=" << component
-              << " | client_ts=" << client_ts
+    std::string cn = "-", ou = "-";
+    if (con_tls) {
+        const auto id = identidad_de_peticion(req);
+        if (id.valida) { cn = id.cn; ou = id.ou; } else { cn = ou = "?"; }
+    }
+    std::cout << "[ETCD←] " << para_log(req.method, 16) << " " << para_log(req.path)
+              << " | status=" << res.status
+              << " | cn=" << cn << " | ou=" << ou
+              << " | component=" << para_log(component, 64)
+              << " | client_ts=" << para_log(client_ts, 64)
               << " | server_ts=" << server_iso8601_now()
-              << (context.empty() ? "" : " | " + context)
               << std::endl;
 }
 // etcd-server/src/etcd_server.cpp
 using json = nlohmann::json;
 
-EtcdServer::EtcdServer(const argus::etcdcfg::EtcdServerConfig& cfg, const std::string& config_path)
-    : host_(cfg.host), port_(cfg.port) {
+EtcdServer::EtcdServer(const argus::etcdcfg::EtcdServerConfig& cfg, const argus::etcdcfg::TlsConfig& tls,
+                       std::vector<argus::etcdauthz::Regla> reglas, const std::string& config_path)
+    : host_(cfg.host), port_(cfg.port), heartbeat_interval_seconds_(cfg.heartbeat_interval_seconds),
+      tls_(tls), reglas_(std::move(reglas)) {
     component_registry_ = std::make_unique<ComponentRegistry>(
         config_path, cfg.heartbeat_interval_seconds, cfg.heartbeat_timeout_multiplier,
         cfg.heartbeat_check_interval_seconds);
@@ -51,8 +84,42 @@ EtcdServer::~EtcdServer() {
     stop();
 }
 
+static bool legible(const std::string& ruta) {
+    std::ifstream f(ruta, std::ios::binary);
+    return f.good() && f.peek() != std::ifstream::traits_type::eof();
+}
+
 bool EtcdServer::initialize() {
-    std::cout << "[ETCD-SERVER] 🔧 Inicializando servidor en " << host_ << ":" << port_ << std::endl;
+    std::cout << "[ETCD-SERVER] 🔧 Inicializando servidor en " << host_ << ":" << port_
+              << " (tls.modo=" << tls_.modo << ")" << std::endl;
+    if (tls_.modo == "mtls") {
+        // Sin TLS válido no hay forma segura de servir: no se arranca (day312_diseno.md §4b.2)
+        bool ok = true;
+        for (const auto* r : {&tls_.ca_file, &tls_.cert_file, &tls_.key_file}) {
+            if (!legible(*r)) {
+                std::cerr << "[ETCD-TLS-FATAL] no se puede leer " << *r << " (o está vacío): sin TLS válido no se sirve"
+                          << std::endl;
+                ok = false;
+            }
+        }
+        if (!ok) return false;
+        // Con CA de cliente, cpp-httplib exige certificado de cliente (SSL_VERIFY_PEER | FAIL_IF_NO_PEER_CERT)
+        auto ssl = std::make_unique<httplib::SSLServer>(tls_.cert_file.c_str(), tls_.key_file.c_str(),
+                                                        tls_.ca_file.c_str(), nullptr);
+        if (!ssl->is_valid()) {
+            std::cerr << "[ETCD-TLS-FATAL] certificado, clave o CA no válidos (" << tls_.cert_file << ", "
+                      << tls_.key_file << ", " << tls_.ca_file << "): sin TLS válido no se sirve" << std::endl;
+            return false;
+        }
+        server_ = std::move(ssl);
+        std::cout << "[ETCD-TLS] HTTPS con mTLS: CA de cliente " << tls_.ca_file << ", certificado " << tls_.cert_file
+                  << "; " << reglas_.size() << " reglas de autorización, denegar por defecto" << std::endl;
+    } else {
+        server_ = std::make_unique<httplib::Server>();
+        std::cout << "[ETCD-TLS-DESACTIVADO] tls.modo=http: HTTP en claro, SIN autenticación ni autorización. Solo "
+                     "para la transición (defender hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001)" << std::endl;
+    }
+    configurar_rutas();
     return true;
 }
 
@@ -62,6 +129,10 @@ void EtcdServer::start() {
         return;
     }
 
+    if (!server_) {
+        std::cerr << "[ETCD-SERVER] ❌ start() sin initialize() correcto: no hay servidor que arrancar" << std::endl;
+        return;
+    }
     running_ = true;
     server_thread_ = std::thread(&EtcdServer::run_server, this);
     std::cout << "[ETCD-SERVER] 🚀 Servidor iniciado" << std::endl;
@@ -71,6 +142,8 @@ void EtcdServer::stop() {
     if (!running_) return;
 
     running_ = false;
+    // [ETCD-AUTHZ-D313] sin esto listen() no vuelve nunca y el join se queda colgado
+    if (server_) server_->stop();
     if (server_thread_.joinable()) {
         server_thread_.join();
     }
@@ -87,6 +160,10 @@ std::string EtcdServer::get_component_config(const std::string& component_name) 
 
 bool EtcdServer::update_component_config(const std::string& component_name, const std::string& config_path, const std::string& value) {
     return component_registry_->update_component_config(component_name, config_path, value);
+}
+
+bool EtcdServer::update_heartbeat(const std::string& component_name) {
+    return component_registry_->update_heartbeat(component_name);
 }
 
 std::string EtcdServer::validate_configuration() {
@@ -107,12 +184,31 @@ EtcdServer::EpochInfo EtcdServer::get_epoch() const {
     return epoch_;
 }
 
-void EtcdServer::run_server() {
-    httplib::Server server;
+void EtcdServer::configurar_rutas() {
+    httplib::Server& server = *server_;
+    const bool con_tls = (tls_.modo == "mtls");
+
+    // [ETCD-AUTHZ-D313] un único punto de autorización antes del enrutado. Solo con mTLS (en http no hay identidad).
+    if (con_tls) {
+        server.set_pre_routing_handler([this](const httplib::Request& req, httplib::Response& res) {
+            const auto id = identidad_de_peticion(req);
+            const auto d = argus::etcdauthz::decidir(reglas_, req.method, req.path, id);
+            if (d.permitido) return httplib::Server::HandlerResponse::Unhandled;
+            using argus::etcdauthz::para_log;
+            std::cout << "[ETCD-AUTHZ-DENEGADO] cn=" << (id.valida ? id.cn : "?") << " ou=" << (id.valida ? id.ou : "?")
+                      << " metodo=" << para_log(req.method, 16) << " ruta=" << para_log(req.path)
+                      << " motivo=" << d.motivo << std::endl;
+            res.status = 403;
+            res.set_content(R"({"status": "error", "message": "prohibido"})", "application/json");
+            return httplib::Server::HandlerResponse::Handled;
+        });
+    }
+    server.set_logger([con_tls](const httplib::Request& req, const httplib::Response& res) {
+        log_request(req, res, con_tls);
+    });
 
     // Endpoint de registro de componentes
     server.Post("/register", [this](const httplib::Request& req, httplib::Response& res) {
-        log_request(req, 200, "register");
 
         try {
             auto json_body = json::parse(req.body);
@@ -162,7 +258,6 @@ void EtcdServer::run_server() {
 
     // Endpoint para desregistrar componentes - IMPLEMENTACIÓN REAL
     server.Post("/unregister", [this](const httplib::Request& req, httplib::Response& res) {
-        log_request(req, 200, "unregister");
 
         try {
             auto json_body = json::parse(req.body);
@@ -208,9 +303,7 @@ void EtcdServer::run_server() {
     });
 
     // Endpoint para listar componentes registrados
-    server.Get("/components", [this](const httplib::Request& req, httplib::Response& res) {
-        log_request(req, 200, "list_components");
-
+    server.Get("/components", [this](const httplib::Request& /*req*/, httplib::Response& res) {
         auto components = component_registry_->get_registered_components();
         json response = {
             {"status", "success"},
@@ -221,22 +314,9 @@ void EtcdServer::run_server() {
         std::cout << "[ETCD-SERVER] 📊 Listando " << components.size() << " componentes" << std::endl;
     });
 
-    // Endpoint para obtener seed de cifrado
-    server.Get("/seed", [this](const httplib::Request& req, httplib::Response& res) {
-        log_request(req, 200, "seed");
-
-        std::string seed = component_registry_->get_encryption_seed();
-        json response = {
-            {"status", "success"},
-            {"seed", seed}
-        };
-        res.set_content(response.dump(), "application/json");
-    });
-
+    // [ETCD-AUTHZ-D313] GET /seed borrada (sin uso: day312_inventario_etcd.md); sin regla en authz -> 403
     // Endpoint de validación de configuración
-    server.Get("/validate", [this](const httplib::Request& req, httplib::Response& res) {
-        log_request(req, 200, "validate");
-
+    server.Get("/validate", [this](const httplib::Request& /*req*/, httplib::Response& res) {
         std::string validation = component_registry_->validate_configuration();
         res.set_content(validation, "application/json");
     });
@@ -244,7 +324,6 @@ void EtcdServer::run_server() {
     // Endpoint para obtener configuración de componente
     server.Get("/config/(.*)", [this](const httplib::Request& req, httplib::Response& res) {
         std::string component = req.matches[1];
-        log_request(req, 200, "get_config:" + component);
 
         std::string config = component_registry_->get_component_config(component);
         if (config == "{}") {
@@ -262,7 +341,6 @@ void EtcdServer::run_server() {
     // Endpoint para actualizar configuración
     server.Put("/config/(.*)", [this](const httplib::Request& req, httplib::Response& res) {
         std::string component = req.matches[1];
-        log_request(req, 200, "put_config:" + component);
 
         try {
             auto json_body = json::parse(req.body);
@@ -287,7 +365,7 @@ void EtcdServer::run_server() {
                 res.set_content(response.dump(), "application/json");
             } else {
                 res.status = 400;
-                res.set_content(R"({"status", "error", "message": "Error actualizando configuración"})", "application/json");
+                res.set_content(R"({"status": "error", "message": "Error actualizando configuración"})", "application/json");
             }
         } catch (const std::exception& e) {
             res.status = 400;
@@ -399,7 +477,6 @@ server.Put("/v1/config/(.*)", [this](const httplib::Request& req, httplib::Respo
     // Endpoint de heartbeat - Añadir después del endpoint /v1/config
 server.Post("/v1/heartbeat/(.*)", [this](const httplib::Request& req, httplib::Response& res) {
     std::string component_name = req.matches[1];
-    log_request(req, 200, "heartbeat:" + component_name);
 
     try {
         auto json_body = json::parse(req.body);
@@ -427,7 +504,7 @@ server.Post("/v1/heartbeat/(.*)", [this](const httplib::Request& req, httplib::R
                 {"last_heartbeat", last_hb},
                 {"server_time", server_time},
                 {"client_timestamp", client_timestamp},
-                {"next_heartbeat_expected", server_time + 30}  // Hardcoded por ahora
+                {"next_heartbeat_expected", server_time + heartbeat_interval_seconds_}  // heartbeat.interval_seconds
             };
             res.set_content(response.dump(), "application/json");
             std::cout << "[ETCD-SERVER] ✅ Heartbeat registrado para: " << component_name << std::endl;
@@ -511,33 +588,7 @@ server.Get("/v1/epoch", [this](const httplib::Request& /*req*/, httplib::Respons
 // SECRETS ENDPOINTS (Day 55 - ACTIVE)
 // ============================================================================
 
-// Endpoint: GET /secrets/keys - List all components with HMAC keys
-server.Get("/secrets/keys", [this](const httplib::Request& req, httplib::Response& res) {
-    log_request(req, 200, "secrets_keys");
-
-    if (!secrets_manager_) {
-        res.status = 503;
-        json error = {
-            {"status", "error"},
-            {"message", "SecretsManager not initialized"}
-        };
-        res.set_content(error.dump(), "application/json");
-        return;
-    }
-
-    // TODO Day 56: Implementar listado de todos los componentes
-    // Por ahora devolvemos instrucciones de uso
-    json response = {
-        {"status", "success"},
-        {"message", "Use GET /secrets/{component} to get active key"},
-        {"endpoints", {
-            {"get_key", "GET /secrets/{component}"},
-            {"rotate_key", "POST /secrets/rotate/{component}"},
-            {"valid_keys", "GET /secrets/valid/{component}"}
-        }}
-    };
-    res.set_content(response.dump(), "application/json");
-});
+// [ETCD-AUTHZ-D313] GET /secrets/keys borrada (sin uso: day312_inventario_etcd.md); sin regla en authz -> 403
 
 // Endpoint: GET /secrets/{component} - Get active HMAC key (hex-encoded)
 server.Get(R"(/secrets/([^/]+))", [this](const httplib::Request& req, httplib::Response& res) {
@@ -706,10 +757,14 @@ server.Get(R"(/secrets/valid/([^/]+))", [this](const httplib::Request& req, http
     }
 });
 
-    std::cout << "[ETCD-SERVER] 🌐 Iniciando servidor HTTP en " << host_ << ":" << port_ << std::endl;
+}
+
+void EtcdServer::run_server() {
+    std::cout << "[ETCD-SERVER] 🌐 Iniciando servidor " << (tls_.modo == "mtls" ? "HTTPS (mTLS)" : "HTTP (SIN TLS)")
+              << " en " << host_ << ":" << port_ << std::endl;
 
     try {
-        if (!server.listen(host_, port_)) {
+        if (!server_->listen(host_, port_)) {
             std::cerr << "[ETCD-SERVER] ❌ Error iniciando servidor en " << host_ << ":" << port_ << std::endl;
         }
     } catch (const std::exception& e) {
@@ -717,5 +772,5 @@ server.Get(R"(/secrets/valid/([^/]+))", [this](const httplib::Request& req, http
     }
 
     running_ = false;
-    std::cout << "[ETCD-SERVER] 📡 Servidor HTTP terminado" << std::endl;
+    std::cout << "[ETCD-SERVER] 📡 Servidor terminado" << std::endl;
 }
