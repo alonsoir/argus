@@ -8257,3 +8257,73 @@ en que falló. Un log puede mentir: el etcd-server escribe 200 y responde 404.
 3. DEBT-FW-HMAC-KEY-ALARM-001 ampliada.
 4. REA.
 Más adelante: DEBT-ETCD-MASTER-CLUSTER-001. Residuos: sitio por decidir.
+
+## DAY312–314 — rama feat/etcd-mtls-vault (PR1 de DEBT-ETCD-HA-TLS-RAFT-001: etcd-server en un nodo, HTTPS + mTLS, claves en Vault)
+
+Documento: `docs/ml-heads/day312_diseno.md` (diseño y secciones de resultados DAY312, DAY313 y DAY314). Parcheadores de
+un solo uso, no se commitean. Commits: DAY312 e7309db2 … ee6d07ac (VM etcd, Vault servidor, etcd 3.6.16, despliegue,
+4b.1); DAY313 f4658796 (4b.2); DAY314 a29942fc (4b.3) y 0ddfe530 (4b.4).
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (PR1: pasos 0-4 hechos salvo 4b.6)
+- 4b.2: HTTPS + mTLS, autorización por (OU, CN) con tabla en el JSON, `tls.modo` mtls|http (http solo en el defender
+  hasta el paso 6), registro y latido del etcd-server en proceso, `[ETCD←]` con el status real. Medido 20/20.
+- 4b.3: registro en el etcd real (gRPC + TLS, RBAC); muerto se marca y no se borra; etcd caído = lecturas de la copia y
+  escrituras 503. Medido 28/28; etcd de vuelta, primer latido 200 en 0,7 s; parada 0,07–0,12 s.
+- 4b.4: claves HMAC en Vault (kv v2, `cas_required=true`), `<CN>/<huella8>` inmutable y `<CN>/ventana` con CAS;
+  enfriamiento medido desde la creación de la activa; Vault caído = última ventana con sus dos claves, sin ella 503 y
+  nunca una clave sin guardar; lista de direcciones de Vault con reintentos y sin defecto. Medido 29/29 (banco y lab),
+  ctest 9/23/13/7/82. En el banco, un fallo real (la copia no traía la clave anterior tras reiniciar) cazado por la 2.ª
+  pasada del instrumento y arreglado con su test.
+- Decisiones DAY314 (V1-V4, direcciones sin defecto, `almacen.endpoints`/`prefijo` desde el inventario, un clúster por
+  despliegue, marcador de despliegue descartado): en el diseño y en `prompt_day315.md`.
+- Siguiente (DAY315): pasos 1-3 de DEBT-ANSIBLE-DEPLOY-CONFIGS-001 (abajo). Después 4b.6, pasos 5-8.
+
+### DEBT-ETCD-HEARTBEAT-LOG-STATUS-001 — CERRADA DAY313 (4b.2)
+`[ETCD←]` se escribe después de responder, con el status real, el CN y el OU. Medido: el latido de un no registrado sale
+`status=404`.
+
+### DEBT-ETCD-SECRETS-UNAUTHENTICATED-001 — CERRADA en la VM etcd (4b.2); el defender, hasta el paso 6
+Con mTLS: sin certificado o de otra CA no hay respuesta HTTP; `/seed` y `/secrets/keys` fuera (403). El defender sigue en
+`tls.modo=http` (transición, aviso periódico `[ETCD-TLS-DESACTIVADO]`) hasta el paso 6.
+
+### DEBT-ETCD-SERVER-LOG-TIMESTAMP-001 — ABIERTA (nueva DAY314)
+El log del etcd-server no lleva hora: 143 `std::cout/cerr` en `src/` e `include/` (solo `secrets_manager` usaba spdlog).
+Un grep del log mezcla arranques sin poder saber cuál es cuál (medido DAY314). Arreglo: un único logger con la hora
+como primer campo, patrón en el JSON (defecto ISO-8601 UTC con milisegundos) registrado con su origen, y un test que
+compruebe que cada línea empieza por la hora. Decisión de Alonso: parcheador aparte, antes del paso 8.
+
+### DEBT-ANSIBLE-DEPLOY-CONFIGS-001 — ABIERTA (nueva DAY314), plan aprobado para DAY315
+Medido: el stage «Deploy Configs — Ansible/Jinja2» de `Jenkinsfile.prod` nunca pudo funcionar. Ansible solo carga
+`group_vars/` junto al inventario o al playbook y el repo las tiene en `ansible/group_vars/` (`argus_config_base`
+indefinida; reproducido con ansible-core 2.14.18, la del defender). Con las variables arregladas, las plantillas de
+DAY161 sobrescriben `sniffer.json` (-502/+8 de 561 líneas) y `ml_detector_config.json` (-371/+9 de 423), y en dev el
+destino es `/vagrant`: los JSON del repo. `dev.yml`/`prod.yml` duplican `argus_dev.yml`/`argus_prod.yml`.
+Plan (Alonso DAY314):
+1. Borrar las dos plantillas, sus tareas y los duplicados; después mover `group_vars` junto al inventario.
+2. etcd-server por entorno: tarea que toma el JSON del repo y sustituye solo `almacen.endpoints` y `almacen.prefijo`
+   desde el inventario; escribe en `/etc/ml-defender/etcd-server/etcd-server.json` de la VM etcd (nunca en `/vagrant`)
+   y comprueba `--check-config`. Dev: target del Makefile con el inventario dev (un miembro elegido a mano); la VM etcd
+   entra en el inventario. Pseudo-distribuido: Jenkins con el inventario de preproducción (crearlo) o producción.
+3. `almacen.endpoints` en modo etcd sin defecto: `[ETCD-ALMACEN-FATAL]`, no arranca.
+
+### DEBT-CONFIG-JINJA2-PIPELINE-001 — ACTUALIZADA DAY314 (punto 4 del plan, diferido)
+Cambio de enfoque: nada de plantillas completas que se desfasan (medido: las de DAY161 destruirían los JSON). El patrón
+es el del etcd-server: JSON del repo como única fuente + solo los campos del despliegue sustituidos desde el inventario.
+Aplicarlo a sniffer y ml-detector (y al resto de la lista de DAY161) cuando toque.
+
+### Preguntas abiertas (Alonso decide, PR2)
+- Arrancar sin etcd-server: modo sin registro (cifrado ZMQ intacto, sin bronce ni grafo) frente a no arrancar (DAY310).
+  Alonso DAY314: «arrancar desprotegido es muy peligroso si un atacante ha entrado en la DMZ».
+- Una CA por despliegue (falla cerrado si una plantilla apunta al clúster de otro despliegue). El marcador de
+  despliegue en etcd quedó descartado.
+
+### Pendientes de DAY313 que siguen abiertos
+`make up` no levanta la VM etcd (añadirla antes del paso 8); fijar cpp-httplib en `v0.63.0`; `test_autonomy_integration`
+falló una vez en el banco (vigilar); `scripts/timebase/__pycache__/` al .gitignore (DEBT-REPO-RESIDUOS-001).
+
+### Lecciones DAY312–314
+Probar lo que se compila en el mismo sistema y con las mismas opciones (Debian 12, GCC 12, production): un GCC 13 sin
+LTO no ve el falso `-Wstringop-overflow` de GCC 12. Un parcheador no está aplicado hasta que `--check` lo dice. Un
+instrumento se pasa al menos dos veces seguidas: la primera parte de un estado limpio. Una predicción que depende del
+estado se escribe en función del estado medido justo antes. Un camino de despliegue que nadie ha ejecutado no existe:
+medirlo antes de construir encima (Ansible DAY314).
