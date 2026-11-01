@@ -10,6 +10,8 @@
 #include "etcd_server/etcd_server_authz.hpp"
 #include "etcd_server/etcd_server_almacen.hpp"
 #include "etcd_server/etcd_registry_store.hpp"
+#include "etcd_server/etcd_server_claves.hpp"   // [ETCD-CLAVES-D314]
+#include "etcd_server/vault_secret_store.hpp"   // [ETCD-CLAVES-D314]
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <csignal>
@@ -87,7 +89,12 @@ int main(int argc, char** argv) {
     // [ETCD-REGISTRO-D313] bloque almacen (etcd real | memoria de transición)
     const auto leida_almacen = argus::etcdcfg::parse_almacen_config(root);
     const auto& almacen_cfg = leida_almacen.cfg;
-    const int defectos = leida.defectos + leida_tls.defectos + leida_authz.defectos + leida_almacen.defectos;
+    // [ETCD-CLAVES-D314] bloque almacen_claves (Vault | memoria de transición). Direcciones y certificados de Vault
+    // ausentes o mal formados en modo vault: [ETCD-VAULT-FATAL], no se arranca (decisión de Alonso DAY314)
+    const auto leida_claves = argus::etcdcfg::parse_almacen_claves_config(root);
+    const auto& claves_cfg = leida_claves.cfg;
+    const int defectos = leida.defectos + leida_tls.defectos + leida_authz.defectos + leida_almacen.defectos +
+                         leida_claves.defectos;
     if (defectos > 0) {
         std::cerr << "[CONFIG-DEFAULT] " << defectos << " ajustes con valor por defecto en " << config_path
                   << ": revisarlo" << std::endl;
@@ -119,13 +126,38 @@ int main(int argc, char** argv) {
         std::cerr << "[ETCD-ALMACEN-MEMORIA] almacen.modo=memoria: el registro vive solo en memoria y se pierde al "
                      "reiniciar. Solo transición hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001" << std::endl;
     }
+    // [ETCD-CLAVES-D314] en modo vault, los certificados para Vault deben poder leerse: si no, no hay claves nunca
+    // (error de configuración, no un fallo pasajero): fatal como los de TLS
+    int claves_ilegibles = 0;
+    if (claves_cfg.modo == "vault" && leida_claves.fatales.empty()) {
+        for (const auto* r : {&claves_cfg.ca_file, &claves_cfg.cert_file, &claves_cfg.key_file}) {
+            std::ifstream f(*r, std::ios::binary);
+            if (!f.good() || f.peek() == std::ifstream::traits_type::eof()) {
+                std::cerr << "[ETCD-VAULT-FATAL] no se puede leer " << *r << " (o está vacío): sin él no hay login en "
+                          << "Vault; no se arranca" << std::endl;
+                ++claves_ilegibles;
+            }
+        }
+    } else if (claves_cfg.modo == "memoria") {
+        std::cerr << "[ETCD-CLAVES-MEMORIA] almacen_claves.modo=memoria: las claves HMAC viven solo en memoria y se "
+                     "pierden al reiniciar. Solo transición hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001" << std::endl;
+    }
+    const int claves_fatales = static_cast<int>(leida_claves.fatales.size()) + claves_ilegibles;
     if (check_only) {
-        const bool limpio = fichero_ok && defectos == 0 && tls_ilegibles == 0 && almacen_ilegibles == 0;
+        const bool limpio = fichero_ok && defectos == 0 && tls_ilegibles == 0 && almacen_ilegibles == 0 &&
+                            claves_fatales == 0;
         std::cout << "[ETCD-CONFIG-CHECK] " << config_path << ": " << (limpio ? "OK" : "CON DEFECTOS")
                   << " (defectos=" << defectos << ", obsoletos=" << leida.obsoletos << ", tls.modo=" << tls.modo
                   << ", ficheros_tls_ilegibles=" << tls_ilegibles << ", almacen.modo=" << almacen_cfg.modo
-                  << ", ficheros_almacen_ilegibles=" << almacen_ilegibles << ")" << std::endl;
+                  << ", ficheros_almacen_ilegibles=" << almacen_ilegibles << ", almacen_claves.modo=" << claves_cfg.modo
+                  << ", claves_fatales=" << claves_fatales << ")" << std::endl;
         return limpio ? 0 : 1;
+    }
+
+    if (claves_fatales > 0) {
+        std::cerr << "[ETCD-VAULT-FATAL] " << claves_fatales << " problemas en almacen_claves de " << config_path
+                  << ": el etcd-server no arranca (revisar con --check-config)" << std::endl;
+        return 1;
     }
 
     std::signal(SIGINT, signal_handler);
@@ -276,20 +308,21 @@ int main(int argc, char** argv) {
         std::cout << "  Initializing SecretsManager (Day 54)" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        // [ETCD-CONFIG-D312] del JSON (validado por argus::etcdcfg), no fijo en el código
-        const nlohmann::json config = {
-            {"secrets", {
-                {"grace_period_seconds", cfg.grace_period_seconds},
-                {"default_key_length_bytes", cfg.default_key_length_bytes},
-                {"min_rotation_interval_seconds", cfg.min_rotation_interval_seconds}
-            }}
-        };
-
-        g_secrets_manager = std::make_shared<etcd_server::SecretsManager>(config);
-
-        std::cout << "✅ SecretsManager inicializado correctamente" << std::endl;
-        std::cout << "   - Grace period: " << g_secrets_manager->get_grace_period_seconds() << "s" << std::endl;
-        std::cout << "   - Namespace: etcd_server::" << std::endl;
+        // [ETCD-CLAVES-D314] ventana de dos sobre el almacén de claves (Vault en la VM etcd; memoria en el defender
+        // hasta el paso 6). Los parámetros, del JSON (validado por argus::etcdcfg)
+        std::unique_ptr<argus::claves::ISecretStore> almacen_claves;
+        if (claves_cfg.modo == "vault") {
+            almacen_claves = std::make_unique<argus::claves::VaultSecretStore>(claves_cfg, std::cout);
+        } else {
+            almacen_claves = std::make_unique<argus::claves::MemoriaSecretStore>();
+        }
+        const etcd_server::SecretsConfig sec{cfg.grace_period_seconds, cfg.default_key_length_bytes,
+                                             cfg.min_rotation_interval_seconds};
+        g_secrets_manager = std::make_shared<etcd_server::SecretsManager>(
+            sec, std::move(almacen_claves), claves_cfg.modo == "memoria", claves_cfg.aviso_intervalo_s,
+            claves_cfg.sondeo_s);
+        g_secrets_manager->comprobar_al_arrancar();
+        g_secrets_manager->arrancar_monitor();
 
         // ═══════════════════════════════════════════════════════════
         // STEP 2: Initialize EtcdServer

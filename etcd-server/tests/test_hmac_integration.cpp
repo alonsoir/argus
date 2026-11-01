@@ -1,5 +1,6 @@
 // etcd-server/tests/test_hmac_integration.cpp
-// Reescrito DAY 99 para la API actual de SecretsManager
+// Reescrito DAY 99 para la API actual de SecretsManager; [ETCD-CLAVES-D314] adaptado a la ventana de dos (activa/rotar
+// sobre MemoriaSecretStore)
 // Co-authored-by: Alonso Isidoro Roman + Claude (Anthropic)
 
 #include "etcd_server/secrets_manager.hpp"
@@ -10,6 +11,8 @@
 #include <iomanip>
 #include <sstream>
 #include <nlohmann/json.hpp>
+#include <ctime>
+#include <memory>
 
 using namespace etcd_server;
 
@@ -23,16 +26,18 @@ using namespace etcd_server;
 // Helpers
 // ============================================================================
 
-nlohmann::json make_config(bool auto_generate = false) {
-    return nlohmann::json{
-        {"secrets", {
-            {"grace_period_seconds", 300},
-            {"rotation_interval_hours", 168},
-            {"default_key_length_bytes", 32},
-            {"min_rotation_interval_seconds", 300},
-            {"auto_generate_on_startup", auto_generate}
-        }}
-    };
+std::unique_ptr<SecretsManager> make_manager() {
+    SecretsConfig c;  // 300 / 32 / 300, como el JSON del repo
+    static std::ostringstream log;
+    return std::make_unique<SecretsManager>(c, std::make_unique<argus::claves::MemoriaSecretStore>(), true, 60, 5,
+                                            [] { return std::time(nullptr); }, log);
+}
+
+ClaveHMAC activa_de(SecretsManager& sm, const std::string& cn) {
+    ClaveHMAC k;
+    bool copia = false;
+    assert(sm.activa(cn, k, copia) == ResultadoClaves::Ok);
+    return k;
 }
 
 std::vector<uint8_t> hex_to_bytes(const std::string& hex) {
@@ -77,14 +82,15 @@ void log_test(const std::string& name, bool passed) {
 bool test_e2e_hmac_workflow() {
     std::cout << BLUE << "\n─── Test: E2E HMAC Workflow ───" << RESET << std::endl;
 
-    SecretsManager sm(make_config());
+    auto smp = make_manager();
+    auto& sm = *smp;
 
-    auto hmac_key = sm.generate_hmac_key("log-consumer");
-    assert(hmac_key.is_active);
-    assert(!hmac_key.key_data.empty());
-    std::cout << "  ✅ Key generated (" << hmac_key.key_data.size()/2 << " bytes)" << std::endl;
+    auto hmac_key = activa_de(sm, "log-consumer");
+    assert(hmac_key.activa);
+    assert(!hmac_key.hex.empty());
+    std::cout << "  ✅ Key generated (" << hmac_key.hex.size()/2 << " bytes)" << std::endl;
 
-    auto key_bytes = hex_to_bytes(hmac_key.key_data);
+    auto key_bytes = hex_to_bytes(hmac_key.hex);
     std::string log_data = R"({"timestamp":"2026-03-27T06:00:00Z","ip":"192.168.1.100","confidence":0.95})";
 
     std::string hmac_hex = compute_hmac_sha256(log_data, key_bytes);
@@ -105,16 +111,16 @@ bool test_e2e_hmac_workflow() {
 bool test_multi_component_access() {
     std::cout << BLUE << "\n─── Test: Multi-component Key Access ───" << RESET << std::endl;
 
-    SecretsManager sm(make_config());
-    sm.generate_hmac_key("log-consumer");
+    auto smp = make_manager();
+    auto& sm = *smp;
 
-    auto key1 = sm.get_hmac_key("log-consumer");
-    auto key2 = sm.get_hmac_key("log-consumer");
+    auto key1 = activa_de(sm, "log-consumer");
+    auto key2 = activa_de(sm, "log-consumer");
 
-    assert(key1.key_data == key2.key_data);
+    assert(key1.hex == key2.hex);
     std::cout << "  ✅ Both components retrieved identical keys" << std::endl;
 
-    auto key_bytes = hex_to_bytes(key1.key_data);
+    auto key_bytes = hex_to_bytes(key1.hex);
     std::string data = "shared log entry";
     assert(compute_hmac_sha256(data, key_bytes) == compute_hmac_sha256(data, key_bytes));
     std::cout << "  ✅ HMACs idénticos en ambos componentes" << std::endl;
@@ -128,25 +134,36 @@ bool test_multi_component_access() {
 bool test_key_rotation_workflow() {
     std::cout << BLUE << "\n─── Test: Key Rotation ───" << RESET << std::endl;
 
-    SecretsManager sm(make_config());
-    sm.generate_hmac_key("sniffer");
+    auto smp = make_manager();
+    auto& sm = *smp;
 
-    auto old_key = sm.get_hmac_key("sniffer");
+    auto old_key = activa_de(sm, "sniffer");
     std::string data = "data signed with old key";
-    auto old_bytes = hex_to_bytes(old_key.key_data);
+    auto old_bytes = hex_to_bytes(old_key.hex);
     std::string old_hmac = compute_hmac_sha256(data, old_bytes);
 
-    auto new_key = sm.rotate_hmac_key("sniffer", true); // force=true bypass cooldown
-    assert(new_key.key_data != old_key.key_data);
+    ClaveHMAC new_key;
+    int reintentar = 0;
+    assert(sm.rotar("sniffer", true, new_key, reintentar) == ResultadoClaves::Ok); // force=true salta el enfriamiento
+    assert(new_key.hex != old_key.hex);
     std::cout << "  ✅ Key rotated successfully" << std::endl;
 
-    auto new_bytes = hex_to_bytes(new_key.key_data);
+    auto new_bytes = hex_to_bytes(new_key.hex);
     std::string new_hmac = compute_hmac_sha256(data, new_bytes);
     assert(old_hmac != new_hmac);
     std::cout << "  ✅ HMACs differ after rotation" << std::endl;
 
     assert(!validate_hmac_sha256(data, old_hmac, new_bytes));
     std::cout << "  ✅ Old HMAC correctly rejected with new key" << std::endl;
+
+    // [ETCD-CLAVES-D314] ventana de dos: durante el grace period la anterior sigue en /secrets/valid y verifica lo
+    // firmado antes de rotar
+    std::vector<ClaveHMAC> validas;
+    bool copia = false;
+    assert(sm.validas("sniffer", validas, copia) == ResultadoClaves::Ok);
+    assert(validas.size() == 2 && validas[0].hex == new_key.hex && validas[1].hex == old_key.hex);
+    assert(validate_hmac_sha256(data, old_hmac, hex_to_bytes(validas[1].hex)));
+    std::cout << "  ✅ La anterior sigue en la ventana y verifica lo firmado antes" << std::endl;
 
     return true;
 }
@@ -157,9 +174,10 @@ bool test_key_rotation_workflow() {
 bool test_log_consumer_simulation() {
     std::cout << BLUE << "\n─── Test: Log Consumer Simulation ───" << RESET << std::endl;
 
-    SecretsManager sm(make_config(true)); // auto_generate=true
-    auto hmac_key = sm.get_hmac_key("log-consumer");
-    auto key_bytes = hex_to_bytes(hmac_key.key_data);
+    auto smp = make_manager();
+    auto& sm = *smp;
+    auto hmac_key = activa_de(sm, "log-consumer");
+    auto key_bytes = hex_to_bytes(hmac_key.hex);
     std::cout << "  ✅ RAG HMAC key retrieved (" << key_bytes.size() << " bytes)" << std::endl;
 
     int valid_count = 0, tampered_count = 0;

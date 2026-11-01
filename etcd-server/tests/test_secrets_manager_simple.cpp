@@ -1,205 +1,122 @@
 // etcd-server/tests/test_secrets_manager_simple.cpp
-// Day 55: Basic HMAC functionality tests
+// Day 55: pruebas básicas del SecretsManager. [ETCD-CLAVES-D314] reescritas para la API de la ventana de dos sobre
+// ISecretStore (MemoriaSecretStore) con reloj inyectado: sin esperas reales (antes, 9 s de sleep).
 //
 // Co-authored-by: Claude (Anthropic)
 // Co-authored-by: Alonso
 
 #include "etcd_server/secrets_manager.hpp"
-#include <nlohmann/json.hpp>
 #include <cassert>
+#include <ctime>
 #include <iostream>
-#include <thread>
-#include <chrono>
+#include <memory>
+#include <sstream>
 
 using namespace etcd_server;
 
 #define GREEN "\033[32m"
-#define RED "\033[31m"
 #define RESET "\033[0m"
 
+namespace {
+std::time_t g_t = 1'800'000'000;
+std::ostringstream g_log;
+
+std::unique_ptr<SecretsManager> hacer(int grace, int min_rot) {
+    SecretsConfig c;
+    c.grace_period_seconds = grace;
+    c.min_rotation_interval_seconds = min_rot;
+    c.default_key_length_bytes = 32;
+    return std::make_unique<SecretsManager>(c, std::make_unique<argus::claves::MemoriaSecretStore>(), true, 60, 5,
+                                            [] { return g_t; }, g_log);
+}
+}  // namespace
+
 void test_generate_and_get() {
-    std::cout << "Test 1: Generate and get HMAC key..." << std::flush;
-    
-    nlohmann::json config = {
-    	{"secrets", {
-        	{"grace_period_seconds", 300},
-        	{"rotation_interval_hours", 168},
-        	{"default_key_length_bytes", 32},
-        	{"min_rotation_interval_seconds", 300}  // AÑADIR
-    	}}
-	};
-    
-    SecretsManager manager(config);
-    auto key = manager.generate_hmac_key("test_component");
-    
-    assert(key.key_data.size() == 64);  // 32 bytes = 64 hex chars
-    assert(key.is_active == true);
-    assert(key.component == "test_component");
-    
-    // Get the same key
-    auto retrieved = manager.get_hmac_key("test_component");
-    assert(retrieved.key_data == key.key_data);
-    
+    std::cout << "Test 1: crear y leer la clave activa..." << std::flush;
+    auto m = hacer(300, 300);
+    ClaveHMAC k;
+    bool copia = true;
+    assert(m->activa("test-component", k, copia) == ResultadoClaves::Ok);
+    assert(k.hex.size() == 64);  // 32 bytes = 64 hex
+    assert(k.activa);
+    assert(!copia);
+    ClaveHMAC k2;
+    assert(m->activa("test-component", k2, copia) == ResultadoClaves::Ok);
+    assert(k2.hex == k.hex && k2.huella == k.huella);
     std::cout << GREEN << " PASS" << RESET << std::endl;
 }
 
 void test_rotation_grace_period() {
-    std::cout << "Test 2: Rotation with grace period..." << std::flush;
-    
-    nlohmann::json config = {
-    	{"secrets", {
-        	{"grace_period_seconds", 5},
-        	{"rotation_interval_hours", 168},
-        	{"default_key_length_bytes", 32},
-        	{"min_rotation_interval_seconds", 5}  // AÑADIR
-    	}}
-	};
-    
-    SecretsManager manager(config);
-    
-    // Generate initial key
-    auto key1 = manager.generate_hmac_key("test_rotate");
-    std::string key1_data = key1.key_data;
-    
-    std::this_thread::sleep_for(std::chrono::milliseconds(100));
-    
-    // Rotate
-    auto key2 = manager.rotate_hmac_key("test_rotate");
-    std::string key2_data = key2.key_data;
-    
-    // Keys should be different
-    assert(key1_data != key2_data);
-    
-    // Should have 2 valid keys (active + grace)
-    auto valid_keys = manager.get_valid_keys("test_rotate");
-    assert(valid_keys.size() == 2);
-    
-    // First should be active
-    assert(valid_keys[0].is_active == true);
-    assert(valid_keys[0].key_data == key2_data);
-    
-    // Second should be in grace period
-    assert(valid_keys[1].is_active == false);
-    assert(valid_keys[1].key_data == key1_data);
-    
+    std::cout << "Test 2: rotar con ventana de dos..." << std::flush;
+    auto m = hacer(5, 5);
+    ClaveHMAC k1, k2;
+    bool copia = false;
+    int reintentar = 0;
+    assert(m->activa("test-rotate", k1, copia) == ResultadoClaves::Ok);
+    g_t += 5;
+    assert(m->rotar("test-rotate", false, k2, reintentar) == ResultadoClaves::Ok);
+    assert(k2.hex != k1.hex);
+    std::vector<ClaveHMAC> v;
+    assert(m->validas("test-rotate", v, copia) == ResultadoClaves::Ok);
+    assert(v.size() == 2);
+    assert(v[0].activa && v[0].hex == k2.hex);
+    assert(!v[1].activa && v[1].hex == k1.hex && v[1].expira == g_t + 5);
     std::cout << GREEN << " PASS" << RESET << std::endl;
 }
 
 void test_grace_period_expiry() {
-    std::cout << "Test 3: Grace period expiry..." << std::flush;
-    
-    nlohmann::json config = {
-    	{"secrets", {
-        	{"grace_period_seconds", 2},
-        	{"rotation_interval_hours", 168},
-        	{"default_key_length_bytes", 32},
-        	{"min_rotation_interval_seconds", 2}  // AÑADIR
-    	}}
-	};
-    
-    SecretsManager manager(config);
-    
-    // Generate and rotate
-    manager.generate_hmac_key("test_expiry");
-    manager.rotate_hmac_key("test_expiry");
-    
-    // Should have 2 valid keys immediately
-    auto valid_before = manager.get_valid_keys("test_expiry");
-    assert(valid_before.size() == 2);
-    
-    // Wait for grace period to expire
-    std::this_thread::sleep_for(std::chrono::seconds(3));
-    
-    // Should only have 1 valid key (old one expired)
-    auto valid_after = manager.get_valid_keys("test_expiry");
-    assert(valid_after.size() == 1);
-    assert(valid_after[0].is_active == true);
-    
+    std::cout << "Test 3: la anterior caduca a los grace_period_seconds..." << std::flush;
+    auto m = hacer(2, 2);
+    ClaveHMAC k;
+    bool copia = false;
+    int reintentar = 0;
+    assert(m->activa("test-expiry", k, copia) == ResultadoClaves::Ok);
+    g_t += 2;
+    assert(m->rotar("test-expiry", false, k, reintentar) == ResultadoClaves::Ok);
+    std::vector<ClaveHMAC> v;
+    assert(m->validas("test-expiry", v, copia) == ResultadoClaves::Ok && v.size() == 2);
+    g_t += 1;
+    assert(m->validas("test-expiry", v, copia) == ResultadoClaves::Ok && v.size() == 2);
+    g_t += 1;  // justo en expira_anterior: ya no vale
+    assert(m->validas("test-expiry", v, copia) == ResultadoClaves::Ok && v.size() == 1);
+    assert(v[0].activa);
     std::cout << GREEN << " PASS" << RESET << std::endl;
 }
 
-void test_grace_period_config() {
-    std::cout << "Test 4: Grace period configuration..." << std::flush;
-    
-    nlohmann::json config = {
-    	{"secrets", {
-        	{"grace_period_seconds", 42},
-        	{"rotation_interval_hours", 168},
-        	{"default_key_length_bytes", 32},
-        	{"min_rotation_interval_seconds", 42}  // AÑADIR
-    	}}
-	};
-    
-    SecretsManager manager(config);
-    
-    assert(manager.get_grace_period_seconds() == 42);
-    
+void test_config_values() {
+    std::cout << "Test 4: el grace period sale de la configuración..." << std::flush;
+    auto m = hacer(42, 42);
+    assert(m->get_grace_period_seconds() == 42);
     std::cout << GREEN << " PASS" << RESET << std::endl;
 }
 
-void test_cooldown_enforcement() {
-    std::cout << "Test 5: Cooldown enforcement (ADR-004)..." << std::flush;
-
-    nlohmann::json config = {
-        {"secrets", {
-            {"grace_period_seconds", 5},
-            {"rotation_interval_hours", 168},
-            {"default_key_length_bytes", 32},
-            {"min_rotation_interval_seconds", 5}  // Cooldown = grace period
-        }}
-    };
-
-    SecretsManager manager(config);
-
-    // Primera rotación OK
-    manager.generate_hmac_key("test_cooldown");
-    auto key1 = manager.rotate_hmac_key("test_cooldown");
-
-    // Segunda rotación inmediata: debe fallar (cooldown activo)
-    bool threw = false;
-    try {
-        manager.rotate_hmac_key("test_cooldown");  // Sin force
-    } catch (const std::runtime_error& e) {
-        std::string msg(e.what());
-        assert(msg.find("Rotation too soon") != std::string::npos);
-        threw = true;
-    }
-    assert(threw);  // Debe haber lanzado excepción
-
-    // Con force=true: debe pasar (emergency override)
-    auto key2 = manager.rotate_hmac_key("test_cooldown", true);  // force=true
-    assert(key2.key_data != key1.key_data);  // Debe ser clave diferente
-
-    // Esperar a que expire cooldown
-    std::this_thread::sleep_for(std::chrono::seconds(6));
-
-    // Ahora debe permitir rotación normal
-    auto key3 = manager.rotate_hmac_key("test_cooldown");  // Sin force, debe pasar
-    assert(key3.key_data != key2.key_data);
-
+void test_cooldown() {
+    std::cout << "Test 5: enfriamiento (429) y force..." << std::flush;
+    auto m = hacer(10, 10);
+    ClaveHMAC k1, k2, k3;
+    bool copia = false;
+    int reintentar = 0;
+    assert(m->activa("test-cooldown", k1, copia) == ResultadoClaves::Ok);
+    g_t += 3;
+    assert(m->rotar("test-cooldown", false, k2, reintentar) == ResultadoClaves::Enfriamiento);
+    assert(reintentar == 7);
+    assert(m->rotar("test-cooldown", true, k2, reintentar) == ResultadoClaves::Ok);  // force
+    assert(k2.hex != k1.hex);
+    g_t += 10;
+    assert(m->rotar("test-cooldown", false, k3, reintentar) == ResultadoClaves::Ok);
+    assert(k3.hex != k2.hex);
     std::cout << GREEN << " PASS" << RESET << std::endl;
 }
 
 int main() {
-    std::cout << "═══════════════════════════════════════════════════════════" << std::endl;
-    std::cout << "  SecretsManager Basic Tests (Day 55)" << std::endl;
-    std::cout << "═══════════════════════════════════════════════════════════" << std::endl;
-    std::cout << std::endl;
-
-    try {
-        test_generate_and_get();
-        test_rotation_grace_period();
-        test_grace_period_expiry();
-        test_grace_period_config();
-        test_cooldown_enforcement();
-
-        std::cout << std::endl;
-        std::cout << GREEN << "🎉 ALL 5 TESTS PASSED!" << RESET << std::endl;
-        return 0;
-        
-    } catch (const std::exception& e) {
-        std::cout << std::endl;
-        std::cout << RED << "❌ TEST FAILED: " << e.what() << RESET << std::endl;
-        return 1;
-    }
+    std::cout << "═══════════════════════════════════════════" << std::endl;
+    std::cout << "  SecretsManager Basic Tests (Day 55; ventana de dos D314)" << std::endl;
+    std::cout << "═══════════════════════════════════════════" << std::endl;
+    test_generate_and_get();
+    test_rotation_grace_period();
+    test_grace_period_expiry();
+    test_config_values();
+    test_cooldown();
+    std::cout << GREEN << "✅ Todas las pruebas básicas pasan" << RESET << std::endl;
+    return 0;
 }

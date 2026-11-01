@@ -351,3 +351,102 @@ el defender; nunca imprime una clave).
 - `test_autonomy_integration` falló una vez en el bookworm de prueba (0,00 s) y no se repitió en 10 vueltas; el
   `LastTest.log` se sobrescribió. Vigilar.
 - `tar` desde el Mac: `COPYFILE_DISABLE=1 tar --no-xattrs` (atributos `com.apple.provenance`).
+
+## Resultados DAY314 — 4b.3 medido en el laboratorio y paso 4b.4 (sección aparte, sin reescribir lo anterior)
+
+### 4b.3 en el laboratorio (commit `a29942f`)
+
+- `--check` 16 listos, `--apply`, `--check` ya aplicado. `make pipeline-build PROFILE=production` y
+  `make test-components PROFILE=production`: 9 / 23 / 13 / **6** / 82, todo verde (predicho).
+- Defender (`almacen.modo=memoria`): `[ETCD-ALMACEN-MEMORIA]` y `[ETCD-REGISTRO] registrado` para sniffer, ml-detector y
+  firewall-acl-agent. **PASA.** El log del etcd-server no lleva hora: el grep mezcla arranques (dos `registrado` por
+  componente y tres avisos de memoria) y no se puede saber cuál es de este. Deuda nueva
+  **DEBT-ETCD-SERVER-LOG-TIMESTAMP-001** (decisión de Alonso: parcheador aparte): 143 `std::cout/cerr` sin hora en
+  `src/` e `include/`; pasar a un logger con la hora como primer campo y el patrón en el JSON.
+- `d312_etcd_vm_deploy.sh production`: **PASA**, 5 librerías propias (+ `libetcd-cpp-api.so`) y 26 paquetes (gRPC 1.51,
+  protobuf 32, cpprest 2.10, abseil), binario `d6a20d782cf750bb`.
+- `d313_registro_medir.sh`: **28/28 PASA**. Etcd de vuelta: primer latido 200 en 0,7 s. Parada 0,07–0,12 s.
+
+### Decisiones de Alonso (DAY314, antes de escribir código de 4b.4)
+
+- **V1** cliente de Vault propio en el etcd-server (httplib::SSLClient; `common/vault_client` hace otra cosa: semilla,
+  token, solo lectura, curl, y lo usan otros componentes).
+- **V2** `cas_required=true` en el montaje `argus-hmac/` además del CAS en el código. La VM etcd se inicializó en DAY312
+  sin él y con el root revocado: se rehace (`vagrant destroy -f etcd && vagrant up etcd`); hoy solo guarda
+  `argus-hmac/d312/prueba`.
+- **V3** `almacen_claves.modo = "memoria"` en el defender hasta el paso 6 (como `almacen.modo` y `tls.modo`).
+- **V4** buscar una clave antigua por huella (re-verificar el grafo años después) queda fuera; va con
+  DEBT-BRONZE-KEY-ID-001 («es una feature que pedirán los usuarios tras años en producción»).
+- **JSON es la ley también para las direcciones**, pero sin defecto: solo en dev se puede suponer algo escuchando en
+  localhost. En modo vault, `vault_addrs` (o una ruta de certificado) ausente, mal formada o ilegible =
+  `[ETCD-VAULT-FATAL]` y no se arranca (`--check-config` lo detecta antes). Con la configuración bien y Vault sin
+  responder: reintentos por dirección con espera creciente, luego la siguiente de la lista, luego aviso claro con el
+  error de cada una; el etcd-server arranca (el registro sirve) y sigue sondeando.
+- Arrancar sin etcd-server: sigue siendo un dilema para Alonso («arrancar desprotegido es muy peligroso si un atacante ha
+  entrado en la DMZ»). Medido en el código: el cifrado ZMQ sale de `seed.bin` local, no de Vault ni del etcd-server; lo
+  que depende del etcd-server es el registro y la clave HMAC del bronce (y el conversor, que necesita
+  `/secrets/valid`). Pregunta abierta para el PR2; no toca 4b.4.
+
+### Lo que hace 4b.4
+
+- `etcd_server_claves.hpp`: bloque `almacen_claves` del JSON (modo, `vault_addrs` 1–7 sin repetir, `ca_file`,
+  `cert_file`, `key_file`, `montaje`, `rol_login`, `timeout_ms`, `reintentos_por_direccion`, `espera_inicial_ms`,
+  `espera_max_ms` ≥ inicial, `sondeo_s`, `aviso_intervalo_s`), cada campo con su origen en `[ETCD-CLAVES]`; interfaz
+  `ISecretStore` (leer con versión, escribir con CAS; Ok, NoEncontrado, NoDisponible, Conflicto) y `MemoriaSecretStore`.
+- `vault_secret_store.cpp`: kv v2 por HTTPS con certificado de cliente; login `auth/cert` (token renovado a mitad de su
+  vida o ante un 403); lista de direcciones con reintentos; tras agotar la lista falla rápido, sin red, hasta que el
+  sondeo encuentra una (`[ETCD-VAULT-CAMBIO]` si cambia de dirección).
+- `SecretsManager` reescrito: `<CN>/<huella8>` = {clave, creada} escrita con CAS 0 y nunca borrada; `<CN>/ventana` =
+  {activa, anterior, expira_anterior} con CAS = versión leída. Un solo mutex para leer-o-crear y rotar (la carrera de
+  DAY311); entre instancias decide el CAS (se relee y se usa lo del otro: `[ETCD-CLAVES-CONCURRENTE]`; una rotación
+  concurrente da 409). Enfriamiento medido desde la creación de la activa, guardada en Vault (vale tras un reinicio y
+  entre instancias). Con el almacén caído: la última ventana conocida con sus dos claves (`desde_copia`), sin ella 503 y
+  ninguna clave generada; rotar 503. Fechas en UTC con `timegm` (antes `mktime`, hora local). La huella se calcula como
+  `CorrelationWriter::fingerprint` del ml-detector. En el log solo huellas.
+- Rutas `/secrets/{c}`, `/secrets/valid/{c}`, `/secrets/rotate/{c}`: mismo formato (el ml-detector y el firewall leen
+  `key`), más `huella` y `desde_copia`; `expires_at` vacío en la activa (antes, `time_point::max` mal formateado).
+- Vagrantfile `[VAULT-CAS-D314]`: `cas_required=true` al inicializar y sonda en cada aprovisionamiento (escribir sin CAS
+  con el certificado del etcd-server debe dar 400; si no, falla con el remedio).
+- Tests: `test_almacen_claves` nuevo (22 casos); `test_secrets_manager_simple` y `test_hmac_integration` reescritos a la
+  API nueva con reloj inyectado (el primero pasa de 9 s de `sleep` a 0,01 s). Instrumento nuevo
+  `scripts/etcd_ha/d314_claves_medir.sh` (29 medidas, modo lab desde el Mac y local para el banco);
+  `d313_es_vm.sh` muestra también `[ETCD-CLAVES]`/`[ETCD-VAULT…]`.
+
+### Medido en el banco (debootstrap bookworm, GCC 12.2.0, opciones de production, Vault 2.2.1 con TLS, mTLS y auth cert como la VM, más `cas_required`)
+
+- Control (4b.3 sin tocar): compila, ctest 6/6. Con 4b.4: compila con 0 diagnósticos del compilador (solo las notas de
+  `lto-wrapper` y el aviso de `ld` de libsodium .26/.23, iguales que el control), ctest **7/7**.
+- kv v2 con `cas_required` y la política del etcd-server, medido con curl antes de escribir código (predicho todo): sin
+  `cas` 400; `cas=0` en ruta nueva 200; `cas=0` otra vez 400; `cas=1` 200 (versión 2); `cas=1` otra vez 400; DELETE 403;
+  ruta inexistente 404.
+- Mutaciones: sin copia, CAS al rotar, sin enfriamiento, sin comprobar la huella, sin caducidad → cada una hace fallar su
+  test. «Generar con el almacén caído» resulta equivalente (la escritura de la clave también falla): el diseño ya lo
+  impide.
+- `d314_claves_medir.sh` local: 1ª pasada 29/29. **PARADA** en la 2ª (C10: `/secrets/valid` con Vault parado daba 503).
+  Causa: tras reiniciar, la copia tenía la ventana y la activa pero no la anterior. Test que lo reproduce escrito antes
+  del arreglo (falla), arreglo (al leer una ventana se cargan sus dos claves), test en verde. 3ª y 4ª: 28/29, C10 da 2
+  claves y la predicción decía 1: **predicción errónea** (solo vale con Vault vacío; en la pasada anterior se rotó hace
+  menos de 300 s). Corregida para predecir lo que había justo antes de parar Vault. 5ª y 6ª pasadas: **29/29**; 7ª sobre
+  un Vault limpio: **29/29**. Copia servida con Vault parado en 0,09–0,10 s; Vault de vuelta, 200 en 1,7–1,8 s; parada
+  0,17 s.
+- Lista de direcciones (JSON modificado, predicho todo): sin `vault_addrs`, `--check-config` rc 1 y arranque rc 1 con
+  `[ETCD-VAULT-FATAL]`; primera dirección que rechaza → `[ETCD-VAULT-CAMBIO]` y 200; primera que no responde (timeout
+  500 ms) → escucha en 1,02 s y GET 200 en 0,06 s; ninguna → arranca, 503, y `[ETCD-VAULT-NO-DISPONIBLE]` con el error
+  de cada dirección.
+- Sonda del Vagrantfile: contra un Vault sin `cas_required` (como la VM de hoy) ❌ con el remedio; contra uno nuevo ✅.
+- Regresión `d313_es_medir.sh` contra el binario nuevo: 20/20.
+- En el banco no hay etcd: se usó el JSON de la VM con `almacen.modo=memoria` (el registro lo midió 4b.3).
+
+### Lecciones DAY314
+
+- Un instrumento se pasa al menos dos veces seguidas: la primera pasada parte de un estado limpio y esconde lo que
+  depende de lo anterior (aquí, la clave anterior en la copia).
+- Una predicción que depende del estado se escribe en función del estado medido justo antes, no como número fijo.
+
+### Deudas y pendientes nuevos
+
+- DEBT-ETCD-SERVER-LOG-TIMESTAMP-001 (arriba).
+- `almacen.endpoints` (etcd) aún tiene defecto `https://127.0.0.1:2381`; por la regla de hoy («direcciones sin
+  defecto») debería ser fatal en modo etcd. Decisión de Alonso pendiente.
+- La pregunta de arrancar sin etcd-server (modo sin registro, con el cifrado ZMQ intacto) para el PR2.
+- Rehacer la VM etcd para `cas_required` (V2) y volver a desplegar el etcd-server.

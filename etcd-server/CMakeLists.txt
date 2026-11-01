@@ -157,6 +157,7 @@ set(SOURCES
         src/compression_lz4.cpp
         src/secrets_manager.cpp
         src/etcd_registry_store.cpp
+        src/vault_secret_store.cpp
 )
 
 # ============================================================================
@@ -387,6 +388,15 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
             ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
     target_link_libraries(test_registro_componentes PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
     add_test(NAME test_registro_componentes COMMAND test_registro_componentes)
+    # [ETCD-CLAVES-D314] almacen_claves de etcd-server.json (fatales en modo vault, rangos, JSON del repo) y ventana de
+    # dos del SecretsManager sobre MemoriaSecretStore con reloj inyectado (sin red): reinicio, rotación, caducidad,
+    # enfriamiento, almacén caído, CAS entre dos instancias, huella repetida, log sin claves
+    add_executable(test_almacen_claves tests/test_almacen_claves.cpp src/secrets_manager.cpp)
+    target_include_directories(test_almacen_claves PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_definitions(test_almacen_claves PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_almacen_claves PRIVATE GTest::gtest_main Threads::Threads OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_almacen_claves COMMAND test_almacen_claves)
     # target_include_directories(test_hmac_integration
     #         PRIVATE
     #         ${CMAKE_CURRENT_SOURCE_DIR}/include

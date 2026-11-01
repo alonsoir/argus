@@ -25,7 +25,7 @@ case "$MODO" in
     fi
     echo "[D313-VM] $(ts) $(hostname) binario sha256 $(sha256sum "$BIN" | cut -c1-16) JSON $JSON"
     sudo LD_LIBRARY_PATH="$LIB" "$BIN" -c "$JSON" --check-config > /var/tmp/d313-check.txt 2>&1 && rc=0 || rc=$?
-    grep -E 'ETCD-CONFIG-CHECK|ETCD-TLS-FATAL' /var/tmp/d313-check.txt || true
+    grep -E 'ETCD-CONFIG-CHECK|ETCD-TLS-FATAL|ETCD-VAULT-FATAL' /var/tmp/d313-check.txt || true
     [ "$rc" = 0 ] || falla "--check-config rc=$rc: no se arranca"
     sudo truncate -s 0 "$LOG" 2>/dev/null || true
     sudo sh -c "LD_LIBRARY_PATH='$LIB' nohup '$BIN' -c '$JSON' > '$LOG' 2>&1 & echo \$! > '$PID'"
@@ -35,7 +35,7 @@ case "$MODO" in
     done
     sudo ss -ltnH 'sport = :2379' | grep -q . || { sudo tail -n 20 "$LOG"; falla "nadie escucha en 2379 a los 30 s"; }
     echo "[D313-VM] $(ts) arrancado pid=$(sudo cat "$PID"); escucha: $(sudo ss -ltnH 'sport = :2379' | awk '{print $4}' | tr '\n' ' ')"
-    sudo grep -E '^\[ETCD-TLS|^\[ETCD-CONFIG\]|^\[ETCD-ALMACEN|REGISTRO-CARGADO|CONFIG-DEFAULT|registrado en proceso' "$LOG" || true
+    sudo grep -E '^\[ETCD-TLS|^\[ETCD-CONFIG\]|^\[ETCD-ALMACEN|^\[ETCD-CLAVES\]|^\[ETCD-VAULT|REGISTRO-CARGADO|CONFIG-DEFAULT|registrado en proceso' "$LOG" || true
     ;;
   parar)
     [ -f "$PID" ] || falla "no hay $PID (¿se arrancó con este script?)"

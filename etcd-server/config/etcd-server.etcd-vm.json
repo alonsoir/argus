@@ -138,6 +138,24 @@
     "aviso_intervalo_s": 60,
     "reconexion_max_ms": 1000
   },
+  "almacen_claves": {
+    "_doc": "[ETCD-CLAVES-D314] Almac\u00e9n de las claves HMAC del bronce (ventana de dos). modo: \"vault\" (Vault kv v2 por HTTPS con certificado de cliente; montaje con cas_required=true: cada clave <CN>/<huella8> se escribe una vez y nunca se borra; <CN>/ventana = {activa, anterior, expira_anterior} se cambia con CAS) o \"memoria\" (sin persistencia: SOLO transici\u00f3n del defender hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001; avisa [ETCD-CLAVES-MEMORIA] cada aviso_intervalo_s). Un modo ausente o mal escrito va a \"vault\". vault_addrs: lista de 1 a 7 \"https://IPv4:puerto\" sin repetir; ca_file, cert_file, key_file: rutas absolutas (el CN del certificado hace el login en auth cert). SIN DEFECTO en modo vault: ausentes, mal formados o ilegibles = [ETCD-VAULT-FATAL] y el etcd-server no arranca. montaje y rol_login: [a-z0-9-], de 1 a 64. timeout_ms: entero [100, 30000] por petici\u00f3n. reintentos_por_direccion: entero [1, 10]; espera_inicial_ms: entero [10, 10000], dobla en cada reintento hasta espera_max_ms: entero [100, 60000] (>= espera_inicial_ms); agotada una direcci\u00f3n se pasa a la siguiente; agotada la lista, [ETCD-VAULT-NO-DISPONIBLE] con el error de cada una, se sirve la \u00faltima ventana conocida (sin ella /secrets da 503 y no se genera ninguna clave), rotar da 503, y se vuelve a probar cada sondeo_s: entero [1, 300]. aviso_intervalo_s: entero [10, 3600].",
+    "modo": "vault",
+    "vault_addrs": [
+      "https://127.0.0.1:8200"
+    ],
+    "ca_file": "/etc/argus-pki/ca.crt",
+    "cert_file": "/etc/argus-pki/etcd-server.crt",
+    "key_file": "/etc/argus-pki/etcd-server.key",
+    "montaje": "argus-hmac",
+    "rol_login": "etcd-server",
+    "timeout_ms": 2000,
+    "reintentos_por_direccion": 3,
+    "espera_inicial_ms": 200,
+    "espera_max_ms": 2000,
+    "sondeo_s": 5,
+    "aviso_intervalo_s": 60
+  },
   "identity": {
     "_comment": "ADR-013 \u2014 provision.sh es el \u00fanico responsable de crear estas claves.",
     "_phase": "PHASE 1: seed.bin en claro (chmod 0600). PHASE 2: seed.enc via seed-client.",

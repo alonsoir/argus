@@ -544,170 +544,126 @@ void EtcdServer::configurar_rutas() {
 
 // [ETCD-AUTHZ-D313] GET /secrets/keys borrada (sin uso: day312_inventario_etcd.md); sin regla en authz -> 403
 
-// Endpoint: GET /secrets/{component} - Get active HMAC key (hex-encoded)
-server.Get(R"(/secrets/([^/]+))", [this](const httplib::Request& req, httplib::Response& res) {
-    std::string component = req.matches[1];
-    std::cout << "[ETCD-SERVER] 🔑 GET /secrets/" << component << " solicitado" << std::endl;
+// [ETCD-CLAVES-D314] Rutas de claves sobre SecretsManager con ventana de dos persistida (Vault | memoria de transición).
+// Mismo formato de respuesta que antes, más "huella" (8 hex) y "desde_copia" (almacén caído: última ventana conocida).
+// 503 = almacén de claves no disponible y sin copia (nunca se genera una clave que no quede guardada); 409 = otra
+// instancia rotó a la vez; 429 = enfriamiento. En el log solo la huella.
+auto clave_json = [](const etcd_server::ClaveHMAC& k) {
+    return json{{"key", k.hex},
+                {"huella", k.huella},
+                {"created_at", etcd_server::SecretsManager::iso(k.creada)},
+                {"expires_at", k.expira == 0 ? std::string() : etcd_server::SecretsManager::iso(k.expira)},
+                {"is_active", k.activa}};
+};
+auto responder_error = [](httplib::Response& res, int status, const std::string& msg) {
+    res.status = status;
+    res.set_content(json{{"status", "error"}, {"message", msg}}.dump(), "application/json");
+};
+const std::string kSinAlmacen =
+    "almacén de claves no disponible y sin copia de la clave (no se genera una clave que no quede guardada)";
 
-    if (!secrets_manager_) {
-        res.status = 503;
-        json error = {
-            {"status", "error"},
-            {"message", "SecretsManager not initialized"}
-        };
-        res.set_content(error.dump(), "application/json");
-        return;
-    }
-
-    try {
-        auto key = secrets_manager_->get_hmac_key(component);
-
-        json response = {
-            {"status", "success"},
-            {"component", component},
-            {"key", key.key_data},  // Hex-encoded
-            {"created_at", secrets_manager_->format_time(key.created_at)},
-            {"is_active", key.is_active}
-        };
-        res.set_content(response.dump(), "application/json");
-
-        std::cout << "[ETCD-SERVER] ✅ Devuelta clave activa para: " << component << std::endl;
-
-    } catch (const std::exception& e) {
-        res.status = 500;
-        json error = {
-            {"status", "error"},
-            {"message", "Error retrieving HMAC key"},
-            {"details", e.what()}
-        };
-        res.set_content(error.dump(), "application/json");
-        std::cerr << "[ETCD-SERVER] ❌ Error en GET /secrets/" << component << ": " << e.what() << std::endl;
+// Endpoint: GET /secrets/{component} - clave activa (hex); la crea si es la primera vez
+server.Get(R"(/secrets/([^/]+))", [this, clave_json, responder_error, kSinAlmacen](const httplib::Request& req,
+                                                                                    httplib::Response& res) {
+    const std::string component = req.matches[1];
+    if (!secrets_manager_) return responder_error(res, 503, "SecretsManager not initialized");
+    etcd_server::ClaveHMAC k;
+    bool copia = false;
+    switch (secrets_manager_->activa(component, k, copia)) {
+        case etcd_server::ResultadoClaves::Ok: {
+            json r = clave_json(k);
+            r["status"] = "success";
+            r["component"] = component;
+            r["desde_copia"] = copia;
+            r.erase("expires_at");
+            res.set_content(r.dump(), "application/json");
+            std::cout << "[ETCD-SERVER] clave activa de " << component << " (huella " << k.huella << ")"
+                      << (copia ? " DESDE LA COPIA (almacén de claves no disponible)" : "") << std::endl;
+            return;
+        }
+        case etcd_server::ResultadoClaves::NombreInvalido: return responder_error(res, 400, "nombre de componente inválido");
+        default:
+            std::cerr << "[ETCD-SERVER] GET /secrets/" << component << ": 503 (" << kSinAlmacen << ")" << std::endl;
+            return responder_error(res, 503, kSinAlmacen);
     }
 });
 
-// Endpoint: POST /secrets/rotate/{component} - Rotate HMAC key with grace period
-server.Post(R"(/secrets/rotate/([^/]+))", [this](const httplib::Request& req, httplib::Response& res) {
-    std::string component = req.matches[1];
-    bool force = req.has_param("force") && req.get_param_value("force") == "true";
-
-    std::cout << "[ETCD-SERVER] 🔄 POST /secrets/rotate/" << component
-              << (force ? " (FORCE)" : "") << std::endl;
-
-    if (!secrets_manager_) {
-        res.status = 503;
-        json error = {
-            {"status", "error"},
-            {"message", "SecretsManager not initialized"}
-        };
-        res.set_content(error.dump(), "application/json");
-        return;
+// Endpoint: POST /secrets/rotate/{component}[?force=true] - rotar con ventana de dos
+server.Post(R"(/secrets/rotate/([^/]+))", [this, clave_json, responder_error](const httplib::Request& req,
+                                                                             httplib::Response& res) {
+    const std::string component = req.matches[1];
+    const bool force = req.has_param("force") && req.get_param_value("force") == "true";
+    if (!secrets_manager_) return responder_error(res, 503, "SecretsManager not initialized");
+    etcd_server::ClaveHMAC k;
+    int reintentar = 0;
+    switch (secrets_manager_->rotar(component, force, k, reintentar)) {
+        case etcd_server::ResultadoClaves::Ok: {
+            std::vector<etcd_server::ClaveHMAC> v;
+            bool copia = false;
+            secrets_manager_->validas(component, v, copia);
+            json nk = clave_json(k);
+            nk.erase("expires_at");
+            const int g = secrets_manager_->get_grace_period_seconds();
+            res.set_content(json{{"status", "success"},
+                                 {"component", component},
+                                 {"new_key", nk},
+                                 {"valid_keys_count", v.size()},
+                                 {"grace_period_seconds", g},
+                                 {"message", "Old key valid for " + std::to_string(g) + " seconds"},
+                                 {"forced", force}}
+                                .dump(),
+                            "application/json");
+            return;
+        }
+        case etcd_server::ResultadoClaves::Enfriamiento: {
+            res.status = 429;
+            res.set_header("Retry-After", std::to_string(reintentar));
+            res.set_content(json{{"status", "error"},
+                                 {"message", "Rotation cooldown active"},
+                                 {"retry_after_seconds", reintentar}}
+                                .dump(),
+                            "application/json");
+            return;
+        }
+        case etcd_server::ResultadoClaves::Conflicto:
+            return responder_error(res, 409, "otra instancia rotó la clave a la vez; volver a leerla");
+        case etcd_server::ResultadoClaves::NombreInvalido: return responder_error(res, 400, "nombre de componente inválido");
+        default:
+            std::cerr << "[ETCD-SERVER] POST /secrets/rotate/" << component << ": 503 (sin almacén de claves no se rota)"
+                      << std::endl;
+            return responder_error(res, 503, "almacén de claves no disponible: no se rota");
     }
+});
 
-    try {
-        auto new_key = secrets_manager_->rotate_hmac_key(component, force);
-        auto valid_keys = secrets_manager_->get_valid_keys(component);
-
-        json response = {
-            {"status", "success"},
-            {"component", component},
-            {"new_key", {
-                {"key", new_key.key_data},
-                {"created_at", secrets_manager_->format_time(new_key.created_at)},
-                {"is_active", true}
-            }},
-            {"valid_keys_count", valid_keys.size()},
-            {"grace_period_seconds", secrets_manager_->get_grace_period_seconds()},
-            {"message", "Old key valid for " + std::to_string(secrets_manager_->get_grace_period_seconds()) + " seconds"},
-            {"forced", force}
-        };
-        res.set_content(response.dump(), "application/json");
-
-        std::cout << "[ETCD-SERVER] ✅ Rotación completada para: " << component
-                  << " (" << valid_keys.size() << " claves válidas)" << std::endl;
-
-    } catch (const std::runtime_error& e) {
-        // Check if it's a cooldown violation
-        std::string error_msg(e.what());
-        if (error_msg.find("Rotation too soon") != std::string::npos) {
-            // Extract retry seconds from message
-            size_t pos = error_msg.find("retry in ");
-            int retry_seconds = 240;  // default
-            if (pos != std::string::npos) {
-                retry_seconds = std::stoi(error_msg.substr(pos + 9));
+// Endpoint: GET /secrets/valid/{component} - activa + anterior si no ha caducado
+server.Get(R"(/secrets/valid/([^/]+))", [this, clave_json, responder_error, kSinAlmacen](const httplib::Request& req,
+                                                                                          httplib::Response& res) {
+    const std::string component = req.matches[1];
+    if (!secrets_manager_) return responder_error(res, 503, "SecretsManager not initialized");
+    std::vector<etcd_server::ClaveHMAC> v;
+    bool copia = false;
+    switch (secrets_manager_->validas(component, v, copia)) {
+        case etcd_server::ResultadoClaves::Ok: {
+            json arr = json::array();
+            std::string huellas;
+            for (const auto& k : v) {
+                arr.push_back(clave_json(k));
+                if (!huellas.empty()) huellas += ',';
+                huellas += k.huella;
             }
-
-            res.status = 429;  // Too Many Requests
-            json error = {
-                {"status", "error"},
-                {"message", "Rotation cooldown active"},
-                {"details", error_msg},
-                {"retry_after_seconds", retry_seconds}
-            };
-            res.set_header("Retry-After", std::to_string(retry_seconds));
-            res.set_content(error.dump(), "application/json");
-
-            std::cout << "[ETCD-SERVER] ⏳ Rotación rechazada (cooldown): " << component << std::endl;
-        } else {
-            // Other runtime errors
-            res.status = 500;
-            json error = {
-                {"status", "error"},
-                {"message", "Error rotating HMAC key"},
-                {"details", e.what()}
-            };
-            res.set_content(error.dump(), "application/json");
-            std::cerr << "[ETCD-SERVER] ❌ Error en POST /secrets/rotate/" << component << ": " << e.what() << std::endl;
+            res.set_content(json{{"status", "success"},
+                                 {"component", component},
+                                 {"valid_keys_count", v.size()},
+                                 {"desde_copia", copia},
+                                 {"keys", arr}}
+                                .dump(),
+                            "application/json");
+            std::cout << "[ETCD-SERVER] claves válidas de " << component << ": " << v.size() << " (" << huellas << ")"
+                      << (copia ? " DESDE LA COPIA" : "") << std::endl;
+            return;
         }
-    }
-});
-
-// Endpoint: GET /secrets/valid/{component} - Get all valid keys (active + grace period)
-server.Get(R"(/secrets/valid/([^/]+))", [this](const httplib::Request& req, httplib::Response& res) {
-    std::string component = req.matches[1];
-    std::cout << "[ETCD-SERVER] 🔑 GET /secrets/valid/" << component << " solicitado" << std::endl;
-
-    if (!secrets_manager_) {
-        res.status = 503;
-        json error = {
-            {"status", "error"},
-            {"message", "SecretsManager not initialized"}
-        };
-        res.set_content(error.dump(), "application/json");
-        return;
-    }
-
-    try {
-        auto valid_keys = secrets_manager_->get_valid_keys(component);
-
-        json keys_array = json::array();
-        for (const auto& key : valid_keys) {
-            keys_array.push_back({
-                {"key", key.key_data},
-                {"created_at", secrets_manager_->format_time(key.created_at)},
-                {"expires_at", secrets_manager_->format_time(key.expires_at)},
-                {"is_active", key.is_active}
-            });
-        }
-
-        json response = {
-            {"status", "success"},
-            {"component", component},
-            {"valid_keys_count", valid_keys.size()},
-            {"keys", keys_array}
-        };
-        res.set_content(response.dump(), "application/json");
-
-        std::cout << "[ETCD-SERVER] ✅ Devueltas " << valid_keys.size() << " claves válidas para: " << component << std::endl;
-
-    } catch (const std::exception& e) {
-        res.status = 500;
-        json error = {
-            {"status", "error"},
-            {"message", "Error retrieving valid keys"},
-            {"details", e.what()}
-        };
-        res.set_content(error.dump(), "application/json");
-        std::cerr << "[ETCD-SERVER] ❌ Error en GET /secrets/valid/" << component << ": " << e.what() << std::endl;
+        case etcd_server::ResultadoClaves::NombreInvalido: return responder_error(res, 400, "nombre de componente inválido");
+        default: return responder_error(res, 503, kSinAlmacen);
     }
 });
 

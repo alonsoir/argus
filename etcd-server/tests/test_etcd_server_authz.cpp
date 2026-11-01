@@ -291,5 +291,6 @@ TEST(EtcdServerJsonRepo, TlsDefensorHttpYVmEtcdIgualAlDefecto) {
     a.erase("_doc"); b.erase("_doc");
     a["tls"].erase("modo"); b["tls"].erase("modo");
     a["almacen"].erase("modo"); b["almacen"].erase("modo");  // [ETCD-REGISTRO-D313] defender "memoria", VM "etcd"
+    a["almacen_claves"].erase("modo"); b["almacen_claves"].erase("modo");  // [ETCD-CLAVES-D314] "memoria" / "vault"
     EXPECT_EQ(a, b);
 }

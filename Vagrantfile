@@ -1541,6 +1541,8 @@ NFT
 
     # [VAULT-SERVER-D312] Vault en modo servidor: raft 1 nodo, solo 127.0.0.1, mTLS obligatorio, desellado c (SOLO lab),
     # kv v2 argus-hmac/ (sin borrado), auth cert para CN=etcd-server, root revocado. docs/ml-heads/day312_diseno.md
+    # [VAULT-CAS-D314] el montaje lleva cas_required=true (decisión V2 de Alonso, DAY314): ninguna escritura sin CAS puede
+    # pisar una clave aunque el código falle. Se comprueba en cada aprovisionamiento (sonda: escribir sin CAS da 400)
     etcd.vm.provision "shell", name: "vault-server", inline: <<-'VAULT_SERVER'
       set -e
       umask 077
@@ -1638,6 +1640,7 @@ UNIT
         systemctl start argus-vault-unseal
         export VAULT_TOKEN="$ROOT"
         vault secrets enable -path=argus-hmac -version=2 kv >/dev/null
+        vault write argus-hmac/config cas_required=true >/dev/null   # [VAULT-CAS-D314]
         vault policy write etcd-server - >/dev/null <<'POL'
 # [VAULT-SERVER-D312] el etcd-server crea y lee claves HMAC; nunca las borra (re-verificar el grafo años después)
 path "argus-hmac/data/*"     { capabilities = ["create", "read", "update"] }
@@ -1654,6 +1657,18 @@ POL
         echo "✅ vault-server: ya inicializado; desellado comprobado"
       else
         echo "❌ vault-server: vault operator init -status rc=$INIT_RC"; exit 1
+      fi
+      # [VAULT-CAS-D314] sonda con el certificado del etcd-server: una escritura sin CAS debe dar 400 (cas_required). Con
+      # root revocado no se puede corregir aquí: un Vault inicializado antes de DAY314 se rehace desde cero
+      T=$(vault login -method=cert -path=cert -token-only name=etcd-server 2>/dev/null) || { echo "❌ vault-server: login cert de etcd-server"; exit 1; }
+      SONDA=$(curl -s -o /dev/null -w '%{http_code}' --cacert "$VAULT_CACERT" --cert "$VAULT_CLIENT_CERT" --key "$VAULT_CLIENT_KEY" \
+        -H "X-Vault-Token: $T" -X POST -d '{"data":{"sonda":1}}' https://127.0.0.1:8200/v1/argus-hmac/data/aprovisionamiento/sonda-cas)
+      unset T
+      if [ "$SONDA" = "400" ]; then
+        echo "✅ vault-server: argus-hmac/ con cas_required=true (escritura sin CAS rechazada)"
+      else
+        echo "❌ vault-server: escritura sin CAS dio HTTP $SONDA (se esperaba 400): el montaje no tiene cas_required."
+        echo "   Vault inicializado antes de DAY314. Desde el Mac: vagrant destroy -f etcd && vagrant up etcd"; exit 1
       fi
       vault status -format=json | python3 -c 'import sys,json; s=json.load(sys.stdin); print("✅ vault-server: sealed=%s storage=%s version=%s" % (s["sealed"], s["storage_type"], s["version"]))'
     VAULT_SERVER
