@@ -156,7 +156,25 @@ set(SOURCES
         src/crypto_manager.cpp
         src/compression_lz4.cpp
         src/secrets_manager.cpp
+        src/etcd_registry_store.cpp
 )
+
+# ============================================================================
+# ETCD-CPP-APIV3 v0.15.3 (gRPC + TLS hacia el etcd real) [ETCD-REGISTRO-D313]
+# Instalada por el Vagrantfile en /usr/local (sus dependencias: grpc++ y protobuf de Debian)
+# ============================================================================
+find_library(ETCD_CPP_API_LIB NAMES etcd-cpp-api PATHS /usr/local/lib NO_DEFAULT_PATH)
+find_path(ETCD_CPP_API_INCLUDE_DIR NAMES etcd/SyncClient.hpp PATHS /usr/local/include NO_DEFAULT_PATH)
+find_library(GRPCPP_LIB NAMES grpc++)
+find_library(PROTOBUF_LIB NAMES protobuf)
+if(ETCD_CPP_API_LIB AND ETCD_CPP_API_INCLUDE_DIR AND GRPCPP_LIB AND PROTOBUF_LIB)
+    message(STATUS "✅ Found etcd-cpp-apiv3: ${ETCD_CPP_API_LIB} (grpc++: ${GRPCPP_LIB})")
+else()
+    message(FATAL_ERROR "❌ etcd-cpp-apiv3 (v0.15.3), grpc++ o protobuf no encontrados
+    etcd-cpp-api: ${ETCD_CPP_API_LIB} / ${ETCD_CPP_API_INCLUDE_DIR}
+    grpc++: ${GRPCPP_LIB}  protobuf: ${PROTOBUF_LIB}
+    Fix: aprovisionamiento del Vagrantfile (etcd-cpp-apiv3 v0.15.3 en /usr/local)")
+endif()
 
 # ============================================================================
 # EXECUTABLE
@@ -177,6 +195,9 @@ target_compile_options(etcd-server
         -Wpedantic
 )
 target_compile_definitions(etcd-server PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
+# [ETCD-REGISTRO-D313] etcd-cpp-apiv3 se compiló con gRPC 1.51 (> 1.31) y por tanto con WITH_GRPC_CHANNEL_CLASS: quien
+# incluye sus cabeceras debe definirla igual (si no, SyncClient declara grpc_impl::ChannelArguments)
+target_compile_definitions(etcd-server PRIVATE WITH_GRPC_CHANNEL_CLASS)
 
 # ============================================================================
 # LINK LIBRARIES
@@ -191,6 +212,9 @@ target_link_libraries(etcd-server
         ${OPENSSL_LIBRARIES}
         fmt
         curl
+        ${ETCD_CPP_API_LIB}
+        ${GRPCPP_LIB}
+        ${PROTOBUF_LIB}
 )
 
 # ============================================================================
@@ -354,6 +378,15 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
             ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
     target_link_libraries(test_etcd_server_authz PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
     add_test(NAME test_etcd_server_authz COMMAND test_etcd_server_authz)
+
+    # [ETCD-REGISTRO-D313] registro sobre el almacén: muerto/revivido, etcd no disponible (lectura de copia, escritura
+    # 503), recarga, época, nombres; con MemoriaRegistryStore y reloj inyectado (sin red)
+    add_executable(test_registro_componentes tests/test_registro_componentes.cpp)
+    target_include_directories(test_registro_componentes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_definitions(test_registro_componentes PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_registro_componentes PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_registro_componentes COMMAND test_registro_componentes)
     # target_include_directories(test_hmac_integration
     #         PRIVATE
     #         ${CMAKE_CURRENT_SOURCE_DIR}/include

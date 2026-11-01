@@ -1,5 +1,5 @@
 {
-  "_doc": "[ETCD-AUTHZ-D313] etcd-server de la VM etcd (192.168.100.20), con mTLS. Igual que etcd-server.json salvo tls.modo (all\u00ed \"http\" para la transici\u00f3n del defender). Lanzar con: etcd-server -c /vagrant/etcd-server/config/etcd-server.etcd-vm.json. [ETCD-CONFIG-D312] El JSON es la ley: si un campo de server/secrets/heartbeat falta, tiene otro tipo o est\u00e1 fuera de rango, el etcd-server avisa con [CONFIG-DEFAULT] y usa el defecto (el valor de este fichero). Comprobar sin arrancar: etcd-server -c RUTA --check-config. Bloques tls y authz [ETCD-AUTHZ-D313]: ver su _doc.",
+  "_doc": "[ETCD-AUTHZ-D313] etcd-server de la VM etcd (192.168.100.20), con mTLS. Igual que etcd-server.json salvo tls.modo y almacen.modo (all\u00ed \"http\" y \"memoria\" para la transici\u00f3n del defender). Lanzar con: etcd-server -c /vagrant/etcd-server/config/etcd-server.etcd-vm.json. [ETCD-CONFIG-D312] El JSON es la ley: si un campo de server/secrets/heartbeat falta, tiene otro tipo o est\u00e1 fuera de rango, el etcd-server avisa con [CONFIG-DEFAULT] y usa el defecto (el valor de este fichero). Comprobar sin arrancar: etcd-server -c RUTA --check-config. Bloques tls y authz [ETCD-AUTHZ-D313]: ver su _doc.",
   "server": {
     "_doc": "host: IPv4 con puntos (0.0.0.0 = todas). port: entero [1024, 65535].",
     "port": 2379,
@@ -123,6 +123,20 @@
         ]
       }
     ]
+  },
+  "almacen": {
+    "_doc": "[ETCD-REGISTRO-D313] Almac\u00e9n del registro de componentes. modo: \"etcd\" (el etcd real por gRPC con TLS; etcd es la \u00fanica verdad: con etcd ca\u00eddo las lecturas salen de la \u00faltima copia en memoria y las escrituras dan 503, avisando [ETCD-ALMACEN-NO-DISPONIBLE] cada aviso_intervalo_s) o \"memoria\" (sin persistencia: SOLO transici\u00f3n del defender hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001; avisa [ETCD-ALMACEN-MEMORIA]). Un modo ausente o mal escrito va a \"etcd\". endpoints: lista de 1 a 7 \"https://IPv4:puerto\". ca_file, cert_file, key_file: rutas absolutas (el CN del certificado es el usuario RBAC de etcd). prefijo: empieza y acaba en /, [a-z0-9-/], hasta 64. timeout_ms: entero [100, 30000]. aviso_intervalo_s: entero [10, 3600]. reconexion_max_ms: entero [100, 60000], intervalo m\u00ednimo entre canales gRPC nuevos tras un fallo (un canal que ha fallado tarda ~30 s en volver a usar etcd; uno nuevo, menos de 1 s). Claves: <prefijo>registro/<CN>, <prefijo>latido/<CN>, <prefijo>epoca. Un componente sin latido durante heartbeat.interval_seconds * timeout_multiplier se marca muerto (no se borra) y su siguiente latido lo revive.",
+    "modo": "etcd",
+    "endpoints": [
+      "https://127.0.0.1:2381"
+    ],
+    "ca_file": "/etc/argus-pki/ca.crt",
+    "cert_file": "/etc/argus-pki/etcd-server.crt",
+    "key_file": "/etc/argus-pki/etcd-server.key",
+    "prefijo": "/argus/",
+    "timeout_ms": 2000,
+    "aviso_intervalo_s": 60,
+    "reconexion_max_ms": 1000
   },
   "identity": {
     "_comment": "ADR-013 \u2014 provision.sh es el \u00fanico responsable de crear estas claves.",

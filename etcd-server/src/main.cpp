@@ -8,6 +8,8 @@
 #include "etcd_server/secrets_manager.hpp"
 #include "etcd_server/etcd_server_config.hpp"
 #include "etcd_server/etcd_server_authz.hpp"
+#include "etcd_server/etcd_server_almacen.hpp"
+#include "etcd_server/etcd_registry_store.hpp"
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <csignal>
@@ -82,7 +84,10 @@ int main(int argc, char** argv) {
     const auto leida_tls = argus::etcdcfg::parse_tls_config(root);
     const auto& tls = leida_tls.cfg;
     auto leida_authz = argus::etcdauthz::parse_authz(root);
-    const int defectos = leida.defectos + leida_tls.defectos + leida_authz.defectos;
+    // [ETCD-REGISTRO-D313] bloque almacen (etcd real | memoria de transición)
+    const auto leida_almacen = argus::etcdcfg::parse_almacen_config(root);
+    const auto& almacen_cfg = leida_almacen.cfg;
+    const int defectos = leida.defectos + leida_tls.defectos + leida_authz.defectos + leida_almacen.defectos;
     if (defectos > 0) {
         std::cerr << "[CONFIG-DEFAULT] " << defectos << " ajustes con valor por defecto en " << config_path
                   << ": revisarlo" << std::endl;
@@ -98,11 +103,28 @@ int main(int argc, char** argv) {
             }
         }
     }
+    // En modo etcd, los certificados del almacén deben poder leerse; si no, el registro no estará disponible (503),
+    // pero el proceso arranca igual (no es TLS de servicio): aviso [ETCD-ALMACEN-FICHERO]
+    int almacen_ilegibles = 0;
+    if (almacen_cfg.modo == "etcd") {
+        for (const auto* r : {&almacen_cfg.ca_file, &almacen_cfg.cert_file, &almacen_cfg.key_file}) {
+            std::ifstream f(*r, std::ios::binary);
+            if (!f.good() || f.peek() == std::ifstream::traits_type::eof()) {
+                std::cerr << "[ETCD-ALMACEN-FICHERO] no se puede leer " << *r
+                          << " (o está vacío): el registro no estará disponible (503)" << std::endl;
+                ++almacen_ilegibles;
+            }
+        }
+    } else {
+        std::cerr << "[ETCD-ALMACEN-MEMORIA] almacen.modo=memoria: el registro vive solo en memoria y se pierde al "
+                     "reiniciar. Solo transición hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001" << std::endl;
+    }
     if (check_only) {
-        const bool limpio = fichero_ok && defectos == 0 && tls_ilegibles == 0;
+        const bool limpio = fichero_ok && defectos == 0 && tls_ilegibles == 0 && almacen_ilegibles == 0;
         std::cout << "[ETCD-CONFIG-CHECK] " << config_path << ": " << (limpio ? "OK" : "CON DEFECTOS")
                   << " (defectos=" << defectos << ", obsoletos=" << leida.obsoletos << ", tls.modo=" << tls.modo
-                  << ", ficheros_tls_ilegibles=" << tls_ilegibles << ")" << std::endl;
+                  << ", ficheros_tls_ilegibles=" << tls_ilegibles << ", almacen.modo=" << almacen_cfg.modo
+                  << ", ficheros_almacen_ilegibles=" << almacen_ilegibles << ")" << std::endl;
         return limpio ? 0 : 1;
     }
 
@@ -277,7 +299,14 @@ int main(int argc, char** argv) {
         std::cout << "  Initializing EtcdServer" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        g_server = std::make_unique<EtcdServer>(cfg, tls, std::move(leida_authz.reglas), config_path);
+        std::unique_ptr<argus::almacen::IRegistryStore> almacen;
+        if (almacen_cfg.modo == "etcd") {
+            almacen = std::make_unique<argus::almacen::EtcdRegistryStore>(almacen_cfg);
+        } else {
+            almacen = std::make_unique<argus::almacen::MemoriaRegistryStore>();
+        }
+        g_server = std::make_unique<EtcdServer>(cfg, tls, std::move(leida_authz.reglas), almacen_cfg,
+                                                std::move(almacen), config_path);
         g_server->set_secrets_manager(g_secrets_manager.get());
 
         if (!g_server->initialize()) {
@@ -301,18 +330,17 @@ int main(int argc, char** argv) {
         // sondeo de /v1/epoch cada 2 s, cuyo callback solo escribía en el log). Con HTTPS ese bucle fallaba; ahora va
         // directo a su ComponentRegistry y GET /components sigue mostrándolo. PUT/GET /v1/epoch siguen como rutas.
         // ═══════════════════════════════════════════════════════════
-        {
-            const nlohmann::json yo = {
-                {"component", "etcd-server"},
-                {"key_version", crypto_material.key_version},
-                {"family", crypto_material.family},
-                {"started_with_cache", false}
-            };
-            if (g_server->register_component("etcd-server", yo.dump())) {
-                std::cout << "✅ etcd-server registrado en proceso (sin red)" << std::endl;
-            } else {
-                std::cerr << "❌ etcd-server no se pudo registrar en proceso" << std::endl;
-            }
+        const std::string yo = nlohmann::json{
+            {"component", "etcd-server"},
+            {"key_version", crypto_material.key_version},
+            {"family", crypto_material.family},
+            {"started_with_cache", false}
+        }.dump();
+        if (g_server->register_component("etcd-server", yo)) {
+            std::cout << "✅ etcd-server registrado en proceso (sin red)" << std::endl;
+        } else {
+            std::cerr << "❌ etcd-server no se pudo registrar en proceso (almacén no disponible): se reintenta con "
+                         "cada latido" << std::endl;
         }
         auto last_self_heartbeat = std::chrono::steady_clock::now();
         auto last_tls_warning = std::chrono::steady_clock::now();
@@ -341,7 +369,10 @@ int main(int argc, char** argv) {
             // [ETCD-AUTHZ-D313] latido propio en proceso, cada heartbeat.interval_seconds
             if (std::chrono::duration_cast<std::chrono::seconds>(now - last_self_heartbeat).count() >=
                 cfg.heartbeat_interval_seconds) {
-                g_server->update_heartbeat("etcd-server");
+                // [ETCD-REGISTRO-D313] si el almacén no respondía al arrancar (o lo perdió), se vuelve a registrar
+                if (!g_server->update_heartbeat("etcd-server") && g_server->register_component("etcd-server", yo)) {
+                    std::cout << "✅ etcd-server registrado en proceso (reintento)" << std::endl;
+                }
                 last_self_heartbeat = now;
             }
             // [ETCD-AUTHZ-D313] en modo http, aviso periódico: que nadie lo olvide encendido

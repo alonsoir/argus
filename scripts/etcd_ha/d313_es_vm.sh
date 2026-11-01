@@ -35,24 +35,30 @@ case "$MODO" in
     done
     sudo ss -ltnH 'sport = :2379' | grep -q . || { sudo tail -n 20 "$LOG"; falla "nadie escucha en 2379 a los 30 s"; }
     echo "[D313-VM] $(ts) arrancado pid=$(sudo cat "$PID"); escucha: $(sudo ss -ltnH 'sport = :2379' | awk '{print $4}' | tr '\n' ' ')"
-    sudo grep -E '^\[ETCD-TLS|^\[ETCD-CONFIG\]|CONFIG-DEFAULT|registrado en proceso' "$LOG" || true
+    sudo grep -E '^\[ETCD-TLS|^\[ETCD-CONFIG\]|^\[ETCD-ALMACEN|REGISTRO-CARGADO|CONFIG-DEFAULT|registrado en proceso' "$LOG" || true
     ;;
   parar)
     [ -f "$PID" ] || falla "no hay $PID (¿se arrancó con este script?)"
     P=$(sudo cat "$PID")
     sudo kill -0 "$P" 2>/dev/null || falla "el pid $P ya no existe"
-    T0=$(date +%s.%N)
-    sudo kill -TERM "$P"
-    for _ in $(seq 1 1200); do
-      sudo kill -0 "$P" 2>/dev/null || break
-      sleep 0.1
-    done
-    T1=$(date +%s.%N)
-    if sudo kill -0 "$P" 2>/dev/null; then
-      sudo kill -KILL "$P"
+    # [D313B] todo dentro de un único sudo (medido DAY313: un sudo por vuelta añadía 1,4-2,0 s) y un zombi cuenta como
+    # terminado (kill -0 lo da por vivo hasta que lo recoge su padre; en el banco eso añadía 1,3 s: el proceso salía en
+    # 0,09 s)
+    R=$(sudo bash -s "$P" <<'PARAR'
+P=$1
+vivo() { [ -r "/proc/$P/stat" ] && [ "$(awk '{print $3}' "/proc/$P/stat" 2>/dev/null)" != Z ]; }
+T0=$(date +%s.%N); kill -TERM "$P"; n=0
+while vivo && [ "$n" -lt 2400 ]; do sleep 0.05; n=$((n+1)); done
+T1=$(date +%s.%N)
+if vivo; then kill -KILL "$P"; echo KILL; fi
+echo "$T0 $T1"
+PARAR
+)
+    if echo "$R" | grep -q KILL; then
       echo "[D313-VM] $(ts) NO salió en 120 s tras SIGTERM: SIGKILL"
     fi
-    echo "[D313-VM] $(ts) parado pid=$P en $(awk -v a="$T0" -v b="$T1" 'BEGIN{printf "%.1f", b-a}') s tras SIGTERM"
+    T0=$(echo "$R" | tail -n 1 | awk '{print $1}'); T1=$(echo "$R" | tail -n 1 | awk '{print $2}')
+    echo "[D313-VM] $(ts) parado pid=$P en $(awk -v a="$T0" -v b="$T1" 'BEGIN{printf "%.2f", b-a}') s tras SIGTERM"
     sudo rm -f "$PID"
     ;;
   *) falla "modo '$MODO' desconocido (arrancar [JSON] | parar)";;

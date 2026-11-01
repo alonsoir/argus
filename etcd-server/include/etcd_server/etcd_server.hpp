@@ -9,6 +9,7 @@
 #include <vector>
 #include "etcd_server/etcd_server_config.hpp"
 #include "etcd_server/etcd_server_authz.hpp"
+#include "etcd_server/etcd_server_almacen.hpp"
 
 namespace httplib { class Server; }
 
@@ -38,8 +39,10 @@ public:
     // [ETCD-CONFIG-D312] host, puerto y latidos salen de etcd-server.json (argus::etcdcfg, ya validados);
     // config_path es ese mismo JSON (SeedClient lee de él identity)
     // [ETCD-AUTHZ-D313] tls (modo mtls | http) y la tabla de autorización, del mismo JSON y ya validados
+    // [ETCD-REGISTRO-D313] el almacén del registro (etcd real o memoria de transición) llega ya construido
     EtcdServer(const argus::etcdcfg::EtcdServerConfig& cfg, const argus::etcdcfg::TlsConfig& tls,
-               std::vector<argus::etcdauthz::Regla> reglas, const std::string& config_path);
+               std::vector<argus::etcdauthz::Regla> reglas, const argus::etcdcfg::AlmacenConfig& almacen_cfg,
+               std::unique_ptr<argus::almacen::IRegistryStore> almacen, const std::string& config_path);
     ~EtcdServer();
 
     void set_secrets_manager(etcd_server::SecretsManager* manager) {
@@ -52,15 +55,9 @@ public:
     void stop();
     bool is_running() const { return running_; }
 
-    // Gestión de componentes
+    // Registro y latido en proceso del propio etcd-server ([ETCD-AUTHZ-D313]; false si el almacén no responde)
     bool register_component(const std::string& component_name, const std::string& config_json);
-    std::string get_component_config(const std::string& component_name);
-    bool update_component_config(const std::string& component_name, const std::string& config_path, const std::string& value);
-    // [ETCD-AUTHZ-D313] latido en proceso del propio etcd-server (sustituye a HttpEtcdRegistrar contra sí mismo)
     bool update_heartbeat(const std::string& component_name);
-
-    // Validación
-    std::string validate_configuration();
 
     // Epoch management (ADR-045 v2 — DAY 164)
     struct EpochInfo {
@@ -68,7 +65,7 @@ public:
         std::string not_before{"2026-01-01T00:00:00Z"};
         int64_t     revision{1};
     };
-    void        set_epoch(uint16_t epoch_id, const std::string& not_before);
+    bool        set_epoch(uint16_t epoch_id, const std::string& not_before);  // false si el almacén no responde
     EpochInfo   get_epoch() const;
 
 private:
