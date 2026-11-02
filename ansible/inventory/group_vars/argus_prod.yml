@@ -1,0 +1,5 @@
+# aRGus NDR -- group_vars del grupo argus_prod (bare-metal / VM endurecida, producción)
+# [ANSIBLE-D315] Las variables de las plantillas de sniffer y ml-detector se borraron con ellas
+# (DEBT-ANSIBLE-DEPLOY-CONFIGS-001). Las del etcd-server llegan en el paso 2.
+
+argus_env: prod

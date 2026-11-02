@@ -1232,12 +1232,12 @@ test-components: correlation-engine-test
 	@echo ""
 
 deploy-configs:
-	@echo "🚀 Desplegando configs Ansible/Jinja2 (dev)..."
-	@vagrant ssh defender -- -t "cd /vagrant && ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml -e @ansible/group_vars/argus_dev.yml --diff"
+	@echo "🚀 Desplegando configs por entorno (Ansible) (dev)..."
+	@vagrant ssh defender -- -t "cd /vagrant && ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml --diff"
 
 deploy-configs-prod:
-	@echo "🚀 Desplegando configs Ansible/Jinja2 (prod)..."
-	@ansible-playbook -i ansible/inventory/prod.yml ansible/playbooks/deploy_configs.yml -e @ansible/group_vars/argus_prod.yml -e vault_token_secret=$${VAULT_TOKEN_SECRET} --diff
+	@echo "🚀 Desplegando configs por entorno (Ansible) (prod)..."
+	@ansible-playbook -i ansible/inventory/prod.yml ansible/playbooks/deploy_configs.yml --diff
 
 parquet-convert:
 	@echo "📦 Installing/upgrading pyarrow..."
