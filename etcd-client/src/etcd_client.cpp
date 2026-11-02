@@ -467,12 +467,10 @@ bool EtcdClient::register_component() {
             if (j.contains("paths") && j["paths"].is_object()) {
                 const auto& paths = j["paths"];
                 pImpl->service_paths_.hmac_key = paths.value("hmac_key", "");
-                pImpl->service_paths_.crypto_token = paths.value("crypto_token", "");
                 pImpl->service_paths_.config = paths.value("config", "");
 
                 std::cout << "🗺️  Service discovery paths received:" << std::endl;
                 std::cout << "   - HMAC key: " << pImpl->service_paths_.hmac_key << std::endl;
-                std::cout << "   - Crypto token: " << pImpl->service_paths_.crypto_token << std::endl;
                 std::cout << "   - Config: " << pImpl->service_paths_.config << std::endl;
             } else {
                 std::cerr << "⚠️  No service paths in registration response" << std::endl;

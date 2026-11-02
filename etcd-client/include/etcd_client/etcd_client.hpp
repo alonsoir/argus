@@ -21,14 +21,15 @@ struct ComponentInfo {
 
 // Service discovery paths (Day 59 - Service Discovery)
 // etcd-server owns path topology and tells components where to find resources
+// [ETCD-B4-D315] con el nombre completo del componente (= CN del certificado); sin crypto_token (el etcd-server no tiene
+// ninguna ruta /crypto: era un dato muerto que además hacía falta para is_valid())
 struct ServicePaths {
-    std::string hmac_key;      // e.g., "/secrets/firewall"
-    std::string crypto_token;  // e.g., "/crypto/firewall/tokens"
-    std::string config;        // e.g., "/config/firewall"
+    std::string hmac_key;      // e.g., "/secrets/firewall-acl-agent"
+    std::string config;        // e.g., "/config/firewall-acl-agent"
 
     // Helper to check if paths were received from etcd-server
     bool is_valid() const {
-        return !hmac_key.empty() && !crypto_token.empty() && !config.empty();
+        return !hmac_key.empty() && !config.empty();
     }
 };
 // Configuration structure (loaded from JSON)

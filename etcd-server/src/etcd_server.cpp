@@ -267,18 +267,16 @@ void EtcdServer::configurar_rutas() {
             fallo(res, r, component_name);
             return;
         }
-        // Extract component short name (e.g., "firewall-acl-agent" -> "firewall")
-        std::string short_name = component_name;
-        size_t dash_pos = component_name.find('-');
-        if (dash_pos != std::string::npos) short_name = component_name.substr(0, dash_pos);
+        // [ETCD-B4-D315] rutas con el nombre completo (= CN): la autorización de /secrets/{c} y /config/{c} exige
+        // 'propio'. Antes se cortaba en el primer guion (firewall-acl-agent -> /secrets/firewall: 403 con mTLS, sin clave
+        // HMAC para su CSV). Fuera crypto_token: apuntaba a /crypto/<corto>/tokens, ruta que este servidor no tiene.
         json response = {
             {"status", "success"},
             {"message", "Componente registrado correctamente"},
             {"component", component_name},
             {"paths", {
-                {"hmac_key", "/secrets/" + short_name},
-                {"crypto_token", "/crypto/" + short_name + "/tokens"},
-                {"config", "/config/" + short_name}
+                {"hmac_key", "/secrets/" + component_name},
+                {"config", "/config/" + component_name}
             }}
         };
         res.set_content(response.dump(), "application/json");

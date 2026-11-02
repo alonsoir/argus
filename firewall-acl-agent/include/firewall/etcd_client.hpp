@@ -51,7 +51,7 @@ namespace mldefender::firewall {
 
         /**
      * @brief Get HMAC key from etcd-server (Day 58)
-     * @param key_path Path to key in etcd (e.g., "/secrets/firewall/log_hmac_key")
+     * @param key_path Path to key in etcd-server (e.g., "/secrets/firewall-acl-agent", the one /register returns)
      * @return HMAC key as bytes (32 bytes), or nullopt if not found
      */
         std::optional<std::vector<uint8_t>> get_hmac_key(const std::string& key_path);
