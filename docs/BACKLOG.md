@@ -8327,3 +8327,68 @@ LTO no ve el falso `-Wstringop-overflow` de GCC 12. Un parcheador no está aplic
 instrumento se pasa al menos dos veces seguidas: la primera parte de un estado limpio. Una predicción que depende del
 estado se escribe en función del estado medido justo antes. Un camino de despliegue que nadie ha ejecutado no existe:
 medirlo antes de construir encima (Ansible DAY314).
+
+## DAY316 — diseño (conversación): firewall en modo pasarela, agresor interno y estado compartido
+
+Conversación de diseño, sin código. No cambia el orden de ramas (sigue PR1/PR2 de DEBT-ETCD-HA-TLS-RAFT-001). Punto de
+partida: ¿pararía aRGus un gusano tipo WannaCry (EternalBlue/DoublePulsar, SMB 445, todo de 2017 y todavía peligroso en
+hospitales con equipos médicos sin parchear)? Respuesta: el cifrado ocurre en el host y es invisible desde la red; la
+propagación es muy visible, pero pararla depende más de DÓNDE actúa el firewall que del modelo.
+
+### DEBT-FW-ENFORCEMENT-POINT-001 — AMPLIADA DAY316
+Sigue vigente lo de DAY301 (lista de cadenas INPUT/FORWARD en el JSON, defecto INPUT con [CONFIG-DEFAULT]). Se añade:
+- Leído en el código DAY316: un único salto `INPUT -I 1 -j <cadena>` ([ARGUS-CADENA-D301],
+  `firewall-acl-agent/src/core/iptables_wrapper.cpp` 449-548). El enum `IPTablesChain` ya conoce FORWARD, pero nada lo
+  engancha. El agente protege solo la máquina donde está instalado (servidor de la DMZ, norte-sur). El tráfico de un PC a otro dentro del mismo segmento conmutado no pasa por ningún Linux: ni INPUT ni
+  FORWARD lo ven. Contra la propagación lateral hace falta un punto de control entre segmentos (pasarela Linux entre
+  VLANs con FORWARD) o bloqueo en el switch.
+- En modo pasarela: INPUT (proteger la propia pasarela) y FORWARD a la vez.
+- dry_run debe simular también las reglas de FORWARD (como se exigió para INPUT en DAY301).
+- Hipótesis a medir: qué pasa con las conexiones ya establecidas (conntrack) cuando entra el bloqueo.
+
+### DEBT-FW-PROTECTED-RANGES-INTERNAL-AGGRESSOR-001 — ABIERTA (nueva DAY316), decide Alonso
+Medido en el diseño (DEBT-FW-PROTECTED-RANGES-001, DAY300): aRGus nunca bloquea un rango protegido (defecto RFC 1918 y
+fc00::/7). Es lo correcto para DDoS (agresor externo), pero en una propagación tipo WannaCry el agresor es un host
+interno, es decir, una IP protegida: aunque la cabeza ransomware lo detecte, el firewall se negaría a bloquearlo.
+Opciones:
+- A: protección por cabeza (los rangos protegidos valen para las cabezas de tráfico externo; ransomware puede aislar).
+- B: bloquear solo el tráfico lateral del host interno (hacia otros internos y en los puertos de propagación: 445, 135,
+  139), dejándolo alcanzable para que el admin lo investigue. Propuesta de Claude: la más prudente en un hospital.
+- C: aislamiento total con doble llave (interruptor propio en el JSON, defecto false, aviso muy visible en el log).
+Relación: DEBT-IRP-NFTABLES-001 (argus-network-isolate aísla una interfaz de la propia máquina, no un host interno
+remoto) y la regla permanente DAY142 (nunca señal única; un FP sobre un equipo médico es inaceptable).
+
+### DEBT-FW-MULTI-AGENT-SHARED-STRIKES-001 — ABIERTA (nueva DAY316), después de la PR2 (HA Raft)
+Doble protección en un despliegue: el mismo paquete Debian en dos papeles, servidor de la DMZ (INPUT) y pasarela entre
+segmentos (INPUT+FORWARD). Las capas fallan por separado. Problema: `strike_states_` vive en cada agente; con dos
+agentes una IP puede ir por strikes distintos en cada uno.
+- El etcd-server sigue SIN estado (D1, DAY312: fachada HTTPS); el estado va al etcd real, como el registro y los
+  latidos. Ruta propuesta: `<prefijo>/firewall/strikes/<ip>`.
+- "Un episodio = un strike" con dos agentes: transacción con compare-and-swap en etcd (mismo patrón que
+  `cas_required=true` en Vault).
+- Volumen bajo (un strike por episodio, nunca por paquete): encaja con etcd. Nada de tráfico de alta frecuencia ahí.
+- Con etcd caído: cada agente sigue bloqueando con su copia en memoria, aviso en el log y sincronización al volver
+  (regla DAY314: proteger al hospital primero).
+- Autorización por CN de instancia (p. ej. firewall-acl-agent-nodo2): solo la ruta de strikes.
+- El ipset sigue siendo local; en etcd va el expediente (strikes, último DROP, escalón). El volcado de `strike_states_`
+  en la parada queda como copia local de respaldo.
+- Ámbito por agente en su JSON (modo, rangos protegidos, cabezas que le competen); logs identificando al agente.
+Orden: (1) FORWARD en un agente, medido; (2) dos agentes con estado independiente, midiendo las inconsistencias
+reales; (3) estado compartido en etcd, con el HA cerrado.
+
+### DEBT-LAB-PREPROD-TOPOLOGIAS-001 — ABIERTA (nueva DAY316), cuando todas las cabezas estén operativas
+Laboratorio con las dos configuraciones y la doble protección: servidor de la DMZ (INPUT) y pasarela Linux con
+`ip_forward=1` entre dos subredes (FORWARD), con el sensor viendo el tráfico de un PC a otro. Métrica principal por
+topología: tiempo desde la detección hasta que la regla está aplicada. Si la entrada del entorno de preproducción de
+DAY315 (VM objetivo mínima, campo de pruebas de DDoS y ransomware) se registra aparte, fusionarlas.
+
+### DEBT-RANSOMWARE-ML-HEAD-INERT-001 — nota DAY316 para la reescritura de la cabeza
+- Desde la red se ve la propagación (un host interno abriendo conexiones al 445 hacia muchos destinos; EternalBlue/
+  DoublePulsar sobre SMBv1; DNS del killswitch; Tor), no el cifrado. La pieza ya existe: `count_unique_ips` solo
+  destino (diversidad SMB, `time_window_aggregator` cpp:240).
+- Las firmas de EternalBlue/DoublePulsar (Suricata) cubren WannaCry original; la cabeza aporta en variantes sin firma.
+  El caso difícil: propagación con credenciales robadas (PsExec/WMI, estilo NotPetya), parecida a un admin.
+- Datos reales, nunca sintéticos (detonación controlada en red aislada, VMs Windows sin parchear).
+- Criterio de HECHO propuesto: dos métricas por separado, recall sobre el host que se propaga y tiempo hasta la
+  regla aplicada. Predicción escrita antes de medir: detección alta; contención desconocida hasta medir la topología;
+  el cifrado en el paciente cero, imposible desde la red.
