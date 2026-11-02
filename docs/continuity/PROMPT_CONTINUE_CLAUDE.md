@@ -1,81 +1,90 @@
-DAY302 — aRGus NDR. Rama: fix/ddos-etapa1-histeresis (sobre main 492580f6). NO mergear hasta EMECAS+++ verde.
+# Prompt de continuidad — DAY316 (tras DAY315, lunes 2026-11-02)
 
-REGLAS: medir, no votar; predicción escrita antes de cada medida; si algo no da lo esperado, PARAR. Comandos
-completos diciendo dónde (Mac / defender / client); salidas a fichero + "; cat". Scripts como cat > f <<'EOF'
-(PYEOF/MDEOF si el texto contiene EOF). Nada de grep -rn desde la raíz: git grep o ruta concreta. Compilar TODO
-el pipeline y probar con el mismo perfil: make pipeline-build / test-components PROFILE=production. El JSON
-manda: valor correcto se aplica Y se registra ([CONFIG]); ausente o inválido = defecto validado con
-[CONFIG-DEFAULT] y el proceso arranca igual. awk con LC_ALL=C. Patchers atómicos --check/--apply con marca.
-Al despertar el Mac: make lab-clock-step. Corridas en logs/lab/day302/ (DIA=day302). Tras reiniciar el client:
-sudo ip addr add 192.168.100.51/24 dev eth1. Leer un fichero tocado: anclar por nombre (git grep -n -A N),
-no por número de línea. Las esperas y marcas de tiempo las hace el script, nunca a mano.
-NUEVO DAY301: arrancar SIEMPRE con PROFILE=production (firewall-start/pipeline-start sin PROFILE lanzan
-build-debug, un binario anterior a DAY300; medido). El firewall solo, sin pipeline, muere (sin etcd).
-Arranque con verificación: bash scripts/timebase/d301_arranque_b1.sh 2>&1 | tee /tmp/f.txt (pipeline-start/stop
-PROFILE=production, ~3,5 min, progreso por pantalla). Tests con root: make test-firewall-e2e PROFILE=production.
-Scripts largos: progreso por pantalla con tee, nunca solo a fichero.
+Hola, Claude. Soy Alonso (aRGus NDR, único desarrollador). Seguimos con **DEBT-ETCD-HA-TLS-RAFT-001** en la rama
+`feat/etcd-mtls-vault`. Responde siempre en español. Lee `docs/ml-heads/day312_diseno.md` (diseño de 4b y las
+secciones de resultados DAY313 y DAY314) y el final de `docs/BACKLOG.md` (sección DAY312–314). DAY315 todavía NO está
+documentado ahí: está en este prompt.
 
-HECHO DAY301 (subido, último 91cb3fe6), paso 3b preparado por tandas:
-baa8bfbf 3b-a: ddos_mitigacion.hpp (DdosMitigacion: NADA/ESPERAR/BLOQUEAR/RENOVAR por origen; solo con la
-víctima en episodio; un episodio = un strike; RENOVAR sin strike; desborde por max_origenes sin strike; purgar;
-escalones_cortos) + DdosShadowPolicy::en_episodio() + test_ddos_mitigacion (coherencia con INICIO/FIN medida)
-b68d81e6 b1: bloque ddos_mitigacion en firewall.json y config ([CONFIG]/[CONFIG-DEFAULT]); escalera de producción
-[3600, 86400, 604800, 2073600] (código x2 structs + JSON, validada en parse_recidivism); [CONFIG] de la escalera
-efectiva y [CONFIG-AVISO] de escalones cortos; set_type del ipset leído del JSON; whitelist hash:net
-98d730b1 arranque b1 verificado en real (PROFILE=production)
-5e4e272a c1 [ARGUS-CADENA-D301]: setup_base_rules reescrita: INPUT -I 1 -j ML_DEFENDER_TEST (único salto,
-idempotente); dentro whitelist RETURN y blacklist DROP (nunca ACCEPT); sin rate limiting (solo aviso);
-netmask solo en hash:ip; dry_run simula todas las órdenes
-91cb3fe6 c2 [ARGUS-WHITELIST-D301]: la whitelist se vacía y carga con los rangos protegidos IPv4 al arrancar;
-test_argus_cadena_root contra el kernel (32/32; sin root sale 77 = Skipped honesto). test-components 100/100;
-test-firewall-e2e con root 4/4 (los 3 antiguos corren de verdad por primera vez)
+## Hecho y commiteado DAY315 (todo medido en el laboratorio, todo a la primera salvo lo indicado)
 
-DECISIONES DE ALONSO DAY301:
-- Se bloquea la IP de ORIGEN de los DROP de ddos_v2 solo con su víctima en episodio; nunca la víctima ni un
-  origen protegido. El origen se bloquea en su siguiente DROP dentro del episodio (no la lista del INICIO).
-- FIN no desbloquea: manda el timeout. Un episodio = un strike; mientras siga atacando se renueva sin strike;
-  tras su último DROP corre el escalón entero; reincidencia solo por episodio nuevo.
-- Escalera de producción 1 h / 1 d / 7 d / 24 d, nunca permanente; castigos cortos solo para pruebas, con aviso.
-- Doble llave: dry_run + ddos_mitigacion.habilitada (defecto false). min_drops_origen defecto 1, techo con medida.
-- "Protegido" = aRGus nunca lo bloquea, no que el host lo acepte todo: cadena propia, whitelist RETURN.
-- Tests con root: que pasen todos; primero los de esta feature, después los antiguos.
+| commit | qué |
+|---|---|
+| (DAY315, antes de 2a) | paso 1: fuera las plantillas Jinja de sniffer/ml-detector y los group_vars duplicados; group_vars junto al inventario |
+| 58cb72ac | pasos 2a–2c de DEBT-ANSIBLE-DEPLOY-CONFIGS-001 (`[DEPLOY-SSH-D315]`, `[ETCD-CONFIG-ENTORNO-D315]`, `[INVENTARIO-FUERA-D315]`) |
+| 23c2e4f8 | paso 3: campos del almacén fatales en modo etcd (`[ETCD-ALMACEN-FATAL-D315]`) |
+| 68ebbdaa | 4b.6: `/register` con el CN completo, fuera `crypto_token` y las variantes muertas de etcd-client (`[ETCD-B4-D315]`) |
 
-MEDIDO DAY301: la víctima del lab es el propio defender (eth2 = 192.168.100.1) y el client enruta por él
-(default via .1): INPUT basta; FORWARD medible en el futuro sin cambiar topología. Kernel 6.1.0-53: ip_set,
-hash_ip, hash_net y xt_set cargables. ipset 7.17 rechaza netmask en hash:net (rc 2). /etc/ml-defender/
-firewall-acl-agent/firewall.json es enlace al JSON del repo. Hoy no existe ningún set ni regla en el defender.
+Medido al final: ctest 9/23/13/7/82; `d313_registro_medir.sh` 28/28; `d314_claves_medir.sh` 29/29;
+`d315_paso3_medir.sh` 15/15 (x2); `d315_b4_medir.sh` 10/10 (x2); `d312_etcd_vm_deploy.sh` PASA (binario `6d837186`);
+`make deploy-configs` dev `etcd ok=7 changed=0`; JSON desplegado en la VM etcd = `etcd-server.etcd-vm.json` del repo
+(sha256 `3fedf9ad…`). En el defender el firewall pasó de `key_path=/secrets/firewall` a `/secrets/firewall-acl-agent`.
 
-PENDIENTE, EN ORDEN:
-1. Tanda b2, cableado:
-   - batch_processor: API por episodio. BLOQUEAR -> compute_penalty_timeout (strike+1). RENOVAR -> escalón
-     vigente SIN strike (función nueva; sin estado = escalón 0). Ojo con pending_penalty_ (H6) y la dedup de
-     pending_ips_.
-   - Barrera: un origen en rangos protegidos nunca entra en la blacklist.
-   - zmq_subscriber, tras add_drop: decidir(dst, proto, src, ddos_shadow_.en_episodio(dst, proto)) ->
-     processor_; líneas [DDOS-MITIGACION] (detalle limitado) y contadores en el resumen; purgar en cada resumen;
-     [CONFIG-AVISO] periódico de escalones cortos.
-   - Config del suscriptor: ddos_mitigacion + escalones cortos; main los copia.
-   - Pasos 5-8 viejos (inalcanzables; timeout_sec 300/600/3600 e ipset_name fijos): retirar o anotar.
-   - Tests unitarios de batch_processor en dry_run: strike por episodio, renovar sin strike, barrera.
-2. E2E real, con conmutador solo durante el test (dry_run false, habilitada true, escalera corta) y trap que
-   restaura y verifica. Criterios PASA/FALLA:
-   - .50 entra en el ipset a pocos s del INICIO;
-   - sube el contador de la regla DROP (iptables -L ML_DEFENDER_TEST -v -n);
-   - .61 nunca entra;
-   - .50 sale tras su último DROP + escalón;
-   - en un 2.º ataque, el escalón sube;
-   - medir si el sniffer sigue viendo el tráfico bloqueado (XDP antes que netfilter);
-   - distribución de DROP por origen para fijar el techo de min_drops_origen.
-3. Gate: test-firewall-e2e dentro de EMECAS, fallando si hay Skipped. Después los 21 IPSetWrapperTest antiguos.
-4. Tests de integración sniffer -> proto -> ml-detector; objetivos make E2E con PASA/FALLA; EMECAS+++ desde cero.
-5. PR con docs day298_etapa1_resultados, day299_estado_arranque_persistencia, day300_reinicio_e2e,
-   day300_parada_y_protegidos, paper_apoyo_day301.
-6. Tras el merge: interruptor de cabezas (DEBT-HEADS-SWITCH-001) y caducidad de flujos
-   (DEBT-SNIFFER-FLOW-EXPIRY-001 + FLOWTABLE-CONFIG-001). Alonso decide el orden.
+### Qué hace cada parte
 
-FICHEROS CLAVE: firewall-acl-agent/include/firewall/ddos_mitigacion.hpp, ddos_shadow_policy.hpp (en_episodio),
-ddos_protegidos.hpp (categoria_de; saneado vive en detalle_protegidos), batch_processor.hpp/.cpp
-(flush_internal, compute_penalty_timeout, pending_penalty_), src/api/zmq_subscriber.cpp (add_drop y return de la
-sombra; resumen [SOMBRA-DDOS]), include/firewall/zmq_subscriber.hpp (Config), src/main.cpp (zmq_config.ddos_*,
-whitelist, recidivism), src/core/iptables_wrapper.cpp (setup_base_rules), config/firewall.json
-(ddos_mitigacion, recidivism, ipsets), tests/unit/test_argus_cadena_root.cpp, scripts/timebase/d301_*.
+- **Paso 1**: `deploy_configs.yml` conserva el nombre (Makefile y Jenkins lo llaman); variables huérfanas borradas.
+  Medido antes: `make deploy-configs` SÍ cargaba variables (`-e @group_vars`) y habría sobrescrito los JSON del repo.
+- **2a** clave de despliegue: provisioner `deploy-key` en el defender (`/root/.ssh/argus_deploy_ed25519`, Jenkins es
+  root), `deploy-access` en la VM etcd (usuario `argus-deploy`, sudo sin contraseña SOLO lab, huella publicada en
+  `/vagrant/dist/deploy/known_hosts_etcd`). **Cazado**: `ansible.cfg` lleva `host_key_checking = False` y Ansible
+  antepone `StrictHostKeyChecking=no`: con huella falsa conectaba igual. Arreglo: `ansible_host_key_checking: true`.
+- **2b**: play sobre `etcd_servers`: JSON del repo + `almacen.endpoints`/`almacen.prefijo` del inventario
+  (`etcd_almacen_endpoints`, `argus_prefijo`, sin defecto), escrito en `/etc/ml-defender/etcd-server/etcd-server.json`
+  con `validate: etcd-server --check-config` y `follow: false` (el destino era un enlace a un JSON del repo). `d312` ya
+  no copia `etcd-server.json`; `d313_es_vm.sh` lee por defecto el desplegado.
+- **2c**: inventarios reales FUERA del repo (es público); `ansible/inventory/ejemplo-preprod/` con RFC 5737; fuera
+  `prod.yml`; `make deploy-configs-prod INVENTARIO=<ruta>` obligatorio; `ARGUS_INVENTARIO` obligatorio en main
+  (Jenkinsfile.prod); un inventario sin `etcd_servers` falla con `[ETCD-CONFIG-ENTORNO]`; `d312` con
+  `DPkg::Lock::Timeout=600` (medido: `unattended-upgrades` tenía dpkg tras arrancar la VM).
+- **Paso 3**: en modo etcd, `endpoints`, `prefijo`, `ca_file`, `cert_file`, `key_file` ausentes o mal formados (y
+  endpoints repetidos) = `[ETCD-ALMACEN-FATAL]`, no arranca; `--check-config` imprime `almacen_fatales=N`. En modo
+  memoria solo avisa. Arranque sin endpoints medido: se niega en 0,04 s.
+- **4b.6/B4**: antes `/register` cortaba en el primer guion: `firewall-acl-agent` → `/secrets/firewall` → 403 con mTLS
+  (sin clave HMAC para su CSV). Ahora `/secrets/<CN>` y `/config/<CN>`. `crypto_token` fuera (no existe ruta `/crypto`).
+
+## Decisiones de Alonso DAY315
+
+- Playbook con el mismo nombre; variables huérfanas borradas; clave propia de despliegue (modelo producción);
+  `etcd-server.json` fuera del tar; inventarios fuera del repo con ejemplo dentro; inventario vacío = fallo.
+- Fatales del almacén: endpoints, prefijo y las tres rutas; endpoints sin repetir (como `vault_addrs`).
+- `crypto_token` fuera de los dos lados. **HttpEtcdRegistrar y CryptoEpochCoordinator (common/, ADR-045)**: ningún
+  binario los usa y `/v1/epoch` no tiene consumidor; **se decide en el paso 5**.
+- **DEBT-PREPROD-LAB-001** (nueva, prueba FINAL): preproducción de lab con objetivo Alpine diminuto (128–256 MB),
+  client = atacante, DDoS y ransomware SIMULADO (Atomic Red Team / mitre-start), solo funcional (no capacidad: Mac 2019).
+  Solo cuando todas las cabezas estén certificadas (hoy solo DDoS). Antes, medir RAM. Después del paso 6.
+- Commits: cada uno marca con precisión lo que hace (separar por cambio lógico).
+
+## Plan DAY316
+
+1. **Documentar DAY315** (parcheador de docs, commit aparte): sección «Resultados DAY315» en `day312_diseno.md`
+   (sin reescribir lo anterior) y sección DAY315 en el BACKLOG: cerradas DEBT-ANSIBLE-DEPLOY-CONFIGS-001 y
+   DEBT-ETCD-CLIENT-DEAD-VARIANTS-001; nueva DEBT-PREPROD-LAB-001; medido que **Jenkins NO puede hacer preproducción**
+   (Jenkinsfile.dev: «Build .deb» y «Deploy Vagrant Test» son eco de DEBT-PACKAGE-DEB-001/DEBT-DEPLOY-VAGRANT-001;
+   Jenkinsfile.prod pide un agente `argus-server` que no existe y lanza `vagrant up`; solo el etcd-server tiene
+   despliegue de binarios, `d312`, desde el Mac). Pendientes de abajo.
+2. **Paso 5**: libetcd_client con TLS y lista de endpoints para sniffer, ml-detector y firewall (hoy solo usan
+   `endpoints[0]`). Empezar MIDIENDO qué cliente usa cada uno (sniffer y ml-detector tienen su propio `etcd_client.cpp`;
+   el firewall usa la librería `etcd-client`). Dentro del paso 5: sus llamadas a `get_encryption_seed()` contra `/seed`
+   (borrada en 4b.2), los `crypto_token_path` de sus JSON, y la decisión sobre el ADR-045.
+
+## Pendientes anotados
+
+- RBAC de etcd por prefijo en producción: en el lab el rol del etcd-server cubre `readwrite /argus/`; con prefijos por
+  despliegue (`/argus/<hospital>/<planta>/`) el rol tiene que cubrirlos.
+- `d312`: 25 paquetes Debian hoy frente a 26 medidos DAY314; sin explicar.
+- DEBT-REPO-RESIDUOS-001: 9 `*.backup*` ignorados en `etcd-client/` y `etcd-server/` (engañaron a un `grep -r` del
+  parcheador de 4b.6: usar siempre `git grep`); binario `firewall-acl-agent/fuzz/fuzz_validate_chain` trackeado;
+  `scripts/timebase/__pycache__/`.
+- `make up` no levanta la VM etcd (añadirla antes del paso 8); tras parar el Mac la VM queda `aborted`: `vagrant up etcd`
+  (etcd y Vault vuelven solos; `argus-vault-unseal` desella). Para mirar Vault hace falta `sudo` y certificado de cliente.
+- DEBT-ETCD-SERVER-LOG-TIMESTAMP-001, cpp-httplib sin fijar a `v0.63.0` en el Vagrantfile, `test_autonomy_integration`
+  (falló una vez DAY313), DEBT-CONFIG-JINJA2-PIPELINE-001 (mismo patrón para sniffer y ml-detector).
+- Siguientes de DEBT-ETCD-HA-TLS-RAFT-001: paso 5, paso 6 (Vault y etcd-server fuera del defender; borrar `tls.modo=http`
+  y los modos memoria), 7, 8 (EMECAS+++).
+
+## Reglas
+
+Medir, no votar; predicción escrita antes; si algo no da lo esperado, parar. Todo lo que se compile, probarlo antes en
+el banco con las opciones de production (g++-12, `-O3 -march=native -DNDEBUG -flto`), y cada instrumento al menos dos
+veces seguidas y también contra el comportamiento viejo (tiene que fallar). Ficheros entregados con su sha256 y como
+bloque `cat > f <<'EOF'`. Comandos exactos, uno por bloque, diciendo dónde se ejecuta cada uno (Mac / defender / VM
+etcd con `vagrant ssh etcd -c`). Búsquedas con `git grep`, nunca `grep -r`. El repo es de solo lectura para Claude.
