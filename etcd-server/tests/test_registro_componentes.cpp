@@ -4,6 +4,7 @@
 // y recarga, persistencia entre instancias (= reinicio del etcd-server), época, y parada inmediata del monitor.
 #include "etcd_server/registro_componentes.hpp"
 #include <gtest/gtest.h>
+#include <algorithm>
 #include <chrono>
 #include <fstream>
 #include <sstream>
@@ -229,14 +230,40 @@ json leer_json(const std::string& nombre) {
 }
 }  // namespace
 
-TEST(AlmacenConfig, AusenteTodoDefecto) {
+// [ETCD-ALMACEN-FATAL-D315] en modo etcd, endpoints, prefijo y las tres rutas no tienen defecto: fatales
+TEST(AlmacenConfig, AusenteEnModoEtcdCincoFatales) {
     std::ostringstream av, in;
     auto r = argus::etcdcfg::parse_almacen_config(json::object(), av, in);
-    EXPECT_EQ(r.defectos, 9);
     EXPECT_EQ(r.cfg.modo, "etcd");
-    EXPECT_EQ(r.cfg.endpoints, std::vector<std::string>{"https://127.0.0.1:2381"});
+    EXPECT_EQ(r.fatales.size(), 5u) << av.str();
+    EXPECT_EQ(r.defectos, 4) << av.str();  // modo, timeout_ms, aviso_intervalo_s, reconexion_max_ms
     EXPECT_EQ(r.cfg.reconexion_max_ms, 1000);
     EXPECT_NE(in.str().find("almacen.modo=etcd (DEFECTO: ausente)"), std::string::npos) << in.str();
+    for (const char* campo : {"endpoints", "prefijo", "ca_file", "cert_file", "key_file"}) {
+        EXPECT_NE(av.str().find(std::string("[ETCD-ALMACEN-FATAL] almacen.") + campo + " ausente"), std::string::npos)
+            << campo << "\n" << av.str();
+    }
+    EXPECT_NE(in.str().find("almacen.prefijo=/argus/ (FATAL: ausente)"), std::string::npos) << in.str();
+    EXPECT_EQ(av.str().find("[CONFIG-DEFAULT] almacen.endpoints"), std::string::npos) << av.str();
+}
+
+TEST(AlmacenConfig, ModoMemoriaNoEsFatal) {
+    std::ostringstream av, in;
+    auto r = argus::etcdcfg::parse_almacen_config(json::parse(R"({"almacen": {"modo": "memoria"}})"), av, in);
+    EXPECT_TRUE(r.fatales.empty()) << av.str();
+    EXPECT_EQ(r.defectos, 8) << av.str();  // 5 sin uso + 3 enteros
+    EXPECT_NE(av.str().find("almacen.endpoints ausente"), std::string::npos) << av.str();
+    EXPECT_NE(av.str().find("no se usa en modo memoria"), std::string::npos) << av.str();
+    EXPECT_NE(in.str().find("(SIN USO: ausente)"), std::string::npos) << in.str();
+}
+
+TEST(AlmacenConfig, EndpointsRepetidosEsFatal) {
+    std::ostringstream av, in;
+    auto r = argus::etcdcfg::parse_almacen_config(
+        json{{"almacen", {{"endpoints", {"https://10.0.1.11:2381", "https://10.0.1.12:2381", "https://10.0.1.11:2381"}}}}},
+        av, in);
+    EXPECT_NE(av.str().find("[ETCD-ALMACEN-FATAL] almacen.endpoints mal formado"), std::string::npos) << av.str();
+    EXPECT_NE(av.str().find("sin repetir"), std::string::npos) << av.str();
 }
 
 TEST(AlmacenConfig, ErrataNuncaRebajaAMemoria) {
@@ -253,32 +280,40 @@ TEST(AlmacenConfig, CamposMalFormados) {
     auto r = argus::etcdcfg::parse_almacen_config(json::parse(R"({"almacen": {"modo": "etcd",
         "endpoints": ["http://127.0.0.1:2381"], "ca_file": "rel", "cert_file": "/a", "key_file": "/b",
         "prefijo": "argus", "timeout_ms": 50, "aviso_intervalo_s": 5, "reconexion_max_ms": 60001}})"), av, in);
-    EXPECT_EQ(r.defectos, 6) << av.str();
-    EXPECT_EQ(r.cfg.endpoints[0], "https://127.0.0.1:2381");
-    EXPECT_EQ(r.cfg.ca_file, "/etc/argus-pki/ca.crt");
+    EXPECT_EQ(r.defectos, 3) << av.str();  // los tres enteros fuera de rango
+    EXPECT_EQ(r.fatales.size(), 3u) << av.str();  // [ETCD-ALMACEN-FATAL-D315] endpoints, ca_file, prefijo
     EXPECT_EQ(r.cfg.cert_file, "/a");
-    EXPECT_EQ(r.cfg.prefijo, "/argus/");
     EXPECT_EQ(r.cfg.timeout_ms, 2000);
     EXPECT_EQ(r.cfg.reconexion_max_ms, 1000);
+    for (const char* campo : {"endpoints", "ca_file", "prefijo"}) {
+        EXPECT_NE(av.str().find(std::string("[ETCD-ALMACEN-FATAL] almacen.") + campo + " mal formado"), std::string::npos)
+            << campo << "\n" << av.str();
+    }
     for (const char* ep : {"https://1.2.3:2381", "https://1.2.3.4", "https://1.2.3.4:0", "https://1.2.3.4:70000",
                            "https://256.1.1.1:2381", "https://a.b.c.d:2381"}) {
         std::ostringstream a2, i2;
         auto r2 = argus::etcdcfg::parse_almacen_config(json{{"almacen", {{"endpoints", {ep}}}}}, a2, i2);
-        EXPECT_NE(a2.str().find("almacen.endpoints="), std::string::npos) << ep;
+        EXPECT_NE(a2.str().find("[ETCD-ALMACEN-FATAL] almacen.endpoints mal formado"), std::string::npos) << ep;
+        EXPECT_FALSE(r2.fatales.empty()) << ep;
     }
     std::ostringstream a3, i3;
     auto r3 = argus::etcdcfg::parse_almacen_config(
         json{{"almacen", {{"endpoints", {"https://192.168.100.20:2381", "https://192.168.100.21:2381"}}}}}, a3, i3);
     EXPECT_EQ(r3.cfg.endpoints.size(), 2u);  // PR2: varios nodos
+    EXPECT_EQ(std::count_if(r3.fatales.begin(), r3.fatales.end(),
+                            [](const std::string& f) { return f.rfind("almacen.endpoints", 0) == 0; }),
+              0);
 }
 
 TEST(AlmacenConfig, JsonDelRepo) {
     std::ostringstream a1, i1, a2, i2;
     auto def = argus::etcdcfg::parse_almacen_config(leer_json("etcd-server.json"), a1, i1);
     EXPECT_EQ(def.defectos, 0) << a1.str();
+    EXPECT_TRUE(def.fatales.empty()) << a1.str();
     EXPECT_EQ(def.cfg.modo, "memoria");  // transición del defender, hasta el paso 6
     auto vm = argus::etcdcfg::parse_almacen_config(leer_json("etcd-server.etcd-vm.json"), a2, i2);
     EXPECT_EQ(vm.defectos, 0) << a2.str();
+    EXPECT_TRUE(vm.fatales.empty()) << a2.str();
     const argus::etcdcfg::AlmacenConfig d{};
     EXPECT_EQ(vm.cfg.modo, d.modo);
     EXPECT_EQ(vm.cfg.endpoints, d.endpoints);

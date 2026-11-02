@@ -3,6 +3,11 @@
 // Almacén del registro de componentes (DEBT-ETCD-HA-TLS-RAFT-001, paso 4b.3).
 //   - Bloque "almacen" de etcd-server.json: modo (etcd | memoria), endpoints, ca_file, cert_file, key_file, prefijo,
 //     timeout_ms, aviso_intervalo_s. El JSON es la ley: ausente o mal formado -> defecto validado + [CONFIG-DEFAULT].
+//   - [ETCD-ALMACEN-FATAL-D315] Excepción (decisión de Alonso DAY315, como vault_addrs en DAY314): en modo etcd,
+//     endpoints, prefijo, ca_file, cert_file y key_file NO tienen defecto. Ausentes o mal formados (endpoints
+//     repetidos incluidos) son [ETCD-ALMACEN-FATAL] y el etcd-server no arranca (--check-config lo cuenta). Los
+//     rellena Ansible por despliegue (DEBT-ANSIBLE-DEPLOY-CONFIGS-001): un prefijo con errata nunca cae en /argus/ en
+//     silencio, donde dos despliegues del mismo clúster se pisarían. En modo memoria no se usan: solo se avisa.
 //     Un modo ausente o mal escrito va a "etcd". "memoria" solo existe para la transición (defender hasta el paso 6;
 //     decisión de Alonso DAY313, como tls.modo=http) y se borra entonces.
 //   - IRegistryStore: clave -> valor (texto) bajo un prefijo. Tres resultados: Ok, NoEncontrado, NoDisponible.
@@ -21,6 +26,8 @@
 namespace argus::etcdcfg {
 
 // Defectos validados: iguales a etcd-server.etcd-vm.json (el del defender lleva modo "memoria": transición).
+// [ETCD-ALMACEN-FATAL-D315] endpoints, ca_file, cert_file, key_file y prefijo NO se sustituyen por su defecto en modo
+// etcd: ausentes o mal formados son fatales. Su valor de abajo es el del JSON del lab y solo sirve de ejemplo.
 struct AlmacenConfig {
     std::string modo = "etcd";                                   // almacen.modo: "etcd" | "memoria"
     std::vector<std::string> endpoints{"https://127.0.0.1:2381"}; // almacen.endpoints: 1-7 "https://IPv4:puerto"
@@ -39,6 +46,7 @@ struct AlmacenConfig {
 struct ResultadoAlmacen {
     AlmacenConfig cfg;
     int defectos = 0;
+    std::vector<std::string> fatales;  // [ETCD-ALMACEN-FATAL-D315] en modo etcd: campos sin defecto ausentes o mal formados
 };
 
 namespace detalle_almacen {
@@ -126,53 +134,81 @@ inline ResultadoAlmacen parse_almacen_config(const nlohmann::json& root, std::os
             o_modo = malo("modo", v, "\"etcd\" o \"memoria\"; una errata nunca rebaja a memoria", d.modo);
         }
     }
+    // [ETCD-ALMACEN-FATAL-D315] campos del despliegue: sin defecto en modo etcd (fatal); en modo memoria no se usan y
+    // solo se avisa
+    const bool etcd = c.modo == "etcd";
+    auto fatal = [&](const std::string& campo, const std::string& que, const std::string& formato) {
+        std::string m = "almacen.";
+        m += campo;
+        m += ' ';
+        m += que;
+        m += " (";
+        m += formato;
+        m += ")";
+        if (etcd) {
+            r.fatales.push_back(m);
+            aviso << "[ETCD-ALMACEN-FATAL] " << m << ": sin defecto (lo pone el inventario del despliegue); no se arranca"
+                  << std::endl;
+        } else {
+            aviso << "[CONFIG-DEFAULT] " << m << ": no se usa en modo memoria" << std::endl;
+            ++r.defectos;
+        }
+        return std::string(etcd ? "FATAL: " : "SIN USO: ") + que;
+    };
 
     std::string o_ep = "JSON";
     {
-        const std::string fmt = "lista de 1 a 7 \"https://IPv4:puerto\"";
-        const std::string def = nlohmann::json(d.endpoints).dump();
+        const std::string fmt = "lista de 1 a 7 \"https://IPv4:puerto\", sin repetir";
         if (!blk->contains("endpoints")) {
-            o_ep = ausente("endpoints", fmt, def);
+            o_ep = fatal("endpoints", "ausente", fmt);
         } else {
             const auto& v = (*blk)["endpoints"];
             bool ok = v.is_array() && !v.empty() && v.size() <= 7;
+            std::vector<std::string> lista;
             if (ok) {
                 for (const auto& e : v) {
-                    if (!e.is_string() || !detalle_almacen::endpoint_ok(e.get<std::string>())) ok = false;
+                    if (!e.is_string() || !detalle_almacen::endpoint_ok(e.get<std::string>())) {
+                        ok = false;
+                        break;
+                    }
+                    for (const auto& x : lista) {
+                        if (x == e.get<std::string>()) ok = false;
+                    }
+                    lista.push_back(e.get<std::string>());
                 }
             }
             if (ok) {
-                c.endpoints = v.get<std::vector<std::string>>();
+                c.endpoints = lista;
             } else {
-                o_ep = malo("endpoints", v, fmt, def);
+                o_ep = fatal("endpoints", "mal formado: " + v.dump(), fmt);
             }
         }
     }
 
-    auto ruta = [&](const char* clave, const std::string& def, std::string& out) -> std::string {
-        out = def;
-        if (!blk->contains(clave)) return ausente(clave, "ruta absoluta", def);
+    auto ruta = [&](const char* clave, std::string& out) -> std::string {
+        const std::string fmt = "ruta absoluta, sin caracteres de control, hasta 4096";
+        if (!blk->contains(clave)) return fatal(clave, "ausente", fmt);
         const auto& v = (*blk)[clave];
         if (!v.is_string() || !detalle_almacen::ruta_ok(v.get<std::string>()))
-            return malo(clave, v, "ruta absoluta, sin caracteres de control, hasta 4096", def);
+            return fatal(clave, "mal formado: " + v.dump(), fmt);
         out = v.get<std::string>();
         return "JSON";
     };
-    const std::string o_ca = ruta("ca_file", d.ca_file, c.ca_file);
-    const std::string o_cert = ruta("cert_file", d.cert_file, c.cert_file);
-    const std::string o_key = ruta("key_file", d.key_file, c.key_file);
+    const std::string o_ca = ruta("ca_file", c.ca_file);
+    const std::string o_cert = ruta("cert_file", c.cert_file);
+    const std::string o_key = ruta("key_file", c.key_file);
 
     std::string o_pre = "JSON";
     {
         const std::string fmt = "empieza y acaba en /, [a-z0-9-/], hasta 64, sin //";
         if (!blk->contains("prefijo")) {
-            o_pre = ausente("prefijo", fmt, d.prefijo);
+            o_pre = fatal("prefijo", "ausente", fmt);
         } else {
             const auto& v = (*blk)["prefijo"];
             if (v.is_string() && detalle_almacen::prefijo_ok(v.get<std::string>())) {
                 c.prefijo = v.get<std::string>();
             } else {
-                o_pre = malo("prefijo", v, fmt, d.prefijo);
+                o_pre = fatal("prefijo", "mal formado: " + v.dump(), fmt);
             }
         }
     }

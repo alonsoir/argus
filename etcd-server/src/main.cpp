@@ -113,7 +113,9 @@ int main(int argc, char** argv) {
     // En modo etcd, los certificados del almacén deben poder leerse; si no, el registro no estará disponible (503),
     // pero el proceso arranca igual (no es TLS de servicio): aviso [ETCD-ALMACEN-FICHERO]
     int almacen_ilegibles = 0;
-    if (almacen_cfg.modo == "etcd") {
+    // [ETCD-ALMACEN-FATAL-D315] con campos fatales no se miran los ficheros (las rutas pueden ser las de ejemplo)
+    const int almacen_fatales = static_cast<int>(leida_almacen.fatales.size());
+    if (almacen_cfg.modo == "etcd" && almacen_fatales == 0) {
         for (const auto* r : {&almacen_cfg.ca_file, &almacen_cfg.cert_file, &almacen_cfg.key_file}) {
             std::ifstream f(*r, std::ios::binary);
             if (!f.good() || f.peek() == std::ifstream::traits_type::eof()) {
@@ -122,7 +124,7 @@ int main(int argc, char** argv) {
                 ++almacen_ilegibles;
             }
         }
-    } else {
+    } else if (almacen_cfg.modo == "memoria") {
         std::cerr << "[ETCD-ALMACEN-MEMORIA] almacen.modo=memoria: el registro vive solo en memoria y se pierde al "
                      "reiniciar. Solo transición hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001" << std::endl;
     }
@@ -145,15 +147,21 @@ int main(int argc, char** argv) {
     const int claves_fatales = static_cast<int>(leida_claves.fatales.size()) + claves_ilegibles;
     if (check_only) {
         const bool limpio = fichero_ok && defectos == 0 && tls_ilegibles == 0 && almacen_ilegibles == 0 &&
-                            claves_fatales == 0;
+                            almacen_fatales == 0 && claves_fatales == 0;
         std::cout << "[ETCD-CONFIG-CHECK] " << config_path << ": " << (limpio ? "OK" : "CON DEFECTOS")
                   << " (defectos=" << defectos << ", obsoletos=" << leida.obsoletos << ", tls.modo=" << tls.modo
                   << ", ficheros_tls_ilegibles=" << tls_ilegibles << ", almacen.modo=" << almacen_cfg.modo
-                  << ", ficheros_almacen_ilegibles=" << almacen_ilegibles << ", almacen_claves.modo=" << claves_cfg.modo
+                  << ", ficheros_almacen_ilegibles=" << almacen_ilegibles << ", almacen_fatales=" << almacen_fatales
+                  << ", almacen_claves.modo=" << claves_cfg.modo
                   << ", claves_fatales=" << claves_fatales << ")" << std::endl;
         return limpio ? 0 : 1;
     }
 
+    if (almacen_fatales > 0) {
+        std::cerr << "[ETCD-ALMACEN-FATAL] " << almacen_fatales << " problemas en almacen de " << config_path
+                  << ": el etcd-server no arranca (revisar con --check-config)" << std::endl;
+        return 1;
+    }
     if (claves_fatales > 0) {
         std::cerr << "[ETCD-VAULT-FATAL] " << claves_fatales << " problemas en almacen_claves de " << config_path
                   << ": el etcd-server no arranca (revisar con --check-config)" << std::endl;
