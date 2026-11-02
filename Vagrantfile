@@ -1110,6 +1110,24 @@ BASHRC_EOF
       echo "   vendor.key : solo en Vault (nunca en disco)"
     VAULT_ENTERPRISE
 
+    # [DEPLOY-SSH-D315] DEBT-ANSIBLE-DEPLOY-CONFIGS-001 paso 2a: clave de despliegue de Ansible/Jenkins (Jenkins corre
+    # como root en dev). Se genera aquí y la privada nunca sale del defender; solo la pública se deja en
+    # /vagrant/dist/deploy/ (fuera de git) para que la VM etcd la autorice (provisioner deploy-access). run: always: si el
+    # defender se rehace, la clave nueva se publica y basta con: vagrant provision etcd --provision-with deploy-access
+    defender.vm.provision "shell", name: "deploy-key", run: "always", inline: <<-'DEPLOY_KEY'
+      set -e
+      K=/root/.ssh/argus_deploy_ed25519
+      install -d -m 0700 -o root -g root /root/.ssh
+      if [ ! -f "$K" ]; then
+        ssh-keygen -q -t ed25519 -N "" -C "argus-deploy@defender" -f "$K"
+        echo "✅ deploy-key: clave de despliegue nueva"
+      fi
+      chmod 0600 "$K"
+      mkdir -p /vagrant/dist/deploy
+      cp "$K.pub" /vagrant/dist/deploy/argus_deploy_ed25519.pub
+      echo "✅ deploy-key: $(ssh-keygen -lf "$K.pub" | awk '{print $2}') publicada en /vagrant/dist/deploy/ (solo la pública)"
+    DEPLOY_KEY
+
   end  # End defender VM
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -1780,6 +1798,27 @@ UNIT
       fi
       echo "✅ etcd-local: $($E endpoint status -w json | python3 -c 'import sys,json; s=json.load(sys.stdin)[0]["Status"]; print("version=%s lider=%s" % (s["version"], "si" if s["leader"] == s["header"]["member_id"] else "no"))')"
     ETCD_LOCAL
+    # [DEPLOY-SSH-D315] DEBT-ANSIBLE-DEPLOY-CONFIGS-001 paso 2a: usuario argus-deploy para Ansible/Jenkins desde el
+    # defender. authorized_keys = SOLO la pública que dejó el provisioner deploy-key del defender (se reemplaza, no se
+    # añade); sudo sin contraseña SOLO en el laboratorio (en producción, limitado a lo que se despliega); la huella de esta
+    # VM se publica para que el defender la verifique (StrictHostKeyChecking=yes, nada se acepta a ciegas). run: always:
+    # sigue a la clave del defender y a la huella de esta VM si cualquiera de las dos se rehace.
+    etcd.vm.provision "shell", name: "deploy-access", run: "always", inline: <<-'DEPLOY_ACCESS'
+      set -e
+      PUB=/vagrant/dist/deploy/argus_deploy_ed25519.pub
+      [ -s "$PUB" ] || { echo "❌ deploy-access: falta $PUB (antes, desde el Mac: vagrant provision defender --provision-with deploy-key)"; exit 1; }
+      grep -qE '^ssh-ed25519 [A-Za-z0-9+/=]+ argus-deploy@defender$' "$PUB" \
+        || { echo "❌ deploy-access: $PUB no es una clave ed25519 de argus-deploy@defender"; exit 1; }
+      id argus-deploy >/dev/null 2>&1 || useradd -m -s /bin/bash argus-deploy
+      install -d -m 0700 -o argus-deploy -g argus-deploy /home/argus-deploy/.ssh
+      install -m 0600 -o argus-deploy -g argus-deploy "$PUB" /home/argus-deploy/.ssh/authorized_keys
+      echo 'argus-deploy ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/argus-deploy
+      chmod 0440 /etc/sudoers.d/argus-deploy
+      visudo -cf /etc/sudoers.d/argus-deploy > /dev/null
+      echo "192.168.100.20 $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)" > /vagrant/dist/deploy/known_hosts_etcd
+      echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_etcd"
+    DEPLOY_ACCESS
+
   end  # End etcd VM
 
 end  # End Vagrant configuration

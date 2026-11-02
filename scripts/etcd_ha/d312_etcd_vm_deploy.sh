@@ -46,18 +46,21 @@ PB=$(S defender "tar -C /usr/share/doc -cf - bash" | S etcd "sha256sum" | cut -c
 echo "[ETCD-DEPLOY] tubo defender->etcd verificado con datos públicos (sha256 ${PA:0:16} igual a los dos lados)"
 
 # ── 2. material del etcd-server: defender -> etcd, sin disco intermedio ──────
-S defender "sudo tar -C /etc/ml-defender -cf - etcd-server" \
+# [ETCD-CONFIG-ENTORNO-D315] etcd-server.json NO viaja: en la VM etcd lo escribe Ansible (make deploy-configs), con
+# almacen.endpoints y almacen.prefijo del inventario; este tar lo pisaría
+S defender "sudo tar -C /etc/ml-defender --exclude=etcd-server/etcd-server.json -cf - etcd-server" \
   | S etcd "sudo install -d -m 0755 -o root -g root /etc/ml-defender && sudo tar -C /etc/ml-defender -xpf -"
 D=$(S defender "cd /etc/ml-defender/etcd-server && sudo find . -type f | sort | sudo xargs sha256sum" 2>/dev/null )
 E=$(S etcd "cd /etc/ml-defender/etcd-server && sudo find . -type f | sort | sudo xargs sha256sum" 2>/dev/null )
 ND=$(printf '%s\n' "$D" | grep -c .); IG=$(comm -12 <(printf '%s\n' "$D" | sort) <(printf '%s\n' "$E" | sort) | grep -c . || true)
 [ "$ND" -gt 0 ] && [ "$ND" = "$IG" ] || { echo "[ETCD-DEPLOY] FALLA: material: $IG de $ND ficheros iguales"; exit 1; }
-L=$(S etcd "readlink /etc/ml-defender/etcd-server/etcd-server.json" )
-echo "[ETCD-DEPLOY] material: $IG de $ND ficheros iguales en defender y etcd; etcd-server.json -> $L"
+echo "[ETCD-DEPLOY] material: $IG de $ND ficheros iguales en defender y etcd; etcd-server.json no viaja (make deploy-configs)"
 
 # ── 3. VM etcd: paquetes + instalación + verificación ────────────────────────
+# [INVENTARIO-FUERA-D315] apt-get espera hasta 600 s al bloqueo de dpkg (medido DAY315: unattended-upgrades lo tenía
+# tras arrancar la VM y el despliegue se cayó con 'Could not get lock /var/lib/dpkg/lock-frontend')
 S etcd "set -euo pipefail
-  sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq \$(cat '$STAGE/paquetes.txt') > /dev/null
+  sudo DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=600 update -qq && sudo DEBIAN_FRONTEND=noninteractive apt-get -o DPkg::Lock::Timeout=600 install -y -qq \$(cat '$STAGE/paquetes.txt') > /dev/null
   # /run/argus: el etcd-server crea ahí ipc:///run/argus/autonomy.sock al arrancar (medido DAY312: sin él, 'No such file
   # or directory'). Mismo mecanismo que tools/provision.sh en el defender: tmpfiles.d, que lo recrea en cada arranque.
   printf 'd /run/argus 0755 root root -\\n' | sudo tee /etc/tmpfiles.d/argus-etcd-server.conf > /dev/null

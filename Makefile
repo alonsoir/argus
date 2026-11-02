@@ -1233,11 +1233,15 @@ test-components: correlation-engine-test
 
 deploy-configs:
 	@echo "🚀 Desplegando configs por entorno (Ansible) (dev)..."
-	@vagrant ssh defender -- -t "cd /vagrant && ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml --diff"
+	@vagrant ssh defender -- -t "cd /vagrant && sudo ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml --diff"
 
+# [INVENTARIO-FUERA-D315] preproducción/producción: el inventario NO está en este repo (es público). Uso:
+#   make deploy-configs-prod INVENTARIO=/ruta/fuera/del/repo/hosts.yml   (forma: ansible/inventory/ejemplo-preprod/)
 deploy-configs-prod:
-	@echo "🚀 Desplegando configs por entorno (Ansible) (prod)..."
-	@ansible-playbook -i ansible/inventory/prod.yml ansible/playbooks/deploy_configs.yml --diff
+	@test -n "$(INVENTARIO)" || { echo "[ETCD-CONFIG-ENTORNO] falta INVENTARIO=<ruta del inventario de preproducción o producción, fuera de este repo; forma en ansible/inventory/ejemplo-preprod/>"; exit 1; }
+	@test -f "$(INVENTARIO)" || { echo "[ETCD-CONFIG-ENTORNO] INVENTARIO=$(INVENTARIO) no existe"; exit 1; }
+	@echo "🚀 Desplegando configs por entorno (Ansible) ($(INVENTARIO))..."
+	@ansible-playbook -i "$(INVENTARIO)" ansible/playbooks/deploy_configs.yml --diff
 
 parquet-convert:
 	@echo "📦 Installing/upgrading pyarrow..."

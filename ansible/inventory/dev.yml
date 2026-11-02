@@ -1,3 +1,7 @@
+# aRGus NDR -- inventario dev (laboratorio Vagrant)
+# [DEPLOY-SSH-D315] Ansible corre en el defender como root (igual que Jenkins): el defender en local y la VM etcd por SSH
+# con la clave de despliegue (provisioner deploy-key del defender) y la huella publicada por la VM (provisioner
+# deploy-access). El grupo etcd_servers es el que usa el play del etcd-server (paso 2b).
 all:
   children:
     argus_dev:
@@ -8,3 +12,14 @@ all:
           ansible_connection: local
           ansible_ssh_private_key_file: .vagrant/machines/defender/virtualbox/private_key
           ansible_ssh_common_args: "-o StrictHostKeyChecking=no"
+        etcd:
+          ansible_host: 192.168.100.20
+          ansible_user: argus-deploy
+          ansible_ssh_private_key_file: /root/.ssh/argus_deploy_ed25519
+          # ansible.cfg lleva host_key_checking = False: sin esta línea Ansible antepone StrictHostKeyChecking=no y ssh se
+          # queda con la primera opción (medido DAY315: con una huella falsa conectaba igual)
+          ansible_host_key_checking: true
+          ansible_ssh_common_args: "-o UserKnownHostsFile=/vagrant/dist/deploy/known_hosts_etcd -o StrictHostKeyChecking=yes"
+    etcd_servers:
+      hosts:
+        etcd:

@@ -1,13 +1,15 @@
 #!/bin/bash
 # d313_es_vm.sh — DAY313, paso 4b.2 de DEBT-ETCD-HA-TLS-RAFT-001: arrancar y parar el etcd-server en la VM etcd para medir.
 # Se ejecuta EN LA VM etcd (sudo). El binario es el que instaló d312_etcd_vm_deploy.sh en /opt/argus/etcd-server.
-#   bash d313_es_vm.sh arrancar [JSON]   arranca en segundo plano con -c JSON (defecto: el de la VM, con mTLS) y log propio
+#   bash d313_es_vm.sh arrancar [JSON]   arranca en segundo plano con -c JSON (defecto: el que escribe Ansible) y log propio
 #   bash d313_es_vm.sh parar             SIGTERM y mide cuántos segundos tarda en salir (SIGKILL a los 120 s)
 # Log: /var/tmp/d313-etcd-server.log (cada arranque lo vacía); PID: /run/argus/d313-etcd-server.pid
 set -euo pipefail
 LC_ALL=C; export LC_ALL
 MODO=${1:-}
-JSON=${2:-/vagrant/etcd-server/config/etcd-server.etcd-vm.json}
+# [ETCD-CONFIG-ENTORNO-D315] por defecto, el JSON que escribe Ansible (make deploy-configs): el del repo con
+# almacen.endpoints y almacen.prefijo del inventario
+JSON=${2:-/etc/ml-defender/etcd-server/etcd-server.json}
 BIN=/opt/argus/etcd-server/bin/etcd-server
 LIB=/opt/argus/etcd-server/lib
 LOG=/var/tmp/d313-etcd-server.log
@@ -18,7 +20,7 @@ falla() { echo "[D313-VM] $(ts) FALLA: $*"; exit 1; }
 case "$MODO" in
   arrancar)
     [ -x "$BIN" ] || falla "no existe $BIN (d312_etcd_vm_deploy.sh desde el Mac)"
-    [ -f "$JSON" ] || falla "no existe $JSON"
+    sudo test -f "$JSON" || falla "no existe $JSON (en la VM etcd lo escribe Ansible: make deploy-configs desde el Mac)"
     if sudo ss -ltnpH 'sport = :2379' | grep -q .; then
       sudo ss -ltnpH 'sport = :2379'
       falla "el 2379 ya está ocupado (arriba quién): pararlo antes"

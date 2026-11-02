@@ -3,3 +3,13 @@
 # (DEBT-ANSIBLE-DEPLOY-CONFIGS-001). Las del etcd-server llegan en el paso 2.
 
 argus_env: dev
+
+# [ETCD-CONFIG-ENTORNO-D315] etcd-server: almacen.endpoints y almacen.prefijo de ESTE despliegue (sin defecto en ningún
+# sitio: ni aquí ni en el código). La lista lleva TODOS los miembros etcd del clúster del despliegue: el líder lo elige
+# Raft, nunca Jenkins; cualquier miembro reenvía las escrituras al líder. El prefijo es por despliegue (p. ej.
+# /argus/<hospital>/<planta>/): dos plantas en un mismo clúster sin prefijo propio se pisarían en silencio (los CN son los
+# mismos), y el rol RBAC del etcd-server en etcd tiene que cubrirlo (en el lab: readwrite /argus/).
+# Lab: un único miembro, elegido a mano (el etcd local de la VM etcd).
+etcd_almacen_endpoints:
+  - "https://127.0.0.1:2381"
+argus_prefijo: "/argus/"
