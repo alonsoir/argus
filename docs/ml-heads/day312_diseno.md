@@ -822,3 +822,85 @@ Cambia:
 - Un control positivo hace falta también en los scripts de aprovisionamiento (OpenSSL 3 y `subject=`).
 - `vault status` en la VM etcd necesita `sudo` y certificado de cliente: un `grep` vacío no prueba nada.
 - Sin emojis en los comandos que se pegan en la terminal: zsh calcula mal el ancho y la línea se ve corrida.
+
+## Resultados DAY316 — paso 5, commit A (`fe99a7e70`, 42 ficheros, +1045/-1068)
+
+Commit A como en el «Plan revisado», con un cambio por decisión de Alonso («Punto 1»): sniffer y ml-detector **siguen
+saliendo** si no alcanzan el etcd-server o el bloque `etcd` trae fatales, y el firewall sigue sin etcd (comportamiento de
+antes). Que ningún componente salga por el etcd-server va en el commit B (DEBT-FW-HMAC-KEY-ALARM-001), junto con la
+reconexión y el re-registro.
+
+### Qué entra
+
+- **Librería:** transporte HTTPS con certificado de cliente (CA, verificación del certificado y del nombre del servidor)
+  sobre una lista de 1-7 direcciones `https://host:puerto` (C1/C2). Por dirección, `retry_attempts` intentos separados
+  `retry_interval_ms`; sin respuesta o 5xx = reintento y luego la siguiente dirección; 4xx = respuesta final (F3). La
+  última dirección buena se recuerda. Logs: `[ETCD-CLIENTE-CAMBIO]`, `[ETCD-CLIENTE-NO-DISPONIBLE]` (cada dirección con su
+  error), `[ETCD-CLIENTE-SIN-ENDPOINTS]`.
+- **Lector único `leer_bloque_etcd()` (F1):** fatales `endpoints`, `ca_file`, `cert_file`, `key_file` (`[ETCD-CLIENTE-FATAL]`
+  con campo, motivo y formato); con defecto y aviso `connection_timeout_ms` [100, 60000] 5000, `retry_attempts` [1, 10] 3,
+  `retry_interval_ms` [100, 60000] 1000, `heartbeat_interval_seconds` [5, 300] 30 (E3); `[CONFIG-OBSOLETO]` para los siete
+  campos retirados; resumen `[ETCD-CLIENTE-CONFIG]`. sniffer, ml-detector y firewall le pasan el bloque tal cual.
+- **Fuera (F2, C3, D2, E3):** `Config::from_json*`, `EtcdClient(ruta)`, `get_encryption_key`, `etcd-client/config/`, el
+  espacio de nombres `http` de la librería, `parseEndpoint` y `host`/`port` de los envoltorios, `get_encryption_seed` de
+  ml-detector (en el sniffer pasa a `leer_semilla_local`: lee `seed.bin`, no el etcd-server), `etcd.enabled` y
+  `crypto_token_path`, `config_sync_path`, `required_for_encryption`, `service_registration_path`, `fallback_mode`,
+  `lease_ttl_seconds`.
+- **JSON** de sniffer, sniffer-libpcap, ml-detector y firewall: `https://192.168.100.20:2379`, `/etc/argus-pki/ca.crt` y el
+  certificado del componente; `_doc` con rangos y defectos.
+- **Inyectores (E1 = c):** leen el bloque `etcd` del JSON del componente al que sustituyen y se registran como `sniffer` y
+  `ml-detector`. Fuera `localhost:2379` y los nombres falsos.
+- **E5:** `scripts/bronze_key/clave_bronce_ml_detector.sh` (en el defender, con sudo) pide `/secrets/valid/ml-detector` por
+  mTLS con el certificado de `bronze-to-gold-converter` a `etcd.endpoints[0]` del JSON de ml-detector y devuelve la clave
+  con `is_active`; lo usan mitre-start, ctu-start y custom-start.
+- **Tests (E2):** `test_etcd_cliente_tls` (19 casos: lector L1-L9, mTLS, cambio de dirección, sin servicio, CA ajena, 403
+  sin reintento, 503 con reintentos, sin direcciones) y `test_etcd_client_hmac` de ml-detector reescrito sobre
+  `httplib::SSLServer` (10 casos, uno nuevo con CA equivocada). PKI desechable con openssl en `/tmp/argus_test_pki_*`,
+  borrada al terminar. Los tres tests manuales solo cambian a `endpoints` (DEBT-ETCD-CLIENT-MANUAL-TESTS-CTEST-001).
+- `CPPHTTPLIB_OPENSSL_SUPPORT` PRIVATE en `etcd_client` y en los dos tests que incluyen `httplib.h` (mismo httplib a los dos
+  lados: ODR).
+
+### Medido
+
+- **Banco** (Debian 12, GCC 12.2.0, cadena del Makefile, componentes en production), dos pasadas: todo compila, avisos
+  iguales a control2 en cada componente; ctest etcd-client 5/5, common 12, etcd-server 7, ml-detector 13/13, firewall 82,
+  sniffer 19/23 (los 4 de siempre: `libbpf.so.1` y `boot_id`, entorno). `proto rc=1` también en control2 (faltan los
+  `.proto` de Timestamp/Duration en el banco; se compila con los `.pb.*` del repo).
+- **Mutaciones**, todas cazadas: sin verificación del servidor → T4 y `WrongCaReturnsEmptyString`; sin cambio de dirección
+  → T2/T6; `http://` aceptado → L3; 4xx reintentado → T5.
+- **PARADA en el banco:** primera pasada de ml-detector 12/13; el servidor falso del test respondía 404 a `/health` y el
+  envoltorio hace `connect()` al construirse. Corregido (200, como el mock viejo); 10/10 dos veces.
+- **Parcheador** `scripts/etcd_ha/d316_p5_commit_a.py` (sha256 `e43c9719…8ebe`): aplica el diff en memoria solo si cada
+  fichero tiene el sha256 previo y escribe solo si todos dan el final. Banco: dos copias limpias → árbol idéntico; segunda
+  pasada «YA APLICADO»; un fichero alterado → FALLA sin tocar nada.
+- **Laboratorio:** APLICADO 42; `pipeline-build` rc 0; `test-components` 9 / 23 / 13 / 7 / 82. etcd-server de la VM
+  arrancado a mano (`--check-config` OK, `mtls`, almacén etcd, claves en Vault, 13 reglas). Los tres componentes:
+  `bloque etcd leído: 1 direcciones, 0 campos con defecto, 0 obsoletos, 0 fatales` y `Service registered successfully`.
+  En la VM: `POST /register` y `PUT /v1/config/sniffer` 200 con `cn=ou=sniffer`; latidos de los tres cada 30 s, cada uno con
+  su CN; `GET /secrets/ml-detector` cada 60 s, clave de huella `60768287`. `test-e2e-synthetic`: los dos PASSED (277
+  eventos en el firewall). `mitre-start` rc 0: la clave por mTLS (`GET /secrets/valid/ml-detector`, `cn=ou=bronze-to-gold-
+  converter`, 200), 0 descartadas en los tres converters; grafo argus 1518, suricata 32, zeek 1074; invariante 0; 1051
+  flujos corroborados.
+- **Cazado en la VM:** `Size mismatch: header=3882352640 vs HTTP=26855` en `PUT /v1/config`. El cliente escribe el tamaño
+  original en little-endian y el etcd-server lo lee en big-endian (26855 = 0x68E7 → `E7 68 00 00` → 0xE7680000). Viene de
+  antes; el servidor cae a la cabecera HTTP y descomprime bien (DEBT-ETCD-CONFIG-SIZE-ENDIAN-001).
+
+### Pendientes del paso 5
+
+- Commit B: arrancar sin etcd-server, reconectar y re-registrar en segundo plano, el firewall pide su clave cada cierto
+  tiempo, aviso periódico.
+- `registerService` lee rutas escritas en el código: el sniffer `/vagrant/sniffer/config/sniffer.json` (aunque arranque con
+  otro `-c`), el firewall `../config/firewall.json` (relativo al directorio de trabajo). Debe registrar el JSON con el que
+  arrancó.
+- El etcd-server del defender (HTTP, memoria) sigue arrancando con `pipeline-start` y sirve en claro claves de memoria
+  que ya no usa nadie; desaparece en el paso 6.
+
+### Lecciones DAY316 (commit A)
+
+- `d313_es_vm.sh` se ejecuta como vagrant (hace `sudo` dentro). Con `sudo bash`, root no pudo escribir
+  `/var/tmp/d313-check.txt` (de vagrant; `/var/tmp` con sticky bit y `fs.protected_regular`) y el `grep` siguiente mostró
+  el `OK` de una pasada vieja: una línea de éxito no vale si no es de esta ejecución.
+- Un `tail -20` sobre varios logs juntos esconde el primero: un log por comando.
+- Un servidor falso tiene que responder todo lo que el cliente pide de verdad (el `/health` de `connect()`), no solo la
+  ruta bajo prueba.
+- `str.splitlines()` corta también en `\r`, `\x0c` y `\u2028`: para aplicar diffs, partir solo por `\n`.

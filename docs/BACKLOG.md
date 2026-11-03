@@ -8452,3 +8452,79 @@ todas las cabezas estén certificadas (hoy solo DDoS). Antes, medir la RAM. Desp
 - Criterio de HECHO propuesto: dos métricas por separado, recall sobre el host que se propaga y tiempo hasta la
   regla aplicada. Predicción escrita antes de medir: detección alta; contención desconocida hasta medir la topología;
   el cifrado en el paciente cero, imposible desde la red.
+
+## DAY316 — paso 5, commit A (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, sección «Resultados DAY316 — paso 5, commit A». Commit `fe99a7e70` (42 ficheros,
++1045/-1068). Medido: `test-components` 9/23/13/7/82; los tres componentes registrados por mTLS en el etcd-server de la VM
+etcd, cada uno con su CN; `test-e2e-synthetic` PASSED; `mitre-start` rc 0 (argus 1518, suricata 32, zeek 1074, invariante 0,
+1051 corroborados).
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (paso 5: commit A hecho)
+libetcd_client habla HTTPS con certificado de cliente, con lista de 1-7 direcciones (sin respuesta o 5xx: siguiente; 4xx:
+respuesta final) y un lector único del bloque `etcd`. sniffer, ml-detector y firewall usan el etcd-server de la VM etcd
+(`https://192.168.100.20:2379`). Siguiente: commit B (DEBT-FW-HMAC-KEY-ALARM-001), después paso 6 (etcd-server de la VM como
+servicio, `make up` levanta la VM etcd, fuera el etcd-server del defender y los modos http/memoria), 7 y 8.
+
+### DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 — CERRADA DAY316 (lo que hacía de ella una P1)
+La clave HMAC ya no viaja en claro ni sin autenticación: los componentes la piden por mTLS con su certificado
+(`/secrets/<CN>`, solo el CN propio) y mitre/ctu/custom-start por mTLS con el certificado de `bronze-to-gold-converter`
+(`/secrets/valid/ml-detector`, regla `ou:bronze-to-gold-converter`); las claves viven en Vault (PR1). Medido en mitre-start:
+0 descartadas en los tres converters. Queda, con su propia entrada: el converter recibe la clave por variable de entorno
+(DEBT-BRONZE-KEY-PROVISIONING-001). Hasta el paso 6 el etcd-server del defender sigue arrancando en HTTP con claves de
+memoria que ya no usa nadie.
+
+### DEBT-ETCD-CLIENT-MANUAL-TESTS-CTEST-001 — ABIERTA (nueva DAY316, decisión de Alonso)
+`test_hmac_integration_client`, `test_put_config_integration` y `test_service_discovery` (etcd-client) nunca han entrado en
+ctest y necesitaban un etcd-server en HTTP. En el commit A solo pasan a `endpoints = {"https://127.0.0.1:2379"}` y les falta
+la PKI. Entran en ctest como los demás, con la PKI desechable de `test_etcd_cliente_tls` (E2).
+
+### DEBT-ETCD-CONFIG-SIZE-ENDIAN-001 — ABIERTA (nueva DAY316, medida)
+`PUT /v1/config/<CN>`: el cliente antepone el tamaño original en little-endian (`etcd_client.cpp`, `memcpy` de un
+`uint32_t`) y el etcd-server lo lee en big-endian (`etcd_server.cpp` 374-378). Medido en la VM: `Size mismatch:
+header=3882352640 vs HTTP=26855` (26855 = 0x68E7 → bytes `E7 68 00 00` → 0xE7680000). El servidor descarta el prefijo y
+usa la cabecera HTTP, así que hoy guarda bien. Arreglo: un único orden de bytes escrito en los dos lados y con test; con
+el arreglo, el desacuerdo pasa de aviso a error.
+
+### DEBT-PKI-AT-REST-001 — ABIERTA (nueva DAY316)
+`ca.key` en el Mac y las `.key` de los componentes en claro en disco (0600 root). En producción, la CA fuera de línea y lejos
+del despliegue; para las claves de cliente, pedirlas a Vault al arrancar y tenerlas solo en memoria, o TPM/HSM.
+
+### DEBT-GRAPH-HUECO-SIN-CLAVE-001 — ABIERTA (nueva DAY316)
+Estado deseado de Alonso: sin etcd-server el pipeline sigue protegiendo aunque no pueda firmar. Ese periodo tiene que verse en
+el grafo como evento (p. ej. una fila firmada de tipo hueco al recuperar la clave, con inicio, fin y filas perdidas), no solo
+en el log (`[BRONCE-SIN-CLAVE]`). Toca correlation_v1: diseño propio.
+
+### DEBT-CONFIG-AT-REST-PROTECTION-001 — PROPUESTA DAY316 (pendiente de que Alonso la confirme)
+Los JSON de los componentes son configuración sensible (direcciones del etcd-server, rutas de certificados, rangos
+protegidos, umbrales). Hoy, en el lab, son ficheros del repo legibles en `/vagrant`. Propuesta para producción: propiedad de
+root y permisos mínimos, integridad comprobada al arrancar (firma, como los plugins) y entregados solo por Ansible; el
+cifrado en reposo (TPM/LUKS) se mide aparte. El código no se puede ejecutar cifrado: lo que se protege es el disco y el
+camino de entrega.
+
+### DEBT-LAB-VAULT-CLAVES-PRUEBA-001 — ABIERTA (nueva DAY316)
+`d314_claves_medir.sh` rota con `force` la clave del CN real `ml-detector`, y cada pasada deja en Vault claves inmutables para
+siempre (medido: `c10f19d3` → `60768287`), además de `argus-hmac/d312/prueba`. Propuesta: un CN de prueba propio para los
+instrumentos y rehacer la VM etcd antes del paso 8.
+
+### DEBT-PIPELINE-STATUS-LIVENESS-001 — AMPLIADA DAY316
+Alonso: `pipeline-status` está desfasado. Además de mirar solo el proceso, enseña el etcd-server del defender (que con el
+commit A ya no usa ningún componente) y Vault en modo dev, y no ve el etcd-server de la VM etcd. Junto con
+DEBT-PIPELINE-STATUS-ALL-VMS-001 y -LOGFILES-001.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY316
+Cuatro parcheadores viejos sin trackear en `scripts/` (`d313_4b2_parche.py`, `d313_4b3_parche.py`, `d314_4b4_parche.py`,
+`d314_docs_parche.py`); `etcd-client/src/etcd_client_simple.cpp` es un script de bash con extensión `.cpp` (nadie lo
+compila); el bloque `etcd` de `correlation-engine/config/correlation_engine.json` (declarado, no consumido, con
+`localhost:2379`).
+
+### Pendientes DAY316
+- `registerService` con rutas escritas en el código (sniffer `/vagrant/sniffer/config/sniffer.json`, firewall
+  `../config/firewall.json`): debe registrar el JSON con el que arrancó. Commit B o paso 6.
+- El etcd-server de la VM se arranca a mano (`vagrant ssh etcd -c "bash /vagrant/scripts/etcd_ha/d313_es_vm.sh arrancar"`,
+  sin `sudo`) hasta el paso 6.
+
+### Lecciones DAY316 (commit A)
+Una línea de éxito solo vale si es de esta ejecución (`sudo bash d313_es_vm.sh` no pudo escribir su fichero de comprobación
+y el `grep` mostró el OK viejo). Un log por comando. Un servidor falso responde también lo que el cliente pide antes de la
+ruta bajo prueba.
