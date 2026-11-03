@@ -165,35 +165,6 @@ bool EtcdServer::update_heartbeat(const std::string& component_name) {
     return component_registry_->registro().latir(component_name, t) == argus::registro::Resultado::Ok;
 }
 
-// ── Epoch management (ADR-045 v2 — DAY 164) ──────────────────────────────────
-// [ETCD-REGISTRO-D313] la época se guarda en el almacén (clave "epoca"); si nunca se guardó, la de defecto
-bool EtcdServer::set_epoch(uint16_t epoch_id, const std::string& not_before) {
-    std::lock_guard<std::mutex> lk(epoch_mutex_);
-    EpochInfo ep = epoch_;
-    nlohmann::json j;
-    if (component_registry_->registro().leer_epoca(j) == argus::registro::Resultado::Ok)
-        ep.revision = j.value("revision", ep.revision);
-    ep.epoch_id = epoch_id;
-    ep.not_before = not_before;
-    ep.revision++;
-    const nlohmann::json nueva = {{"epoch_id", ep.epoch_id}, {"not_before", ep.not_before}, {"revision", ep.revision}};
-    if (component_registry_->registro().guardar_epoca(nueva) != argus::registro::Resultado::Ok) return false;
-    epoch_ = ep;
-    return true;
-}
-
-EtcdServer::EpochInfo EtcdServer::get_epoch() const {
-    std::lock_guard<std::mutex> lk(epoch_mutex_);
-    EpochInfo ep = epoch_;
-    nlohmann::json j;
-    if (component_registry_->registro().leer_epoca(j) == argus::registro::Resultado::Ok) {
-        ep.epoch_id = j.value("epoch_id", ep.epoch_id);
-        ep.not_before = j.value("not_before", ep.not_before);
-        ep.revision = j.value("revision", ep.revision);
-    }
-    return ep;
-}
-
 void EtcdServer::configurar_rutas() {
     httplib::Server& server = *server_;
     const bool con_tls = (tls_.modo == "mtls");
@@ -484,34 +455,6 @@ void EtcdServer::configurar_rutas() {
             {"next_heartbeat_expected", server_time + heartbeat_interval_seconds_}  // heartbeat.interval_seconds
         };
         res.set_content(response.dump(), "application/json");
-    });
-
-    server.Get("/v1/epoch", [this](const httplib::Request& /*req*/, httplib::Response& res) {
-        auto ep = get_epoch();
-        nlohmann::json j;
-        j["epoch_id"]   = ep.epoch_id;
-        j["not_before"] = ep.not_before;
-        j["revision"]   = ep.revision;
-        res.set_content(j.dump(), "application/json");
-    });
-
-    server.Put("/v1/epoch", [this, error](const httplib::Request& req, httplib::Response& res) {
-        try {
-            auto j          = nlohmann::json::parse(req.body);
-            uint16_t eid    = j.at("epoch_id").get<uint16_t>();
-            std::string nb  = j.at("not_before").get<std::string>();
-            if (!set_epoch(eid, nb)) {
-                error(res, 503, "almacén del registro no disponible");
-                return;
-            }
-            nlohmann::json resp;
-            resp["status"]   = "ok";
-            resp["epoch_id"] = eid;
-            res.set_content(resp.dump(), "application/json");
-        } catch (const std::exception& e) {
-            res.status = 400;
-            res.set_content(R"({"status":"error"})", "application/json");
-        }
     });
 
     server.Get("/health", [](const httplib::Request& /*req*/, httplib::Response& res) {

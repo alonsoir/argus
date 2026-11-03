@@ -13,7 +13,6 @@ option(ARGUS_VAULT_ENABLED "Enable Vault crypto provider (enterprise)" OFF)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(LIBSODIUM REQUIRED libsodium)
 find_package(CURL REQUIRED)
-find_package(OpenSSL REQUIRED)
 pkg_check_modules(ZMQ REQUIRED libzmq)
 
 # seed-client — requerido por SeedFileProvider (ambas compilaciones)
@@ -58,8 +57,6 @@ set(CRYPTO_PROVIDER_SOURCES
         crypto_provider.cpp
         seed_file_provider.cpp
         autonomy_publisher.cpp
-        http_etcd_registrar.cpp
-        crypto_epoch_coordinator.cpp
 )
 if(ARGUS_VAULT_ENABLED)
     list(APPEND CRYPTO_PROVIDER_SOURCES vault_provider.cpp)
@@ -98,13 +95,10 @@ target_link_libraries(crypto_provider
         ${LIBSODIUM_LIBRARIES}
         ${ZMQ_LIBRARIES}
         ${CURL_LIBRARIES}
-        OpenSSL::SSL
-        OpenSSL::Crypto
 )
 if(ARGUS_VAULT_ENABLED)
     target_compile_definitions(crypto_provider PUBLIC ARGUS_VAULT_ENABLED)
 endif()
-target_compile_definitions(crypto_provider PUBLIC CPPHTTPLIB_OPENSSL_SUPPORT)
 set_target_properties(crypto_provider PROPERTIES
         VERSION   ${PROJECT_VERSION}
         SOVERSION 1
@@ -141,8 +135,6 @@ install(FILES
         crypto_autonomy.h
         crypto_deriver.h
         etcd_registrar.h
-        http_etcd_registrar.h
-        crypto_epoch_coordinator.h
         seed_file_provider.h
         autonomy_state_writer.h
         include/reason_codes.hpp
@@ -333,40 +325,18 @@ add_executable(test_vault_client
     )
     add_test(NAME test_wire_protocol COMMAND test_wire_protocol)
 
-    # BACKLOG-CRYPTO-EPOCH-001 — DAY 164
-    add_executable(test_crypto_epoch_coordinator
-            tests/test_crypto_epoch_coordinator.cpp
-            crypto_epoch_coordinator.cpp
-            http_etcd_registrar.cpp
-    )
-    target_include_directories(test_crypto_epoch_coordinator PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CURL_INCLUDE_DIRS}
-    )
-    target_link_libraries(test_crypto_epoch_coordinator PRIVATE
-            vault_client
-            ${CURL_LIBRARIES}
-    )
-    add_test(NAME test_crypto_epoch_coordinator COMMAND test_crypto_epoch_coordinator)
-
-    # BACKLOG-CRYPTO-E2E-ROTATION-001 — DAY 165
-    # Ciclo completo: FakeEtcdServer → CryptoEpochCoordinator → handle.reload()
-    #                 → encrypt(epoch_id) → decrypt_v2 → epoch_id correcto
+    # BACKLOG-CRYPTO-E2E-ROTATION-001 — DAY 165. [ADR045-FUERA-D316] sin ADR-045 quedan las pruebas de la época en el
+    # cable: encrypt(epoch_id) → decrypt_v2 → epoch_id correcto, ventana de dos y centinela 0xFFFF.
     add_executable(test_e2e_rotation
             tests/test_e2e_rotation.cpp
-            crypto_epoch_coordinator.cpp
-            http_etcd_registrar.cpp
     )
     target_include_directories(test_e2e_rotation PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}
-            ${CURL_INCLUDE_DIRS}
             ${LIBSODIUM_INCLUDE_DIRS}
     )
     target_link_libraries(test_e2e_rotation PRIVATE
-            vault_client
             crypto_transport
             ${SEED_CLIENT_LIB}
-            ${CURL_LIBRARIES}
             ${LIBSODIUM_LIBRARIES}
     )
     add_test(NAME test_e2e_rotation COMMAND test_e2e_rotation)

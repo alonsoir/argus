@@ -369,7 +369,7 @@ int main(int argc, char** argv) {
         // STEP 4: registro y latido del propio etcd-server, EN PROCESO ([ETCD-AUTHZ-D313], decisión de Alonso DAY313)
         // Antes: HttpEtcdRegistrar + CryptoEpochCoordinator contra sí mismo por HTTP (registro, latido cada 30 s y
         // sondeo de /v1/epoch cada 2 s, cuyo callback solo escribía en el log). Con HTTPS ese bucle fallaba; ahora va
-        // directo a su ComponentRegistry y GET /components sigue mostrándolo. PUT/GET /v1/epoch siguen como rutas.
+        // directo a su ComponentRegistry y GET /components sigue mostrándolo. [ADR045-FUERA-D316] /v1/epoch, fuera.
         // ═══════════════════════════════════════════════════════════
         const std::string yo = nlohmann::json{
             {"component", "etcd-server"},

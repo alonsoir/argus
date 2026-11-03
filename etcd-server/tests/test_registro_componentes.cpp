@@ -146,26 +146,18 @@ TEST(RegistroComponentes, AlmacenCaidoLeeCopiaYEscritura503) {
     EXPECT_EQ(r->latir("sniffer", t), Resultado::Ok);
 }
 
-TEST(RegistroComponentes, ReinicioConservaRegistroLatidosYEpoca) {
+TEST(RegistroComponentes, ReinicioConservaRegistroYLatidos) {  // [ADR045-FUERA-D316] sin época
     Banco b;
     {
         auto r = b.nuevo();
         ASSERT_EQ(r->registrar("sniffer", doc("sniffer")), Resultado::Ok);
         ASSERT_EQ(r->registrar("ml-detector", doc("ml-detector")), Resultado::Ok);
-        json e;
-        EXPECT_EQ(r->leer_epoca(e), Resultado::NoEncontrado);
-        ASSERT_EQ(r->guardar_epoca(json{{"epoch_id", 7}, {"not_before", "2026-11-01T00:00:00Z"}, {"revision", 3}}),
-                  Resultado::Ok);
     }
     b.ahora += 15;
     auto r2 = b.nuevo();  // el etcd-server reinicia
     EXPECT_EQ(b.veces("[ETCD-REGISTRO-CARGADO] 2 componentes del almacén: ml-detector,sniffer"), 1u) << b.log.str();
     std::time_t t = 0;
     EXPECT_EQ(r2->latir("sniffer", t), Resultado::Ok);  // antes: 404 tras reiniciar (DAY311)
-    json e;
-    ASSERT_EQ(r2->leer_epoca(e), Resultado::Ok);
-    EXPECT_EQ(e["epoch_id"], 7);
-    EXPECT_EQ(e["revision"], 3);
 }
 
 TEST(RegistroComponentes, ArranqueConAlmacenCaidoRecargaLuego) {

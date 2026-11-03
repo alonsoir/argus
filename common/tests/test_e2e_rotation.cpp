@@ -1,34 +1,20 @@
 // common/tests/test_e2e_rotation.cpp
 // BACKLOG-CRYPTO-E2E-ROTATION-001 — DAY 165
-// TDH: RED → GREEN
-// Verifica ciclo completo de rotación de época:
-//   FakeEtcdServer → CryptoEpochCoordinator → CryptoProviderHandle::reload()
-//   → encrypt(epoch_id) → decrypt_v2 → epoch_id correcto en wire
+// [ADR045-FUERA-D316] DAY316: sin ADR-045 (HttpEtcdRegistrar y CryptoEpochCoordinator borrados) se van T1 y T4, que
+// probaban el coordinador. Se quedan las pruebas de la época en el cable, única cobertura que tiene:
+//   encrypt(epoch_id) → decrypt_v2 → epoch_id correcto (épocas 1 y 2), ventana de dos y centinela 0xFFFF.
 // ============================================================================
-#include "crypto_epoch_coordinator.h"
-#include "crypto_provider_handle.hpp"
-#include "http_etcd_registrar.h"
 #include <crypto_transport/transport.hpp>
 #include <seed_client/seed_client.hpp>
 #include <sodium.h>
 
 #include <array>
-#include <atomic>
-#include <cassert>
-#include <chrono>
-#include <condition_variable>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
-#include <mutex>
 #include <string>
-#include <thread>
-
-#include "httplib.h"
-#include <nlohmann/json.hpp>
-
-using namespace ml_defender;
-using namespace std::chrono_literals;
+#include <vector>
 
 // ── Test framework ────────────────────────────────────────────────────────────
 static int passed = 0;
@@ -63,68 +49,6 @@ static int prev_failed = 0;
          if (failed == prev_failed) { std::cout << " ✅\n"; passed++; } \
          else std::cout << "\n"; \
     } while(0)
-
-// ── MockProvider ──────────────────────────────────────────────────────────────
-class MockProvider final : public ICryptoProvider {
-public:
-    explicit MockProvider(std::string name, uint16_t epoch = 1)
-        : name_(std::move(name)), epoch_(epoch) {}
-
-    CryptoMaterial get_material() override {
-        CryptoMaterial mat{};
-        mat.pk[0]      = static_cast<uint8_t>(epoch_);
-        mat.from_cache = false;
-        mat.key_version = epoch_;
-        return mat;
-    }
-    bool refresh()  override { return true; }
-    bool is_healthy() const override { return true; }
-    std::string component_name() const override { return name_; }
-
-private:
-    std::string name_;
-    uint16_t    epoch_;
-};
-
-// ── FakeEpochServer (patrón DAY 164) ─────────────────────────────────────────
-struct FakeEpochServer {
-    httplib::Server svr;
-    std::thread     thread;
-    std::mutex      mtx;
-    uint16_t        epoch_id{1};
-    std::string     not_before{"2026-01-01T00:00:00Z"};
-
-    std::atomic<int64_t> revision{1};
-
-    explicit FakeEpochServer(int port) {
-        svr.Get("/v1/epoch", [this](const httplib::Request&, httplib::Response& res) {
-            std::lock_guard<std::mutex> lk(mtx);
-            nlohmann::json j;
-            j["epoch_id"]   = epoch_id;
-            j["not_before"] = not_before;
-            j["algorithm"]  = "ChaCha20-Poly1305";
-            j["revision"]   = revision.load();
-            res.set_content(j.dump(), "application/json");
-        });
-        svr.Post("/register",           [](const httplib::Request&, httplib::Response& res) {
-            res.set_content("{\"status\":\"ok\"}", "application/json");
-        });
-        svr.Post("/v1/heartbeat/(.*)",  [](const httplib::Request&, httplib::Response& res) {
-            res.set_content("{\"status\":\"ok\"}", "application/json");
-        });
-        thread = std::thread([this, port]() { svr.listen("127.0.0.1", port); });
-        std::this_thread::sleep_for(50ms);
-    }
-
-    void bump(uint16_t new_epoch, const std::string& nb) {
-        std::lock_guard<std::mutex> lk(mtx);
-        epoch_id   = new_epoch;
-        not_before = nb;
-        revision.fetch_add(1);
-    }
-
-    ~FakeEpochServer() { svr.stop(); if (thread.joinable()) thread.join(); }
-};
 
 // ── TestSeedEnv (patrón test_crypto_transport) ────────────────────────────────
 struct TestSeedEnv {
@@ -161,38 +85,6 @@ struct TestSeedEnv {
     }
 };
 
-// ── T1: handle.reload() llamado cuando epoch cambia ──────────────────────────
-void test_handle_reloads_on_epoch_change() {
-    FakeEpochServer fake(19300);
-    HttpEtcdRegistrar reg("http://127.0.0.1:19300", "test", 1000, 100);
-    CryptoEpochCoordinator coord(reg, "test");
-
-    CryptoProviderHandle handle(std::make_unique<MockProvider>("test", 1));
-    std::atomic<int>      reload_count{0};
-    std::atomic<uint16_t> last_epoch{0};
-    std::mutex mtx; std::condition_variable cv;
-
-    coord.start([&](uint16_t eid, const std::string&) {
-        handle.reload(std::make_unique<MockProvider>("test", eid));
-        last_epoch = eid;
-        reload_count++;
-        cv.notify_one();
-    });
-
-    std::this_thread::sleep_for(300ms);
-    fake.bump(2, "2026-07-01T00:00:00Z");
-
-    std::unique_lock<std::mutex> lk(mtx);
-    bool ok = cv.wait_for(lk, 1s, [&]{ return reload_count.load() >= 1; });
-    coord.stop();
-
-    ASSERT_TRUE(ok);
-    ASSERT_EQ(reload_count.load(), 1);
-    ASSERT_EQ(last_epoch.load(), static_cast<uint16_t>(2));
-    ASSERT_EQ(coord.current_epoch(), static_cast<uint16_t>(2));
-    ASSERT_EQ(handle.get()->get_material().key_version, static_cast<uint32_t>(2));
-}
-
 // ── T2: round-trip epoch_id=1 en wire ────────────────────────────────────────
 void test_wire_roundtrip_epoch1() {
     if (sodium_init() < 0) { ASSERT_TRUE(false); return; }
@@ -222,52 +114,6 @@ void test_wire_roundtrip_epoch2() {
 
     ASSERT_TRUE(result.data == plaintext);
     ASSERT_EQ(result.epoch_id, static_cast<uint16_t>(2));
-}
-
-// ── T4: coordinator + wire — epoch_id sigue a current_epoch() ────────────────
-void test_coordinator_epoch_id_propagates_to_wire() {
-    FakeEpochServer fake(19301);
-    HttpEtcdRegistrar reg("http://127.0.0.1:19301", "test", 1000, 100);
-    CryptoEpochCoordinator coord(reg, "test");
-
-    TestSeedEnv env("e2e_t4");
-    auto sc_tx = env.make_client();
-    auto sc_rx = env.make_client();
-    crypto_transport::CryptoTransport tx(sc_tx, "ml-defender:test:v1:tx");
-    crypto_transport::CryptoTransport rx(sc_rx, "ml-defender:test:v1:tx");
-
-    std::mutex mtx; std::condition_variable cv;
-    std::atomic<int> cb_count{0};
-
-    coord.start([&](uint16_t, const std::string&) {
-        cb_count++;
-        cv.notify_one();
-    });
-    std::this_thread::sleep_for(300ms);
-
-    // epoch=1: wire debe llevar epoch_id=1
-    {
-        const std::vector<uint8_t> plain = {0xAA};
-        auto wire   = tx.encrypt(plain, coord.current_epoch());
-        auto result = rx.decrypt_v2(wire);
-        ASSERT_EQ(result.epoch_id, static_cast<uint16_t>(1));
-        ASSERT_TRUE(result.data == plain);
-    }
-
-    // rotación a epoch=2
-    fake.bump(2, "2026-08-01T00:00:00Z");
-    std::unique_lock<std::mutex> lk(mtx);
-    cv.wait_for(lk, 1s, [&]{ return cb_count.load() >= 1; });
-    coord.stop();
-
-    // epoch=2: wire debe llevar epoch_id=2
-    {
-        const std::vector<uint8_t> plain = {0xBB};
-        auto wire   = tx.encrypt(plain, coord.current_epoch());
-        auto result = rx.decrypt_v2(wire);
-        ASSERT_EQ(result.epoch_id, static_cast<uint16_t>(2));
-        ASSERT_TRUE(result.data == plain);
-    }
 }
 
 // ── T5: ventana dual-key — mensajes pre-rotación siguen descifrables ──────────
@@ -322,13 +168,11 @@ int main() {
 
     std::cout << "\n══════════════════════════════════════════════\n";
     std::cout <<   "  test_e2e_rotation — BACKLOG-CRYPTO-E2E-ROTATION-001\n";
-    std::cout <<   "  DAY 165 — TDH RED→GREEN\n";
+    std::cout <<   "  DAY 165 / DAY316: época en el cable (sin ADR-045)\n";
     std::cout <<   "══════════════════════════════════════════════\n";
 
-    RUN_TEST(test_handle_reloads_on_epoch_change);
     RUN_TEST(test_wire_roundtrip_epoch1);
     RUN_TEST(test_wire_roundtrip_epoch2);
-    RUN_TEST(test_coordinator_epoch_id_propagates_to_wire);
     RUN_TEST(test_dual_key_window_pre_rotation_messages_still_decryptable);
     RUN_TEST(test_epoch_id_sentinel_rejected);
 

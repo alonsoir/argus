@@ -131,9 +131,9 @@ TEST(EtcdServerAuthz, TablaPorDefectoValidaYAvisada) {
     Salida o;
     auto r = parse_authz(json::object(), o.aviso, o.info);
     EXPECT_EQ(r.defectos, 1);
-    EXPECT_EQ(r.reglas.size(), 15u);
+    EXPECT_EQ(r.reglas.size(), 13u);  // [ADR045-FUERA-D316] 15 menos las dos de /v1/epoch
     EXPECT_NE(o.aviso.str().find("authz ausente"), std::string::npos);
-    EXPECT_NE(o.info.str().find("[ETCD-AUTHZ] regla 1/15: GET /health permitir=cualquiera (DEFECTO: ausente)"),
+    EXPECT_NE(o.info.str().find("[ETCD-AUTHZ] regla 1/13: GET /health permitir=cualquiera (DEFECTO: ausente)"),
               std::string::npos) << o.info.str();
 }
 
@@ -155,7 +155,7 @@ TEST(EtcdServerAuthz, ReglaMalFormadaInvalidaLaTablaEntera) {
             {"metodo": "GET", "ruta": "/health", "permitir": ["ou:admin"]}, )") + mala + "]}}");
         auto r = parse_authz(root, o.aviso, o.info);
         EXPECT_EQ(r.defectos, 1) << mala;
-        EXPECT_EQ(r.reglas.size(), 15u) << mala;  // la tabla por defecto ENTERA, no la buena a medias
+        EXPECT_EQ(r.reglas.size(), 13u) << mala;  // la tabla por defecto ENTERA, no la buena a medias
         EXPECT_NE(o.aviso.str().find("authz.reglas[1]"), std::string::npos) << mala << "\n" << o.aviso.str();
     }
 }
@@ -199,7 +199,7 @@ TEST(EtcdServerAuthz, InstanciaYRol) {
     // admin: lo suyo, y no las claves de otros
     const auto adm = id("admin", "admin");
     EXPECT_TRUE(permite(t, "POST", "/secrets/rotate/ml-detector", adm));
-    EXPECT_TRUE(permite(t, "PUT", "/v1/epoch", adm));
+    EXPECT_FALSE(permite(t, "PUT", "/v1/epoch", adm));  // [ADR045-FUERA-D316] sin regla: denegado
     EXPECT_TRUE(permite(t, "GET", "/components", adm));
     EXPECT_FALSE(permite(t, "GET", "/secrets/ml-detector", adm));
     // un OU que se llama como otro CN no da "propio"

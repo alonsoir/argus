@@ -3,7 +3,8 @@
 // Registro de componentes sobre IRegistryStore (DEBT-ETCD-HA-TLS-RAFT-001, paso 4b.3). Sustituye al unordered_map sin
 // mutex de ComponentRegistry. Decisiones de Alonso (DAY313):
 //   - Claves (mismo comportamiento que hoy): registro/<CN> = el documento único del componente (lo escriben /register y
-//     PUT /v1/config; el último gana; GET /config lo devuelve), latido/<CN> = {"ultimo", "estado"}, epoca.
+//     PUT /v1/config; el último gana; GET /config lo devuelve), latido/<CN> = {"ultimo", "estado"}.
+//     [ADR045-FUERA-D316] la clave "epoca" (ADR-045) ya no se usa.
 //   - Muerto = se MARCA, no se borra: el monitor pone estado "muerto" ([ETCD-COMPONENTE-MUERTO]) y el siguiente latido
 //     lo revive ([ETCD-COMPONENTE-REVIVIDO]) y da 200. Antes se desregistraba y sus latidos daban 404 para siempre.
 //   - Almacén no disponible: las lecturas salen de la última copia en memoria; las escrituras devuelven NoDisponible
@@ -203,31 +204,6 @@ public:
         return it == latidos_.end() ? 0 : it->second.value("ultimo", static_cast<std::time_t>(0));
     }
 
-    Resultado guardar_epoca(const nlohmann::json& ep) {
-        std::lock_guard<std::mutex> lk(m_);
-        if (anotar(almacen_->poner("epoca", ep.dump())) == Estado::NoDisponible) return Resultado::NoDisponible;
-        epoca_ = ep;
-        return Resultado::Ok;
-    }
-    // NoEncontrado si nunca se guardó (quien llama usa su defecto)
-    Resultado leer_epoca(nlohmann::json& ep) {
-        std::lock_guard<std::mutex> lk(m_);
-        std::string v;
-        const Estado e = anotar(almacen_->leer("epoca", v));
-        if (e == Estado::Ok) {
-            try {
-                epoca_ = nlohmann::json::parse(v);
-            } catch (...) {
-                return Resultado::NoEncontrado;
-            }
-        } else if (e == Estado::NoEncontrado) {
-            return Resultado::NoEncontrado;
-        }
-        if (epoca_.is_null()) return e == Estado::NoDisponible ? Resultado::NoDisponible : Resultado::NoEncontrado;
-        ep = epoca_;
-        return Resultado::Ok;
-    }
-
     // Una pasada del monitor (pública para los tests)
     void revisar_latidos() {
         std::lock_guard<std::mutex> lk(m_);
@@ -370,7 +346,6 @@ private:
     std::mutex m_;
     std::map<std::string, nlohmann::json> docs_;
     std::map<std::string, nlohmann::json> latidos_;
-    nlohmann::json epoca_;
     bool disponible_ = true;
     bool recargar_ = false;
     std::time_t caida_desde_ = 0, ultimo_aviso_caida_ = 0, ultimo_aviso_memoria_ = 0;

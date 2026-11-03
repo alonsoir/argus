@@ -24,13 +24,6 @@
         ]
       },
       {
-        "metodo": "GET",
-        "ruta": "/v1/epoch",
-        "permitir": [
-          "cualquiera"
-        ]
-      },
-      {
         "metodo": "POST",
         "ruta": "/register",
         "permitir": [
@@ -90,13 +83,6 @@
       {
         "metodo": "POST",
         "ruta": "/secrets/rotate/{c}",
-        "permitir": [
-          "ou:admin"
-        ]
-      },
-      {
-        "metodo": "PUT",
-        "ruta": "/v1/epoch",
         "permitir": [
           "ou:admin"
         ]

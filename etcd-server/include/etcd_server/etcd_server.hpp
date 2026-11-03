@@ -59,18 +59,7 @@ public:
     bool register_component(const std::string& component_name, const std::string& config_json);
     bool update_heartbeat(const std::string& component_name);
 
-    // Epoch management (ADR-045 v2 — DAY 164)
-    struct EpochInfo {
-        uint16_t    epoch_id{1};
-        std::string not_before{"2026-01-01T00:00:00Z"};
-        int64_t     revision{1};
-    };
-    bool        set_epoch(uint16_t epoch_id, const std::string& not_before);  // false si el almacén no responde
-    EpochInfo   get_epoch() const;
-
 private:
     void run_server();
     void configurar_rutas();
-    EpochInfo           epoch_;
-    mutable std::mutex  epoch_mutex_;
 };

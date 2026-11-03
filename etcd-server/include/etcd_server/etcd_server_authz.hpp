@@ -172,7 +172,6 @@ struct ResultadoAuthz {
 // Tabla por defecto: la misma que traen etcd-server.json y etcd-server.etcd-vm.json (lo comprueba el test).
 inline const char* kReglasDefecto = R"([
   {"metodo": "GET",  "ruta": "/health",               "permitir": ["cualquiera"]},
-  {"metodo": "GET",  "ruta": "/v1/epoch",             "permitir": ["cualquiera"]},
   {"metodo": "POST", "ruta": "/register",             "permitir": ["cualquiera"]},
   {"metodo": "POST", "ruta": "/unregister",           "permitir": ["cualquiera"]},
   {"metodo": "POST", "ruta": "/v1/heartbeat/{c}",     "permitir": ["propio"]},
@@ -182,7 +181,6 @@ inline const char* kReglasDefecto = R"([
   {"metodo": "GET",  "ruta": "/secrets/{c}",          "permitir": ["propio"]},
   {"metodo": "GET",  "ruta": "/secrets/valid/{c}",    "permitir": ["propio", "ou:bronze-to-gold-converter"]},
   {"metodo": "POST", "ruta": "/secrets/rotate/{c}",   "permitir": ["ou:admin"]},
-  {"metodo": "PUT",  "ruta": "/v1/epoch",             "permitir": ["ou:admin"]},
   {"metodo": "GET",  "ruta": "/components",           "permitir": ["ou:admin"]},
   {"metodo": "GET",  "ruta": "/validate",             "permitir": ["ou:admin"]},
   {"metodo": "GET",  "ruta": "/info",                 "permitir": ["ou:admin"]}
