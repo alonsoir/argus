@@ -707,3 +707,118 @@ los dos inyectores.
   `[ETCD-CLIENTE-CAMBIO]` y registro correcto.
 - E2E sintéticos (con E1 = a) y `mitre-start` (con E5) siguen dando PASA.
 - Cada instrumento, dos veces seguidas.
+
+## Resultados DAY316 — paso 5: decisiones, C4+D3 y E4 medidos, estado deseado (sección aparte, sin reescribir el diseño)
+
+### Decisiones de Alonso (DAY316, después del diseño)
+
+- **E1 = c** (cambia la propuesta a). Los inyectores sintéticos son imprescindibles en EMECAS (`emecas` → `test-e2e-synthetic`;
+  `emecas++` → `-full` y `-firewall`): no se desactivan. Cada inyector se presenta con el certificado del componente al que
+  sustituye (el de sniffer con CN `sniffer`, el de ml-output con CN `ml-detector`) y lee endpoints y rutas TLS del bloque
+  `etcd` del JSON de ese componente. Medido: el Makefile para el componente real antes de lanzar su sustituto (líneas 1418 y
+  1450-1452), así que no hay dos registros con el mismo CN. Fuera los nombres falsos (`cpp_evolutionary_sniffer`,
+  `synthetic-ml-output`) y el `localhost:2379` escrito en el código.
+- **E2.** Tests unitarios (ctest, sin VMs): CA desechable en un directorio temporal, borrada al terminar. Integración y E2E en
+  el laboratorio: los certificados reales del lab, repartidos por el mismo camino que usan los componentes (E4); ninguna CA
+  de pruebas en ningún sitio. La CA no vive en Vault: Vault guarda solo las claves HMAC (PR1). Re-verificar el grafo años
+  después necesita las claves HMAC (inmutables en Vault), no la CA.
+- **E3, E4, E5:** como se propusieron en 5.0. En E4 entra también `bronze-to-gold-converter` (el conversor corre en el
+  defender y E5 lo necesita); `admin` no va al defender.
+- **F1.** La librería lee y valida el bloque `etcd` del JSON en un solo sitio (defectos con aviso, fatales, origen de cada
+  campo en el log); sniffer, ml-detector y firewall solo le pasan el bloque tal cual (hoy jsoncpp en dos, nlohmann en uno, y
+  tres comportamientos distintos).
+- **F2.** Fuera `Config::from_json`/`from_json_file`, el constructor `EtcdClient(ruta_json)` y
+  `etcd-client/config/etcd_client_config.json`: nadie los usa (`git grep`).
+- **F3.** La lista de endpoints pasa a la siguiente dirección solo si no hay respuesta o hay un 5xx; un 4xx (403, 404) se
+  devuelve enseguida, sin reintentar (hoy se reintenta toda respuesta que no sea 2xx).
+
+### Estado deseado (Alonso, DAY316) y lo que cambia de lo decidido
+
+El pipeline arranca aunque no responda ninguna de las direcciones del etcd-server (p. ej. un fallo físico). Lo peor que
+ocurre es que no se puede firmar con la clave HMAC: es el precio a pagar, porque lo más importante es que el hospital no
+quede desprotegido. En el grafo esos momentos deben verse como periodos en que el etcd HA/Raft de esa instalación tuvo
+problemas, analizables por el administrador (que todo el etcd caiga durante un ataque es, como mínimo, motivo para
+investigar). Cuando algún etcd-server vuelva a dar servicio, los componentes se dan de alta, hacen el handshake, obtienen
+su clave HMAC y operan con normalidad. Si un servidor cae, entra otro; el estado se comparte: el etcd-server lee el estado
+compartido del etcd real, y los etcd del Raft se sincronizan entre sí (incluida la configuración JSON de los componentes)
+por un canal interno cifrado y de confianza comprobada, para que un proceso etcd pirata no pueda colarse.
+
+Cambia:
+- **D1:** un bloque `etcd` mal formado ya no para el proceso: ese componente queda sin etcd, con `[ETCD-CLIENTE-FATAL]`
+  periódico (campo, formato y límites), y sigue protegiendo (regla DAY291: el pipeline no se queda parado).
+- **5a:** «si no se alcanza ninguna dirección, el componente no arranca» pasa a «arranca, avisa y reintenta».
+- **DAY314:** el dilema de arrancar sin etcd-server queda resuelto: se arranca. El cifrado de ZMQ no depende del
+  etcd-server (sale de `seed.bin` local).
+
+### Medido contra el estado deseado
+
+- Hoy, sin etcd-server al arrancar: el sniffer sale («etcd integration is REQUIRED… seed must be obtained from
+  etcd-server», motivo falso: la lee de `seed.bin`), el ml-detector sale («REQUIRED for ml-detector»), el firewall sigue
+  sin etcd.
+- Ya existe (DAY310): el ml-detector pide la clave del bronce cada `bronze_key.check_interval_seconds`, no escribe nunca
+  bronce sin firma (`records_sin_clave`), firma con la vigente en modo extendido si el etcd-server cae y aplica en caliente
+  la que llega tarde (`[BRONCE-CLAVE-RECUPERADA]`).
+- `GET /secrets/{CN}` no exige registro, solo el certificado con ese CN: se puede firmar aunque el registro tarde.
+- El firewall pide su clave una sola vez, al arrancar (`zmq_subscriber.cpp:88`); sin clave no escribe su CSV y no la
+  vuelve a pedir.
+- etcd real: TLS mutuo entre pares (`peer-transport-security`, `client-cert-auth: true`) y RBAC para el etcd-server; un
+  miembro nuevo entra solo con `member add`. Hueco: la misma CA firma los certificados de los componentes.
+- Vault es de un nodo: con varios etcd-server las claves HMAC solo se comparten si Vault también es HA.
+- El hueco por falta de clave solo se ve en el log (`[BRONCE-SIN-CLAVE]`, contador); al grafo no llega como evento.
+
+### Plan revisado
+
+- **Commit A (paso 5):** TLS + lista de endpoints + lector único en la librería (F1-F3, C3, E3, E1 = c); ningún componente
+  sale por el etcd-server; la librería reconecta sola en cada llamada si no estaba conectada, así el sondeo de clave del
+  ml-detector la recoge cuando vuelve un etcd-server.
+- **Commit B (DEBT-FW-HMAC-KEY-ALARM-001):** re-registro en segundo plano en la librería, el firewall pide su clave cada
+  cierto tiempo como el ml-detector, aviso periódico mientras no haya etcd; los tres iguales.
+- **PR2:** varios nodos etcd + etcd-server, Vault HA (raft integrado), `peer-cert-allowed-cn` y una CA por despliegue.
+
+### C4 + D3 medidos (commit `1e75d0618`, 17 ficheros, +16/-1131)
+
+- Alcance mayor que M8: detrás de `/v1/epoch` había gestión de época entera en el etcd-server (`EpochInfo`,
+  `set_epoch`/`get_epoch`, `guardar_epoca`/`leer_epoca` del registro y su test). Fuera todo; también OpenSSL y
+  `CPPHTTPLIB_OPENSSL_SUPPORT PUBLIC` de `crypto_provider` (solo los usaba el registrador).
+- Corrección de M9: `crypto_provider` lo enlazan el etcd-server y el firewall por la ruta del `.so`, no como objetivo de
+  CMake, así que la definición `PUBLIC` no les llegaba. El riesgo ODR del firewall estaba en el `.so`: llevaba httplib
+  compilado con OpenSSL (el registrador) junto a `libetcd_client.so` sin OpenSSL. Desaparece con el registrador.
+- Banco (Debian 12, GCC 12.2.0, cadena del Makefile, etcd-server en production): control y parche con los mismos avisos
+  (8 notas de `lto-wrapper` + 1 `ld` libsodium .26/.23); common 13 → 12, etcd-client 4, etcd-server 7, dos pasadas; con
+  `ARGUS_VAULT_ENABLED=ON` 15 → 14 (rojo `test_ntp_health_check` en los dos: sin NTP en el banco). Primera pasada
+  **PARADA**: `test_etcd_server_authz` 16/17, el test esperaba el texto de log `regla 1/15`; corregido a `1/13`. Los tests
+  nuevos contra el código viejo: 3 de 17 fallan.
+- Laboratorio: parcheador 31/31; `pipeline-build` production rc 0; `test-components` 9 / 23 / 13 / 7 / 82; common 12/12.
+  Despliegue **PARADA**: la VM etcd estaba `aborted` (`make up` no la levanta); tras `vagrant up etcd`: PASA, binario
+  `86d52cd93200ed60`, 25 paquetes; `deploy-configs` `etcd ok=7 changed=1`; registro 28/28 y claves 29/29, dos veces.
+
+### E4 medido (commit `59d0fc592`, +52/-1)
+
+- Banco con una PKI de juguete (`d312_pki.sh`): primera pasada y repetición 4 ✅; seis negativos (clave cruzada, falta una
+  clave, certificado de otra CA, CN equivocado, clave 0644, sin `ca.crt`) fallan cada uno con su mensaje. Cazado en el
+  control positivo: OpenSSL 3 antepone `subject=` al sujeto. `ruby -c` del Vagrantfile: `Syntax OK`.
+- Laboratorio: aprovisionamiento rc 0, 4 ✅, repetición rc 0; huellas iguales a las del Mac (sniffer `2af48d66`,
+  ml-detector `a5a2bc4c`, firewall-acl-agent `d2fa1409`, converter `1bfd79af`); `/etc/argus-pki` 0700 root, `.key` 0600 root,
+  entrada borrada. Certificado del firewall medido en el Mac: `CN=OU=firewall-acl-agent` (coincide con B4).
+
+### Deudas y pendientes nuevos (DAY316)
+
+- **DEBT-PKI-AT-REST-001:** `ca.key` en el Mac y las `.key` de los componentes en claro en disco (0600 root). En producción
+  la CA, fuera de línea y lejos del despliegue; para las claves de cliente: pedirlas a Vault al arrancar y tenerlas en
+  memoria, o TPM/HSM.
+- **DEBT-GRAPH-HUECO-SIN-CLAVE-001:** que el periodo sin clave HMAC se vea en el grafo como evento (p. ej. una fila firmada
+  de tipo hueco al recuperar la clave, con inicio, fin y filas perdidas). Toca correlation_v1: diseño propio.
+- Vault del lab: `d314_claves_medir.sh` rota con `force` la clave del CN real `ml-detector` y cada pasada deja claves
+  inmutables para siempre (medido: `c10f19d3` → `60768287`), además de `argus-hmac/d312/prueba`. Propuesta: CN de prueba
+  propio para los instrumentos y rehacer la VM etcd antes del paso 8.
+- DEBT-REPO-RESIDUOS-001: cuatro parcheadores viejos sin trackear en `scripts/` (`d313_4b2_parche.py`, `d313_4b3_parche.py`,
+  `d314_4b4_parche.py`, `d314_docs_parche.py`).
+- Tests manuales de etcd-client que nunca entran en ctest y necesitan un etcd-server en HTTP (`test_hmac_integration_client`,
+  `test_put_config_integration`, `test_service_discovery`): se actualizan en el commit A o se borran; decide Alonso.
+
+### Lecciones DAY316
+
+- Contar todas las apariciones de un número antes de cambiarlo: el test guardaba el 15 también dentro de un texto de log.
+- Un control positivo hace falta también en los scripts de aprovisionamiento (OpenSSL 3 y `subject=`).
+- `vault status` en la VM etcd necesita `sudo` y certificado de cliente: un `grep` vacío no prueba nada.
+- Sin emojis en los comandos que se pegan en la terminal: zsh calcula mal el ancho y la línea se ve corrida.
