@@ -326,32 +326,19 @@ int main(int argc, char* argv[]) {
         // ============================================================================
 
         std::unique_ptr<sniffer::EtcdClient> etcd_client;
+        std::unique_ptr<etcd_client::AvisoBloqueFatal> aviso_etcd_fatal;
 
-        // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería (un solo lector para los tres componentes);
-        // D2: fuera etcd.enabled. Con campos fatales (endpoints, rutas TLS) el sniffer se queda sin etcd.
+        // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería (un solo lector para los tres componentes).
+        // [ETCD-CLIENTE-B1-D316] G2: el sniffer nunca sale ni espera por etcd. Sin fatales, el mantenedor de la librería
+        // se registra (y se vuelve a registrar) en segundo plano y sube este JSON (G3); con fatales, sigue sin etcd y lo
+        // repite en el log cada 30 s.
         std::cout << "\n[etcd] Leyendo el bloque etcd del JSON..." << std::endl;
         auto lectura_etcd = etcd_client::leer_bloque_etcd(g_config.etcd.bloque_json, std::cout);
         if (lectura_etcd.fatales.empty()) {
             etcd_client = std::make_unique<sniffer::EtcdClient>(lectura_etcd.config, "sniffer");
-
-            // Conectar y obtener clave de cifrado
-            if (!etcd_client->initialize()) {
-                std::cerr << "⚠️  [etcd] Failed to initialize - continuing without etcd" << std::endl;
-                etcd_client.reset();
-            } else {
-                // Registrar servicio y subir configuración completa
-                if (!etcd_client->registerService()) {
-                    std::cerr << "⚠️  [etcd] Failed to register service - continuing without etcd" << std::endl;
-                    etcd_client.reset();
-                } else {
-                    std::cout << "✅ [etcd] Sniffer registered and config uploaded" << std::endl;
-                    std::cout << "🔐 [etcd] Config encrypted with ChaCha20-Poly1305" << std::endl;
-                    std::cout << "🗜️  [etcd] Config compressed with LZ4" << std::endl;
-                }
-            }
+            etcd_client->arrancar(config_path);
         } else {
-            std::cerr << "⚠️  [etcd] bloque etcd con " << lectura_etcd.fatales.size()
-                      << " campos fatales ([ETCD-CLIENTE-FATAL] arriba): el sniffer queda sin etcd" << std::endl;
+            aviso_etcd_fatal = std::make_unique<etcd_client::AvisoBloqueFatal>("sniffer", lectura_etcd.fatales.size());
         }
 
         // ============================================================================
@@ -678,51 +665,9 @@ int main(int argc, char* argv[]) {
         sniffer_config.transport.compression.compression_ratio_threshold = g_config.compression.compression_ratio_threshold;
         sniffer_config.transport.compression.adaptive_compression = g_config.compression.adaptive_compression;
 
-        // ═══════════════════════════════════════════════════════════════════════
-// 🎯 DAY 29: semilla de cifrado. [ETCD-CLIENTE-D316] C3: se lee de seed.bin local (ADR-013, desde DAY98), no del
-// etcd-server. Sin etcd-server el sniffer todavía no arranca: lo cambia el commit siguiente (estado deseado DAY316).
-// ═══════════════════════════════════════════════════════════════════════
-std::string encryption_seed;
-
-if (!etcd_client) {
-    std::cerr << "\n❌ FATAL: etcd integration is REQUIRED for sniffer" << std::endl;
-    std::cerr << "   Reason: sin etcd-server el sniffer aún no arranca (hasta el commit siguiente, DAY316)" << std::endl;
-    std::cerr << "   Action: comprobar el bloque etcd del JSON y que el etcd-server responde" << std::endl;
-    std::cerr << "   Security: Hardcoded encryption keys are NOT acceptable" << std::endl;
-    return 1;
-}
-
-// Retry mechanism (3 attempts, like firewall-acl-agent)
-const int max_retries = 3;
-const int retry_delay_seconds = 2;
-
-for (int attempt = 1; attempt <= max_retries; ++attempt) {
-    std::cout << "🔑 [etcd] Attempt " << attempt << "/" << max_retries
-              << ": Getting encryption seed..." << std::endl;
-
-    encryption_seed = etcd_client->leer_semilla_local();
-
-    if (!encryption_seed.empty()) {
-        std::cout << "✅ Semilla de cifrado leída de seed.bin (local)" << std::endl;
-        break;
-    }
-
-    if (attempt < max_retries) {
-        std::cerr << "⚠️  [etcd] Failed to get seed, retrying in "
-                  << retry_delay_seconds << "s..." << std::endl;
-        std::this_thread::sleep_for(std::chrono::seconds(retry_delay_seconds));
-    }
-}
-
-if (encryption_seed.empty()) {
-    std::cerr << "\n❌ FATAL: Failed to get encryption seed after "
-              << max_retries << " attempts" << std::endl;
-    std::cerr << "   Reason: no se pudo leer /etc/ml-defender/sniffer/seed.bin" << std::endl;
-    std::cerr << "   Action: comprobar la provisión de la semilla (ADR-013)" << std::endl;
-    return 1;
-}
-
-        ring_consumer_ptr = new sniffer::RingBufferConsumer(sniffer_config, fast_detector_config, encryption_seed);
+        // [ETCD-CLIENTE-B1-D316] G5: fuera el bloque de la semilla (DAY 29): leía seed.bin para pasárselo a
+        // RingBufferConsumer, que lo ignoraba desde DAY98; el cifrado lo hace SeedClient dentro del consumidor (ADR-013).
+        ring_consumer_ptr = new sniffer::RingBufferConsumer(sniffer_config, fast_detector_config);
         auto& ring_consumer = *ring_consumer_ptr;
         ring_consumer.set_victim_board(g_ddos_victim_board);  // [DDOS-VWIN-D279:MAIN-RC]
 

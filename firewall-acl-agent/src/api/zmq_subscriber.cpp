@@ -70,36 +70,20 @@ ZMQSubscriber::ZMQSubscriber(BatchProcessor& processor,
         );
         logger_->start();
 
-        // ✅ Day 59: Retrieve HMAC key from etcd if available
-        // ✅ Day 59: Retrieve HMAC key from etcd if available
+        // [ETCD-CLIENTE-B1-D316] /secrets/<CN> directamente: solo exige el certificado con ese CN, no el registro (que
+        // ahora llega en segundo plano y podría no estar aún). Una sola petición al arrancar: el sondeo periódico y el
+        // CSV por clave van en B2 (DEBT-FW-HMAC-KEY-ALARM-001).
         if (etcd_client_) {
-            try {
-                // Get service discovery paths from etcd-server
-                auto paths = etcd_client_->get_service_paths();
-
-                if (!paths.is_valid()) {
-                    FIREWALL_LOG_ERROR("Service discovery paths not available from etcd-server");
-                    throw std::runtime_error("Missing service discovery paths");
-                }
-
-                FIREWALL_LOG_INFO("Using service discovery path for HMAC key",
-                    "path", paths.hmac_key);
-
-                auto key_result = etcd_client_->get_hmac_key(paths.hmac_key);
-
-                if (key_result.has_value()) {
-                    hmac_key_ = key_result;
-                    FIREWALL_LOG_INFO("HMAC key retrieved from etcd",
-                        "key_path", paths.hmac_key,
-                        "key_size_bytes", hmac_key_->size());
-                } else {
-                    FIREWALL_LOG_WARN("HMAC key not found in etcd, CSV signing disabled",
-                        "key_path", paths.hmac_key);
-                }
-
-            } catch (const std::exception& e) {
-                FIREWALL_LOG_ERROR("Failed to retrieve HMAC key from etcd",
-                    "error", e.what());
+            const std::string ruta_clave = "/secrets/firewall-acl-agent";
+            auto key_result = etcd_client_->get_hmac_key(ruta_clave);
+            if (key_result.has_value()) {
+                hmac_key_ = key_result;
+                FIREWALL_LOG_INFO("HMAC key retrieved from etcd",
+                    "key_path", ruta_clave,
+                    "key_size_bytes", hmac_key_->size());
+            } else {
+                FIREWALL_LOG_WARN("HMAC key not available from etcd, CSV signing disabled",
+                    "key_path", ruta_clave);
             }
         } else {
             FIREWALL_LOG_WARN("No etcd client provided, CSV signing disabled");

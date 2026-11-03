@@ -9,6 +9,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <cstdio>
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -30,7 +31,8 @@ static int fallos = 0, total = 0;
     do {                                                                             \
         ++total;                                                                     \
         const bool ok_ = (cond);                                                     \
-        std::cout << (ok_ ? "PASA  " : "FALLA ") << nombre << std::endl;             \
+        std::printf("%s%s\n", ok_ ? "PASA  " : "FALLA ", std::string(nombre).c_str()); \
+        std::fflush(stdout);  /* printf: la captura de cout/cerr no se lo come */  \
         if (!ok_) ++fallos;                                                          \
     } while (0)
 
@@ -75,7 +77,9 @@ struct Falso {
     std::mutex m;
     std::map<std::string, int> cuentas;   // ruta -> peticiones recibidas
     std::map<std::string, int> estado;    // ruta -> status que responde (defecto 200)
-    Falso(const Pki& p, const std::string& cert, const std::string& key) {
+    // [ETCD-CLIENTE-B1-D316] puerto_fijo > 0: escucha en ese puerto (un servidor que "aparece" o "vuelve" donde ya
+    // apunta el cliente)
+    Falso(const Pki& p, const std::string& cert, const std::string& key, int puerto_fijo = 0) {
         srv = std::make_unique<httplib::SSLServer>(p.f(cert).c_str(), p.f(key).c_str(), p.f("ca.crt").c_str());
         auto h = [this](const httplib::Request& req, httplib::Response& res) {
             int st = 200;
@@ -92,13 +96,22 @@ struct Falso {
         };
         srv->Get(".*", h);
         srv->Post(".*", h);
-        puerto = srv->bind_to_any_port("127.0.0.1");
+        srv->Put(".*", h);  // [ETCD-CLIENTE-B1-D316] PUT /v1/config/<CN>
+        if (puerto_fijo > 0) {
+            puerto = srv->bind_to_port("127.0.0.1", puerto_fijo) ? puerto_fijo : -1;
+        } else {
+            puerto = srv->bind_to_any_port("127.0.0.1");
+        }
         hilo = std::thread([this] { srv->listen_after_bind(); });
         srv->wait_until_ready();
     }
     ~Falso() {
         srv->stop();
         if (hilo.joinable()) hilo.join();
+    }
+    void pon_estado(const std::string& r, int st) {
+        std::lock_guard<std::mutex> lk(m);
+        if (st == 200) estado.erase(r); else estado[r] = st;
     }
     int cuenta(const std::string& r) {
         std::lock_guard<std::mutex> lk(m);
@@ -128,6 +141,47 @@ Config base(const Pki& p, const std::vector<std::string>& eps) {
     c.compression_enabled = false;
     c.heartbeat_enabled = false;
     return c;
+}
+
+// [ETCD-CLIENTE-B1-D316] Captura std::cout y std::cerr juntos, segura con el hilo mantenedor escribiendo a la vez
+struct BufSeguro : std::streambuf {
+    std::mutex m;
+    std::string s;
+    int overflow(int c) override {
+        if (c != EOF) { std::lock_guard<std::mutex> lk(m); s.push_back(static_cast<char>(c)); }
+        return c;
+    }
+    std::streamsize xsputn(const char* p, std::streamsize n) override {
+        std::lock_guard<std::mutex> lk(m);
+        s.append(p, static_cast<size_t>(n));
+        return n;
+    }
+    std::string texto() { std::lock_guard<std::mutex> lk(m); return s; }
+};
+struct CapturaTodo {
+    BufSeguro buf;
+    std::streambuf* vo;
+    std::streambuf* ve;
+    CapturaTodo() : vo(std::cout.rdbuf(&buf)), ve(std::cerr.rdbuf(&buf)) {}
+    ~CapturaTodo() { std::cout.rdbuf(vo); std::cerr.rdbuf(ve); }
+    std::string str() { return buf.texto(); }
+    size_t veces(const std::string& marca) {
+        const std::string t = str();
+        size_t n = 0;
+        for (size_t i = t.find(marca); i != std::string::npos; i = t.find(marca, i + 1)) ++n;
+        return n;
+    }
+};
+
+// Espera hasta que se cumpla la condición o pasen ms
+template <class F>
+bool espera(F cond, int ms) {
+    const auto fin = std::chrono::steady_clock::now() + std::chrono::milliseconds(ms);
+    while (std::chrono::steady_clock::now() < fin) {
+        if (cond()) return true;
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+    return cond();
 }
 
 // Captura std::cerr mientras vive
@@ -274,6 +328,87 @@ int main() {
         CapturaCerr cap;
         EtcdClient cl(c);
         COMPRUEBA("T7 sin endpoints: connect falla con mensaje", !cl.connect() && cap.str().find("[ETCD-CLIENTE-FATAL]") != std::string::npos);
+    }
+
+    // ── [ETCD-CLIENTE-B1-D316] mantenedor (G1-G3) ──────────────────────────────────────────────────────────────
+    {
+        const std::string ruta_cfg = (p.dir / "componente.json").string();
+        std::ofstream(ruta_cfg) << R"({"component": {"name": "sniffer"}, "x": 1})";
+        const int pf = puerto_cerrado();
+        Config c = base(p, {"https://127.0.0.1:" + std::to_string(pf)});
+        c.heartbeat_enabled = true;
+        c.heartbeat_interval_seconds = 1;  // el lector exige [5, 300]; aquí la Config va directa para acortar el test
+        c.retry_interval_ms = 100;
+        CapturaTodo cap;
+        auto cl = std::make_unique<EtcdClient>(c);
+        const auto t0 = std::chrono::steady_clock::now();
+        cl->iniciar(ruta_cfg, "packet-sniffer");
+        const auto ms_iniciar = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t0).count();
+        const bool sin = espera([&] { return cap.veces("[ETCD-CLIENTE-SIN-SERVICIO]") >= 2; }, 4000);
+        COMPRUEBA("R1 sin etcd-server: iniciar() vuelve enseguida y avisa en cada latido",
+                  ms_iniciar < 200 && sin && !cl->is_connected() &&
+                      cap.str().find("el componente sigue protegiendo") != std::string::npos);
+
+        auto srv = std::make_unique<Falso>(p, "servidor.crt", "servidor.key", pf);
+        const bool reg = espera([&] { return cl->is_connected(); }, 3000);
+        espera([&] { return srv->cuenta("/v1/config/sniffer") >= 1; }, 2000);
+        COMPRUEBA("R2 el etcd-server aparece: se registra en <= 1 latido y sube la config del JSON de arranque",
+                  reg && srv->cuenta("/register") == 1 && srv->cuenta("/v1/config/sniffer") == 1 &&
+                      cap.str().find("[ETCD-CLIENTE-REGISTRADO] sniffer") != std::string::npos &&
+                      cap.str().find("config subida: " + ruta_cfg) != std::string::npos);
+        COMPRUEBA("R2 latidos tras registrarse", espera([&] { return srv->cuenta("/v1/heartbeat/sniffer") >= 2; }, 3500));
+
+        srv->pon_estado("/v1/heartbeat/sniffer", 404);
+        const bool rereg = espera([&] { return srv->cuenta("/register") == 2 && srv->cuenta("/v1/config/sniffer") == 2; }, 3500);
+        srv->pon_estado("/v1/heartbeat/sniffer", 200);
+        COMPRUEBA("R3 404 al latido: vuelve a registrarse y a subir la config",
+                  rereg && cap.str().find("[ETCD-CLIENTE-REGISTRO-PERDIDO]") != std::string::npos);
+
+        espera([&] { return cl->is_connected(); }, 3000);
+        srv.reset();  // el etcd-server cae
+        const size_t sin_antes = cap.veces("[ETCD-CLIENTE-SIN-SERVICIO]");
+        const bool cae = espera([&] { return !cl->is_connected() && cap.veces("[ETCD-CLIENTE-SIN-SERVICIO]") > sin_antes; }, 4000);
+        srv = std::make_unique<Falso>(p, "servidor.crt", "servidor.key", pf);  // vuelve con el registro conservado
+        const bool vuelve = espera([&] { return cl->is_connected(); }, 4000);
+        COMPRUEBA("R4 cae y vuelve: SIN-SERVICIO y luego REANUDADO, sin nuevo /register",
+                  cae && vuelve && srv->cuenta("/register") == 0 && srv->cuenta("/v1/heartbeat/sniffer") >= 1 &&
+                      cap.str().find("[ETCD-CLIENTE-REANUDADO] sniffer") != std::string::npos);
+
+        // Parada: con un latido de 1 s; la espera es interrumpible y da de baja una vez
+        const auto t1 = std::chrono::steady_clock::now();
+        cl.reset();
+        const auto ms_parada = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t1).count();
+        COMPRUEBA("R5 parada inmediata y baja una vez",
+                  ms_parada < 1000 && srv->cuenta("/unregister") == 1 &&
+                      cap.str().find("[ETCD-CLIENTE-BAJA] sniffer: dado de baja") != std::string::npos);
+    }
+    {
+        Config c = base(p, {a.url()});
+        EtcdClient cl(c);  // sin connect() ni registro
+        const auto k = cl.get_hmac_key("/secrets/sniffer");
+        COMPRUEBA("R6 get_hmac_key sin connect() ni registro", k.has_value() && k->size() == 32);
+    }
+    {
+        Config c = base(p, {a.url()});
+        c.heartbeat_enabled = true;
+        c.heartbeat_interval_seconds = 30;
+        const int antes = a.cuenta("/v1/heartbeat/sniffer");
+        auto cl = std::make_unique<EtcdClient>(c);
+        const bool r = cl->register_component();
+        const bool latio = espera([&] { return a.cuenta("/v1/heartbeat/sniffer") - antes >= 1; }, 2000);
+        const auto t1 = std::chrono::steady_clock::now();
+        cl.reset();
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t1).count();
+        COMPRUEBA("R7 register_component(): primer latido sin esperar los 30 s y parada < 1 s",
+                  r && latio && ms < 1000);
+    }
+    {
+        CapturaTodo cap;
+        const auto t1 = std::chrono::steady_clock::now();
+        { etcd_client::AvisoBloqueFatal aviso("sniffer", 2, 30); }
+        const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t1).count();
+        COMPRUEBA("R8 AvisoBloqueFatal: avisa al momento y para enseguida",
+                  ms < 1000 && cap.str().find("[ETCD-CLIENTE-FATAL] sniffer: bloque etcd con 2 campos fatales") != std::string::npos);
     }
 
     std::cout << "test_etcd_cliente_tls: " << (total - fallos) << "/" << total << std::endl;

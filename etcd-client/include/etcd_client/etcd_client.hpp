@@ -80,6 +80,20 @@ LecturaBloque leer_bloque_etcd(const nlohmann::json& bloque, std::ostream& log);
 // Igual, desde el texto JSON del bloque (para los componentes que leen su JSON con jsoncpp)
 LecturaBloque leer_bloque_etcd(const std::string& bloque_json, std::ostream& log);
 
+// [ETCD-CLIENTE-B1-D316] G2: un bloque etcd con campos fatales no para el proceso. Mientras viva este objeto se repite
+// cada intervalo_s «[ETCD-CLIENTE-FATAL] <CN>: bloque etcd con <n> campos fatales ...; el componente sigue sin etcd».
+// Igual en los tres componentes.
+class AvisoBloqueFatal {
+public:
+    AvisoBloqueFatal(std::string componente, size_t fatales, int intervalo_s = 30);
+    ~AvisoBloqueFatal();
+    AvisoBloqueFatal(const AvisoBloqueFatal&) = delete;
+    AvisoBloqueFatal& operator=(const AvisoBloqueFatal&) = delete;
+private:
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
+};
+
 // Main EtcdClient class
 class EtcdClient {
 public:
@@ -101,9 +115,17 @@ public:
     // Connection Management
     // ========================================================================
 
+    // [ETCD-CLIENTE-B1-D316] connect(): una comprobación de /health (ya no condiciona nada). is_connected(): registrado
+    // y latiendo. disconnect(): para el mantenedor.
     bool connect();
     bool is_connected() const;
     void disconnect();
+    // [ETCD-CLIENTE-B1-D316] G1-G3 (DAY316): arranca el hilo mantenedor y vuelve enseguida. Cada
+    // heartbeat_interval_seconds: registrado, latido; sin servicio, intenta registrarse (o reanudar el latido si el
+    // registro se conservó). En cada registro sube el JSON de ruta_config (el de arranque del proceso) con
+    // _registration.type = tipo. Logs: [ETCD-CLIENTE-MANTENEDOR], -REGISTRADO, -SIN-SERVICIO, -REANUDADO,
+    // -REGISTRO-PERDIDO, -CONFIG-NO-SUBIDA, -BAJA (al destruirse, si estaba registrado).
+    void iniciar(const std::string& ruta_config, const std::string& tipo);
 
     // ========================================================================
     // Key-Value Operations

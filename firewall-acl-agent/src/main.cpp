@@ -396,8 +396,10 @@ int main(int argc, char** argv) {
     // ETCD Integration (Day 50: Fixed path bug)
     // ═══════════════════════════════════════════════════════════════════════
 
-    // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería; D2: fuera etcd.enabled. Con campos fatales
-    // el firewall sigue protegiendo sin etcd (como hoy cuando no alcanza el etcd-server).
+    // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería; D2: fuera etcd.enabled.
+    // [ETCD-CLIENTE-B1-D316] G2: el firewall nunca sale ni espera por etcd. Sin fatales, el mantenedor de la librería
+    // se registra en segundo plano y sube este JSON (G3); con fatales, sigue sin etcd y lo repite en el log cada 30 s.
+    std::unique_ptr<etcd_client::AvisoBloqueFatal> aviso_etcd_fatal;
     auto lectura_etcd = etcd_client::leer_bloque_etcd(config.etcd.bloque_json, std::cout);
     if (lectura_etcd.fatales.empty()) {
         try {
@@ -405,26 +407,15 @@ int main(int argc, char** argv) {
                 lectura_etcd.config,
                 "firewall-acl-agent"
             );
-
-            if (!etcd_client->initialize()) {
-                FIREWALL_LOG_WARN("etcd initialization failed - continuing without etcd");
-                etcd_client.reset();
-            } else if (!etcd_client->registerService()) {
-                FIREWALL_LOG_WARN("etcd service registration failed - continuing without etcd");
-                etcd_client.reset();
-            } else {
-                FIREWALL_LOG_INFO("etcd registration successful",
-                    "service", "firewall-acl-agent",
-                    "endpoints", std::to_string(lectura_etcd.config.endpoints.size()));
-            }
+            etcd_client->arrancar(config_path);
         } catch (const std::exception& e) {
-            FIREWALL_LOG_ERROR("etcd client exception",
+            FIREWALL_LOG_ERROR("etcd client exception - continuing without etcd",
                 "error", e.what());
             etcd_client.reset();
         }
     } else {
-        FIREWALL_LOG_WARN("etcd block has fatal fields ([ETCD-CLIENTE-FATAL] above) - continuing without etcd",
-            "fatales", std::to_string(lectura_etcd.fatales.size()));
+        aviso_etcd_fatal = std::make_unique<etcd_client::AvisoBloqueFatal>("firewall-acl-agent",
+                                                                           lectura_etcd.fatales.size());
     }
 
         FIREWALL_LOG_DEBUG("Configuration phase completed successfully");
@@ -849,12 +840,8 @@ int main(int argc, char** argv) {
         if (config.transport.encryption.enabled) {
             zmq_config.encryption_enabled = true;
 
-            if (!etcd_client) {
-                FIREWALL_LOG_CRASH("Encryption enabled but etcd not initialized");
-                std::cerr << "[ERROR] Encryption enabled but etcd not initialized" << std::endl;
-                std::cerr << "[ERROR] Revisa el bloque etcd de firewall.json ([ETCD-CLIENTE-FATAL] / [ETCD-CLIENTE-NO-DISPONIBLE] arriba)" << std::endl;
-                return 1;
-            }
+            // [ETCD-CLIENTE-B1-D316] G2: fuera la salida «Encryption enabled but etcd not initialized»: el cifrado de ZMQ
+            // sale de seed.bin (SeedClient), no de etcd. Medido DAY316: con ella, sin etcd el firewall no arrancaba.
 
             // ADR-013 PHASE 2 — DAY 159: crypto_token deprecated.
             // CryptoTransport inicializa desde seed.bin via SeedClient en ZMQSubscriber.

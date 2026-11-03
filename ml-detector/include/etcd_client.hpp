@@ -28,16 +28,10 @@ namespace ml_detector {
         EtcdClient& operator=(const EtcdClient&) = delete;
 
         /**
-         * @brief Initialize connection and verify server availability
-         * @return true if initialization successful
+         * @brief [ETCD-CLIENTE-B1-D316] Arranca el mantenedor de la librería y vuelve enseguida (G1-G3, DAY316)
+         * @param ruta_config JSON con el que arrancó el ml-detector; se sube al etcd-server en cada registro
          */
-        bool initialize();
-
-        /**
-         * @brief Register service with etcd-server and upload config
-         * @return true if registration successful
-         */
-        bool registerService();
+        void arrancar(const std::string& ruta_config);
 
         /**
          * @brief Get the bronze HMAC key from etcd-server

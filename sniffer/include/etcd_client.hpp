@@ -19,23 +19,9 @@ namespace sniffer {
         EtcdClient(const etcd_client::Config& base, const std::string& component_name);  // [ETCD-CLIENTE-D316]
         ~EtcdClient();
 
-        // Core API
-        bool initialize();
-        bool is_connected() const;
-        bool registerService();
-        bool unregisterService();
-
-        // Configuration management
-        bool upload_full_config(const std::string& config_json);
-        bool get_component_config(const std::string& component_name);
-
-        // Status and monitoring
-        bool get_pipeline_status();
-        std::string get_encryption_status();
-
-        // ADR-013 PHASE 2: semilla de crypto-transport leída de seed.bin local. [ETCD-CLIENTE-D316] C3: antes se llamaba
-        // get_encryption_seed() y el log decía que venía del etcd-server; nunca vino de ahí desde DAY98.
-        std::string leer_semilla_local() const;
+        // [ETCD-CLIENTE-B1-D316] Arranca el mantenedor de la librería y vuelve enseguida (G1-G3, DAY316). ruta_config: el
+        // JSON con el que arrancó el sniffer (-c); se sube al etcd-server en cada registro.
+        void arrancar(const std::string& ruta_config);
 
     private:
         struct Impl;

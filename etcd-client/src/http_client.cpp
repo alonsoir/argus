@@ -54,10 +54,11 @@ std::string Transporte::direccion_actual() const {
 }
 
 Respuesta Transporte::peticion(const std::string& metodo, const std::string& ruta, const std::string& cuerpo,
-                               const std::string& content_type, size_t original_size, int intentos) {
+                               const std::string& content_type, size_t original_size, int intentos, bool callado) {
     Respuesta r;
     const std::string& comp = c_.component_name;
     if (c_.endpoints.empty()) {
+        r.error = "sin direcciones";
         std::cerr << "[ETCD-CLIENTE-SIN-ENDPOINTS] " << comp << ": " << metodo << " " << ruta
                   << " sin direcciones del etcd-server (bloque etcd del JSON)" << std::endl;
         return r;
@@ -107,9 +108,10 @@ Respuesta Transporte::peticion(const std::string& metodo, const std::string& rut
             }
             if (!res) {
                 ultimo_error = httplib::to_string(res.error());
-                std::cerr << "[ETCD-CLIENTE] " << comp << ": " << metodo << " " << url << ruta
-                          << " sin respuesta (" << ultimo_error << "), intento " << (i + 1) << "/" << intentos
-                          << std::endl;
+                if (!callado)
+                    std::cerr << "[ETCD-CLIENTE] " << comp << ": " << metodo << " " << url << ruta
+                              << " sin respuesta (" << ultimo_error << "), intento " << (i + 1) << "/" << intentos
+                              << std::endl;
                 continue;
             }
             std::cout << "[HTTP←] " << res->status << " | " << metodo << " " << url << ruta
@@ -136,8 +138,10 @@ Respuesta Transporte::peticion(const std::string& metodo, const std::string& rut
         }
         errores << " " << url << ": " << ultimo_error << ";";
     }
-    std::cerr << "[ETCD-CLIENTE-NO-DISPONIBLE] " << comp << ": " << metodo << " " << ruta << " ninguna de las "
-              << c_.endpoints.size() << " direcciones del etcd-server responde:" << errores.str() << std::endl;
+    r.error = errores.str();
+    if (!callado)
+        std::cerr << "[ETCD-CLIENTE-NO-DISPONIBLE] " << comp << ": " << metodo << " " << ruta << " ninguna de las "
+                  << c_.endpoints.size() << " direcciones del etcd-server responde:" << r.error << std::endl;
     return r;
 }
 

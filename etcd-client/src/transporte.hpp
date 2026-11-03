@@ -15,16 +15,18 @@ struct Respuesta {
     int status = 0;            // 0 = ninguna dirección respondió
     std::string body;
     bool exito = false;        // 2xx
+    std::string error;         // [ETCD-CLIENTE-B1-D316] status 0: el error de cada dirección («url: error;» ...)
 };
 
 class Transporte {
 public:
     explicit Transporte(const Config& c) : c_(c) {}
 
-    // intentos_por_direccion <= 0: los de la configuración (retry_attempts)
+    // intentos_por_direccion <= 0: los de la configuración (retry_attempts). callado: sin las líneas por intento ni
+    // [ETCD-CLIENTE-NO-DISPONIBLE] (las usa el mantenedor, que lo resume en [ETCD-CLIENTE-SIN-SERVICIO] con r.error).
     Respuesta peticion(const std::string& metodo, const std::string& ruta, const std::string& cuerpo = "",
                        const std::string& content_type = "application/json", size_t original_size = 0,
-                       int intentos_por_direccion = 0);
+                       int intentos_por_direccion = 0, bool callado = false);
 
     std::string direccion_actual() const;
 
