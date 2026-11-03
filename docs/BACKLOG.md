@@ -8528,3 +8528,15 @@ compila); el bloque `etcd` de `correlation-engine/config/correlation_engine.json
 Una línea de éxito solo vale si es de esta ejecución (`sudo bash d313_es_vm.sh` no pudo escribir su fichero de comprobación
 y el `grep` mostró el OK viejo). Un log por comando. Un servidor falso responde también lo que el cliente pide antes de la
 ruta bajo prueba.
+
+### Diseño del commit B (DAY316) — `docs/ml-heads/day312_diseno.md`, «Diseño del commit B (paso 5)»
+Decisiones G1-G7 de Alonso: un hilo mantenedor en la librería con un solo ritmo (`heartbeat_interval_seconds`: latido si
+está registrado, reconexión si no); ninguno de los tres sale por etcd (deja atrás F1 de DAY310); la config se sube al
+registrarse y al volver a registrarse, desde el JSON con el que arrancó; el firewall pide su clave cada
+`hmac_key.check_interval_seconds` y abre un CSV por clave; fuera la semilla muerta del sniffer. B1 (librería y arranque) y
+B2 (clave del firewall, cierra DEBT-FW-HMAC-KEY-ALARM-001).
+
+### DEBT-SNIFFER-LIBPCAP-ETCD-001 — ABIERTA (nueva DAY316, G7)
+El sniffer libpcap (variante B, `main_libpcap.cpp`, `sniffer-libpcap.json`) no habla con etcd: ni registro, ni latidos,
+ni config subida, aunque su JSON ya trae el bloque `etcd` del commit A. Mismo comportamiento que la variante A cuando se
+retome (lector único y mantenedor de la librería).

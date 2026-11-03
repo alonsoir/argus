@@ -904,3 +904,99 @@ reconexión y el re-registro.
 - Un servidor falso tiene que responder todo lo que el cliente pide de verdad (el `/health` de `connect()`), no solo la
   ruta bajo prueba.
 - `str.splitlines()` corta también en `\r`, `\x0c` y `\u2028`: para aplicar diffs, partir solo por `\n`.
+
+## Diseño del commit B (paso 5) — DAY316, escrito ANTES de tocar código
+
+Objetivo (estado deseado de Alonso, DAY316): el pipeline arranca y sigue protegiendo aunque no responda ningún etcd-server;
+cuando uno vuelve, cada componente se registra y recoge su clave HMAC solo. Va en dos commits: **B1** (librería y arranque de
+los tres) y **B2** (clave del firewall; cierra DEBT-FW-HMAC-KEY-ALARM-001).
+
+### Medido para este diseño (código tras `fe99a7e70`)
+
+- Librería: `get_hmac_key()`, `set/get`, `register_component()` y el resto devuelven fallo si `connected_` es falso, y
+  `connected_` solo se pone en `connect()`. Un componente que arranca sin etcd-server no vuelve a intentarlo nunca (y el
+  sondeo de clave del ml-detector no la recogería aunque el servidor vuelva).
+- El hilo de latidos arranca solo tras un registro bueno; un latido fallido deja un aviso y nada más. El servidor responde
+  404 a un latido de un componente no registrado (`latir` → `NoEncontrado`); el registro vive en el etcd real, así que tras
+  reiniciar el etcd-server el componente sigue registrado.
+- `register_component()` hace `unlock()`/`lock()` a mano sobre el mutex de un `lock_guard`.
+- Sniffer: sin etcd sale en `main.cpp:687` («etcd integration is REQUIRED»). Ese bloque lee `seed.bin` para pasárselo a
+  `RingBufferConsumer`, que lo ignora desde DAY98 (parámetro comentado; el cifrado lo hace `SeedClient`). El sniffer no
+  pide clave HMAC.
+- ml-detector: sale sin etcd-server o con fatales. El sondeo de clave ya existe (`bronze_key.check_interval_seconds`,
+  `[BRONCE-SIN-CLAVE]`, `-SIN-CONFIRMAR`, `-CONFIRMADA`, `-RECUPERADA`, `-CAMBIADA`); el proveedor llama a
+  `etcd->get_hmac_key()` sin mirar si `etcd` es nulo.
+- Firewall: pide la clave una vez (`zmq_subscriber.cpp:88`, ruta sacada de la respuesta de `/register`); sin clave no
+  escribe filas y no la vuelve a pedir. Escribe todo en un único `firewall_blocks.csv` en modo añadir: con un cambio de
+  clave quedarían filas de dos claves en el mismo fichero. Lo lee `scripts/parquet/generate_parquet.py` (ruta fija).
+- Los envoltorios suben su config con rutas escritas en el código (sniffer `/vagrant/sniffer/config/sniffer.json`,
+  firewall `../config/firewall.json`).
+- El sniffer libpcap (`main_libpcap.cpp`) no habla con etcd.
+
+### Decisiones de Alonso (DAY316)
+
+- **G1.** Un hilo «mantenedor» en la librería sustituye al de latidos, con **un solo ritmo**: `heartbeat_interval_seconds`
+  (Alonso: el latido es cada cuánto se pregunta por el etcd-server, también para reconectar). Sin campos nuevos.
+- **G2.** Ninguno de los tres sale nunca por etcd. Deja atrás la decisión F1 de DAY310 (argumento del impostor): el cifrado
+  de ZMQ sale de `seed.bin` y no del registro, y los componentes se autentican ante el etcd-server con mTLS.
+- **G3.** Al registrarse (y al volver a registrarse) la librería llama a una función del envoltorio que sube la config del
+  JSON con el que arrancó el proceso. Que quede claro en el log.
+- **G4.** El firewall pide su clave como el ml-detector (mismo comportamiento y etiquetas equivalentes); **a**: al cambiar
+  la clave cierra el CSV y abre otro.
+- **G5.** Fuera el bloque muerto de la semilla del sniffer.
+- **G6.** Dos commits, B1 y B2, cada uno con sus tests en ctest y su medida en el laboratorio.
+- **G7.** El sniffer libpcap sin etcd: deuda aparte (DEBT-SNIFFER-LIBPCAP-ETCD-001).
+
+### B1 — librería y arranque
+
+- **Estados del mantenedor:** `SIN_SERVICIO` → (conecta y registra) → `REGISTRADO`. Cada `heartbeat_interval_seconds`:
+  - `REGISTRADO`: latido. 2xx: nada. 404: vuelve a registrarse (y a subir la config). Sin respuesta o 5xx en todas las
+    direcciones: pasa a `SIN_SERVICIO`.
+  - `SIN_SERVICIO`: intenta `/health` + `/register`. Bien: `REGISTRADO`, sube la config y deja
+    `[ETCD-CLIENTE-REGISTRADO] <CN> en <dirección> tras <s> s sin servicio, <n> intentos; config subida: <ruta JSON> (<bytes>)`.
+    Mal: `[ETCD-CLIENTE-SIN-SERVICIO] <CN> sin etcd-server desde <hora> (<s> s, intento <n>): <dirección>: <error>; ...;
+    el componente sigue protegiendo; próximo intento en <s> s`.
+  - El primer intento es al arrancar, sin bloquear: el proceso sigue aunque falle.
+  - La parada es inmediata (espera interrumpible, como `[PARADA-INMEDIATA-D300]`); al parar, `/unregister` una sola vez si
+    estaba registrado.
+- **Llamadas sin `connected_`:** `get_hmac_key()` y el resto van directas al transporte; si no hay servicio fallan como
+  cualquier petición sin respuesta. `connect()`/`is_connected()` pasan a reflejar el estado del mantenedor.
+- **Función de registro (G3):** `EtcdClient::al_registrar(std::function<bool()>)`; los envoltorios la usan para el
+  `PUT /v1/config/<CN>` con el JSON leído al arrancar (ruta que reciben de `main`, la misma de `-c` o la del
+  config_loader). Si la subida falla: `[ETCD-CLIENTE-CONFIG-NO-SUBIDA]` y se reintenta en el siguiente latido.
+- **Fatales en el bloque (G2):** el proceso arranca sin etcd y repite `[ETCD-CLIENTE-FATAL] <CN>: bloque etcd con <n> campos
+  fatales (arriba, al arrancar); el componente sigue sin etcd` cada 30 s (el defecto de `heartbeat_interval_seconds`: el
+  campo del bloque roto no se puede leer con garantías).
+- **Arranque:** sniffer, ml-detector y firewall crean siempre el cliente si el bloque no tiene fatales y no salen nunca por
+  etcd. El proveedor de clave del ml-detector comprueba el puntero.
+- **Fuera (G5):** en el sniffer, el bloque de `main.cpp` 680-720, `leer_semilla_local()` y el parámetro `encryption_seed`
+  de `RingBufferConsumer`.
+- **`lock_guard`:** `register_component()` sin `unlock()`/`lock()` a mano.
+
+### B2 — clave del firewall
+
+- `hmac_key.check_interval_seconds` en `firewall.json`, entero [10, 3600], defecto 60, con `[CONFIG]`/`[CONFIG-DEFAULT]`.
+  Hilo propio; pide `/secrets/firewall-acl-agent` (no necesita registro, solo el certificado con ese CN).
+- Mismo comportamiento que el ml-detector: sin clave no escribe CSV y avisa en cada intento (`[FW-CSV-SIN-CLAVE]`, desde
+  cuándo y filas sin escribir); servidor caído con clave vigente: sigue firmando (`[FW-CSV-CLAVE-SIN-CONFIRMAR]`); vuelve
+  (`-CONFIRMADA`); clave nueva (`[FW-CSV-CLAVE-CAMBIADA]`, huella vieja → nueva); recuperada tras un hueco
+  (`-RECUPERADA`). En el log solo la huella.
+- CSV (G4 a): un fichero por clave, `firewall_blocks-<AAAAMMDDTHHMMSSZ>-<huella>.csv` en `output_dir`; al cambiar la clave
+  se cierra y se abre otro. `generate_parquet.py` lee todos los `firewall_blocks-*.csv`. La huella en el nombre adelanta
+  para el firewall el camino b de DEBT-BRONZE-KEY-ID-001 (el bronce del ml-detector sigue como está).
+
+### Pruebas y predicciones
+
+- **ctest B1** (servidor falso `httplib::SSLServer`, PKI desechable): sin servidor al arrancar → constructor y arranque no
+  fallan, `[ETCD-CLIENTE-SIN-SERVICIO]` en cada intervalo; el servidor aparece → registro en ≤ 1 intervalo, función de
+  registro llamada una vez; 404 en un latido → nuevo `/register` y nueva subida; el servidor cae → `SIN_SERVICIO` y vuelve;
+  `get_hmac_key()` funciona sin haber llamado a `connect()`; parada en < 1 s con un intervalo de 30 s. Contra el código
+  de `fe99a7e70`: los casos de reconexión fallan.
+- **ctest B2:** el CSV cambia de fichero con la clave; sin clave no se escribe; con el servidor caído se sigue firmando.
+- **Laboratorio B1:** etcd-server de la VM parado → `pipeline-start` arranca los tres (`RUNNING`) con
+  `[ETCD-CLIENTE-SIN-SERVICIO]` cada 30 s y `[BRONCE-SIN-CLAVE]` en el ml-detector; arrancar el etcd-server → los tres
+  `[ETCD-CLIENTE-REGISTRADO]` en ≤ 30 s y `[BRONCE-CLAVE-RECUPERADA]`; pararlo con el pipeline en marcha →
+  `SIN-SERVICIO` y `[BRONCE-CLAVE-SIN-CONFIRMAR]`; volver a arrancarlo → latidos sin nuevo registro (el registro sigue en
+  el etcd real) y `[BRONCE-CLAVE-CONFIRMADA]`. E2E y mitre-start como en el commit A.
+- **Laboratorio B2:** el firewall recibe su clave al volver el etcd-server; tras una rotación (`/secrets/rotate`, admin) →
+  `[FW-CSV-CLAVE-CAMBIADA]` y un CSV nuevo con la otra huella.
