@@ -556,3 +556,154 @@ tiene defecto `https://127.0.0.1:2381`»).
 - Siguiente: paso 5 (libetcd_client con TLS y lista de endpoints para sniffer, ml-detector y firewall), empezando por
   medir qué cliente usa cada uno; dentro, `get_encryption_seed()` contra `/seed` (borrada en 4b.2), los
   `crypto_token_path` de sus JSON y la decisión sobre el ADR-045. Después pasos 6, 7 y 8.
+
+## Diseño del paso 5 (libetcd_client con TLS y lista de endpoints) — DAY316, escrito ANTES de tocar código
+
+Base: rama `feat/etcd-mtls-vault` en `0de22545` (docs de DAY315; el código es el de `68ebbdaa`). Todo lo de «Medido» sale
+de `git grep` y de leer los ficheros en esa base. Las decisiones abiertas están en 5.0 y no se escribe código hasta
+tenerlas.
+
+### Medido para este diseño
+
+- **M1. Un solo cliente.** Sniffer (`sniffer/src/userspace/etcd_client.cpp`), ml-detector (`ml-detector/src/etcd_client.cpp`)
+  y firewall (`firewall-acl-agent/src/core/etcd_client.cpp`) tienen cada uno su envoltorio (unas 215 líneas, casi
+  idénticos), todos sobre `etcd_client::EtcdClient` de `libetcd_client.so`. La librería habla con `httplib::Client` en
+  claro (`etcd-client/src/http_client.cpp` 38, 84, 130 y 180); `Config` solo tiene `host` y `port`
+  (`etcd_client.hpp` 36-39).
+- **M2. `endpoints[0]`.** Sniffer `main.cpp:334`, ml-detector `main.cpp:148`, firewall `main.cpp:403`. El envoltorio quita
+  `http://` y corta en el primer `:`: una URL `https://` no se puede parsear. Los cuatro JSON traen hoy `localhost:2379`
+  (el etcd-server del defender, en `tls.modo=http`).
+- **M3. `etcd.endpoints` ausente**, tres comportamientos: sniffer pone `localhost:2379` sin avisar
+  (`config_manager.cpp:454`); ml-detector, fatal (`get_required`, `config_loader.cpp:191`, como los otros 11 campos del
+  bloque, 190-200); firewall, vector vacío y después `endpoints[0]`: comportamiento indefinido (`config_loader.cpp:594`,
+  `main.cpp:403`). `enabled` tiene defecto `true` en el sniffer, es obligatorio en el ml-detector y vale `false` por
+  defecto en el firewall.
+- **M4. Leídos y nunca aplicados**: `connection_timeout_ms`, `retry_attempts` y `retry_interval_ms` (los tres JSON traen
+  5000 / 3 / 1000; ningún envoltorio los pasa a la librería, que usa su `timeout_seconds = 5` y 3 reintentos);
+  `config_sync_path`, `required_for_encryption`, `service_registration_path`, `fallback_mode` y
+  `heartbeat_interval_seconds` del bloque `etcd` (se guardan y nadie los lee; la librería late con su
+  `heartbeat_interval_seconds = 30` del código; `encryption.fallback_mode` del transporte es otro campo y no entra aquí);
+  `crypto_token_path` (sniffer con defecto, ml-detector obligatorio, el firewall ya no lo lee pero sigue en su JSON).
+- **M5. Nadie llama a `/seed`.** El sniffer lee `seed.bin` en local (`etcd_client.cpp:201`), pero su `main.cpp:704`
+  escribe «Encryption seed obtained from etcd-server» (falso). El `get_encryption_seed()` del ml-detector no tiene
+  ninguna llamada y acaba en `get_encryption_key()` de la librería, que devuelve `""` desde DAY98
+  (`etcd-client/src/etcd_client.cpp:711`). El único `"/seed"` del árbol es `common/vault_transport.cpp:50` (Vault, la
+  semilla de familia, no el etcd-server).
+- **M6.** En el ml-detector, `encryption_enabled = (el endpoint no empieza por "http://")`: con `https://` se activaría por
+  casualidad.
+- **M7. ADR-045.** `http_etcd_registrar.cpp` y `crypto_epoch_coordinator.cpp` se compilan dentro de `libcrypto_provider.so`
+  (`common/CMakeLists.txt` 57-62; cabeceras instaladas 143-145), que enlazan el etcd-server y el firewall. Ningún binario
+  usa esas clases. `IEtcdRegistrar` y `StubEtcdRegistrar` (`common/etcd_registrar.h/.cpp`) NO son ADR-045: los usa
+  `vault_client.cpp` y se quedan. Tests: `test_crypto_epoch_coordinator` solo prueba el coordinador;
+  `test_e2e_rotation` tiene 6 pruebas y solo T1 (`test_handle_reloads_on_epoch_change`) y T4
+  (`test_coordinator_epoch_id_propagates_to_wire`) usan el coordinador; T2, T3, T5 y T6 (ida y vuelta por el cable en
+  épocas 1 y 2, ventana de dos claves, centinela `0xFFFF` rechazado antes de descifrar, DEBT-CRYPTO-NEGATIVE-TEST-001) son
+  la única cobertura de la época en el cable (`test_wire_protocol` no la tiene). `common/tests/test_http_etcd_registrar.cpp`
+  es huérfano: ningún CMake lo compila.
+- **M8. `/v1/epoch`** solo lo consumía el coordinador: rutas en `etcd_server.cpp` 489 y 498, dos reglas en
+  `etcd_server_authz.hpp` 175 y 185 y en los dos JSON del etcd-server, y una aserción en `test_etcd_server_authz.cpp:202`.
+- **M9. ODR.** `libetcd_client` se compila sin `CPPHTTPLIB_OPENSSL_SUPPORT`; `crypto_provider` lo exporta `PUBLIC`
+  (`common/CMakeLists.txt:107`) y el firewall enlaza las dos. En producción solo dos ficheros incluyen `httplib.h`:
+  `etcd-client/src/http_client.cpp` y `common/http_etcd_registrar.cpp` (este se borra con ADR-045). El etcd-server es otro
+  binario, con su propia definición `PRIVATE`.
+- **M10. Otros consumidores de la librería.** `tools/synthetic_sniffer_injector.cpp` y `synthetic_ml_output_injector.cpp`
+  (los usan los E2E del Makefile, 1424-1457) construyen `etcd_client::Config` a mano con `host`/`port`, defecto
+  `localhost:2379`, y solo hacen `connect()` + `register_component()` con los nombres `cpp_evolutionary_sniffer` y
+  `synthetic-ml-output`. Ningún E2E comprueba ese registro, y `cpp_evolutionary_sniffer` es un nombre que el etcd-server
+  ya rechaza (`test_registro_componentes.cpp:72`). Tests con servidor falso en HTTP: `etcd-client/tests` (6 ejecutables)
+  y `ml-detector/tests/integration/test_etcd_client_hmac.cpp` (`http://127.0.0.1:<puerto>`).
+- **M11. Certificados en el defender.** El Vagrantfile solo reparte la PKI (`ARGUS_PKI_DIR`, defecto `~/argus-pki`) a la VM
+  etcd (`/etc/argus-pki/`, líneas 1554-1577); al defender no le llega ningún certificado de componente.
+- **M12. Scripts del lab.** `mitre_start.sh:32`, `ctu_start.sh:38` y `custom_start.sh.template:31` sacan la clave HMAC del
+  ml-detector con `curl -s http://localhost:2379/secrets/ml-detector` (para el conversor). Con mTLS, `/secrets/ml-detector`
+  solo lo puede leer el CN `ml-detector`; el conversor tiene `/secrets/valid/{c}`.
+
+### Decisiones de Alonso (DAY316)
+
+- **C1.** TLS y lista de endpoints en la librería, no en los tres envoltorios.
+- **C2.** Los envoltorios pasan la lista completa del JSON (fuera el parseo de `host:port`).
+- **C3.** Fuera `get_encryption_seed()` del ml-detector, `get_encryption_key()` de la librería y `crypto_token_path`
+  (JSON y cargadores). En el sniffer la función que lee `seed.bin` deja de llamarse «del etcd-server» y su log no lo dice.
+- **C4.** Fuera `HttpEtcdRegistrar` y `CryptoEpochCoordinator` (ADR-045), con lo medido en M7: se queda `IEtcdRegistrar`;
+  de `test_e2e_rotation` se van T1 y T4 y se quedan T2, T3, T5 y T6.
+- **D1.** En los componentes, `etcd.endpoints`, `ca_file`, `cert_file` y `key_file` ausentes o mal formados son fatales,
+  como el almacén del etcd-server (los rellena Jenkins desde el inventario): mensaje con campo, formato y límites, y el
+  proceso no arranca. El resto del bloque lleva defecto, aviso en el log y origen de cada valor.
+- **D2.** Fuera `etcd.enabled` (sin etcd-server el pipeline no arranca, DAY310).
+- **D3.** Fuera `GET` y `PUT /v1/epoch` y sus dos reglas de autorización.
+- Regla general (DAY291/300/308, recordada DAY316): el JSON es la ley; ausente o mal formado → defecto validado + aviso
+  claro + el proceso sigue; la única excepción son las direcciones y credenciales que rellena el aprovisionamiento.
+
+### 5.0 Decisiones abiertas para Alonso
+
+- **E1. Inyectores sintéticos (M10).** (a) Quitarles etcd entero (`connect` + `register` y el enlace a la librería): no
+  firman nada, nadie comprueba su registro y con mTLS necesitarían un certificado falso. (b) Certificado propio y regla
+  de autorización. Propuesta: a, con la predicción de que los E2E sintéticos siguen dando PASA.
+- **E2. Tests con servidor falso.** (a) CA desechable generada por el propio test con `openssl` en un directorio
+  temporal (nada en el repo ni en `/vagrant`), servidor `httplib::SSLServer`; (b) material de prueba fijo en el repo.
+  Propuesta: a (el repo es público y no debe llevar claves, ni de prueba).
+- **E3. Campos del bloque `etcd` sin efecto (M4).** Propuesta: `heartbeat_interval_seconds` se APLICA (pasa a la
+  librería: 5-300, defecto 30, aviso y origen en el log); `config_sync_path`, `required_for_encryption`,
+  `service_registration_path` y `fallback_mode` del bloque `etcd`, fuera, como `crypto_token_path`.
+- **E4. Certificados en el defender (M11).** Propuesta: aprovisionador en el Vagrantfile, igual que el de la VM etcd,
+  desde `ARGUS_PKI_DIR` a `/etc/argus-pki/<componente>.{crt,key}` (`.key` 0600 root; los tres corren como root) más
+  `ca.crt`. Antes, medir en el Mac qué CN tiene el certificado del firewall (`firewall` o `firewall-acl-agent`).
+- **E5. Scripts del lab (M12).** Propuesta: entran en el paso 5. Leen con el certificado del conversor
+  (`bronze-to-gold-converter`) por `GET /secrets/valid/ml-detector` en `https://192.168.100.20:2379`. Antes, medir el
+  formato de esa respuesta (lista de claves con su huella) y cuál usa hoy el conversor.
+
+### 5a. Librería (`etcd-client/`)
+
+- `Config`: fuera `host` y `port`; dentro `endpoints` (lista de `https://<host>:<puerto>`, 1-7, sin repetir),
+  `ca_file`, `cert_file`, `key_file`, `connection_timeout_ms`, `retry_attempts`, `retry_interval_ms` y (con E3)
+  `heartbeat_interval_seconds`.
+- Transporte `httplib::SSLClient` con la CA del lab, certificado de cliente y verificación del certificado del servidor
+  (nombre incluido). Recorre la lista: `retry_attempts` intentos por dirección separados `retry_interval_ms`, luego la
+  siguiente. `[ETCD-CLIENTE-CAMBIO]` al cambiar de dirección y `[ETCD-CLIENTE-NO-DISPONIBLE]` con el error de cada una al
+  agotar la lista. Un `http://` en la lista es mal formado (D1): no hay vuelta a HTTP.
+- Fuera `get_encryption_key()`. `CPPHTTPLIB_OPENSSL_SUPPORT` y OpenSSL en el CMake de la librería.
+- Comportamiento si el etcd-server cae después de arrancar: el de hoy, sin cambios en este paso (lo homogeneiza
+  DEBT-FW-HMAC-KEY-ALARM-001). Al arrancar, si no se alcanza ninguna dirección, el componente no arranca (DAY314).
+
+### 5b. Envoltorios y configuración (sniffer, ml-detector, firewall)
+
+- Los tres envoltorios construyen `Config` con la lista y las rutas del JSON; sin parseo propio de la URL.
+- Bloque `etcd` de los cuatro JSON (`sniffer.json`, `sniffer-libpcap.json`, `ml_detector_config.json`, `firewall.json`):
+  `endpoints` = `["https://192.168.100.20:2379"]` y `ca_file`/`cert_file`/`key_file` (D1, fatales);
+  `connection_timeout_ms` 100-60000 (defecto 5000), `retry_attempts` 1-10 (3), `retry_interval_ms` 100-60000 (1000),
+  con defecto + aviso y el origen de cada valor en el log de arranque; rango y formato documentados en el propio JSON.
+  Fuera `enabled` (D2), `crypto_token_path` (C3) y, si se aprueba E3, los cuatro sin efecto; `heartbeat_interval_seconds`
+  pasa a aplicarse.
+- En los tres `main.cpp`, fuera `endpoints[0]` y el `if (etcd.enabled)`.
+- El etcd-server del defender (`localhost:2379`, http) se queda sin clientes del pipeline; se borra en el paso 6.
+
+### 5c. Fuera (C3, C4, D3)
+
+`get_encryption_seed()` del ml-detector (cabecera y fuente); `get_encryption_key()` de la librería;
+`common/http_etcd_registrar.{h,cpp}`, `common/crypto_epoch_coordinator.{h,cpp}`, sus líneas en `CRYPTO_PROVIDER_SOURCES`
+y en la lista de cabeceras instaladas, y `CPPHTTPLIB_OPENSSL_SUPPORT PUBLIC` de `crypto_provider` (nadie más lo
+necesita, M9); `test_crypto_epoch_coordinator` (fuente y CMake), `test_http_etcd_registrar.cpp`, T1 y T4 de
+`test_e2e_rotation` (y su servidor falso si ya no lo usa nadie); en el etcd-server, `GET`/`PUT /v1/epoch`, sus dos reglas
+en `etcd_server_authz.hpp` y en los dos JSON, y la aserción de `test_etcd_server_authz.cpp:202`. Con E1 = a, el etcd de
+los dos inyectores.
+
+### 5d. Pruebas y predicciones
+
+- Antes de tocar nada, medir en el defender el número de tests de `common` (`make vault-client-test`) y de `etcd-client`
+  (su ctest): son la base de las predicciones de abajo.
+- Banco (Debian 12, GCC 12, opciones de production): compila con 0 diagnósticos; control con la rama sin el parche.
+- `make test-components PROFILE=production`: 9 / 23 / 13 / 7 / 82 (no cambian: el etcd-server pierde una aserción, no un
+  test; el de HMAC del ml-detector se reescribe a TLS). `common`: uno menos que la base (`test_crypto_epoch_coordinator`).
+  `etcd-client`: los mismos más uno nuevo (lista de direcciones y TLS: primera dirección que no responde → segunda;
+  ninguna → error con todas; `http://` → mal formado; certificado de servidor de otra CA → falla).
+- Mutaciones: sin verificar el certificado del servidor, sin pasar a la siguiente dirección, aceptando `http://` → cada una
+  hace fallar su test.
+- Laboratorio, tras `pipeline-start`, desde el defender con el certificado de admin contra la VM etcd:
+  `GET /components` → `etcd-server`, `sniffer`, `ml-detector`, `firewall-acl-agent`, los cuatro vivos. ml-detector
+  `[BRONCE-CLAVE]` con huella; firewall con `key_path=/secrets/firewall-acl-agent`. En el log del etcd-server, 0
+  `[ETCD-AUTHZ-DENEGADO]` de los tres.
+- Control negativo en el laboratorio: JSON del ml-detector con el certificado del sniffer → registro 403 y no arranca;
+  sin `ca_file` → no arranca y el mensaje dice campo y formato; primera dirección falsa en la lista →
+  `[ETCD-CLIENTE-CAMBIO]` y registro correcto.
+- E2E sintéticos (con E1 = a) y `mitre-start` (con E5) siguen dando PASA.
+- Cada instrumento, dos veces seguidas.
