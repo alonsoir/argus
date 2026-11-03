@@ -124,7 +124,8 @@ VAULT_INSTALL = <<-'VAULT_INSTALL_SHELL'
 VAULT_INSTALL_SHELL
 
 # [VAULT-SERVER-D312] PKI del lab en el Mac (scripts/etcd_ha/d312_pki.sh). Fuera del repo: llega a la VM etcd por el
-# aprovisionador file, nunca por /vagrant. Solo se lee al aprovisionar la VM etcd.
+# aprovisionador file, nunca por /vagrant. Se lee al aprovisionar la VM etcd y, desde DAY316 ([PKI-DEFENDER-D316]),
+# el defender (certificados de cliente de sus componentes).
 ARGUS_PKI_DIR = ENV.fetch("ARGUS_PKI_DIR", File.join(Dir.home, "argus-pki"))
 
 Vagrant.configure("2") do |config|
@@ -1127,6 +1128,56 @@ BASHRC_EOF
       cp "$K.pub" /vagrant/dist/deploy/argus_deploy_ed25519.pub
       echo "✅ deploy-key: $(ssh-keygen -lf "$K.pub" | awk '{print $2}') publicada en /vagrant/dist/deploy/ (solo la pública)"
     DEPLOY_KEY
+
+    # [PKI-DEFENDER-D316] DEBT-ETCD-HA-TLS-RAFT-001 paso 5, decisión E4 de Alonso (DAY316): certificados de cliente de
+    # los componentes del defender para hablar con el etcd-server por mTLS (CN = OU = nombre del componente). Igual que
+    # la VM etcd: copia desde ARGUS_PKI_DIR (Mac) por el aprovisionador file, nunca por /vagrant; se instala en
+    # /etc/argus-pki y se borra la entrada. El de admin NO viene: los instrumentos lo llevan a /dev/shm cuando hace falta.
+    # Las claves quedan en claro en disco (0600 root): DEBT-PKI-AT-REST-001.
+    defender.vm.provision "shell", name: "pki-defender-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-defender"
+    %w[ca.crt sniffer.crt sniffer.key ml-detector.crt ml-detector.key firewall-acl-agent.crt firewall-acl-agent.key
+       bronze-to-gold-converter.crt bronze-to-gold-converter.key].each do |f|
+      defender.vm.provision "pki-defender-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki-defender/#{f}"
+    end
+    defender.vm.provision "shell", name: "pki-defender", inline: <<-'PKI_DEFENDER'
+      set -e
+      umask 077
+      # [PKI-DEFENDER-D316] E4 (DEBT-ETCD-HA-TLS-RAFT-001 paso 5): certificados de cliente de los componentes del defender
+      PKI_IN=/tmp/argus-pki-defender
+      PKI=/etc/argus-pki
+      CLIENTES="sniffer ml-detector firewall-acl-agent bronze-to-gold-converter"
+      if [ -d "$PKI_IN" ]; then
+        for f in ca.crt $(for c in $CLIENTES; do echo "$c.crt $c.key"; done); do
+          [ -s "$PKI_IN/$f" ] || { echo "❌ pki-defender: no llegó $f (¿existe en ARGUS_PKI_DIR del Mac?)"; exit 1; }
+        done
+        install -d -m 0700 -o root -g root "$PKI"
+        install -m 0644 -o root -g root "$PKI_IN/ca.crt" "$PKI/ca.crt"
+        for c in $CLIENTES; do
+          install -m 0644 -o root -g root "$PKI_IN/$c.crt" "$PKI/$c.crt"
+          install -m 0600 -o root -g root "$PKI_IN/$c.key" "$PKI/$c.key"
+        done
+        rm -rf "$PKI_IN"
+      fi
+      # Comprobación (también si no había nada que copiar): cada certificado firmado por la CA, CN = OU = nombre del
+      # fichero, la clave privada es la de ese certificado, permisos 0644/0600 root. Por la salida solo huellas.
+      [ -s "$PKI/ca.crt" ] || { echo "❌ pki-defender: falta $PKI/ca.crt (¿existe la PKI del lab en el Mac? ARGUS_PKI_DIR)"; exit 1; }
+      [ "$(stat -c %a "$PKI")" = 700 ] || { echo "❌ pki-defender: $PKI no es 0700"; exit 1; }
+      for c in $CLIENTES; do
+        for f in "$PKI/$c.crt" "$PKI/$c.key"; do
+          [ -s "$f" ] || { echo "❌ pki-defender: falta $f (¿existe en ARGUS_PKI_DIR del Mac?)"; exit 1; }
+        done
+        [ "$(stat -c %a:%U "$PKI/$c.key")" = 600:root ] || { echo "❌ pki-defender: $PKI/$c.key no es 0600 root"; exit 1; }
+        openssl verify -CAfile "$PKI/ca.crt" "$PKI/$c.crt" > /dev/null 2>&1 \
+          || { echo "❌ pki-defender: $c.crt no lo firma la CA de $PKI/ca.crt"; exit 1; }
+        SUJ=$(openssl x509 -in "$PKI/$c.crt" -noout -subject -nameopt RFC2253 | sed 's/^subject=//')
+        case ",$SUJ," in *",CN=$c,"*) ;; *) echo "❌ pki-defender: $c.crt tiene sujeto '$SUJ' (se exige CN=$c)"; exit 1 ;; esac
+        case ",$SUJ," in *",OU=$c,"*) ;; *) echo "❌ pki-defender: $c.crt tiene sujeto '$SUJ' (se exige OU=$c)"; exit 1 ;; esac
+        PUB_CRT=$(openssl x509 -in "$PKI/$c.crt" -noout -pubkey | openssl sha256 | awk '{print $NF}')
+        PUB_KEY=$(openssl pkey -in "$PKI/$c.key" -pubout | openssl sha256 | awk '{print $NF}')
+        [ "$PUB_CRT" = "$PUB_KEY" ] || { echo "❌ pki-defender: $c.key no es la clave de $c.crt"; exit 1; }
+        echo "✅ pki-defender: $c CN=OU=$c, firmado por la CA, clave 0600 root (huella $(openssl x509 -in "$PKI/$c.crt" -noout -fingerprint -sha256 | sed 's/^.*=//; s/://g' | cut -c1-16))"
+      done
+    PKI_DEFENDER
 
   end  # End defender VM
 
