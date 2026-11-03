@@ -1,90 +1,101 @@
-# Prompt de continuidad — DAY316 (tras DAY315, lunes 2026-11-02)
+# Prompt de continuidad — DAY317 (tras DAY316, martes 2026-11-03)
 
 Hola, Claude. Soy Alonso (aRGus NDR, único desarrollador). Seguimos con **DEBT-ETCD-HA-TLS-RAFT-001** en la rama
-`feat/etcd-mtls-vault`. Responde siempre en español. Lee `docs/ml-heads/day312_diseno.md` (diseño de 4b y las
-secciones de resultados DAY313 y DAY314) y el final de `docs/BACKLOG.md` (sección DAY312–314). DAY315 todavía NO está
-documentado ahí: está en este prompt.
+`feat/etcd-mtls-vault`. Responde siempre en español. Lee `docs/ml-heads/day312_diseno.md` (diseño y resultados; las
+secciones DAY316: «Diseño del paso 5», «Resultados DAY316 — paso 5...», «Resultados DAY316 — paso 5, commit A»,
+«Diseño del commit B», «Resultados DAY316 — commits B1 y B2») y el final de `docs/BACKLOG.md` (secciones DAY316).
+Todo lo de DAY316 está documentado allí; aquí va el resumen y el plan.
 
-## Hecho y commiteado DAY315 (todo medido en el laboratorio, todo a la primera salvo lo indicado)
+## Hecho y commiteado DAY316 (todo medido en el laboratorio)
 
 | commit | qué |
 |---|---|
-| (DAY315, antes de 2a) | paso 1: fuera las plantillas Jinja de sniffer/ml-detector y los group_vars duplicados; group_vars junto al inventario |
-| 58cb72ac | pasos 2a–2c de DEBT-ANSIBLE-DEPLOY-CONFIGS-001 (`[DEPLOY-SSH-D315]`, `[ETCD-CONFIG-ENTORNO-D315]`, `[INVENTARIO-FUERA-D315]`) |
-| 23c2e4f8 | paso 3: campos del almacén fatales en modo etcd (`[ETCD-ALMACEN-FATAL-D315]`) |
-| 68ebbdaa | 4b.6: `/register` con el CN completo, fuera `crypto_token` y las variantes muertas de etcd-client (`[ETCD-B4-D315]`) |
+| 0de22545a | docs DAY315 |
+| dedf1efdc | diseño del paso 5 |
+| 1e75d0618 | C4+D3: fuera HttpEtcdRegistrar, CryptoEpochCoordinator (ADR-045) y `/v1/epoch` |
+| 59d0fc592 | E4: el Vagrantfile reparte la PKI del lab al defender (`/etc/argus-pki`) |
+| 3569385a2 | docs: decisiones y estado deseado del paso 5 |
+| fe99a7e70 | **commit A**: libetcd_client con mTLS y lista de direcciones, lector único del bloque `etcd`, JSON a `https://192.168.100.20:2379`, inyectores con la identidad del componente, mitre/ctu/custom-start piden la clave por mTLS (cierra DEBT-HMAC-KEY-INSECURE-TRANSPORT-001) |
+| c256e88c4 | docs del commit A y deudas nuevas |
+| 8d56ff747 | diseño del commit B (decisiones G1-G7) |
+| 370210a28 | **B1**: mantenedor en la librería (un ritmo: `heartbeat_interval_seconds`), ningún componente sale ni espera por etcd, se sube el JSON de `-c` en cada registro, fuera la semilla muerta del sniffer |
+| cde7dd213 | **B2**: el firewall pide su clave del CSV cada `hmac_key.check_interval_seconds`, un CSV por clave (`firewall_blocks-<fecha>-<huella>.csv`), `test-parquet` sin CSV = `[PARQUET-SIN-DATOS]` rc 0 (cierra DEBT-FW-HMAC-KEY-ALARM-001) |
+| (docs DAY316 final) | resultados de B1 y B2, este prompt |
 
-Medido al final: ctest 9/23/13/7/82; `d313_registro_medir.sh` 28/28; `d314_claves_medir.sh` 29/29;
-`d315_paso3_medir.sh` 15/15 (x2); `d315_b4_medir.sh` 10/10 (x2); `d312_etcd_vm_deploy.sh` PASA (binario `6d837186`);
-`make deploy-configs` dev `etcd ok=7 changed=0`; JSON desplegado en la VM etcd = `etcd-server.etcd-vm.json` del repo
-(sha256 `3fedf9ad…`). En el defender el firewall pasó de `key_path=/secrets/firewall` a `/secrets/firewall-acl-agent`.
+Medido al final: test-components 9/23/13/7/90; sin etcd-server los tres arrancan y se registran solos cuando vuelve;
+caída con el pipeline en marcha → modo extendido y reanudación sin nuevo `/register`; test-e2e-synthetic PASSED;
+mitre-start rc 0 (commit A: argus 1518, suricata 32, zeek 1074, invariante 0, 1051 corroborados).
 
-### Qué hace cada parte
+## Estado del laboratorio al cerrar DAY316
 
-- **Paso 1**: `deploy_configs.yml` conserva el nombre (Makefile y Jenkins lo llaman); variables huérfanas borradas.
-  Medido antes: `make deploy-configs` SÍ cargaba variables (`-e @group_vars`) y habría sobrescrito los JSON del repo.
-- **2a** clave de despliegue: provisioner `deploy-key` en el defender (`/root/.ssh/argus_deploy_ed25519`, Jenkins es
-  root), `deploy-access` en la VM etcd (usuario `argus-deploy`, sudo sin contraseña SOLO lab, huella publicada en
-  `/vagrant/dist/deploy/known_hosts_etcd`). **Cazado**: `ansible.cfg` lleva `host_key_checking = False` y Ansible
-  antepone `StrictHostKeyChecking=no`: con huella falsa conectaba igual. Arreglo: `ansible_host_key_checking: true`.
-- **2b**: play sobre `etcd_servers`: JSON del repo + `almacen.endpoints`/`almacen.prefijo` del inventario
-  (`etcd_almacen_endpoints`, `argus_prefijo`, sin defecto), escrito en `/etc/ml-defender/etcd-server/etcd-server.json`
-  con `validate: etcd-server --check-config` y `follow: false` (el destino era un enlace a un JSON del repo). `d312` ya
-  no copia `etcd-server.json`; `d313_es_vm.sh` lee por defecto el desplegado.
-- **2c**: inventarios reales FUERA del repo (es público); `ansible/inventory/ejemplo-preprod/` con RFC 5737; fuera
-  `prod.yml`; `make deploy-configs-prod INVENTARIO=<ruta>` obligatorio; `ARGUS_INVENTARIO` obligatorio en main
-  (Jenkinsfile.prod); un inventario sin `etcd_servers` falla con `[ETCD-CONFIG-ENTORNO]`; `d312` con
-  `DPkg::Lock::Timeout=600` (medido: `unattended-upgrades` tenía dpkg tras arrancar la VM).
-- **Paso 3**: en modo etcd, `endpoints`, `prefijo`, `ca_file`, `cert_file`, `key_file` ausentes o mal formados (y
-  endpoints repetidos) = `[ETCD-ALMACEN-FATAL]`, no arranca; `--check-config` imprime `almacen_fatales=N`. En modo
-  memoria solo avisa. Arranque sin endpoints medido: se niega en 0,04 s.
-- **4b.6/B4**: antes `/register` cortaba en el primer guion: `firewall-acl-agent` → `/secrets/firewall` → 403 con mTLS
-  (sin clave HMAC para su CSV). Ahora `/secrets/<CN>` y `/config/<CN>`. `crypto_token` fuera (no existe ruta `/crypto`).
+- El etcd-server de la VM etcd (192.168.100.20) **se arranca a mano**: `vagrant ssh etcd -c "bash
+  /vagrant/scripts/etcd_ha/d313_es_vm.sh arrancar"` (**sin sudo**; con sudo falla por `fs.protected_regular` y el
+  `grep` enseña un OK viejo). Tras parar el Mac la VM queda `aborted`: `vagrant up etcd` y volver a arrancarlo.
+- El etcd-server del defender (HTTP, memoria) sigue arrancando con `pipeline-start` y el Vault dev del defender sigue en
+  marcha (`pipeline-status`), pero ya no los usa ningún componente.
+- El CSV viejo del firewall está en `logs/firewall_logs/archivo/`.
 
-## Decisiones de Alonso DAY315
+## Respuesta a «¿hemos acabado antes de EMECAS?»: NO. Falta el paso 6 y medir lo que EMECAS necesita de la VM etcd
 
-- Playbook con el mismo nombre; variables huérfanas borradas; clave propia de despliegue (modelo producción);
-  `etcd-server.json` fuera del tar; inventarios fuera del repo con ejemplo dentro; inventario vacío = fallo.
-- Fatales del almacén: endpoints, prefijo y las tres rutas; endpoints sin repetir (como `vault_addrs`).
-- `crypto_token` fuera de los dos lados. **HttpEtcdRegistrar y CryptoEpochCoordinator (common/, ADR-045)**: ningún
-  binario los usa y `/v1/epoch` no tiene consumidor; **se decide en el paso 5**.
-- **DEBT-PREPROD-LAB-001** (nueva, prueba FINAL): preproducción de lab con objetivo Alpine diminuto (128–256 MB),
-  client = atacante, DDoS y ransomware SIMULADO (Atomic Red Team / mitre-start), solo funcional (no capacidad: Mac 2019).
-  Solo cuando todas las cabezas estén certificadas (hoy solo DDoS). Antes, medir RAM. Después del paso 6.
-- Commits: cada uno marca con precisión lo que hace (separar por cambio lógico).
+Medido en el Makefile al cerrar: `make emecas` hace `vagrant destroy -f` (destruye también la VM etcd) y luego `vagrant
+up defender client suricata`: **no levanta la VM etcd**; `pipeline-start` depende de `etcd-server-start` (el del
+defender); `emecas++` lanza `test-e2e-vault`, que usa `vault-dev-seed` (Vault dev del defender). Hoy la VM etcd se
+monta con pasos manuales desde el Mac (`d312_pki.sh`, `d312_etcd_vm_deploy.sh`, `make deploy-configs`, `d313_es_vm.sh`).
+Sin el paso 6, un EMECAS desde cero dejaría el pipeline sin etcd-server: los componentes arrancan (B1), pero sin clave
+HMAC no hay bronce ni CSV firmados; mitre-start necesita la clave (E5) y `lab-e2e` está por medir.
 
-## Plan DAY316
+## Plan DAY317
 
-1. **Documentar DAY315** (parcheador de docs, commit aparte): sección «Resultados DAY315» en `day312_diseno.md`
-   (sin reescribir lo anterior) y sección DAY315 en el BACKLOG: cerradas DEBT-ANSIBLE-DEPLOY-CONFIGS-001 y
-   DEBT-ETCD-CLIENT-DEAD-VARIANTS-001; nueva DEBT-PREPROD-LAB-001; medido que **Jenkins NO puede hacer preproducción**
-   (Jenkinsfile.dev: «Build .deb» y «Deploy Vagrant Test» son eco de DEBT-PACKAGE-DEB-001/DEBT-DEPLOY-VAGRANT-001;
-   Jenkinsfile.prod pide un agente `argus-server` que no existe y lanza `vagrant up`; solo el etcd-server tiene
-   despliegue de binarios, `d312`, desde el Mac). Pendientes de abajo.
-2. **Paso 5**: libetcd_client con TLS y lista de endpoints para sniffer, ml-detector y firewall (hoy solo usan
-   `endpoints[0]`). Empezar MIDIENDO qué cliente usa cada uno (sniffer y ml-detector tienen su propio `etcd_client.cpp`;
-   el firewall usa la librería `etcd-client`). Dentro del paso 5: sus llamadas a `get_encryption_seed()` contra `/seed`
-   (borrada en 4b.2), los `crypto_token_path` de sus JSON, y la decisión sobre el ADR-045.
+1. **Medir antes de diseñar el paso 6** (sin tocar nada): qué hace hoy cada pieza para montar la VM etcd desde cero
+   (provisioners del Vagrantfile de la VM etcd: etcd, Vault, unseal, PKI; `d312_etcd_vm_deploy.sh`; `deploy-configs`;
+   `d313_es_vm.sh`), qué targets usan el etcd-server o el Vault del defender (`git grep` de `etcd-server-start`,
+   `vault-dev`, `localhost:2379`, `localhost:8200` en Makefile y scripts), y qué espera `test-e2e-vault`.
+2. **Diseño del paso 6** (escrito antes del código, decisiones de Alonso): etcd-server de la VM como servicio systemd;
+   `make up` y `make emecas` levantan y aprovisionan la VM etcd de cero sin pasos manuales; fuera del defender el
+   etcd-server y el Vault dev (y `tls.modo=http`, `almacen.modo=memoria`, `almacen_claves.modo=memoria`);
+   `pipeline-start` sin `etcd-server-start`; qué hacer con `test-e2e-vault`; `pipeline-status` mirando el etcd-server de
+   la VM (DEBT-PIPELINE-STATUS-LIVENESS-001). Predicción del paso: en el defender nada escucha en 2379 ni 8200.
+3. **Paso 7**: instrumento de reinicio de DAY311 en la VM (misma huella, bronce anterior verificable, registro
+   conservado, latidos 200). B1/B2 ya midieron misma huella y registro conservado; falta el bronce verificable.
+4. **Paso 8: EMECAS+++ production** (rc 0, 5/5 E2E con PASA, cinco líneas de test-components). Antes, rehacer la VM etcd
+   (DEBT-LAB-VAULT-CLAVES-PRUEBA-001: claves de prueba inmutables en Vault); EMECAS con `destroy -f` ya lo hace si la VM
+   entra en la cadena.
 
-## Pendientes anotados
+## Plan acordado al cierre de DAY316 (Alonso): primero certificar etcd, después lo demás
 
-- RBAC de etcd por prefijo en producción: en el lab el rol del etcd-server cubre `readwrite /argus/`; con prefijos por
-  despliegue (`/argus/<hospital>/<planta>/`) el rol tiene que cubrirlos.
-- `d312`: 25 paquetes Debian hoy frente a 26 medidos DAY314; sin explicar.
-- DEBT-REPO-RESIDUOS-001: 9 `*.backup*` ignorados en `etcd-client/` y `etcd-server/` (engañaron a un `grep -r` del
-  parcheador de 4b.6: usar siempre `git grep`); binario `firewall-acl-agent/fuzz/fuzz_validate_chain` trackeado;
-  `scripts/timebase/__pycache__/`.
-- `make up` no levanta la VM etcd (añadirla antes del paso 8); tras parar el Mac la VM queda `aborted`: `vagrant up etcd`
-  (etcd y Vault vuelven solos; `argus-vault-unseal` desella). Para mirar Vault hace falta `sudo` y certificado de cliente.
-- DEBT-ETCD-SERVER-LOG-TIMESTAMP-001, cpp-httplib sin fijar a `v0.63.0` en el Vagrantfile, `test_autonomy_integration`
-  (falló una vez DAY313), DEBT-CONFIG-JINJA2-PIPELINE-001 (mismo patrón para sniffer y ml-detector).
-- Siguientes de DEBT-ETCD-HA-TLS-RAFT-001: paso 5, paso 6 (Vault y etcd-server fuera del defender; borrar `tls.modo=http`
-  y los modos memoria), 7, 8 (EMECAS+++).
+1. Cierre del PR1 (un nodo): pasos 6, 7 y 8 de arriba. En el paso 6, `pipeline-status` comprueba el etcd-server Y el etcd
+   de la VM (estado real, no solo procesos) y `make up` levanta la VM etcd.
+2. PR2, HA de verdad: **al menos 3 nodos etcd** (decisión de Alonso), cada uno con su etcd-server, y Vault HA. Tests:
+   tirar un nodo (también el líder) y ver que otro toma el control; el estado de los componentes sigue sincronizado entre
+   nodos; medir cuánto tardan en sincronizarse tras la caída y la vuelta. Antes, la RAM (diseño, sección 6).
+3. DEBT-ETCD-VIGILANCIA-FALCO-WAZUH-001: Falco y Wazuh vigilando etcd y el etcd-server (Falco ya existe en hardened-x86;
+   medir qué vigila hoy). Después del PR2.
+4. Jenkinsfile capaz de producir el pipeline en producción (hoy no puede, medido DAY315).
+5. Preproducción: imagen mínima con 2-3 servidores detrás del firewall en FORWARD, para ver llegar la protección.
+   Cuando etcd y las cabezas estén certificados.
+
+## Deudas abiertas que NO bloquean EMECAS (por si sobra tiempo; ninguna decidida aún)
+
+DEBT-ETCD-CONFIG-SIZE-ENDIAN-001 (tamaño LE/BE en `PUT /v1/config`, el servidor cae a la cabecera HTTP),
+DEBT-ETCD-CLIENT-MANUAL-TESTS-CTEST-001, DEBT-SNIFFER-LIBPCAP-ETCD-001, DEBT-FW-CSV-SIN-FILAS-EN-GATE-001 (con la
+pregunta abierta de los `DRY_RUN_BLOCK`), DEBT-PKI-AT-REST-001, DEBT-GRAPH-HUECO-SIN-CLAVE-001,
+DEBT-CONFIG-AT-REST-PROTECTION-001 (propuesta sin confirmar), DEBT-REPO-RESIDUOS-001 (cuatro `scripts/d31*_parche.py`
+sin trackear, `etcd_client_simple.cpp` que es bash, bloque etcd de correlation-engine), PR2 (varios nodos etcd +
+etcd-server, Vault HA, `peer-cert-allowed-cn`, una CA por despliegue).
+
+## Herramientas de Claude (en su contenedor, no en el repo)
+
+Banco Debian 12 en `/srv/banco` (GCC 12.2.0, flags de production, libsodium 1.0.19, httplib v0.63.0, etcd-cpp-apiv3
+v0.15.3, libbpf v1.4.6, onnxruntime 1.17.1); `banco_completo.sh <árbol> <etiqueta>` compila la cadena del Makefile y
+pasa ctest (sniffer 19/23 en el banco: 4 de entorno, `libbpf.so.1` y `boot_id`; `proto rc=1` también en el control: se
+compila con los `.pb.*` del repo). Si el contenedor es nuevo, hay que rehacerlo.
 
 ## Reglas
 
 Medir, no votar; predicción escrita antes; si algo no da lo esperado, parar. Todo lo que se compile, probarlo antes en
-el banco con las opciones de production (g++-12, `-O3 -march=native -DNDEBUG -flto`), y cada instrumento al menos dos
-veces seguidas y también contra el comportamiento viejo (tiene que fallar). Ficheros entregados con su sha256 y como
-bloque `cat > f <<'EOF'`. Comandos exactos, uno por bloque, diciendo dónde se ejecuta cada uno (Mac / defender / VM
-etcd con `vagrant ssh etcd -c`). Búsquedas con `git grep`, nunca `grep -r`. El repo es de solo lectura para Claude.
+el banco con las opciones de production (g++-12, `-O3 -march=native -DNDEBUG -flto`), dos veces seguidas y contra el
+comportamiento viejo (mutaciones: tiene que fallar). Parcheadores con `--check`/`--apply <raíz>`, todo o nada,
+idempotentes; se copian a `scripts/etcd_ha/` y se ejecutan desde allí; entregados con su sha256. Comandos exactos, uno
+por bloque, diciendo dónde se ejecuta cada uno (Mac / defender / VM etcd con `vagrant ssh etcd -c`); las salidas largas
+a un fichero con `; cat` al final; un log por comando. Búsquedas con `git grep`, nunca `grep -r`. Sin emojis en los
+comandos. El repo es de solo lectura para Claude: los commits los hace Alonso, uno por cambio lógico.

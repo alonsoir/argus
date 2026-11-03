@@ -8540,3 +8540,61 @@ B2 (clave del firewall, cierra DEBT-FW-HMAC-KEY-ALARM-001).
 El sniffer libpcap (variante B, `main_libpcap.cpp`, `sniffer-libpcap.json`) no habla con etcd: ni registro, ni latidos,
 ni config subida, aunque su JSON ya trae el bloque `etcd` del commit A. Mismo comportamiento que la variante A cuando se
 retome (lector único y mantenedor de la librería).
+
+## DAY316 — paso 5, commits B1 y B2 (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Resultados DAY316 — commits B1 y B2». Commits `370210a28` (B1) y `cde7dd213`
+(B2). Con ellos el paso 5 de DEBT-ETCD-HA-TLS-RAFT-001 queda hecho: commits `fe99a7e70` (A), `370210a28` (B1), `cde7dd213`
+(B2), y sus documentos `c256e88c4` y `8d56ff747`.
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (pasos 0-5 hechos)
+Los tres componentes hablan mTLS con el etcd-server de la VM etcd, arrancan sin él, se registran (o reanudan el latido)
+cuando vuelve y suben el JSON de arranque. Siguiente: paso 6 (Vault y etcd-server fuera del defender: etcd-server de la VM
+como servicio systemd, `make up` levanta la VM etcd, fuera `tls.modo=http` y los modos memoria, `pipeline-start` sin
+`etcd-server-start` del defender), paso 7 (instrumento de reinicio de DAY311 en la VM: medido en parte con B1 y B2, misma
+huella y registro conservado) y paso 8 (EMECAS+++ production). La decisión F1 de DAY310 (sin etcd-server el ml-detector no
+arranca) queda sustituida por G2 (DAY316): ninguno sale por etcd.
+
+### DEBT-FW-HMAC-KEY-ALARM-001 — CERRADA DAY316 (`370210a28` + `cde7dd213`)
+Los tres componentes se comportan igual con el etcd-server (mantenedor común de la librería). El firewall pide su clave cada
+`hmac_key.check_interval_seconds` con los mismos casos que el ml-detector (sin clave, modo extendido, confirmada, cambiada,
+recuperada) y un CSV por clave. Medido en el lab: clave al arrancar, modo extendido y confirmación con la misma huella.
+
+### DEBT-FW-CSV-SIN-FILAS-EN-GATE-001 — ABIERTA (nueva DAY316, decisión H1 c de Alonso)
+Medido: desde D302 el firewall solo escribe CSV en acciones de la mitigación ddos_v2 (`habilitada=false` en el lab): ninguna
+fila desde el 29-oct; `test-parquet` validaba ese CSV viejo (verde falso). Criterio de Alonso: en `firewall_blocks-*.csv`
+va una fila solo cuando el firewall bloquea de verdad, ordene el bloqueo la cabeza que sea (DDoS, ransomware o las otras
+dos); lo que no se bloquea no tiene sentido escribirlo. Falta: que cada cabeza que bloquee escriba su fila, y que el gate
+tenga un caso que bloquee para que `test-parquet` valide datos de esa corrida. Pregunta abierta para Alonso: hoy D1 escribe
+también `DRY_RUN_BLOCK`/`DRY_RUN_RENEW` (lo que se habría bloqueado); ¿siguen yendo al CSV? Relacionada:
+DEBT-FW-LEGACY-STEPS-001 (pasos 5-8 inalcanzables).
+
+### CSV viejo del firewall — archivado DAY316 (decisión H2 de Alonso)
+`logs/firewall_logs/firewall_blocks.csv` (19 MB, 29-oct, firmado sin huella conocida) movido a
+`logs/firewall_logs/archivo/`. Con B2 ya no lo lee nadie.
+
+### Pendiente de DAY316 cerrado
+`registerService` con rutas escritas en el código (sniffer `/vagrant/sniffer/config/sniffer.json`, firewall
+`../config/firewall.json`): cerrado con B1 (se sube el JSON de `-c`, en ruta absoluta desde B2).
+
+### Lecciones DAY316 (B1, B2)
+Un test con hilos espera al hecho que comprueba. Un servidor falso atiende todos los métodos del cliente. Un `grep -c`
+también cuenta líneas de configuración: mirar la línea. Un verde que valida datos de hace una semana no es un verde.
+
+### Plan acordado al cierre de DAY316 (Alonso): primero certificar etcd, después lo demás
+1. **Cierre del PR1** (un nodo): paso 6 (etcd-server de la VM como servicio; `make up` y `make emecas` levantan y
+   aprovisionan la VM etcd sin pasos manuales; fuera del defender etcd-server, Vault dev y modos `http`/`memoria`;
+   `pipeline-status` comprueba el etcd-server Y el etcd de la VM, no solo procesos), paso 7 (reinicio), paso 8 (EMECAS+++).
+2. **PR2 — HA de verdad (Alonso: al menos 3 nodos etcd)**: cuántos levanta la imagen, cada uno con su etcd-server y
+   Vault HA. Tests nuevos: tirar un nodo (también el líder) y comprobar que uno de los otros dos toma el control; que el
+   estado de los componentes (registro, latidos, config) sigue sincronizado entre los nodos; medir cuánto tardan todos
+   en estar sincronizados tras la caída y la vuelta. Antes, la RAM (diseño, sección 6: VMs pequeñas o `ip netns`).
+3. **DEBT-ETCD-VIGILANCIA-FALCO-WAZUH-001 — ABIERTA (nueva DAY316)**: que Falco y Wazuh vigilen etcd y el etcd-server
+   (procesos, ficheros de datos y certificados, puertos, accesos), como el resto del pipeline. Falco ya existe en la VM
+   hardened-x86 (`hardened-setup-falco`, DEBT-PROD-FALCO-RULES-EXTENDED-001, DEBT-FALCO-ARGUS-GRAPH-RULES-001); medir qué
+   vigila hoy antes de diseñar. Después del PR2 (las reglas dependen de cuántos nodos y dónde).
+4. **Producción**: que el Jenkinsfile produzca el pipeline (medido DAY315: hoy no puede; DEBT-PACKAGE-DEB-001,
+   DEBT-DEPLOY-VAGRANT-001).
+5. **Preproducción**: imagen mínima con dos o tres servidores detrás del firewall en FORWARD, para ver llegar la protección
+   a esos servidores (DEBT-LAB-PREPROD-TOPOLOGIAS-001, DEBT-FW-ENFORCEMENT-POINT-001). Cuando el etcd esté certificado y
+   las cabezas también.

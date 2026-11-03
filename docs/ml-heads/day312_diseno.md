@@ -1000,3 +1000,55 @@ los tres) y **B2** (clave del firewall; cierra DEBT-FW-HMAC-KEY-ALARM-001).
   el etcd real) y `[BRONCE-CLAVE-CONFIRMADA]`. E2E y mitre-start como en el commit A.
 - **Laboratorio B2:** el firewall recibe su clave al volver el etcd-server; tras una rotación (`/secrets/rotate`, admin) →
   `[FW-CSV-CLAVE-CAMBIADA]` y un CSV nuevo con la otra huella.
+
+## Resultados DAY316 — commits B1 (`370210a28`) y B2 (`cde7dd213`) del paso 5 (sección aparte, sin reescribir el diseño)
+
+### B1 — ningún componente sale ni espera por el etcd-server (18 ficheros, +935/-810)
+
+- **Cambios respecto al diseño:** la subida de la config la hace la propia librería (`iniciar(ruta, tipo)`), no una
+  función de cada envoltorio: era el mismo código en los tres. Sin servicio, el mantenedor no hace `/health` antes de
+  `/register` (el propio `/register` lo comprueba). Si el registro se conservó en el etcd real, al volver prueba el latido
+  primero (`[ETCD-CLIENTE-REANUDADO]`, sin nuevo `/register`).
+- **Hallazgo:** el firewall tenía su propio `return 1` («Encryption enabled but etcd not initialized», `main.cpp` ~852):
+  sin etcd tampoco arrancaba, al contrario de lo que se creía. Fuera.
+- **Banco:** dos pasadas del pipeline completo en production, avisos iguales a control2; `test_etcd_cliente_tls` 28/28
+  dos veces (R1-R8); mutaciones cazadas: sin reintento de registro (R2-R5), 404 tratado como caída (R3), sin subir la
+  config (R2, R3), espera no interrumpible (R5, R7). **PARADA en el banco:** primera pasada 25/28: el servidor falso no
+  atendía `PUT` (R2, R3) y R7 destruía el cliente antes del primer latido (carrera del test). Corregidos los tests.
+- **Laboratorio:** etcd-server de la VM parado → `pipeline-start` con los tres `RUNNING`, `[ETCD-CLIENTE-SIN-SERVICIO]`
+  uno por latido (12 en ~6 min) y `[BRONCE-SIN-CLAVE]`; al arrancarlo, los tres `[ETCD-CLIENTE-REGISTRADO] ... tras 390 s
+  sin servicio (13 intentos); config subida: <ruta de -c>` y `[BRONCE-CLAVE-RECUPERADA]` (huella `60768287`, hueco 434 s,
+  496 eventos sin bronce); parado con el pipeline en marcha → `[BRONCE-CLAVE-SIN-CONFIRMAR]`; al volver, los tres
+  `[ETCD-CLIENTE-REANUDADO] ... sin nuevo /register` (90-121 s); 0 `[ETCD-CLIENTE-REGISTRO-PERDIDO]`; E2E PASSED.
+- **Predicción fallida, explicada:** «1 `POST /register`» tras el último arranque era la línea `[ETCD-AUTHZ] regla 2/13:
+  POST /register` del propio arranque; registros reales, 0. Los seis de 13:09-13:13 son los procesos nuevos del E2E
+  (inyectores y `*-start` del Makefile), uno a uno.
+
+### B2 — clave del CSV del firewall cada intervalo y un CSV por clave (16 ficheros, +808/-46)
+
+- `ClaveCsv` (hilo propio, `hmac_key.check_interval_seconds` [10, 3600] defecto 60) con las etiquetas `[FW-CSV-*]`;
+  `firewall_blocks-<AAAAMMDDTHHMMSSZ>-<huella>.csv`; `append_csv_log` con mutex. La librería registra la ruta absoluta del
+  JSON de arranque (el ml-detector arranca con `../config/...`).
+- **Banco:** `firewall_tests` 82 → 90; mutaciones cazadas: nunca vuelve a pedir la clave, un solo fichero, sin respuesta
+  = sin clave, espera no interrumpible.
+- **Laboratorio:** `[FW-CSV-CLAVE] ... (huella 4f60123a) al arrancar`; etcd-server parado → `-SIN-CONFIRMAR` con la misma
+  huella; al volver, `-CONFIRMADA ... la misma clave` (122 s); ml-detector registra
+  `/vagrant/ml-detector/config/ml_detector_config.json`; test-components 9/23/13/7/90; E2E PASSED.
+- **PARADA en el laboratorio:** predicho un `firewall_blocks-<fecha>-4f60123a.csv` tras el E2E; no apareció y
+  `parquet-convert` falló. Medido en el código: desde DDOS-MITIGACION-B2-D302 el firewall solo escribe CSV cuando la
+  mitigación ddos_v2 bloquea o renueva (STEP 8 inalcanzable, `zmq_subscriber.cpp` 834); con `habilitada=false` en el lab
+  no hay filas. El viejo `firewall_blocks.csv` no se tocaba desde el 29-oct: `test-parquet` (dentro de `test-all`) era un
+  verde falso que validaba datos de esa fecha. Decisiones de Alonso: **H1 b** (sin CSV: `[PARQUET-SIN-CSV]`, se borra el
+  Parquet anterior, `[PARQUET-SIN-DATOS] ... no es un PASSED`, rc 0; con CSV y sin Parquet sigue fallando), **H1 c**
+  (DEBT-FW-CSV-SIN-FILAS-EN-GATE-001), **H2** (el CSV viejo a `logs/firewall_logs/archivo/`). Medido tras el cambio:
+  `test-parquet` rc 0 con las dos líneas y el Parquet del 29-oct borrado.
+- El CSV por clave solo está demostrado en ctest (incluida la verificación HMAC de cada fila con la clave de la huella de
+  su fichero): en el lab no hay filas que lo ejerzan.
+
+### Lecciones DAY316 (B1, B2)
+
+- Un test con hilos tiene que esperar al hecho que comprueba, no suponer el orden (R7).
+- Un servidor falso atiende todos los métodos que usa el cliente (`PUT`).
+- Un `grep -c` cuenta también las líneas de configuración del arranque: mirar la línea antes de concluir.
+- Un verde que valida datos de hace una semana no es un verde: comprobar la fecha de lo que se valida.
+- La predicción que falla en el lab (el CSV) se mide en el código antes de tocar nada; la causa estaba en D302.
