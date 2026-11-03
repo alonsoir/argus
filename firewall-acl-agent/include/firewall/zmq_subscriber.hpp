@@ -47,6 +47,7 @@
 #include "firewall/batch_processor.hpp"
 #include "firewall/logger.hpp"
 #include "firewall/etcd_client.hpp"
+#include "firewall/clave_csv.hpp"  // [FW-CSV-CLAVE-B2-D316]
 #include "network_security.pb.h"
 #include <zmq.hpp>
 #include <string>
@@ -127,6 +128,7 @@ public:
         ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  ///< [DDOS-MITIGACION-B2-D302] mitigacion real
         std::vector<uint32_t> ddos_escalones_cortos;  ///< [DDOS-MITIGACION-B2-D302] escalones de prueba (aviso periodico)
         bool dry_run = true;  ///< [DDOS-MITIGACION-B2-D302] copia de operation.dry_run (1.a llave); defecto el seguro
+        int hmac_key_check_interval_seconds = 60;  ///< [FW-CSV-CLAVE-B2-D316] copia de hmac_key.check_interval_seconds
 
         /**
          * @brief Default configuration
@@ -512,7 +514,7 @@ private:
     std::unique_ptr<FirewallLogger> logger_;
     // ✅ Day 59: HMAC integration
     EtcdClient* etcd_client_;  ///< etcd client for HMAC key retrieval (not owned)
-    std::optional<std::vector<uint8_t>> hmac_key_;  ///< HMAC key for CSV signing
+    std::unique_ptr<ClaveCsv> clave_csv_;  ///< [FW-CSV-CLAVE-B2-D316] clave del CSV, pedida cada intervalo
 };
 
 } // namespace firewall

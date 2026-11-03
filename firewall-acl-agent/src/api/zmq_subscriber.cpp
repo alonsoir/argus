@@ -44,7 +44,6 @@ ZMQSubscriber::ZMQSubscriber(BatchProcessor& processor,
         , running_(false)
         , current_reconnect_interval_ms_(config.reconnect_interval_ms)
         , etcd_client_(etcd_client)  // ✅ Day 59: Store etcd client
-        , hmac_key_(std::nullopt)     // ✅ Day 59: Initialize as empty
     {
     FIREWALL_LOG_INFO("Initializing ZMQ Subscriber",
         "endpoint", config.endpoint,
@@ -70,24 +69,18 @@ ZMQSubscriber::ZMQSubscriber(BatchProcessor& processor,
         );
         logger_->start();
 
-        // [ETCD-CLIENTE-B1-D316] /secrets/<CN> directamente: solo exige el certificado con ese CN, no el registro (que
-        // ahora llega en segundo plano y podría no estar aún). Una sola petición al arrancar: el sondeo periódico y el
-        // CSV por clave van en B2 (DEBT-FW-HMAC-KEY-ALARM-001).
-        if (etcd_client_) {
-            const std::string ruta_clave = "/secrets/firewall-acl-agent";
-            auto key_result = etcd_client_->get_hmac_key(ruta_clave);
-            if (key_result.has_value()) {
-                hmac_key_ = key_result;
-                FIREWALL_LOG_INFO("HMAC key retrieved from etcd",
-                    "key_path", ruta_clave,
-                    "key_size_bytes", hmac_key_->size());
-            } else {
-                FIREWALL_LOG_WARN("HMAC key not available from etcd, CSV signing disabled",
-                    "key_path", ruta_clave);
-            }
-        } else {
-            FIREWALL_LOG_WARN("No etcd client provided, CSV signing disabled");
-        }
+        // [FW-CSV-CLAVE-B2-D316] G4: la clave del CSV se pide cada hmac_key.check_interval_seconds en un hilo propio
+        // (ClaveCsv), como la del bronce en el ml-detector. /secrets/<CN> solo exige el certificado con ese CN, no el
+        // registro. Sin cliente etcd (bloque con fatales): sin clave, avisado en cada intento.
+        EtcdClient* etcd = etcd_client_;
+        clave_csv_ = std::make_unique<ClaveCsv>(
+            [etcd]() -> std::optional<Clave> {
+                if (!etcd) return std::nullopt;
+                return etcd->get_hmac_key("/secrets/firewall-acl-agent");
+            },
+            config_.hmac_key_check_interval_seconds,
+            [](const std::string& linea) { std::cerr << linea << std::endl; });
+        clave_csv_->arrancar();
 
         FIREWALL_LOG_INFO("Firewall logger initialized",
             "log_directory", config_.log_directory,
@@ -797,8 +790,11 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                             if (logger_ && logger_->log_blocked_event(ev)) {
                                 stats_.events_logged++;
                             }
-                            if (logger_ && hmac_key_.has_value()) {
-                                logger_->append_csv_log(ev, hmac_key_.value());
+                            const auto k = clave_csv_ ? clave_csv_->clave() : std::nullopt;  // [FW-CSV-CLAVE-B2-D316]
+                            if (logger_ && k.has_value()) {
+                                logger_->append_csv_log(ev, *k);
+                            } else if (clave_csv_) {
+                                clave_csv_->fila_sin_clave();
                             }
                         } catch (const std::exception& e) {
                             FIREWALL_LOG_ERROR("[DDOS-MITIGACION] fallo al registrar la accion", "error", e.what(),
@@ -943,7 +939,9 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
     // STEP 8 - Append to CSV log with HMAC signature (Day 59)
     // ═══════════════════════════════════════════════════════════════════
 
-    if (hmac_key_.has_value()) {
+    const auto clave_fila = clave_csv_ ? clave_csv_->clave() : std::nullopt;  // [FW-CSV-CLAVE-B2-D316]
+    if (!clave_fila.has_value() && clave_csv_) clave_csv_->fila_sin_clave();
+    if (clave_fila.has_value()) {
         try {
             TRACK_OPERATION("append_csv_log");
 
@@ -954,7 +952,7 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                 timeout_sec
             );
 
-            logger_->append_csv_log(log_event, hmac_key_.value());
+            logger_->append_csv_log(log_event, *clave_fila);
 
             FIREWALL_LOG_DEBUG("CSV log entry appended with HMAC",
                 "source_ip", nf.source_ip());

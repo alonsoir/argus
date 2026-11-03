@@ -803,6 +803,7 @@ int main(int argc, char** argv) {
         zmq_config.ddos_protegidos = config.ddos_protegidos;  // [PROTEGIDOS-D300]
         zmq_config.ddos_mitigacion = config.ddos_mitigacion;  // [DDOS-MITIGACION-B2-D302]
         zmq_config.dry_run = config.operation.dry_run;        // [DDOS-MITIGACION-B2-D302] 1.a llave
+        zmq_config.hmac_key_check_interval_seconds = config.hmac_key_check_interval_seconds;  // [FW-CSV-CLAVE-B2-D316]
         zmq_config.ddos_escalones_cortos = ::mldefender::firewall::escalones_cortos(
             recidivism_config.strike_durations_sec, static_cast<uint32_t>(config.ddos_mitigacion.aviso_castigo_corto_sec));
         std::cout << "[DDOS-MITIGACION] modo: "

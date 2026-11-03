@@ -220,6 +220,21 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
         }
         config.ddos_mitigacion = dm;
     }
+    {   // [FW-CSV-CLAVE-B2-D316] hmac_key.check_interval_seconds: el JSON manda y se registra siempre de dónde sale el valor
+        constexpr int kDef = 60, kMin = 10, kMax = 3600;
+        const Json::Value h = root.isMember("hmac_key") ? root["hmac_key"] : Json::Value(Json::nullValue);
+        const bool hay = h.isObject() && h.isMember("check_interval_seconds");
+        if (hay && h["check_interval_seconds"].isInt() && h["check_interval_seconds"].asInt() >= kMin &&
+            h["check_interval_seconds"].asInt() <= kMax) {
+            config.hmac_key_check_interval_seconds = h["check_interval_seconds"].asInt();
+            std::cout << "[CONFIG] hmac_key.check_interval_seconds=" << config.hmac_key_check_interval_seconds
+                      << " (JSON)" << std::endl;
+        } else {
+            config.hmac_key_check_interval_seconds = kDef;
+            std::cerr << "[CONFIG-DEFAULT] hmac_key.check_interval_seconds " << (hay ? "mal formado" : "ausente")
+                      << " (entero en [" << kMin << ", " << kMax << "]): se usa " << kDef << std::endl;
+        }
+    }
     {   // [PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001: rangos protegidos de la cabeza DDoS
         const Json::Value p = root.isMember("ddos_protegidos") ? root["ddos_protegidos"] : Json::Value(Json::nullValue);
         std::vector<std::string> dmz, intranet, externos;

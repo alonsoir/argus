@@ -186,6 +186,7 @@ set(FIREWALL_CORE_SOURCES
         src/core/etcd_client.cpp
         src/core/autonomy_reactor.cpp
         src/core/autonomy_subscriber.cpp
+        src/core/clave_csv.cpp           # [FW-CSV-CLAVE-B2-D316] clave HMAC del CSV pedida cada intervalo
         # src/core/acl_intelligence.cpp     # TODO: Phase 2+
 )
 
@@ -333,6 +334,7 @@ if(BUILD_TESTS)
     set(TEST_SOURCES
             tests/unit/test_ipset_is_valid_ip.cpp
             tests/unit/test_logger.cpp
+            tests/unit/test_clave_csv.cpp   # ← [FW-CSV-CLAVE-B2-D316]
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_config_loader_setname.cpp
             tests/unit/test_set_name_validator.cpp

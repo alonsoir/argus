@@ -77,6 +77,10 @@
     "retry_interval_ms": 1000,
     "heartbeat_interval_seconds": 30
   },
+  "hmac_key": {
+    "_doc": "[FW-CSV-CLAVE-B2-D316] check_interval_seconds: entero en [10, 3600], defecto 60. Cada intervalo el firewall pide su clave HMAC del CSV (/secrets/firewall-acl-agent) al etcd-server, en un hilo propio. Sin clave no escribe CSV (nunca filas sin firma) y avisa con [FW-CSV-SIN-CLAVE]; si la clave cambia, abre otro CSV (firewall_blocks-<fecha>-<huella>.csv) y lo avisa con [FW-CSV-CLAVE-CAMBIADA]; si el etcd-server no contesta, sigue firmando con la vigente y lo marca con [FW-CSV-CLAVE-SIN-CONFIRMAR]. Ausente o fuera de rango: 60 con [CONFIG-DEFAULT] y el firewall arranca igual.",
+    "check_interval_seconds": 60
+  },
   "zmq": {
     "endpoint": "tcp://localhost:5572",
     "topic": "",

@@ -15,6 +15,8 @@
 #include <json/json.h>
 #include <openssl/hmac.h>
 #include <openssl/evp.h>
+#include <iostream>
+#include "firewall/clave_csv.hpp"  // [FW-CSV-CLAVE-B2-D316] huella_clave
 
 namespace fs = std::filesystem;
 
@@ -414,11 +416,27 @@ bool FirewallLogger::append_csv_log(const BlockedEvent& event,
     // Append HMAC to line
     std::string full_line = csv_line + "," + hmac_sig;
 
-    // Write to CSV file (append mode)
-    std::string csv_path = output_dir_ + "/firewall_blocks.csv";
-    std::ofstream csv_file(csv_path, std::ios::app);
+    // [FW-CSV-CLAVE-B2-D316] G4 a: un CSV por clave, con la huella en el nombre
+    std::lock_guard<std::mutex> lk(csv_m_);
+    const std::string huella = huella_clave(hmac_key);
+    if (huella != csv_huella_) {
+        std::time_t t = std::time(nullptr);
+        std::tm tm{};
+        gmtime_r(&t, &tm);
+        char fecha[32];
+        std::strftime(fecha, sizeof fecha, "%Y%m%dT%H%M%SZ", &tm);
+        const std::string base = output_dir_ + "/firewall_blocks-" + fecha + "-" + huella;
+        std::string ruta = base + ".csv";
+        for (int n = 1; fs::exists(ruta); ++n) ruta = base + "-" + std::to_string(n) + ".csv";
+        std::cout << "[FW-CSV-FICHERO] nuevo CSV " << ruta << " (huella " << huella << ")"
+                  << (csv_ruta_.empty() ? std::string() : "; cerrado " + csv_ruta_ + " (huella " + csv_huella_ + ")")
+                  << std::endl;
+        csv_huella_ = huella;
+        csv_ruta_ = ruta;
+    }
+    std::ofstream csv_file(csv_ruta_, std::ios::app);
     if (!csv_file) {
-        std::cerr << "[FirewallLogger] Failed to open CSV file: " << csv_path << std::endl;
+        std::cerr << "[FirewallLogger] Failed to open CSV file: " << csv_ruta_ << std::endl;
         return false;
     }
 
@@ -426,6 +444,11 @@ bool FirewallLogger::append_csv_log(const BlockedEvent& event,
     csv_file.close();
 
     return true;
+}
+
+std::string FirewallLogger::csv_actual() const {
+    std::lock_guard<std::mutex> lk(csv_m_);
+    return csv_ruta_;
 }
 
 std::string FirewallLogger::generate_csv_line(const BlockedEvent& event) {

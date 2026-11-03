@@ -209,6 +209,8 @@ struct FirewallAgentConfig {
     DdosShadowParams ddos_shadow;  // [DDOS-SHADOW-D293] política por víctima en sombra
     ::mldefender::firewall::RangosProtegidos ddos_protegidos;  // [PROTEGIDOS-D300] rangos protegidos de la cabeza DDoS
     ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  // [DDOS-MITIGACION-B1-D301] mitigacion real de ddos_v2
+    // [FW-CSV-CLAVE-B2-D316] cada cuánto se pide la clave HMAC del CSV al etcd-server; entero [10, 3600], defecto 60
+    int hmac_key_check_interval_seconds = 60;
 
 
     bool is_valid() const { return true; }

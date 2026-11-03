@@ -45,7 +45,16 @@ def check_all_rows(name, col, ms_multiple=False):
             check(False, f"{name}: {int(mask.sum())} de {n} filas no son multiplo de 1_000_000 (ms->ns fallida); primera: fila {i} = {int(a[i])}")
 
 fw_path = f"{OUT_DIR}/firewall/firewall_blocks.parquet"
-check(os.path.exists(fw_path), "firewall_blocks.parquet not found")
+# [PARQUET-SIN-CSV-D316] decisión H1 b de Alonso: sin ningún CSV del firewall no hay nada que validar y se dice así (rc 0).
+# Si hay CSV y falta el Parquet, es un fallo.
+FW_CSV_GLOB = "/vagrant/logs/firewall_logs/firewall_blocks-*.csv"
+if not os.path.exists(fw_path) and not glob.glob(FW_CSV_GLOB):
+    print()
+    print("  [PARQUET-SIN-DATOS] firewall: 0 ficheros firewall_blocks-*.csv, nada que validar (no es un PASSED).")
+    print("  El firewall solo escribe CSV cuando bloquea: DEBT-FW-CSV-SIN-FILAS-EN-GATE-001.")
+    print()
+    sys.exit(0)
+check(os.path.exists(fw_path), "firewall_blocks.parquet not found (hay CSV del firewall)")
 if os.path.exists(fw_path):
     t = pq.read_table(fw_path)
     check(t.schema.equals(schema_firewall), "firewall: schema mismatch")

@@ -16,6 +16,7 @@
 #include <atomic>
 #include <chrono>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 // ADR-013 PHASE 2 — DAY 98: CryptoTransport via SeedClient (sustituye CryptoManager)
 // DEPRECATED DAY 98 — crypto_manager.hpp: #include "crypto_transport/crypto_manager.hpp"
@@ -433,7 +434,14 @@ void EtcdClient::disconnect() {
 
 // G1-G3: arranca el mantenedor sin esperar al etcd-server. ruta_config: el JSON con el que arrancó el proceso (se
 // sube en cada registro); tipo: el campo _registration.type.
-void EtcdClient::iniciar(const std::string& ruta_config, const std::string& tipo) {
+void EtcdClient::iniciar(const std::string& ruta_config_arranque, const std::string& tipo) {
+    // [FW-CSV-CLAVE-B2-D316] ruta absoluta en el log y en la subida (el ml-detector arranca con ../config/... por defecto)
+    std::string ruta_config = ruta_config_arranque;
+    if (!ruta_config.empty()) {
+        std::error_code ec;
+        const auto abs = std::filesystem::weakly_canonical(std::filesystem::absolute(ruta_config, ec), ec);
+        if (!ec) ruta_config = abs.string();
+    }
     {
         std::lock_guard<std::recursive_mutex> lk(pImpl->est_m_);
         pImpl->ruta_config_ = ruta_config;
