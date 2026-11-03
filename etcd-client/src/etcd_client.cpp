@@ -1,5 +1,7 @@
 // etcd-client/src/etcd_client.cpp
 #include "etcd_client/etcd_client.hpp"
+#include "transporte.hpp"  // [ETCD-CLIENTE-D316] HTTPS + lista de endpoints
+#include <cstring>
 #include <crypto_transport/contexts.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -50,6 +52,7 @@ struct EtcdClient::Impl {
     std::unique_ptr<crypto_transport::CryptoTransport> rx_;
     // Day 59: Service discovery paths from etcd-server
     ServicePaths service_paths_;
+    Transporte transporte_;  // [ETCD-CLIENTE-D316]
     // Heartbeat thread
     std::thread heartbeat_thread_;
     std::atomic<bool> heartbeat_running_{false};
@@ -58,7 +61,7 @@ struct EtcdClient::Impl {
 
     // Constructor — ADR-013 PHASE 2 (DAY 98)
     explicit Impl(const Config& config)
-        : config_(config) {
+        : config_(config), transporte_(config) {
         try {
             if (!config_.component_config_path.empty()) {
                 seed_client_ = std::make_unique<ml_defender::SeedClient>(
@@ -136,18 +139,10 @@ struct EtcdClient::Impl {
     bool send_heartbeat() {
         std::string payload = component::build_heartbeat_payload(config_);
 
-        auto response = http::post(
-            config_.host,
-            config_.port,
-            "/v1/heartbeat/" + config_.component_name,
-            payload,
-            config_.timeout_seconds,
-            1, // Single attempt for heartbeat
-            0,
-            config_.component_name
-        );
-
-        return response.success;
+        // Single attempt for heartbeat (por dirección)
+        auto response = transporte_.peticion("POST", "/v1/heartbeat/" + config_.component_name, payload,
+                                             "application/json", 0, 1);
+        return response.exito;
     }
 
 	// Day 60: Apply encryption and compression to outgoing data
@@ -209,9 +204,6 @@ std::string process_outgoing_data(const std::string& data) {
 EtcdClient::EtcdClient(const Config& config)
     : pImpl(std::make_unique<Impl>(config)) {}
 
-EtcdClient::EtcdClient(const std::string& config_json_path)
-    : pImpl(std::make_unique<Impl>(Config::from_json_file(config_json_path))) {}
-
 // Destructor
 EtcdClient::~EtcdClient() = default;
 
@@ -228,24 +220,23 @@ bool EtcdClient::connect() {
         return true;
     }
 
-    std::cout << "🔗 Connecting to etcd-server: "
-              << pImpl->config_.host << ":" << pImpl->config_.port << std::endl;
+    if (pImpl->config_.endpoints.empty() || pImpl->config_.ca_file.empty() || pImpl->config_.cert_file.empty() ||
+        pImpl->config_.key_file.empty()) {
+        std::cerr << "[ETCD-CLIENTE-FATAL] " << pImpl->config_.component_name
+                  << ": faltan endpoints o rutas TLS (ver [ETCD-CLIENTE-FATAL] del bloque etcd del JSON)" << std::endl;
+        return false;
+    }
+    std::cout << "🔗 Connecting to etcd-server (" << pImpl->config_.endpoints.size() << " direcciones, TLS): "
+              << pImpl->config_.endpoints.front() << (pImpl->config_.endpoints.size() > 1 ? " ..." : "")
+              << std::endl;
 
     // Test connection with a simple GET request
-    auto response = http::get(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/health",
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
+    auto response = pImpl->transporte_.peticion("GET", "/health");
 
-    pImpl->connected_ = response.success;
+    pImpl->connected_ = response.exito;
 
     if (pImpl->connected_) {
-        std::cout << "✅ Connected to etcd-server" << std::endl;
+        std::cout << "✅ Connected to etcd-server " << pImpl->transporte_.direccion_actual() << std::endl;
     } else {
         std::cerr << "❌ Failed to connect to etcd-server" << std::endl;
     }
@@ -292,18 +283,9 @@ bool EtcdClient::set(const std::string& key, const std::string& value) {
         };
 
         // Send to etcd-server
-        auto response = http::post(
-            pImpl->config_.host,
-            pImpl->config_.port,
-            "/kv/set",
-            payload.dump(),
-            pImpl->config_.timeout_seconds,
-            pImpl->config_.max_retry_attempts,
-            pImpl->config_.retry_backoff_seconds,
-            pImpl->config_.component_name
-        );
+        auto response = pImpl->transporte_.peticion("POST", "/kv/set", payload.dump());
 
-        if (response.success) {
+        if (response.exito) {
             std::cout << "✅ Key set: " << key << std::endl;
             return true;
         }
@@ -327,17 +309,9 @@ std::string EtcdClient::get(const std::string& key) {
 
     try {
         // Request from etcd-server
-        auto response = http::get(
-            pImpl->config_.host,
-            pImpl->config_.port,
-            "/kv/get?key=" + key,
-            pImpl->config_.timeout_seconds,
-            pImpl->config_.max_retry_attempts,
-            pImpl->config_.retry_backoff_seconds,
-            pImpl->config_.component_name
-        );
+        auto response = pImpl->transporte_.peticion("GET", "/kv/get?key=" + key);
 
-        if (!response.success) {
+        if (!response.exito) {
             std::cerr << "❌ Failed to get key: " << key << std::endl;
             return "";
         }
@@ -367,17 +341,9 @@ bool EtcdClient::del(const std::string& key) {
         return false;
     }
 
-    auto response = http::del(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/kv/delete?key=" + key,
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
+    auto response = pImpl->transporte_.peticion("DELETE", "/kv/delete?key=" + key);
 
-    if (response.success) {
+    if (response.exito) {
         std::cout << "✅ Key deleted: " << key << std::endl;
         return true;
     }
@@ -402,17 +368,9 @@ std::vector<std::string> EtcdClient::list_keys(const std::string& prefix) {
             path += "?prefix=" + prefix;
         }
 
-        auto response = http::get(
-            pImpl->config_.host,
-            pImpl->config_.port,
-            path,
-            pImpl->config_.timeout_seconds,
-            pImpl->config_.max_retry_attempts,
-            pImpl->config_.retry_backoff_seconds,
-            pImpl->config_.component_name
-        );
+        auto response = pImpl->transporte_.peticion("GET", path);
 
-        if (response.success) {
+        if (response.exito) {
             json j = json::parse(response.body);
             if (j.contains("keys") && j["keys"].is_array()) {
                 for (const auto& key : j["keys"]) {
@@ -446,18 +404,9 @@ bool EtcdClient::register_component() {
 
     std::string payload = component::build_registration_payload(pImpl->config_);
 
-    auto response = http::post(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/register",
-        payload,
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
+    auto response = pImpl->transporte_.peticion("POST", "/register", payload);
 
-    if (response.success) {
+    if (response.exito) {
         std::cout << "✅ Component registered: " << pImpl->config_.component_name << std::endl;
 
         // Day 59: Parse service discovery paths from registration response
@@ -513,18 +462,9 @@ bool EtcdClient::unregister_component() {
 
     std::string payload = component::build_unregister_payload(pImpl->config_);
 
-    auto response = http::post(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/unregister",
-        payload,
-        pImpl->config_.timeout_seconds,
-        1, // Single attempt
-        0,
-        pImpl->config_.component_name
-    );
+    auto response = pImpl->transporte_.peticion("POST", "/unregister", payload, "application/json", 0, 1);
 
-    if (response.success) {
+    if (response.exito) {
         std::cout << "✅ Component unregistered: " << pImpl->config_.component_name << std::endl;
         return true;
     }
@@ -548,17 +488,9 @@ ComponentInfo EtcdClient::get_component_info(const std::string& name) {
         return info;
     }
 
-    auto response = http::get(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/component?name=" + name,
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
+    auto response = pImpl->transporte_.peticion("GET", "/component?name=" + name);
 
-    if (response.success) {
+    if (response.exito) {
         return component::parse_component_info(response.body);
     }
 
@@ -575,17 +507,9 @@ std::vector<ComponentInfo> EtcdClient::list_components() {
         return components;
     }
 
-    auto response = http::get(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/components",
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
+    auto response = pImpl->transporte_.peticion("GET", "/components");
 
-    if (response.success) {
+    if (response.exito) {
         return component::parse_component_list(response.body);
     }
 
@@ -642,32 +566,22 @@ bool EtcdClient::put_config(const std::string& json_config) {
         std::string path = "/v1/config/" + pImpl->config_.component_name;
 
         std::cout << "📤 [etcd-client] Uploading config to "
-                  << pImpl->config_.host << ":" << pImpl->config_.port << path << std::endl;
+                  << pImpl->transporte_.direccion_actual() << path << std::endl;
         std::cout << "   Original: " << json_config.size()
                   << " -> Processed: " << processed_config.size() << " bytes" << std::endl;
 
         // 4. Send PUT request (9 parameters - original_size will use default = 0)
-        auto response = http::put(
-    		pImpl->config_.host,
-    		pImpl->config_.port,
-    		path,
-    		processed_config,
-    		content_type,  // ← Ya no hardcoded
-    		pImpl->config_.timeout_seconds,
-    		pImpl->config_.max_retry_attempts,
-    		pImpl->config_.retry_backoff_seconds,
-    		original_size  // ← Añadir este parámetro
-			);
+        auto response = pImpl->transporte_.peticion("PUT", path, processed_config, content_type, original_size);
 
         // 5. Check response
-        if (!response.success) {
+        if (!response.exito) {
             std::cerr << "❌ [etcd-client] PUT request failed" << std::endl;
             return false;
         }
 
-        if (response.status_code != 200 && response.status_code != 201) {
+        if (response.status != 200 && response.status != 201) {
             std::cerr << "❌ [etcd-client] Server returned "
-                      << response.status_code << ": " << response.body << std::endl;
+                      << response.status << ": " << response.body << std::endl;
             return false;
         }
 
@@ -708,12 +622,6 @@ bool EtcdClient::has_encryption_key() const {
 }
 
 
-std::string EtcdClient::get_encryption_key() const {
-    // DEPRECATED DAY 98 — clave HKDF no expuesta (ADR-013)
-    std::cerr << "⚠️  DEPRECATED: get_encryption_key() no disponible con CryptoTransport" << std::endl;
-    return "";
-}
-
 std::string EtcdClient::get_component_config(const std::string& component_name) {
     return get("/config/" + component_name + "/active");
 }
@@ -722,11 +630,8 @@ std::optional<std::vector<uint8_t>> EtcdClient::get_hmac_key(const std::string& 
     std::lock_guard<std::mutex> lock(pImpl->mutex_);
     if (!pImpl->connected_) return std::nullopt;
 
-    auto response = http::get(pImpl->config_.host, pImpl->config_.port, key_path,
-                             pImpl->config_.timeout_seconds, pImpl->config_.max_retry_attempts,
-                             pImpl->config_.retry_backoff_seconds,
-                             pImpl->config_.component_name);
-    if (!response.success) return std::nullopt;
+    auto response = pImpl->transporte_.peticion("GET", key_path);
+    if (!response.exito) return std::nullopt;
 
     try {
         auto j = json::parse(response.body);

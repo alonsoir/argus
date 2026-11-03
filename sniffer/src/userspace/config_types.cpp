@@ -152,8 +152,7 @@ bool strict_load_json_config(const std::string& config_path, StrictSnifferConfig
         config.compression.adaptive_compression = sniffer_config->transport.compression.adaptive_compression;
 
         // etcd - Day 20 mapping
-        config.etcd.enabled = sniffer_config->etcd.enabled;
-        config.etcd.endpoints = sniffer_config->etcd.endpoints;
+        config.etcd.bloque_json = sniffer_config->etcd.bloque_json;  // [ETCD-CLIENTE-D316]
 
         // Monitoring
         config.monitoring.stats_interval_seconds = sniffer_config->monitoring.stats_interval_seconds;

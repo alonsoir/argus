@@ -14,23 +14,17 @@ namespace ml_detector {
 
 struct EtcdClient::Impl {
     std::unique_ptr<etcd_client::EtcdClient> client_;
-    std::string endpoint_;
     std::string component_name_;
-    std::string host_;
-    int port_;
 
-    Impl(const std::string& endpoint, const std::string& component_name)
-        : endpoint_(endpoint), component_name_(component_name) {
+    // [ETCD-CLIENTE-D316] base = lo que devuelve etcd_client::leer_bloque_etcd() del bloque etcd del JSON
+    Impl(const etcd_client::Config& base, const std::string& component_name)
+        : component_name_(component_name) {
 
-        // Parse endpoint (formato: "host:port" o "http://host:port")
-        parseEndpoint(endpoint);
 
         // Configurar etcd-client
-        etcd_client::Config config;
+        etcd_client::Config config = base;  // endpoints, TLS y tiempos del JSON
         config.component_name = component_name;
-        config.host = host_;
-        config.port = port_;
-        config.encryption_enabled = (endpoint.find("http://") != 0);
+        // M6 (DAY316): el cifrado ya no se deduce del esquema de la URL; lo trae base (defecto true)
         config.compression_enabled = true;
         // component_config_path solo cuando encryption activo (seed no disponible en tests)
         if (config.encryption_enabled) {
@@ -52,25 +46,6 @@ struct EtcdClient::Impl {
         client_->connect();
     }
 
-    void parseEndpoint(const std::string& endpoint) {
-        // Remover http:// si existe
-        std::string clean_endpoint = endpoint;
-        if (endpoint.find("http://") == 0) {
-            clean_endpoint = endpoint.substr(7);
-        }
-
-        // Buscar ':'
-        size_t colon_pos = clean_endpoint.find(':');
-        if (colon_pos != std::string::npos) {
-            host_ = clean_endpoint.substr(0, colon_pos);
-            port_ = std::stoi(clean_endpoint.substr(colon_pos + 1));
-        } else {
-            host_ = clean_endpoint;
-            port_ = 2379; // Puerto por defecto
-        }
-
-        std::cout << "📡 [ml-detector] Parsed endpoint: " << host_ << ":" << port_ << std::endl;
-    }
 
     std::string get_hmac_key() {
         if (!client_) {
@@ -99,8 +74,8 @@ struct EtcdClient::Impl {
 // Implementación pública del Adapter
 // ============================================================================
 
-EtcdClient::EtcdClient(const std::string& endpoint, const std::string& component_name)
-    : pImpl(std::make_unique<Impl>(endpoint, component_name)) {
+EtcdClient::EtcdClient(const etcd_client::Config& base, const std::string& component_name)
+    : pImpl(std::make_unique<Impl>(base, component_name)) {
     std::cout << "🔧 [ml-detector] EtcdClient adapter created for: " << component_name << std::endl;
 }
 
@@ -188,24 +163,6 @@ bool EtcdClient::registerService() {
     std::cout << "🔐 [ml-detector] Config uploaded encrypted + compressed" << std::endl;
 
     return true;
-}
-
-std::string EtcdClient::get_encryption_seed() const {
-    if (!pImpl || !pImpl->client_) {
-        std::cerr << "❌ [ml-detector] EtcdClient not initialized" << std::endl;
-        return "";
-    }
-
-    std::string seed = pImpl->client_->get_encryption_key();
-
-    if (seed.empty()) {
-        std::cerr << "❌ [ml-detector] Failed to get encryption seed" << std::endl;
-    } else {
-        std::cout << "🔑 [ml-detector] Retrieved encryption seed ("
-                  << seed.size() << " bytes)" << std::endl;
-    }
-
-    return seed;
 }
 
 std::string EtcdClient::get_hmac_key() const {

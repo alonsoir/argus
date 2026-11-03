@@ -20,10 +20,10 @@ namespace mldefender::firewall {
     public:
         /**
          * @brief Construct etcd client adapter
-         * @param endpoint etcd server endpoint (e.g., "localhost:2379")
+         * @param base bloque etcd ya leído por etcd_client::leer_bloque_etcd() (direcciones https y TLS)
          * @param component_name Component identifier (e.g., "firewall-acl-agent")
          */
-        EtcdClient(const std::string& endpoint, const std::string& component_name);
+        EtcdClient(const etcd_client::Config& base, const std::string& component_name);  // [ETCD-CLIENTE-D316]
 
         ~EtcdClient();
 

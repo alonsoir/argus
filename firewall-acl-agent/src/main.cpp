@@ -396,15 +396,13 @@ int main(int argc, char** argv) {
     // ETCD Integration (Day 50: Fixed path bug)
     // ═══════════════════════════════════════════════════════════════════════
 
-    if (config.etcd.enabled) {
-        FIREWALL_LOG_INFO("etcd integration enabled",
-            "endpoint", config.etcd.endpoints[0]);
-
-        std::string etcd_endpoint = config.etcd.endpoints[0];
-
+    // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería; D2: fuera etcd.enabled. Con campos fatales
+    // el firewall sigue protegiendo sin etcd (como hoy cuando no alcanza el etcd-server).
+    auto lectura_etcd = etcd_client::leer_bloque_etcd(config.etcd.bloque_json, std::cout);
+    if (lectura_etcd.fatales.empty()) {
         try {
             etcd_client = std::make_unique<mldefender::firewall::EtcdClient>(
-                etcd_endpoint,
+                lectura_etcd.config,
                 "firewall-acl-agent"
             );
 
@@ -417,7 +415,7 @@ int main(int argc, char** argv) {
             } else {
                 FIREWALL_LOG_INFO("etcd registration successful",
                     "service", "firewall-acl-agent",
-                    "endpoint", etcd_endpoint);
+                    "endpoints", std::to_string(lectura_etcd.config.endpoints.size()));
             }
         } catch (const std::exception& e) {
             FIREWALL_LOG_ERROR("etcd client exception",
@@ -425,7 +423,8 @@ int main(int argc, char** argv) {
             etcd_client.reset();
         }
     } else {
-        FIREWALL_LOG_INFO("etcd integration disabled in configuration");
+        FIREWALL_LOG_WARN("etcd block has fatal fields ([ETCD-CLIENTE-FATAL] above) - continuing without etcd",
+            "fatales", std::to_string(lectura_etcd.fatales.size()));
     }
 
         FIREWALL_LOG_DEBUG("Configuration phase completed successfully");
@@ -853,7 +852,7 @@ int main(int argc, char** argv) {
             if (!etcd_client) {
                 FIREWALL_LOG_CRASH("Encryption enabled but etcd not initialized");
                 std::cerr << "[ERROR] Encryption enabled but etcd not initialized" << std::endl;
-                std::cerr << "[ERROR] Set etcd.enabled = true in firewall.json" << std::endl;
+                std::cerr << "[ERROR] Revisa el bloque etcd de firewall.json ([ETCD-CLIENTE-FATAL] / [ETCD-CLIENTE-NO-DISPONIBLE] arriba)" << std::endl;
                 return 1;
             }
 

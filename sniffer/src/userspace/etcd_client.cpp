@@ -13,23 +13,17 @@ namespace sniffer {
 
 struct EtcdClient::Impl {
     std::unique_ptr<etcd_client::EtcdClient> client_;
-    std::string endpoint_;
     std::string component_name_;
-    std::string host_;
-    int port_;
 
-    Impl(const std::string& endpoint, const std::string& component_name)
-        : endpoint_(endpoint), component_name_(component_name) {
+    // [ETCD-CLIENTE-D316] base = lo que devuelve etcd_client::leer_bloque_etcd() del bloque etcd del JSON
+    Impl(const etcd_client::Config& base, const std::string& component_name)
+        : component_name_(component_name) {
 
-        // Parse endpoint (formato: "host:port" o "http://host:port")
-        parseEndpoint(endpoint);
 
         // Configurar etcd-client
-        etcd_client::Config config;
+        etcd_client::Config config = base;  // endpoints, TLS y tiempos del JSON
         config.component_name = component_name;
-        config.host = host_;
-        config.port = port_;
-        config.encryption_enabled = true;
+        // encryption_enabled: lo trae base (defecto true)
         config.compression_enabled = true;
         config.compression_min_size = 0;
         config.component_config_path = "/etc/ml-defender/sniffer/sniffer.json";
@@ -48,33 +42,14 @@ struct EtcdClient::Impl {
         client_ = std::make_unique<etcd_client::EtcdClient>(config);
     }
 
-    void parseEndpoint(const std::string& endpoint) {
-        // Remover http:// si existe
-        std::string clean_endpoint = endpoint;
-        if (endpoint.find("http://") == 0) {
-            clean_endpoint = endpoint.substr(7);
-        }
-
-        // Buscar ':'
-        size_t colon_pos = clean_endpoint.find(':');
-        if (colon_pos != std::string::npos) {
-            host_ = clean_endpoint.substr(0, colon_pos);
-            port_ = std::stoi(clean_endpoint.substr(colon_pos + 1));
-        } else {
-            host_ = clean_endpoint;
-            port_ = 2379; // Puerto por defecto
-        }
-
-        std::cout << "📡 [Sniffer] Parsed endpoint: " << host_ << ":" << port_ << std::endl;
-    }
 };
 
 // ============================================================================
 // Implementación pública del Adapter
 // ============================================================================
 
-EtcdClient::EtcdClient(const std::string& endpoint, const std::string& component_name)
-    : pImpl(std::make_unique<Impl>(endpoint, component_name)) {
+EtcdClient::EtcdClient(const etcd_client::Config& base, const std::string& component_name)
+    : pImpl(std::make_unique<Impl>(base, component_name)) {
     std::cout << "🔧 [Sniffer] EtcdClient adapter created for: " << component_name << std::endl;
 }
 
@@ -198,7 +173,7 @@ std::string EtcdClient::get_encryption_status() {
     return "🔐 Encryption: ChaCha20-Poly1305 (managed by etcd-client library)";
 }
 
-std::string EtcdClient::get_encryption_seed() const {
+std::string EtcdClient::leer_semilla_local() const {
     // ADR-013 PHASE 2 — seed local
     const std::string seed_path = "/etc/ml-defender/sniffer/seed.bin";
     std::ifstream f(seed_path, std::ios::binary);

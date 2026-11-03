@@ -17,10 +17,9 @@ echo ""
 echo "##################################################################"
 echo "#  ALERT  ##  HACK DE DESARROLLO — NO APTO PARA PRODUCCION  ##    #"
 echo "#                                                                #"
-echo "#  mitre-start saca la clave HMAC con un GET HTTP EN CLARO al     #"
-echo "#  etcd-server (curl http://localhost:2379/secrets/ml-detector).  #"
-echo "#  Clave de cifrado en TEXTO PLANO por la red, sin TLS ni auth.   #"
-echo "#  DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 (P1) +                    #"
+echo "#  mitre-start saca la clave HMAC del etcd-server por mTLS con la #"
+echo "#  identidad del converter (/secrets/valid/ml-detector) y se la   #"
+echo "#  pasa al converter por variable de entorno.                     #"
 echo "#  DEBT-BRONZE-KEY-PROVISIONING-001. Arreglo correcto (NO aqui):  #"
 echo "#  converter y componentes DIRECTOS a Vault (auth/TLS/leases);    #"
 echo "#  idealmente Jenkins exporta esta env var al crear la clave.     #"
@@ -29,8 +28,9 @@ echo "##################################################################"
 echo ""
 
 # 1) Clave HMAC del bronce (el hack)
-KEY=$(vagrant ssh defender -c "curl -s http://localhost:2379/secrets/ml-detector | python3 -c 'import sys,json; print(json.load(sys.stdin)[\"key\"])'" 2>/dev/null | tr -d '\r')
-[ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). ¿pipeline-start arriba? ¿etcd-server RUNNING?"
+# [ETCD-CLIENTE-D316] E5: mTLS con la identidad del converter contra el etcd-server del bloque etcd de ml-detector
+KEY=$(vagrant ssh defender -c "sudo bash /vagrant/scripts/bronze_key/clave_bronce_ml_detector.sh" 2>/dev/null | tr -d '\r')
+[ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). Diagnostico: vagrant ssh defender -c 'sudo bash /vagrant/scripts/bronze_key/clave_bronce_ml_detector.sh'"
 echo "OK clave HMAC en mano (64 hex, head ${KEY:0:8}...)"
 
 # 2) Marca T0 y disparo MITRE (nmap -A: el que hace reaccionar a los DOS sensores)

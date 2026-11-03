@@ -116,34 +116,37 @@ private:
     }
 
 public:
-    public:
-    SyntheticMLOutputInjector(const std::string& etcd_endpoint = "localhost:2379")
+    // [ETCD-CLIENTE-D316] E1=c: el inyector sustituye a ml-detector en las pruebas e2e, así que habla con el
+    // etcd-server con la identidad de ml-detector (su cert/CN y su bloque etcd de ml_detector_config.json).
+    SyntheticMLOutputInjector()
         : zmq_ctx_(1)
         , publisher_(zmq_ctx_, zmq::socket_type::pub)
         , rng_(std::random_device{}())
     {
         // Bind to firewall-acl-agent input port
         // DAY 159: leer endpoint desde ml_detector_config.json (Single Source of Truth)
-        load_zmq_config("/etc/ml-defender/ml-detector/ml_detector_config.json");
+        const std::string ruta_json = "/etc/ml-defender/ml-detector/ml_detector_config.json";
+        load_zmq_config(ruta_json);
         publisher_.bind(zmq_bind_address_);
 
-        // Parse endpoint: "localhost:2379" → host="localhost", port=2379
-        size_t colon_pos = etcd_endpoint.find(':');
-        if (colon_pos == std::string::npos) {
-            throw std::runtime_error("Invalid etcd endpoint format (expected host:port)");
+        nlohmann::json bloque;
+        {
+            std::ifstream f(ruta_json);
+            if (!f.is_open()) {
+                throw std::runtime_error("no se puede abrir " + ruta_json + " para leer el bloque etcd");
+            }
+            auto j = nlohmann::json::parse(f, nullptr, false);
+            if (!j.is_discarded() && j.is_object() && j.contains("etcd")) bloque = j["etcd"];
+        }
+        auto lectura = etcd_client::leer_bloque_etcd(bloque, std::cout);
+        if (!lectura.fatales.empty()) {
+            throw std::runtime_error("bloque etcd de " + ruta_json + " con " +
+                                     std::to_string(lectura.fatales.size()) + " campos fatales");
         }
 
-        std::string host = etcd_endpoint.substr(0, colon_pos);
-        int port = std::stoi(etcd_endpoint.substr(colon_pos + 1));
-
-        std::cout << "🔗 [etcd] Initializing etcd-client: " << host << ":" << port << "\n";
-
         // Build etcd-client Config
-        etcd_client::Config etcd_config;
-        etcd_config.host = host;
-        etcd_config.port = port;
-        etcd_config.timeout_seconds = 5;
-        etcd_config.component_name = "synthetic-ml-output";
+        etcd_client::Config etcd_config = lectura.config;
+        etcd_config.component_name = "ml-detector";
         etcd_config.encryption_enabled = true;
         etcd_config.heartbeat_enabled = true;
 

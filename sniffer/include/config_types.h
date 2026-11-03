@@ -218,22 +218,9 @@ struct StrictSnifferConfig {
         bool adaptive_compression;
     } compression;
 
-    // etcd - TODOS REQUERIDOS
+    // etcd [ETCD-CLIENTE-D316]: el bloque tal cual; lo lee etcd_client::leer_bloque_etcd() (F1)
     struct {
-        bool enabled;
-        std::vector<std::string> endpoints;  // HA-ready (usa primer elemento por ahora)
-        std::string service_name;
-        int lease_ttl_seconds;
-        int heartbeat_interval_seconds;
-        std::string username;
-        std::string password;
-        bool tls_enabled;
-        std::string tls_cert_path;
-        std::string tls_key_path;
-        std::string tls_ca_path;
-        std::string encryption_key_path;
-        int connection_timeout_ms;
-        int retry_attempts;
+        std::string bloque_json;
     } etcd;
 
     // Processing - TODOS REQUERIDOS

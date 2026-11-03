@@ -9,6 +9,7 @@
 #include "onnx_model.hpp"
 #include "feature_extractor.hpp"
 #include "zmq_handler.hpp"
+#include <etcd_client/etcd_client.hpp>  // [ETCD-CLIENTE-D316] leer_bloque_etcd
 #include "etcd_client.hpp"
 #include "ml_defender/ransomware_detector.hpp"
 #include "ml_defender/traffic_detector.hpp"
@@ -144,12 +145,11 @@ int main(int argc, char* argv[]) {
         // ═══════════════════════════════════════════════════════════════════════
         std::unique_ptr<ml_detector::EtcdClient> etcd_client;
 
-        if (config.etcd.enabled) {
-            std::string etcd_endpoint = config.etcd.endpoints[0];
-
-            std::cout << "🔗 [etcd] Initializing connection to " << etcd_endpoint << std::endl;
-
-            etcd_client = std::make_unique<ml_detector::EtcdClient>(etcd_endpoint, "ml-detector");
+        // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería; D2: fuera etcd.enabled.
+        std::cout << "🔗 [etcd] Leyendo el bloque etcd del JSON..." << std::endl;
+        auto lectura_etcd = etcd_client::leer_bloque_etcd(config.etcd.bloque, std::cout);
+        if (lectura_etcd.fatales.empty()) {
+            etcd_client = std::make_unique<ml_detector::EtcdClient>(lectura_etcd.config, "ml-detector");
 
             if (!etcd_client->initialize()) {
                 std::cerr << "❌ [etcd] Failed to initialize - REQUIRED for ml-detector" << std::endl;
@@ -164,8 +164,9 @@ int main(int argc, char* argv[]) {
             std::cout << "✅ [etcd] ml-detector registered and config uploaded" << std::endl;
 
         } else {
-            std::cerr << "❌ [etcd] etcd integration is REQUIRED for ml-detector" << std::endl;
-            std::cerr << "   Enable etcd in config: ml_detector_config.json" << std::endl;
+            // Comportamiento de hoy (sin etcd no arranca) hasta el commit siguiente (estado deseado DAY316)
+            std::cerr << "❌ [etcd] bloque etcd con " << lectura_etcd.fatales.size()
+                      << " campos fatales ([ETCD-CLIENTE-FATAL] arriba): el ml-detector aún no arranca sin etcd" << std::endl;
             return 1;
         }
 

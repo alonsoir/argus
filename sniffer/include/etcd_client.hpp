@@ -5,6 +5,7 @@
 // Forward declaration de la librería etcd-client
 namespace etcd_client {
     class EtcdClient;
+    struct Config;
 }
 
 namespace sniffer {
@@ -15,7 +16,7 @@ namespace sniffer {
      */
     class EtcdClient {
     public:
-        EtcdClient(const std::string& endpoint, const std::string& component_name);
+        EtcdClient(const etcd_client::Config& base, const std::string& component_name);  // [ETCD-CLIENTE-D316]
         ~EtcdClient();
 
         // Core API
@@ -32,8 +33,9 @@ namespace sniffer {
         bool get_pipeline_status();
         std::string get_encryption_status();
 
-        // 🎯 DAY 29: Get encryption seed for crypto-transport
-        std::string get_encryption_seed() const;
+        // ADR-013 PHASE 2: semilla de crypto-transport leída de seed.bin local. [ETCD-CLIENTE-D316] C3: antes se llamaba
+        // get_encryption_seed() y el log decía que venía del etcd-server; nunca vino de ahí desde DAY98.
+        std::string leer_semilla_local() const;
 
     private:
         struct Impl;

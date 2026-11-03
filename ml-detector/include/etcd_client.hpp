@@ -2,6 +2,10 @@
 #include <memory>
 #include <string>
 
+namespace etcd_client {
+    struct Config;
+}
+
 namespace ml_detector {
     /**
      * @brief PIMPL Adapter for etcd-client library
@@ -12,11 +16,11 @@ namespace ml_detector {
     class EtcdClient {
     public:
         /**
-         * @brief Construct etcd client adetcd_client.hppapter
-         * @param endpoint etcd server endpoint (e.g., "localhost:2379")
-         * @param component_name Component identifier (e.g., "ml-detector")
+         * @brief Construct etcd client adapter
+         * @param base Config from etcd_client::leer_bloque_etcd() (endpoints https, TLS, tiempos) [ETCD-CLIENTE-D316]
+         * @param component_name Component identifier (e.g., "ml-detector") = CN of its client certificate
          */
-        EtcdClient(const std::string& endpoint, const std::string& component_name);
+        EtcdClient(const etcd_client::Config& base, const std::string& component_name);  // [ETCD-CLIENTE-D316]
         ~EtcdClient();
 
         // Disable copy/move to simplify PIMPL
@@ -34,12 +38,6 @@ namespace ml_detector {
          * @return true if registration successful
          */
         bool registerService();
-
-        /**
-         * @brief Get encryption seed from etcd-server
-         * @return Encryption seed obtained during initialize() (32 bytes base64)
-         */
-        std::string get_encryption_seed() const;
 
         /**
          * @brief Get the bronze HMAC key from etcd-server

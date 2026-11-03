@@ -17,6 +17,7 @@
 #include "bpf_map_manager.h"
 #include "feature_logger.hpp"
 #include "dual_nic_manager.hpp"
+#include <etcd_client/etcd_client.hpp>  // [ETCD-CLIENTE-D316] leer_bloque_etcd
 #include "etcd_client.hpp"
 
 #ifdef PLUGIN_LOADER_ENABLED
@@ -326,13 +327,12 @@ int main(int argc, char* argv[]) {
 
         std::unique_ptr<sniffer::EtcdClient> etcd_client;
 
-        if (g_config.etcd.enabled) {
-            std::cout << "\n[etcd] Initializing etcd client integration..." << std::endl;
-
-            // Crear cliente etcd
-            // todo cuando tengamos HA en etcd-server, esto tendrá que cambiar.
-            std::string etcd_endpoint = g_config.etcd.endpoints[0];  // ← Ahora SÍ existe
-            etcd_client = std::make_unique<sniffer::EtcdClient>(etcd_endpoint, "sniffer");
+        // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería (un solo lector para los tres componentes);
+        // D2: fuera etcd.enabled. Con campos fatales (endpoints, rutas TLS) el sniffer se queda sin etcd.
+        std::cout << "\n[etcd] Leyendo el bloque etcd del JSON..." << std::endl;
+        auto lectura_etcd = etcd_client::leer_bloque_etcd(g_config.etcd.bloque_json, std::cout);
+        if (lectura_etcd.fatales.empty()) {
+            etcd_client = std::make_unique<sniffer::EtcdClient>(lectura_etcd.config, "sniffer");
 
             // Conectar y obtener clave de cifrado
             if (!etcd_client->initialize()) {
@@ -350,7 +350,8 @@ int main(int argc, char* argv[]) {
                 }
             }
         } else {
-            std::cout << "\n[etcd] etcd integration disabled in config" << std::endl;
+            std::cerr << "⚠️  [etcd] bloque etcd con " << lectura_etcd.fatales.size()
+                      << " campos fatales ([ETCD-CLIENTE-FATAL] arriba): el sniffer queda sin etcd" << std::endl;
         }
 
         // ============================================================================
@@ -678,14 +679,15 @@ int main(int argc, char* argv[]) {
         sniffer_config.transport.compression.adaptive_compression = g_config.compression.adaptive_compression;
 
         // ═══════════════════════════════════════════════════════════════════════
-// 🎯 DAY 29: Get encryption seed from etcd (REQUIRED, with retry)
+// 🎯 DAY 29: semilla de cifrado. [ETCD-CLIENTE-D316] C3: se lee de seed.bin local (ADR-013, desde DAY98), no del
+// etcd-server. Sin etcd-server el sniffer todavía no arranca: lo cambia el commit siguiente (estado deseado DAY316).
 // ═══════════════════════════════════════════════════════════════════════
 std::string encryption_seed;
 
 if (!etcd_client) {
     std::cerr << "\n❌ FATAL: etcd integration is REQUIRED for sniffer" << std::endl;
-    std::cerr << "   Reason: Encryption seed must be obtained from etcd-server" << std::endl;
-    std::cerr << "   Action: Enable etcd in config and ensure etcd-server is running" << std::endl;
+    std::cerr << "   Reason: sin etcd-server el sniffer aún no arranca (hasta el commit siguiente, DAY316)" << std::endl;
+    std::cerr << "   Action: comprobar el bloque etcd del JSON y que el etcd-server responde" << std::endl;
     std::cerr << "   Security: Hardcoded encryption keys are NOT acceptable" << std::endl;
     return 1;
 }
@@ -698,10 +700,10 @@ for (int attempt = 1; attempt <= max_retries; ++attempt) {
     std::cout << "🔑 [etcd] Attempt " << attempt << "/" << max_retries
               << ": Getting encryption seed..." << std::endl;
 
-    encryption_seed = etcd_client->get_encryption_seed();
+    encryption_seed = etcd_client->leer_semilla_local();
 
     if (!encryption_seed.empty()) {
-        std::cout << "✅ Encryption seed obtained from etcd-server" << std::endl;
+        std::cout << "✅ Semilla de cifrado leída de seed.bin (local)" << std::endl;
         break;
     }
 
@@ -715,10 +717,8 @@ for (int attempt = 1; attempt <= max_retries; ++attempt) {
 if (encryption_seed.empty()) {
     std::cerr << "\n❌ FATAL: Failed to get encryption seed after "
               << max_retries << " attempts" << std::endl;
-    std::cerr << "   Reason: etcd-server did not provide encryption key" << std::endl;
-    std::cerr << "   Action: Verify etcd-server is running and accessible" << std::endl;
-    std::cerr << "   Network: Check connectivity to " << g_config.etcd.endpoints[0] << std::endl;
-    std::cerr << "   HA Setup: Consider deploying etcd-server in HA configuration" << std::endl;
+    std::cerr << "   Reason: no se pudo leer /etc/ml-defender/sniffer/seed.bin" << std::endl;
+    std::cerr << "   Action: comprobar la provisión de la semilla (ADR-013)" << std::endl;
     return 1;
 }
 

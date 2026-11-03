@@ -65,21 +65,17 @@
   },
   "_comment_etcd": "UPDATED FOR DAY 23: Added crypto_token_path for decryption keys",
   "etcd": {
-    "enabled": true,
+    "_doc": "[ETCD-CLIENTE-D316] Lo lee etcd_client::leer_bloque_etcd(). endpoints: 1-7 URLs https://host:puerto sin repetir; ca_file/cert_file/key_file: rutas absolutas legibles (identidad mTLS = CN del certificado). Si falta o falla alguno de esos cuatro: [ETCD-CLIENTE-FATAL]. connection_timeout_ms [100,60000] defecto 5000; retry_attempts [1,10] defecto 3 (por direccion; sin respuesta o 5xx = reintento y luego la siguiente direccion, 4xx = respuesta final); retry_interval_ms [100,60000] defecto 1000; heartbeat_interval_seconds [5,300] defecto 30. Fuera de rango o ausente: [CONFIG-DEFAULT] y se sigue.",
     "endpoints": [
-      "localhost:2379"
+      "https://192.168.100.20:2379"
     ],
+    "ca_file": "/etc/argus-pki/ca.crt",
+    "cert_file": "/etc/argus-pki/firewall-acl-agent.crt",
+    "key_file": "/etc/argus-pki/firewall-acl-agent.key",
     "connection_timeout_ms": 5000,
     "retry_attempts": 3,
     "retry_interval_ms": 1000,
-    "crypto_token_path": "/crypto/firewall/tokens",
-    "config_sync_path": "/config/firewall",
-    "service_registration_path": "/services/firewall",
-    "required_for_encryption": true,
-    "fallback_mode": "standalone_compressed_only",
-    "heartbeat_interval_seconds": 30,
-    "lease_ttl_seconds": 60,
-    "_comment": "crypto_token_path: where firewall reads decryption keys shared by ml-detector"
+    "heartbeat_interval_seconds": 30
   },
   "zmq": {
     "endpoint": "tcp://localhost:5572",

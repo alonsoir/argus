@@ -587,20 +587,12 @@ void ConfigLoader::log_config_summary(const FirewallAgentConfig& config) {
 //===----------------------------------------------------------------------===//
 
 EtcdConfig ConfigLoader::parse_etcd(const Json::Value& json) {
+    // [ETCD-CLIENTE-D316] F1: antes, sin endpoints quedaba un vector vacío y main.cpp leía endpoints[0]
+    // (comportamiento indefinido). Ahora el bloque viaja entero a la librería, que valida y registra cada campo.
     EtcdConfig config;
-
-    config.enabled = get_optional<bool>(json, "enabled", false);
-
-    if (json.isMember("endpoints") && json["endpoints"].isArray()) {
-        config.endpoints = parse_string_array(json["endpoints"]);
-    }
-
-    config.connection_timeout_ms = get_optional<int>(json, "connection_timeout_ms", 5000);
-    config.retry_attempts = get_optional<int>(json, "retry_attempts", 3);
-    config.retry_interval_ms = get_optional<int>(json, "retry_interval_ms", 1000);
-    config.heartbeat_interval_seconds = get_optional<int>(json, "heartbeat_interval_seconds", 30);
-    config.lease_ttl_seconds = get_optional<int>(json, "lease_ttl_seconds", 60);
-
+    Json::StreamWriterBuilder w;
+    w["indentation"] = "";
+    config.bloque_json = Json::writeString(w, json);
     return config;
 }
 

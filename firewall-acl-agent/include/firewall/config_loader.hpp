@@ -137,14 +137,10 @@ struct LoggingConfigNew {
     //===----------------------------------------------------------------------===//
     // Etcd Configuration
     //===----------------------------------------------------------------------===//
+    // [ETCD-CLIENTE-D316] F1: el bloque "etcd" tal cual (texto JSON); lo lee y valida etcd_client::leer_bloque_etcd()
+    // al arrancar, igual que en sniffer y ml-detector. Vacío = el JSON no lo trae.
     struct EtcdConfig {
-        bool enabled = false;
-        std::vector<std::string> endpoints;
-        int connection_timeout_ms = 5000;
-        int retry_attempts = 3;
-        int retry_interval_ms = 1000;
-        int heartbeat_interval_seconds = 30;
-        int lease_ttl_seconds = 60;
+        std::string bloque_json;
     };
 
     //===----------------------------------------------------------------------===//

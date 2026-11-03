@@ -448,21 +448,14 @@ TransportConfig ConfigManager::parse_transport(const Json::Value& transport_json
 }
 
 EtcdConfig ConfigManager::parse_etcd(const Json::Value& etcd_json) {
+    // [ETCD-CLIENTE-D316] F1: antes, endpoints ausente = "localhost:2379" sin avisar, y 9 campos leídos que no usaba
+    // nadie. Ahora el bloque viaja entero a la librería, que valida y registra cada campo.
     EtcdConfig etcd;
-    etcd.enabled = etcd_json.get("enabled", true).asBool();
-    etcd.endpoints = parse_string_array(etcd_json["endpoints"]);
-    if (etcd.endpoints.empty()) {
-        etcd.endpoints.push_back("localhost:2379");
+    if (!etcd_json.isNull()) {
+        Json::StreamWriterBuilder w;
+        w["indentation"] = "";
+        etcd.bloque_json = Json::writeString(w, etcd_json);
     }
-    etcd.connection_timeout_ms = etcd_json.get("connection_timeout_ms", 5000).asInt();
-    etcd.retry_attempts = etcd_json.get("retry_attempts", 3).asInt();
-    etcd.retry_interval_ms = etcd_json.get("retry_interval_ms", 1000).asInt();
-    etcd.crypto_token_path = etcd_json.get("crypto_token_path", "/crypto/sniffer/tokens").asString();
-    etcd.config_sync_path = etcd_json.get("config_sync_path", "/config/sniffer").asString();
-    etcd.required_for_encryption = etcd_json.get("required_for_encryption", true).asBool();
-    etcd.fallback_mode = etcd_json.get("fallback_mode", "standalone_unencrypted").asString();
-    etcd.heartbeat_interval_seconds = etcd_json.get("heartbeat_interval_seconds", 30).asInt();
-    etcd.lease_ttl_seconds = etcd_json.get("lease_ttl_seconds", 60).asInt();
     return etcd;
 }
 
@@ -758,15 +751,9 @@ void ConfigManager::log_config_summary(const SnifferConfig& config) {
     std::cout << "Encryption: " << config.transport.encryption.algorithm
               << " (" << (config.transport.encryption.enabled ? "enabled" : "disabled") << ")" << std::endl;
 
-    // etcd info
-    std::cout << "etcd: " << (config.etcd.enabled ? "enabled" : "disabled") << std::endl;
-    if (config.etcd.enabled && !config.etcd.endpoints.empty()) {
-        std::cout << "  - Endpoints: " << config.etcd.endpoints[0];
-        if (config.etcd.endpoints.size() > 1) {
-            std::cout << " (+" << (config.etcd.endpoints.size() - 1) << " more)";
-        }
-        std::cout << std::endl;
-    }
+    // etcd info [ETCD-CLIENTE-D316]: el bloque lo valida y lo registra campo a campo la librería al arrancar
+    std::cout << "etcd: " << (config.etcd.bloque_json.empty() ? "sin bloque en el JSON" : "bloque presente")
+              << " (lo valida etcd_client::leer_bloque_etcd)" << std::endl;
 
     std::cout << "=========================================\n" << std::endl;
 }

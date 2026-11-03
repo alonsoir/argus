@@ -3080,7 +3080,7 @@ suricata-adapter-clean:
 	@echo "✅ suricata-adapter cleaned"
 
 .PHONY: mitre-start
-mitre-start: ## MITRE -> grafo (requiere pipeline-start arriba). Ver DEBT-HMAC-KEY-INSECURE-TRANSPORT-001.
+mitre-start: ## MITRE -> grafo (requiere pipeline-start arriba y el etcd-server de la VM etcd). Clave por mTLS: DEBT-BRONZE-KEY-PROVISIONING-001.
 	@bash scripts/mitre_start.sh
 
 # zeek-adapter — conn.log -> bronce correlation_v1 (DAY 235)

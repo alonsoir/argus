@@ -111,6 +111,9 @@ target_compile_options(etcd_client
         -Wextra
         -Wpedantic
 )
+# [ETCD-CLIENTE-D316] HTTPS con certificado de cliente hacia el etcd-server. PRIVATE: httplib.h solo lo incluye
+# src/http_client.cpp (la cabecera pública no lo expone), así que no hay riesgo ODR con quien enlace la librería.
+target_compile_definitions(etcd_client PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
 
 # ============================================================================
 # Link Libraries
