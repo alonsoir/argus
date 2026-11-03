@@ -450,3 +450,109 @@ el defender; nunca imprime una clave).
   defecto») debería ser fatal en modo etcd. Decisión de Alonso pendiente.
 - La pregunta de arrancar sin etcd-server (modo sin registro, con el cifrado ZMQ intacto) para el PR2.
 - Rehacer la VM etcd para `cas_required` (V2) y volver a desplegar el etcd-server.
+
+## Resultados DAY315 — DEBT-ANSIBLE-DEPLOY-CONFIGS-001 pasos 1-3 y 4b.6 (sección aparte, sin reescribir lo anterior)
+
+Rama `feat/etcd-mtls-vault`. Commits: `fbd42be4` (paso 1), `58cb72ac` (pasos 2a-2c: `[DEPLOY-SSH-D315]`,
+`[ETCD-CONFIG-ENTORNO-D315]`, `[INVENTARIO-FUERA-D315]`), `23c2e4f8` (paso 3: `[ETCD-ALMACEN-FATAL-D315]`) y `68ebbdaa`
+(4b.6: `[ETCD-B4-D315]`). Instrumentos nuevos en `scripts/etcd_ha/`: `d315_ansible_paso1.sh`, `d315_ansible_paso2a.sh`,
+`d315_ansible_paso2b.sh`, `d315_ansible_paso2c.sh`, `d315_paso3_codigo.sh`, `d315_paso3_medir.sh`, `d315_4b6.sh` y
+`d315_b4_medir.sh`. Todo a la primera salvo lo que se indica.
+
+### Decisiones de Alonso (DAY315)
+
+- `deploy_configs.yml` conserva el nombre (lo llaman el Makefile y Jenkins); las variables de `group_vars` que solo
+  leían las plantillas viejas se borran.
+- Clave de despliegue propia generada en el defender (modelo de producción: Jenkins con su clave hacia los nodos), no
+  la de Vagrant ni desde el Mac. `etcd-server.json` sale del tar de `d312`: ese fichero solo lo escribe Ansible.
+- El repo es público: los inventarios reales viven fuera (operador o Jenkins) y dentro solo queda un ejemplo con datos
+  ficticios. Un inventario sin máquinas del etcd-server es un fallo con mensaje claro, nunca un éxito vacío.
+- En modo etcd son fatales `almacen.endpoints`, `almacen.prefijo`, `ca_file`, `cert_file` y `key_file` (como
+  `vault_addrs`); endpoints repetidos cuentan como mal formado.
+- `crypto_token` fuera de los dos lados. `HttpEtcdRegistrar` y `CryptoEpochCoordinator` (common/, ADR-045): ningún
+  binario los usa y `/v1/epoch` no tiene consumidor; se decide en el paso 5.
+- Preproducción de laboratorio como prueba FINAL (BACKLOG: fusionada en DEBT-LAB-PREPROD-TOPOLOGIAS-001).
+- Cada commit marca con precisión lo que hace (un commit por cambio lógico).
+
+### Paso 1 (`fbd42be4`)
+
+- Fuera `ansible/templates/sniffer.json.j2` y `ml_detector_config.json.j2`, sus tareas y los `group_vars` duplicados;
+  `group_vars` pasa junto al inventario (`ansible/inventory/group_vars/`). Variables huérfanas borradas.
+- Medido antes de cambiar: `make deploy-configs` SÍ cargaba variables (`-e @group_vars`) y habría sobrescrito los JSON
+  del repo.
+
+### Pasos 2a-2c (`58cb72ac`)
+
+- **2a, clave de despliegue.** Provisioner `deploy-key` en el defender (`/root/.ssh/argus_deploy_ed25519`: Jenkins
+  corre como root) y `deploy-access` en la VM etcd (usuario `argus-deploy`, sudo sin contraseña SOLO en el lab, huella
+  publicada en `/vagrant/dist/deploy/known_hosts_etcd`).
+  **Cazado**: `ansible.cfg` lleva `host_key_checking = False` y Ansible antepone `StrictHostKeyChecking=no`; con una
+  huella falsa en `known_hosts` conectaba igual. Arreglo: `ansible_host_key_checking: true` en el inventario.
+- **2b, config del etcd-server por entorno.** Play sobre `etcd_servers`: JSON del repo + `almacen.endpoints` y
+  `almacen.prefijo` del inventario (`etcd_almacen_endpoints`, `argus_prefijo`, sin defecto), escrito en
+  `/etc/ml-defender/etcd-server/etcd-server.json` con `validate: etcd-server --check-config` y `follow: false` (el
+  destino era un enlace a un JSON del repo). `d312` ya no copia `etcd-server.json`; `d313_es_vm.sh` lee por defecto el
+  desplegado.
+- **2c, inventarios fuera.** Ejemplo en `ansible/inventory/ejemplo-preprod/` con direcciones RFC 5737; fuera
+  `prod.yml`; `make deploy-configs-prod INVENTARIO=<ruta>` obligatorio; `ARGUS_INVENTARIO` obligatorio en main
+  (`Jenkinsfile.prod`); un inventario sin `etcd_servers` falla con `[ETCD-CONFIG-ENTORNO]`. `d312` con
+  `DPkg::Lock::Timeout=600` (medido: `unattended-upgrades` tenía dpkg justo tras arrancar la VM).
+
+### Paso 3 (`23c2e4f8`)
+
+En modo etcd, `endpoints`, `prefijo`, `ca_file`, `cert_file` y `key_file` ausentes o mal formados (y endpoints
+repetidos) = `[ETCD-ALMACEN-FATAL]` y no arranca; `--check-config` imprime `almacen_fatales=N`. En modo memoria solo
+avisa. Arranque sin endpoints medido: se niega en 0,04 s. Cierra la pendiente de DAY314 («`almacen.endpoints` aún
+tiene defecto `https://127.0.0.1:2381`»).
+
+### 4b.6 y B4 (`68ebbdaa`)
+
+- Antes, `/register` cortaba el nombre en el primer guion: `firewall-acl-agent` → `/secrets/firewall` → 403 con mTLS
+  (sin clave HMAC para su CSV). Ahora `/secrets/<CN>` y `/config/<CN>`. En el defender el firewall pasa de
+  `key_path=/secrets/firewall` a `/secrets/firewall-acl-agent` (32 bytes).
+- `crypto_token` fuera del servidor y de `ServicePaths::is_valid()` de etcd-client (no existe ninguna ruta `/crypto`).
+- Borradas `etcd_client_base.cpp`, `etcd_client_manual.cpp`, `etcd_client.hpp.day54_hmac_only` y
+  `etcd_client.cpp.day54_broken` (cierra DEBT-ETCD-CLIENT-DEAD-VARIANTS-001).
+- Un `grep -r` del parcheador de 4b.6 se dejó engañar por 9 `*.backup*` ignorados en `etcd-client/` y `etcd-server/`:
+  búsquedas siempre con `git grep`.
+
+### Medido al final de DAY315
+
+- `make test-components PROFILE=production`: 9 / 23 / 13 / 7 / 82, todo verde.
+- `d313_registro_medir.sh` 28/28; `d314_claves_medir.sh` 29/29; `d315_paso3_medir.sh` 15/15 dos veces seguidas;
+  `d315_b4_medir.sh` 10/10 dos veces seguidas.
+- `d312_etcd_vm_deploy.sh` PASA (binario `6d837186`); `make deploy-configs` en dev: `etcd ok=7 changed=0`.
+- JSON desplegado en la VM etcd = `etcd-server.etcd-vm.json` del repo (sha256 `3fedf9ad…`).
+
+### Medido: Jenkins no puede hacer preproducción hoy
+
+- `Jenkinsfile.dev`: los stages «Build .deb» (línea 96) y «Deploy Vagrant Test» (101) son solo un `echo` de
+  DEBT-PACKAGE-DEB-001 y DEBT-DEPLOY-VAGRANT-001 («deferred, skipping»).
+- `Jenkinsfile.prod`: `agent { label 'argus-server' }` (línea 14), un agente que no existe, y lanza `vagrant destroy -f
+  && vagrant up` (líneas 40 y 123).
+- El único componente con despliegue de binarios es el etcd-server (`d312_etcd_vm_deploy.sh`), y se lanza desde el Mac.
+- DEBT-DEPLOY-VAGRANT-001 no tiene entrada propia en el BACKLOG: solo aparece en la lista de deudas de DAY167.
+
+### Lecciones DAY315
+
+- Una comprobación de huella que nadie ha visto fallar no comprueba nada: `ansible.cfg` la desactivaba en silencio.
+  Control negativo (huella falsa) antes de darla por buena.
+- Antes de ejecutar un target que «solo despliega configuración», medir adónde escribe: el de DAY161 habría escrito
+  sobre los JSON del repo.
+- Una VM recién arrancada puede tener dpkg cogido por `unattended-upgrades`: se espera el bloqueo, no se falla.
+- Ficheros ignorados por git engañan a `grep -r`; `git grep` solo ve lo trackeado.
+- El mensaje del commit del paso 1 (`fbd42be4`, «d315_ansible_paso1...») no dice qué hace. La historia no se
+  reescribe: queda descrito aquí y en el BACKLOG.
+
+### Pendientes
+
+- RBAC de etcd por prefijo en producción: en el lab el rol del etcd-server cubre `readwrite /argus/`; con prefijos por
+  despliegue (`/argus/<hospital>/<planta>/`) el rol tiene que cubrirlos.
+- `d312`: 25 paquetes Debian hoy frente a 26 medidos DAY314; sin explicar.
+- `make up` no levanta la VM etcd (añadirla antes del paso 8); tras parar el Mac queda `aborted`: `vagrant up etcd`
+  (etcd y Vault vuelven solos; `argus-vault-unseal` desella). Para mirar Vault hace falta `sudo` y certificado de cliente.
+- DEBT-ETCD-SERVER-LOG-TIMESTAMP-001; cpp-httplib sin fijar a `v0.63.0` en el Vagrantfile; `test_autonomy_integration`
+  (falló una vez DAY313); DEBT-CONFIG-JINJA2-PIPELINE-001 (mismo patrón para sniffer y ml-detector).
+- Siguiente: paso 5 (libetcd_client con TLS y lista de endpoints para sniffer, ml-detector y firewall), empezando por
+  medir qué cliente usa cada uno; dentro, `get_encryption_seed()` contra `/seed` (borrada en 4b.2), los
+  `crypto_token_path` de sus JSON y la decisión sobre el ADR-045. Después pasos 6, 7 y 8.

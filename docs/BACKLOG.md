@@ -8328,6 +8328,63 @@ instrumento se pasa al menos dos veces seguidas: la primera parte de un estado l
 estado se escribe en función del estado medido justo antes. Un camino de despliegue que nadie ha ejecutado no existe:
 medirlo antes de construir encima (Ansible DAY314).
 
+## DAY315 — rama feat/etcd-mtls-vault (DEBT-ANSIBLE-DEPLOY-CONFIGS-001 pasos 1-3 y 4b.6)
+
+Documento: `docs/ml-heads/day312_diseno.md`, sección «Resultados DAY315». Commits: fbd42be4 (paso 1), 58cb72ac
+(pasos 2a-2c), 23c2e4f8 (paso 3), 68ebbdaa (4b.6). Medido al final: ctest 9/23/13/7/82; registro 28/28; claves 29/29;
+paso 3 15/15 y B4 10/10, dos veces seguidas cada uno; `d312_etcd_vm_deploy.sh` PASA (binario `6d837186`);
+`make deploy-configs` dev `etcd ok=7 changed=0`.
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (PR1: pasos 0-4 hechos, 4b.6 incluido)
+- 4b.6 / B4: `/register` con el CN completo (`/secrets/<CN>`, `/config/<CN>`); antes `firewall-acl-agent` acababa en
+  `/secrets/firewall` y con mTLS daba 403. `crypto_token` fuera del servidor y de etcd-client.
+- `HttpEtcdRegistrar` y `CryptoEpochCoordinator` (common/, ADR-045): ningún binario los usa; se decide en el paso 5.
+- Siguiente: paso 5 (libetcd_client con TLS y lista de endpoints; hoy sniffer, ml-detector y firewall solo usan
+  `endpoints[0]`), empezando por medir qué cliente usa cada uno. Luego pasos 6, 7 y 8.
+
+### DEBT-ANSIBLE-DEPLOY-CONFIGS-001 — CERRADA DAY315 (pasos 1-3; el punto 4 sigue en DEBT-CONFIG-JINJA2-PIPELINE-001)
+- Paso 1: fuera las plantillas Jinja de sniffer y ml-detector, sus tareas y los `group_vars` duplicados; `group_vars`
+  junto al inventario. Medido antes: `make deploy-configs` sí cargaba variables y habría sobrescrito los JSON del repo.
+- 2a: clave de despliegue propia (defender → usuario `argus-deploy` de la VM etcd, huella publicada). Cazado:
+  `ansible.cfg` con `host_key_checking = False` dejaba conectar con una huella falsa; arreglo con
+  `ansible_host_key_checking: true`.
+- 2b: Ansible escribe `/etc/ml-defender/etcd-server/etcd-server.json` en la VM etcd = JSON del repo con
+  `almacen.endpoints`/`almacen.prefijo` del inventario, validado con `--check-config`. `d312` ya no lo copia.
+- 2c: inventarios reales fuera del repo, ejemplo RFC 5737 dentro, `INVENTARIO=` obligatorio en
+  `deploy-configs-prod`, `ARGUS_INVENTARIO` obligatorio en `Jenkinsfile.prod`, sin `etcd_servers` = `[ETCD-CONFIG-ENTORNO]`.
+- Paso 3: en modo etcd los campos del almacén (endpoints, prefijo, tres rutas; endpoints sin repetir) son fatales
+  (`[ETCD-ALMACEN-FATAL]`); sin endpoints se niega a arrancar en 0,04 s.
+
+### DEBT-ETCD-CLIENT-DEAD-VARIANTS-001 — CERRADA DAY315 (68ebbdaa)
+Borradas `etcd_client_base.cpp`, `etcd_client_manual.cpp`, `etcd_client.hpp.day54_hmac_only` y
+`etcd_client.cpp.day54_broken`. Los 9 `*.backup*` ignorados que quedan van a DEBT-REPO-RESIDUOS-001.
+
+### Medido DAY315: Jenkins no puede hacer preproducción hoy
+`Jenkinsfile.dev`: «Build .deb» y «Deploy Vagrant Test» son un `echo` de DEBT-PACKAGE-DEB-001 y DEBT-DEPLOY-VAGRANT-001.
+`Jenkinsfile.prod`: pide el agente `argus-server`, que no existe, y lanza `vagrant up`. Solo el etcd-server tiene
+despliegue de binarios (`d312_etcd_vm_deploy.sh`, desde el Mac). DEBT-DEPLOY-VAGRANT-001 no tiene entrada propia en este
+BACKLOG (solo aparece en la lista de DAY167).
+
+### Preproducción de laboratorio (DAY315) — fusionada en DEBT-LAB-PREPROD-TOPOLOGIAS-001 (sección DAY316, abajo)
+Prevista como DEBT-PREPROD-LAB-001; la entrada de DAY316 pide fusionarlas, así que no se abre un identificador nuevo.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY315
+9 `*.backup*` ignorados en `etcd-client/` y `etcd-server/` (engañaron a un `grep -r` del parcheador de 4b.6); binario
+`firewall-acl-agent/fuzz/fuzz_validate_chain` trackeado; `scripts/timebase/__pycache__/`.
+
+### Pendientes DAY315
+- RBAC de etcd por prefijo en producción: el rol del lab cubre `readwrite /argus/`; con prefijos por despliegue
+  (`/argus/<hospital>/<planta>/`) tiene que cubrirlos.
+- `d312`: 25 paquetes Debian frente a 26 medidos DAY314; sin explicar.
+- Siguen: `make up` sin la VM etcd (antes del paso 8; tras parar el Mac queda `aborted`), cpp-httplib sin fijar a
+  `v0.63.0`, `test_autonomy_integration`, DEBT-ETCD-SERVER-LOG-TIMESTAMP-001, DEBT-CONFIG-JINJA2-PIPELINE-001.
+
+### Lecciones DAY315
+Una comprobación de huella que nadie ha visto fallar no comprueba nada: control negativo con huella falsa. Antes de
+ejecutar un target «de configuración», medir adónde escribe. Una VM recién arrancada puede tener dpkg cogido: se espera.
+Ficheros ignorados engañan a `grep -r`: `git grep`. El mensaje de `fbd42be4` no describe el cambio; la historia no se
+reescribe, queda descrito aquí.
+
 ## DAY316 — diseño (conversación): firewall en modo pasarela, agresor interno y estado compartido
 
 Conversación de diseño, sin código. No cambia el orden de ramas (sigue PR1/PR2 de DEBT-ETCD-HA-TLS-RAFT-001). Punto de
@@ -8381,6 +8438,9 @@ Laboratorio con las dos configuraciones y la doble protección: servidor de la D
 `ip_forward=1` entre dos subredes (FORWARD), con el sensor viendo el tráfico de un PC a otro. Métrica principal por
 topología: tiempo desde la detección hasta que la regla está aplicada. Si la entrada del entorno de preproducción de
 DAY315 (VM objetivo mínima, campo de pruebas de DDoS y ransomware) se registra aparte, fusionarlas.
+Fusión DAY315 (prevista como DEBT-PREPROD-LAB-001): objetivo Alpine diminuto (128–256 MB), el client como atacante,
+DDoS y ransomware SIMULADO (Atomic Red Team / mitre-start); solo funcional, no de capacidad (Mac de 2019). Solo cuando
+todas las cabezas estén certificadas (hoy solo DDoS). Antes, medir la RAM. Después del paso 6 de DEBT-ETCD-HA-TLS-RAFT-001.
 
 ### DEBT-RANSOMWARE-ML-HEAD-INERT-001 — nota DAY316 para la reescritura de la cabeza
 - Desde la red se ve la propagación (un host interno abriendo conexiones al 445 hacia muchos destinos; EternalBlue/
