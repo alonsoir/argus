@@ -1052,3 +1052,149 @@ los tres) y **B2** (clave del firewall; cierra DEBT-FW-HMAC-KEY-ALARM-001).
 - Un `grep -c` cuenta también las líneas de configuración del arranque: mirar la línea antes de concluir.
 - Un verde que valida datos de hace una semana no es un verde: comprobar la fecha de lo que se valida.
 - La predicción que falla en el lab (el CSV) se mide en el código antes de tocar nada; la causa estaba en D302.
+
+## Diseño del paso 6 (fuera del defender; etcd-server de la VM como servicio) — DAY317, escrito ANTES de tocar código
+
+Base: `5d03a42` (docs DAY316 final). Objetivo: un EMECAS desde cero levanta y aprovisiona la VM etcd sin pasos manuales,
+el etcd-server de la VM corre como servicio systemd y el defender deja de arrancar su etcd-server.
+
+### Medido para este diseño (solo lectura del repo, más una medida en el laboratorio)
+
+- **La VM etcd ya se aprovisiona sola** con `vagrant up etcd` (Vagrantfile 1536-1873): `etcd-base` (chrony desde el
+  defender, nftables con el 2379 solo desde 192.168.100.1), PKI desde `ARGUS_PKI_DIR`, Vault 2.2.1 en modo servidor
+  (raft 1 nodo, mTLS, desellado c por systemd, `cas_required`, root revocado), etcd v3.6.16 como `etcd.service` (TLS,
+  RBAC) y `deploy-access` (usuario `argus-deploy` para Ansible).
+- **El etcd-server de la VM se monta a mano**, en este orden: `d312_etcd_vm_deploy.sh` (Mac: binario, librerías y
+  `/etc/ml-defender/etcd-server/` del defender a `/opt/argus` de la VM), `make deploy-configs` (Ansible escribe el JSON
+  y lo valida con `--check-config` del binario desplegado), `d313_es_vm.sh arrancar` (nohup, no systemd).
+- **Orden obligado:** el binario se compila en `bootstrap`, que va después de `vagrant up` y de `clean-all`. El
+  despliegue no puede ser un aprovisionador de Vagrant: es un target que corre tras `bootstrap`. `deploy-access`
+  necesita la clave pública del defender y Ansible necesita `known_hosts_etcd` de la VM: el defender va primero en
+  `vagrant up`.
+- `make up` = `vagrant up defender client suricata zeek wazuh`; `emecas` = `vagrant up defender client suricata`.
+  Ninguno levanta la VM etcd.
+- Dependen de `etcd-server-start` del defender: `pipeline-start`, `pipeline-start-x86-libpcap`, `crosscheck-up` y
+  `run-lab-dev-day23`. `etcd-server-status` hace `curl http://localhost:2379`. `d311_reinicio_etcd.sh` usa los targets
+  del defender; `d313_es_vm.sh` chocaría con un servicio (2379 ocupado).
+- **El Vault dev del defender no es solo del etcd-server viejo:** lo usan `vault-enterprise-bootstrap` (cada `up`:
+  vendor-key, vendor-pubkey, token enterprise, `secret/argus/crypto`), `test-enterprise-plugin`, `test-dual-compilation`
+  y `Jenkinsfile.dev`.
+- **`emecas++` depende del etcd-server del defender:** el Acto I (`test-e2e-vault`) y el Acto III (`vault-fault-inject`)
+  compilan `build-vault` y lo arrancan contra el Vault dev sin `-c`, así que leen
+  `/etc/ml-defender/etcd-server/etcd-server.json` (`http`/`memoria`). Prueban el `ICryptoProvider` enterprise
+  (`ICryptoProvider OK`, `AUTONOMOUS`), no las claves HMAC.
+- `lab-e2e` restaura y exige 4 de 4 `RUNNING` en la salida de `pipeline-status`, contando la línea `etcd-server:`
+  (Makefile:1355). Sus scripts solo miran el código de salida de `pipeline-start`/`stop`; su `vivos` no mira el
+  etcd-server.
+- `test-provision-1` (comprobación 5) exige 4 unidades `ml-defender-*` en el defender, una es
+  `ml-defender-etcd-server.service` (apunta a `/vagrant/etcd-server/build-active`).
+- `/etc/ml-defender/etcd-server/seed.bin` del defender es la semilla maestra que `provision.sh` copia a los tres
+  componentes (ZMQ): se queda en el defender aunque el proceso se vaya.
+- Con etcd o Vault sin responder, el etcd-server arranca igual (solo son fatales rutas de certificados ilegibles y
+  campos mal formados): basta `After=` + `Restart=always`.
+- Los tests del etcd-server leen los dos JSON y los comparan (`test_etcd_server_authz.cpp` 268-290,
+  `test_almacen_claves`, `test_registro_componentes`); los comentarios de defectos de `etcd_server_almacen.hpp`,
+  `_authz.hpp` y `_claves.hpp` citan `etcd-server.etcd-vm.json`.
+- **Laboratorio (Mac):** `vagrant up etcd` rc 0, `etcd-base OK` (referencia 192.168.100.1), `deploy-access` con las dos
+  huellas. Predicción: en `/etc/ml-defender/etcd-server/` de la VM, un enlace `etcd-server.etcd-vm.json` colado por el
+  tar. **Falló:** no hay ningún enlace; `etcd-server.json` normal (root 0640, 3-nov, de Ansible) y la identidad y la
+  semilla del 29-oct. Sin residuo; no se investiga más (no afecta al paso 6).
+
+### Decisiones de Alonso (DAY317)
+
+1. **Vault dev del defender: a.** Se queda hasta DEBT-VAULT-REST-SECRETS-001 (coherente con V3 y la opción a de DAY312).
+   La predicción del paso 6 pasa a: en el defender nada escucha en 2379; en 8200 solo 127.0.0.1 (Vault dev, enterprise).
+2. **Actos I y III de `emecas++`: a**, sin reservas. JSON propio de prueba
+   (`etcd-server/config/etcd-server.smoke-enterprise.json`, `http`/`memoria` declarados) pasado con `-c` solo por
+   `test-e2e-vault` y `vault-fault-inject`. El código sigue aceptando esos dos modos, con su aviso periódico. Deuda
+   nueva DEBT-VAULT-ENTERPRISE-SMOKE-VM-001: llevar esos actos a la VM con DEBT-VAULT-REST-SECRETS-001.
+3. **`pipeline-status` con estado real**, también de cada instancia etcd: si está sana y si está sincronizada con el
+   líder.
+4. **Sin etcd-server o sin etcd, aviso claro.** Los componentes en marcha siguen trabajando sin firmar; cuando vuelve el
+   servicio, cada uno crea o renueva su clave HMAC (comportamiento ya hecho en B1/B2). `pipeline-start` avisa y sigue;
+   EMECAS falla.
+5. El defender es la única máquina que compila (plataforma de compilación del lab). `ml-defender-etcd-server.service`
+   corre en la VM etcd, junto a etcd y Vault. Los targets del Makefile que gestionan el etcd-server actúan sobre la VM;
+   se actualizan y se comprueba que funcionan (`etcd-server-start`/`stop`/`status`, `crosscheck-up`,
+   `run-lab-dev-day23`, `pipeline-start-x86-libpcap`).
+6. Un único `etcd-server/config/etcd-server.json` con el contenido actual de `etcd-server.etcd-vm.json`; fuera la
+   variante.
+- RAM del Mac: 32 GB. `make up` con la VM etcd suma 18432 MB asignados; EMECAS, 12288.
+
+### Aclaraciones (DAY317) para no perderlas en el PR2
+
+- **La clave HMAC sale de Vault, no de etcd.** Cadenas: clave HMAC = etcd-client → etcd-server → Vault (`argus-hmac/`);
+  registro, latidos y JSON de los componentes = etcd-client → etcd-server → etcd. Ningún componente habla con Vault: el
+  único cliente de Vault es el etcd-server (`CN=etcd-server`, política solo crear/leer en `argus-hmac/`). En el PR1, si
+  cae etcd y siguen el etcd-server y Vault, los componentes reciben su clave igual (`GET /secrets/<CN>` no exige
+  registro).
+- **Dos Vaults:** el dev del defender (secretos enterprise; Jenkins también corre en el defender) y el servidor de la VM
+  etcd (solo claves HMAC). **El que va a HA en el PR2 es el de la VM etcd** (raft integrado, 3 nodos, `retry_join`). Su
+  configuración es `vault.hcl` (admite también formato JSON).
+- **Un etcd-server por máquina, junto a su etcd** (DAY314 y plan del PR2). El etcd-server no busca al líder: recibe en
+  `almacen.endpoints` todos los miembros del despliegue y etcd lleva cada petición al líder por dentro. Igual con Vault
+  (`almacen_claves.vault_addrs`, 1-7; los nodos en espera reenvían al activo). Los componentes tienen en
+  `etcd.endpoints` todos los etcd-server y pasan al siguiente si uno no responde (commit A). Por medir en el PR2: que
+  `EtcdRegistryStore` pase todas las direcciones al cliente de etcd.
+- **Por despliegue (hospital y planta):** inventario de Ansible fuera del repo con lo negociado (máquinas etcd, Vault y
+  etcd-server, prefijo); Ansible genera el JSON de cada máquina desde el del repo sustituyendo solo los campos del
+  despliegue (DAY314-315; sin plantillas Jinja2 completas). Propuesta para el PR2: que el mismo playbook genere
+  `vault.hcl` y `etcd.conf.yml` (hoy los escribe el Vagrantfile), un único mecanismo para el lab y producción.
+
+### 6a. Unidad systemd del etcd-server en la VM (Vagrantfile)
+
+- Aprovisionador nuevo `etcd-server-unit` en la VM etcd: instala y habilita `ml-defender-etcd-server.service`:
+  `ExecStart=/opt/argus/etcd-server/bin/etcd-server -c /etc/ml-defender/etcd-server/etcd-server.json`,
+  `Environment=LD_LIBRARY_PATH=/opt/argus/etcd-server/lib`, `After=`/`Wants=` `etcd.service vault.service
+  argus-vault-unseal.service`, `Restart=always`, `ConditionPathExists=` del binario y del JSON (un `up` desde cero no
+  falla antes del despliegue), log al journal (la hora en cada línea; ver si basta para
+  DEBT-ETCD-SERVER-LOG-TIMESTAMP-001).
+- `/run/argus` sigue por tmpfiles.d (lo pone `d312_etcd_vm_deploy.sh`).
+
+### 6b. Makefile
+
+- `etcd-vm-deploy` (Mac): `d312_etcd_vm_deploy.sh` + `deploy-configs` + `systemctl restart` del servicio; comprueba que
+  queda activo y que `/health` responde.
+- `etcd-server-start`/`stop`/`status` actúan sobre la VM (`vagrant ssh etcd -c "sudo systemctl ..."`).
+- `up` y `emecas` añaden `etcd` (detrás del defender); `emecas` corre `etcd-vm-deploy` tras `bootstrap` y un control
+  estricto (`etcd-vm-check`) que falla si algo no está sano. `pipeline-start` comprueba y avisa, no falla.
+- Se actualizan y se prueban `crosscheck-up`, `run-lab-dev-day23` y `pipeline-start-x86-libpcap`.
+
+### 6c. `pipeline-status`
+
+- Script del repo que corre en la VM (`vagrant ssh etcd`) y saca: por cada miembro de etcd (de `etcdctl member list`: el
+  PR2 solo añade miembros) si está sano, quién es el líder, el term y el retraso de entradas respecto al líder
+  (sincronización); Vault: sellado o no, activo o en espera; etcd-server: servicio activo y `/health` local con el
+  certificado del propio etcd-server (sin identidad nueva y sin llevar admin al defender).
+- Mantiene la etiqueta `etcd-server:` (el 4/4 de `lab-e2e` sigue valiendo). El Vault dev del defender sigue saliendo
+  como `vault: ... [dev]`.
+
+### 6d. Defender
+
+- Fuera el arranque del etcd-server y su unidad (`install-systemd-units.sh` instala 3; comprobación 5 espera 3).
+- JSON único (decisión 6): `etcd-server.json` = contenido de `etcd-server.etcd-vm.json` (con su `_doc`); fuera la
+  variante; Ansible (`es_json_repo`) apunta a `etcd-server.json`; tests y comentarios de defectos pasan a comparar
+  `etcd-server.json` con `etcd-server.smoke-enterprise.json` (diferencias: solo los tres `modo`).
+- `etcd-server.smoke-enterprise.json` (decisión 2) y `-c` en `test-e2e-vault` y `vault-fault-inject`. El aviso periódico
+  de `tls.modo=http` deja de decir «hasta el paso 6» y nombra DEBT-VAULT-ENTERPRISE-SMOKE-VM-001.
+- El binario del etcd-server se sigue compilando en el defender (de ahí se despliega). El Vault dev se queda (decisión
+  1).
+
+### Commits (uno por cambio lógico, cada uno medido)
+
+6a (Vagrantfile: unidad) → 6b (Makefile: targets, `up`, `emecas`) → 6c (`pipeline-status`) → 6d (defender: arranque,
+unidad, JSON único, smoke enterprise). Después, paso 7 (instrumento de reinicio en la VM) y paso 8 (EMECAS+++
+production).
+
+### Predicciones
+
+- **6a:** `vagrant provision etcd --provision-with etcd-server-unit` rc 0; con el binario y el JSON de DAY316 ya en la
+  VM, `systemctl is-active ml-defender-etcd-server` = `active` y el 2379 lo escucha el etcd-server; tras `vagrant reload
+  etcd`, etcd, Vault desellado y etcd-server activos sin intervención; los tres componentes del defender registrados o
+  reanudados.
+- **6b:** `make etcd-vm-deploy` rc 0 dos veces seguidas; `make etcd-server-stop` → servicio inactivo y
+  `[ETCD-CLIENTE-SIN-SERVICIO]` en los componentes; `make etcd-server-start` → `[ETCD-CLIENTE-REANUDADO]`.
+- **6c:** `pipeline-status`: 1 miembro, líder, retraso 0; Vault sin sellar y activo; etcd-server activo y `/health` 200.
+  Con etcd parado: etcd KO aunque el etcd-server siga activo (estado real, no procesos).
+- **6d:** en el defender nada escucha en 2379 y en 8200 solo 127.0.0.1; comprobación 5 con 3 unidades; `test-e2e-vault`
+  y `vault-fault-inject` PASSED con `-c`; `test-components` 9/23/13/7/90; `lab-e2e` restaura 4/4.

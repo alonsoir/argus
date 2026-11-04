@@ -8598,3 +8598,24 @@ también cuenta líneas de configuración: mirar la línea. Un verde que valida 
 5. **Preproducción**: imagen mínima con dos o tres servidores detrás del firewall en FORWARD, para ver llegar la protección
    a esos servidores (DEBT-LAB-PREPROD-TOPOLOGIAS-001, DEBT-FW-ENFORCEMENT-POINT-001). Cuando el etcd esté certificado y
    las cabezas también.
+
+## DAY317 — diseño del paso 6 de DEBT-ETCD-HA-TLS-RAFT-001 (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Diseño del paso 6». Decisiones de Alonso: el Vault dev del defender se
+queda hasta DEBT-VAULT-REST-SECRETS-001; los Actos I y III de `emecas++` usan un JSON de prueba propio con `-c`;
+`pipeline-status` con estado real (cada miembro etcd: sano, líder, retraso; Vault; etcd-server); sin etcd-server, aviso
+claro (`pipeline-start` avisa, EMECAS falla); `ml-defender-etcd-server.service` en la VM etcd y los targets del Makefile
+la gestionan allí; un único `etcd-server.json`. Commits previstos: 6a (unidad), 6b (Makefile), 6c (`pipeline-status`),
+6d (defender).
+
+### DEBT-VAULT-ENTERPRISE-SMOKE-VM-001 — ABIERTA (nueva DAY317, decisión 2 de Alonso)
+`test-e2e-vault` (Acto I) y `vault-fault-inject` (Acto III) arrancan un etcd-server `build-vault` en el defender contra
+el Vault dev, con `etcd-server.smoke-enterprise.json` (`http`/`memoria`). Por ellos el código sigue aceptando esos
+modos. Se llevan a la VM etcd junto con DEBT-VAULT-REST-SECRETS-001; entonces salen los modos `http`/`memoria`.
+
+### Aclaraciones DAY317 para el PR2
+La clave HMAC sale de Vault (etcd-client → etcd-server → Vault), no de etcd; ningún componente habla con Vault. El Vault
+que va a HA es el de la VM etcd (raft integrado, 3 nodos). Un etcd-server por máquina junto a su etcd, con la lista de
+todos los miembros (etcd lleva cada petición al líder). Por medir: que `EtcdRegistryStore` pase todas las direcciones.
+Propuesta: que el playbook de Ansible genere también `vault.hcl` y `etcd.conf.yml` desde el inventario de cada
+despliegue (hospital y planta).
