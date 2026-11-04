@@ -1198,3 +1198,77 @@ production).
   Con etcd parado: etcd KO aunque el etcd-server siga activo (estado real, no procesos).
 - **6d:** en el defender nada escucha en 2379 y en 8200 solo 127.0.0.1; comprobación 5 con 3 unidades; `test-e2e-vault`
   y `vault-fault-inject` PASSED con `-c`; `test-components` 9/23/13/7/90; `lab-e2e` restaura 4/4.
+
+## Resultados DAY317 — paso 6 (sección aparte, sin reescribir el diseño)
+
+Commits: `430f12421` (diseño del paso 6), `8834cad88` (6a), `4df098f34` (6b), `2e7cfea2a` (6c), `86ab61607` (6d). La
+predicción del paso, «en el defender nada escucha en 2379; en 8200 solo 127.0.0.1», **PASA**: medida con el pipeline
+parado y arrancado, antes y después de 6d.
+
+### 6a — unidad systemd en la VM etcd (`8834cad88`)
+
+- Banco: `ruby -c` del Vagrantfile, `bash -n` del aprovisionador; `systemd-analyze verify` de la unidad limpio con un
+  binario falso; con `Restart=siempre` se queja pero da rc 0, así que el aprovisionador decide por la salida, no por el
+  código de retorno.
+- Laboratorio: `vagrant validate` OK; `vagrant provision etcd --provision-with etcd-server-unit` → activa (pid 1243),
+  escucha `0.0.0.0:2379` (`server.host` del JSON; nftables limita al defender); journal: `tls.modo=mtls`, 13 reglas,
+  almacén etcd, Vault conectado, 4 componentes cargados y tres `[ETCD-COMPONENTE-MUERTO]` (registros de ayer, se
+  conservan).
+- `vagrant reload etcd --no-provision`: etcd, Vault y etcd-server `active`, desellado `Result=success`, etcd-server con
+  pid 478 (lo arrancó systemd); journal del arranque: `[ETCD-VAULT] conectado`, registros cargados, sin `FATAL`.
+  **PASA.**
+
+### 6b — Makefile y `etcd_vm_estado.sh` (`4df098f34`)
+
+- Banco, con dobles de `sudo`, `systemctl`, `curl` y `etcdctl`: 14 casos (un nodo sano, tres nodos con retraso dentro y
+  fuera del límite, dos líderes, etcd caído, Vault sellado, Vault en HA activo + en espera, dos activos, el activo
+  sellado, etcd-server inactivo y activo sin `/health`, opciones mal formadas, espera, JSON ausente). Un doble de `curl`
+  falló (solo reconocía el 8200); corregido el doble, no el script.
+- Laboratorio: `make etcd-vm-estado` → SANO (1/1 miembros, líder `argus-etcd-1`, term 12, retraso 0; Vault 200;
+  `/health` 200). El usuario `etcd-server` de etcd (RBAC `/argus/`) sí puede pedir `member list` y `endpoint status`
+  (riesgo abierto en el diseño, medido). Control negativo: `etcd-server-stop` → `inactive`; `etcd-vm-check` → `NO SANO`
+  tras 31 s, rc 2; `etcd-server-start` → SANO, rc 0. `etcd-vm-deploy` → `RESULTADO PASA`, Ansible `ok=7 changed=0`,
+  SANO. **PASA.**
+
+### 6c — `pipeline-status` (`2e7cfea2a`)
+
+- `pipeline-stop` + `pipeline-start`: el aviso da SANO; `pipeline-status` enseña el etcd-server de la VM, etcd con su
+  miembro, `vault-hmac`, los tres componentes, el Vault dev y Jenkins; ningún `STOPPED`.
+- Componentes: los tres `[ETCD-CLIENTE-REGISTRADO] ... en https://192.168.100.20:2379 al primer intento; config subida`;
+  ml-detector `[BRONCE-CLAVE]` huella `60768287`, firewall `[FW-CSV-CLAVE]` huella `4f60123a` (las de DAY316: Vault
+  conservó las claves). **PASA.**
+
+### 6d — el defender deja el etcd-server (`86ab61607`)
+
+- **Hallazgo:** las tres unidades de los componentes en el defender llevaban `Requires=ml-defender-etcd-server.service`,
+  contra G2 (DAY316). Sin corregirlas, al quitar la unidad del etcd-server no arrancarían nunca por systemd. Corregidas.
+- Banco (Debian 12, GCC 12.2.0, production): control y 6d, dos pasadas; ctest del etcd-server 7/7; los 12 avisos
+  idénticos línea a línea; los 6 tests de los JSON, por nombre, OK. Mutaciones cazadas: el JSON de prueba en `0.0.0.0` o
+  en `mtls`, `etcd-server.json` con almacén, `tls` o claves fuera de producción, y el JSON de prueba con otro latido.
+  `install-systemd-units.sh` con dobles: retira la unidad del defender (ExecStart en
+  `/vagrant/etcd-server/build-active`) y no toca una con el mismo nombre que sea la de la VM. `systemd-analyze verify`
+  de las tres unidades limpio (solo el aviso del bit de ejecución, que ya traen en git como 100755; el instalador las
+  copia con 0644).
+- Laboratorio: `pipeline-build` production rc 0 (19 min); `test-components` 9/23/13/7/90; `install-systemd-units`: 3
+  instaladas y la vieja retirada; `test-provision-1` 8/8 (comprobación 5 con 3); `etcd-vm-deploy` dos veces: `changed=1`
+  (el `_doc` nuevo) y `changed=0`, SANO las dos; Acto I `TEST-E2E-VAULT PASSED` con el smoke escuchando en
+  `http://127.0.0.1:2379` y el aviso nombrando DEBT-VAULT-ENTERPRISE-SMOKE-VM-001; Acto III `VAULT-FAULT-INJECT PASSED`;
+  pipeline rearrancado, todo `RUNNING`; defender: solo `127.0.0.1:8200`. **PASA.**
+- ggshield marcó como secreto dos sha256 de ficheros dentro del parcheador `d317_6d_defender.py` (falso positivo).
+  Decisión de Alonso: el parcheador queda sin trackear; el commit de 6d lleva solo el código, sin nada marcado.
+
+### Lecciones DAY317
+
+- Una predicción que falla sin consecuencias (el enlace que no estaba en la VM) se anota y no se persigue.
+- `systemd-analyze verify` da rc 0 con directivas mal escritas: se decide por la salida.
+- La salida de Ansible lanzada con `-t` lleva códigos de color: para el resumen, `grep -a 'changed='`.
+- Los tests del banco se ejecutan dentro del chroot: fuera no encuentran sus ficheros y fallan por el instrumento.
+- Un resultado raro con dobles de prueba: mirar primero el doble (el de `curl` solo conocía el 8200).
+- Al cambiar dónde vive un servicio, medir también las unidades que dependen de él.
+
+### Pendientes
+
+- Paso 7 (instrumento de reinicio en la VM: falta el bronce anterior verificable) y paso 8 (EMECAS+++ production, con la
+  VM etcd rehecha desde cero: DEBT-LAB-VAULT-CLAVES-PRUEBA-001). `lab-e2e` no se ha corrido en el paso 6: va en el 8.
+- ggshield avisa `Unrecognized key in config: paths_ignore` en cada commit: esas exclusiones probablemente no se
+  aplican. Sin decidir.

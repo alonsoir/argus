@@ -8619,3 +8619,24 @@ que va a HA es el de la VM etcd (raft integrado, 3 nodos). Un etcd-server por m�
 todos los miembros (etcd lleva cada petición al líder). Por medir: que `EtcdRegistryStore` pase todas las direcciones.
 Propuesta: que el playbook de Ansible genere también `vault.hcl` y `etcd.conf.yml` desde el inventario de cada
 despliegue (hospital y planta).
+
+## DAY317 — paso 6 de DEBT-ETCD-HA-TLS-RAFT-001 hecho (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Resultados DAY317 — paso 6». Commits `8834cad88` (6a: etcd-server de la VM
+como `ml-defender-etcd-server.service`), `4df098f34` (6b: Makefile con la VM etcd, `etcd_vm_estado.sh`), `2e7cfea2a`
+(6c: `pipeline-status` con el estado real), `86ab61607` (6d: el defender deja el etcd-server).
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (pasos 0-6 hechos)
+El etcd-server corre en la VM etcd como servicio systemd, junto a etcd y Vault, y vuelve solo tras reiniciar la VM;
+`make up` y `make emecas` levantan la VM etcd y EMECAS la despliega tras compilar (`etcd-vm-deploy`, con control
+estricto). En el defender nada escucha en 2379; en 8200 solo el Vault dev en 127.0.0.1 (decisión 1). Siguiente: paso 7
+(reinicio en la VM, bronce anterior verificable) y paso 8 (EMECAS+++ production).
+
+### DEBT-PIPELINE-STATUS-LIVENESS-001 — AVANZADA DAY317
+`pipeline-status` enseña el estado real de la VM etcd: el etcd-server (systemd y `/health`), cada miembro etcd (sano,
+líder, term, retraso respecto al líder) y cada nodo del Vault de las claves HMAC. Los componentes del defender siguen
+mirándose solo por proceso.
+
+### Hallazgo DAY317 — corregido en 6d
+Las unidades systemd de sniffer, ml-detector y firewall en el defender llevaban
+`Requires=ml-defender-etcd-server.service` (contra G2). Fuera.
