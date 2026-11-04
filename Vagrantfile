@@ -130,6 +130,24 @@ ARGUS_PKI_DIR = ENV.fetch("ARGUS_PKI_DIR", File.join(Dir.home, "argus-pki"))
 
 Vagrant.configure("2") do |config|
 
+  # [APT-ESPERA-D317] determinismo de EMECAS: en una VM recién arrancada, unattended-upgrades coge el bloqueo de dpkg y un
+  # apt-get/dpkg de cualquier aprovisionador falla al azar (medido DAY317 en client-setup y DAY315 en d312). Va a nivel de
+  # config (no por VM): Vagrant lo ejecuta el primero en cada VM y en cada up. Espera a que acabe el unattended-upgrades
+  # en curso (hasta 600 s; cubre también el dpkg -i del agente de Wazuh) y deja DPkg::Lock::Timeout para que todo apt-get
+  # posterior espere al bloqueo en vez de fallar. unattended-upgrades sigue activo (DEBT-DEBIAN-BASE-SECURITY-001).
+  config.vm.provision "shell", name: "apt-espera", run: "always", inline: <<-'APT_ESPERA'
+    set -u
+    C=/etc/apt/apt.conf.d/80argus-espera-dpkg
+    echo 'DPkg::Lock::Timeout "600";  // [APT-ESPERA-D317] generado por el Vagrantfile; no editar a mano' > "$C"
+    T0=$(date +%s); n=0
+    while pgrep -f '/usr/bin/unattended-upgrade|apt.systemd.daily' > /dev/null && [ "$n" -lt 600 ]; do sleep 2; n=$((n + 2)); done
+    if pgrep -f '/usr/bin/unattended-upgrade|apt.systemd.daily' > /dev/null; then
+      echo "⚠️  apt-espera: unattended-upgrades sigue activo tras 600 s; los apt-get esperarán al bloqueo (DPkg::Lock::Timeout)"
+    else
+      echo "✅ apt-espera: dpkg libre tras $(( $(date +%s) - T0 )) s; DPkg::Lock::Timeout=600 en $C"
+    fi
+  APT_ESPERA
+
   # ════════════════════════════════════════════════════════════════════════════
   # DEFENDER VM - Full ML Pipeline (Primary)
   # ════════════════════════════════════════════════════════════════════════════
