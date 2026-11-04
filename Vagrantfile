@@ -1870,6 +1870,77 @@ UNIT
       echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_etcd"
     DEPLOY_ACCESS
 
+    # [ETCD-SERVER-UNIT-D317] DEBT-ETCD-HA-TLS-RAFT-001 paso 6a (decisión 5 de Alonso, DAY317): el etcd-server corre aquí como
+    # servicio systemd, junto a etcd y Vault. El binario y el JSON NO los pone Vagrant (el binario se compila en el defender
+    # tras bootstrap): los dejan d312_etcd_vm_deploy.sh y make deploy-configs. Sin ellos la unidad queda habilitada pero
+    # no arranca (ConditionPathExists): un up desde cero no falla antes del despliegue. run: always: la unidad sigue al
+    # Vagrantfile; si cambia, daemon-reload y reinicio solo si estaba activa. docs/ml-heads/day312_diseno.md, paso 6
+    etcd.vm.provision "shell", name: "etcd-server-unit", run: "always", inline: <<-'ETCD_SERVER_UNIT'
+      set -e
+      U=ml-defender-etcd-server.service
+      BIN=/opt/argus/etcd-server/bin/etcd-server
+      JSON=/etc/ml-defender/etcd-server/etcd-server.json
+      echo "=== etcd VM: etcd-server como servicio systemd [ETCD-SERVER-UNIT-D317] ==="
+      NUEVA=$(mktemp --suffix=.service)
+      cat > "$NUEVA" <<'UNIT'
+# [ETCD-SERVER-UNIT-D317] generado por el Vagrantfile; no editar a mano. docs/ml-heads/day312_diseno.md, paso 6
+[Unit]
+Description=aRGus etcd-server (fachada HTTPS + mTLS; registro en etcd, claves HMAC en Vault) [ETCD-SERVER-UNIT-D317]
+After=network-online.target etcd.service vault.service argus-vault-unseal.service
+Wants=network-online.target etcd.service vault.service argus-vault-unseal.service
+ConditionPathExists=/opt/argus/etcd-server/bin/etcd-server
+ConditionPathExists=/etc/ml-defender/etcd-server/etcd-server.json
+# Nunca se rinde: el pipeline necesita su etcd-server en cuanto pueda volver (sin límite de reinicios)
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=LD_PRELOAD=
+Environment=LD_LIBRARY_PATH=/opt/argus/etcd-server/lib
+ExecStart=/opt/argus/etcd-server/bin/etcd-server -c /etc/ml-defender/etcd-server/etcd-server.json
+Restart=always
+RestartSec=5s
+TimeoutStopSec=30s
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ml-defender-etcd-server
+[Install]
+WantedBy=multi-user.target
+UNIT
+      # systemd-analyze verify da rc 0 con directivas mal escritas: se decide por la salida (sin binario aún, se tolera solo eso)
+      VER=$(systemd-analyze verify "$NUEVA" 2>&1 | grep -v -E "Command $BIN is not executable" || true)
+      [ -z "$VER" ] || { echo "$VER"; rm -f "$NUEVA"; echo "❌ etcd-server-unit: systemd-analyze verify (arriba)"; exit 1; }
+      CAMBIA=1
+      if [ -f "/etc/systemd/system/$U" ] && cmp -s "$NUEVA" "/etc/systemd/system/$U"; then CAMBIA=0; fi
+      install -m 0644 -o root -g root "$NUEVA" "/etc/systemd/system/$U"; rm -f "$NUEVA"
+      systemctl daemon-reload
+      systemctl enable "$U" > /dev/null 2>&1
+      systemctl is-enabled "$U" | grep -qx enabled || { echo "❌ etcd-server-unit: $U no quedó habilitada"; exit 1; }
+      if [ ! -x "$BIN" ] || [ ! -f "$JSON" ]; then
+        echo "✅ etcd-server-unit: $U instalada y habilitada; sin arrancar: falta $([ -x "$BIN" ] || echo "$BIN ")$([ -f "$JSON" ] || echo "$JSON ")(despliegue: make etcd-vm-deploy desde el Mac)"
+        exit 0
+      fi
+      # Otro proceso en el 2379 (p. ej. uno lanzado a mano con d313_es_vm.sh) haría fallar la unidad en bucle: se para aquí
+      if ! systemctl is-active --quiet "$U" && ss -ltnH 'sport = :2379' | grep -q .; then
+        ss -ltnpH 'sport = :2379'
+        echo "❌ etcd-server-unit: el 2379 lo ocupa otro proceso (arriba). Si es el de d313_es_vm.sh: bash /vagrant/scripts/etcd_ha/d313_es_vm.sh parar"
+        exit 1
+      fi
+      if [ "$CAMBIA" = 1 ] && systemctl is-active --quiet "$U"; then
+        systemctl restart "$U"; echo "etcd-server-unit: la unidad cambió; reiniciada"
+      else
+        systemctl start "$U"
+      fi
+      ok=0; for i in $(seq 1 30); do
+        if systemctl is-active --quiet "$U" && ss -ltnpH 'sport = :2379' | grep -q '"etcd-server"'; then ok=1; break; fi
+        sleep 1
+      done
+      [ "$ok" = 1 ] || { journalctl -u "$U" -n 20 --no-pager; echo "❌ etcd-server-unit: $U no escucha en 2379 a los 30 s (arriba el journal)"; exit 1; }
+      echo "✅ etcd-server-unit: $U activa, pid $(systemctl show -p MainPID --value "$U"), escucha $(ss -ltnH 'sport = :2379' | awk '{print $4}' | tr '\n' ' ')"
+    ETCD_SERVER_UNIT
+
   end  # End etcd VM
 
 end  # End Vagrant configuration
