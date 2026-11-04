@@ -265,7 +265,7 @@ TEST(EtcdServerIdentidad, ParaLogQuitaControlesYAcota) {
 
 TEST(EtcdServerJsonRepo, TablaDeLosDosJsonIgualAlDefecto) {
     const std::string esperado = texto_tabla(tabla_defecto());
-    for (const char* f : {"etcd-server.json", "etcd-server.etcd-vm.json"}) {
+    for (const char* f : {"etcd-server.json", "etcd-server.smoke-enterprise.json"}) {
         Salida o;
         auto r = parse_authz(leer(f), o.aviso, o.info);
         EXPECT_EQ(r.defectos, 0) << f << "\n" << o.aviso.str();
@@ -273,12 +273,12 @@ TEST(EtcdServerJsonRepo, TablaDeLosDosJsonIgualAlDefecto) {
     }
 }
 
-TEST(EtcdServerJsonRepo, TlsDefensorHttpYVmEtcdIgualAlDefecto) {
+TEST(EtcdServerJsonRepo, TlsSmokeHttpYEtcdServerIgualAlDefecto) {
     Salida o1, o2;
-    auto def = parse_tls_config(leer("etcd-server.json"), o1.aviso, o1.info);
+    auto def = parse_tls_config(leer("etcd-server.smoke-enterprise.json"), o1.aviso, o1.info);
     EXPECT_EQ(def.defectos, 0) << o1.aviso.str();
-    EXPECT_EQ(def.cfg.modo, "http");  // transición del defender, hasta el paso 6
-    auto vm = parse_tls_config(leer("etcd-server.etcd-vm.json"), o2.aviso, o2.info);
+    EXPECT_EQ(def.cfg.modo, "http");  // smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)
+    auto vm = parse_tls_config(leer("etcd-server.json"), o2.aviso, o2.info);
     EXPECT_EQ(vm.defectos, 0) << o2.aviso.str();
     const argus::etcdcfg::TlsConfig d{};
     EXPECT_EQ(vm.cfg.modo, d.modo);
@@ -286,11 +286,13 @@ TEST(EtcdServerJsonRepo, TlsDefensorHttpYVmEtcdIgualAlDefecto) {
     EXPECT_EQ(vm.cfg.cert_file, d.cert_file);
     EXPECT_EQ(vm.cfg.key_file, d.key_file);
     EXPECT_EQ(vm.cfg.aviso_http_intervalo_s, d.aviso_http_intervalo_s);
-    // fuera de tls, los dos JSON son iguales
-    json a = leer("etcd-server.json"), b = leer("etcd-server.etcd-vm.json");
+    // fuera de los tres modos y de server.host, los dos JSON son iguales
+    json a = leer("etcd-server.smoke-enterprise.json"), b = leer("etcd-server.json");
+    EXPECT_EQ(a["server"]["host"], "127.0.0.1");  // [ETCD-SMOKE-D317] el smoke no abre el 2379 a la red del lab
     a.erase("_doc"); b.erase("_doc");
+    a["server"].erase("host"); b["server"].erase("host");
     a["tls"].erase("modo"); b["tls"].erase("modo");
-    a["almacen"].erase("modo"); b["almacen"].erase("modo");  // [ETCD-REGISTRO-D313] defender "memoria", VM "etcd"
+    a["almacen"].erase("modo"); b["almacen"].erase("modo");  // [ETCD-REGISTRO-D313] smoke "memoria", VM "etcd"
     a["almacen_claves"].erase("modo"); b["almacen_claves"].erase("modo");  // [ETCD-CLAVES-D314] "memoria" / "vault"
     EXPECT_EQ(a, b);
 }

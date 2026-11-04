@@ -3,8 +3,8 @@
 // HTTPS con mTLS y autorización por (OU, CN) del certificado de cliente (DEBT-ETCD-HA-TLS-RAFT-001, paso 4b.2).
 //   - Bloque "tls" de etcd-server.json: modo (mtls | http), ca_file, cert_file, key_file, aviso_http_intervalo_s.
 //     El JSON es la ley (DAY291/DAY300/DAY308): campo ausente o mal formado -> defecto validado + [CONFIG-DEFAULT].
-//     Un modo ausente o mal escrito va a "mtls": una errata nunca rebaja a HTTP. "http" solo existe para la transición
-//     (defender hasta el paso 6) y se borra entonces.
+//     Un modo ausente o mal escrito va a "mtls": una errata nunca rebaja a HTTP. "http" solo queda para el smoke enterprise
+//     de emecas++ (etcd-server.smoke-enterprise.json; DEBT-VAULT-ENTERPRISE-SMOKE-VM-001) y se borra entonces.
 //   - Bloque "authz": tabla de reglas {metodo, ruta, permitir}. Denegar por defecto: lo que no casa con ninguna regla
 //     es 403. La ruta es una plantilla por segmentos ("/secrets/{c}"); {c} casa con UN segmento [a-z0-9-]{1,63}. Sin
 //     regex en el JSON. permitir: "propio" (CN == {c}), "ou:<rol>", "cualquiera" (cualquier certificado de la CA).
@@ -22,7 +22,7 @@
 
 namespace argus::etcdcfg {
 
-// Defectos validados: iguales a etcd-server.etcd-vm.json (el del defender lleva modo "http" a propósito: transición).
+// Defectos validados: iguales a etcd-server.json (el del smoke enterprise lleva modo "http" a propósito).
 struct TlsConfig {
     std::string modo = "mtls";                                  // tls.modo: "mtls" | "http"
     std::string ca_file = "/etc/argus-pki/ca.crt";              // tls.ca_file: ruta absoluta
@@ -169,7 +169,7 @@ struct ResultadoAuthz {
     int defectos = 0;  // 1 si la tabla entera va a defecto
 };
 
-// Tabla por defecto: la misma que traen etcd-server.json y etcd-server.etcd-vm.json (lo comprueba el test).
+// Tabla por defecto: la misma que traen etcd-server.json y etcd-server.smoke-enterprise.json (lo comprueba el test).
 inline const char* kReglasDefecto = R"([
   {"metodo": "GET",  "ruta": "/health",               "permitir": ["cualquiera"]},
   {"metodo": "POST", "ruta": "/register",             "permitir": ["cualquiera"]},

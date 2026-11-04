@@ -85,7 +85,7 @@ TEST(AlmacenClavesConfig, DireccionesMalFormadas) {
                              R"(["https://10.0.0.1:1","https://10.0.0.2:1","https://10.0.0.3:1","https://10.0.0.4:1",
                                  "https://10.0.0.5:1","https://10.0.0.6:1","https://10.0.0.7:1","https://10.0.0.8:1"])"}) {
         std::ostringstream av, in;
-        json j = leer_json("etcd-server.etcd-vm.json");
+        json j = leer_json("etcd-server.json");
         j["almacen_claves"]["vault_addrs"] = json::parse(malo);
         auto r = argus::etcdcfg::parse_almacen_claves_config(j, av, in);
         ASSERT_EQ(r.fatales.size(), 1u) << malo << "\n" << av.str();
@@ -108,12 +108,12 @@ TEST(AlmacenClavesConfig, ModoMalEscritoVaAVault) {
     auto r = argus::etcdcfg::parse_almacen_claves_config(j, av, in);
     EXPECT_EQ(r.cfg.modo, "vault");
     EXPECT_EQ(r.defectos, 1);
-    EXPECT_TRUE(r.fatales.empty());  // el JSON del defender trae las direcciones
+    EXPECT_TRUE(r.fatales.empty());  // el JSON del repo trae las direcciones
 }
 
 TEST(AlmacenClavesConfig, EnterosRangosYRegla) {
     std::ostringstream av, in;
-    json j = leer_json("etcd-server.etcd-vm.json");
+    json j = leer_json("etcd-server.json");
     j["almacen_claves"]["reintentos_por_direccion"] = 0;
     j["almacen_claves"]["timeout_ms"] = "2000";
     j["almacen_claves"]["espera_inicial_ms"] = 5000;
@@ -130,11 +130,11 @@ TEST(AlmacenClavesConfig, EnterosRangosYRegla) {
 
 TEST(AlmacenClavesConfig, JsonDelRepo) {
     std::ostringstream a1, i1, a2, i2;
-    auto def = argus::etcdcfg::parse_almacen_claves_config(leer_json("etcd-server.json"), a1, i1);
+    auto def = argus::etcdcfg::parse_almacen_claves_config(leer_json("etcd-server.smoke-enterprise.json"), a1, i1);
     EXPECT_EQ(def.defectos, 0) << a1.str();
     EXPECT_TRUE(def.fatales.empty());
-    EXPECT_EQ(def.cfg.modo, "memoria");  // transición del defender, hasta el paso 6
-    auto vm = argus::etcdcfg::parse_almacen_claves_config(leer_json("etcd-server.etcd-vm.json"), a2, i2);
+    EXPECT_EQ(def.cfg.modo, "memoria");  // smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)
+    auto vm = argus::etcdcfg::parse_almacen_claves_config(leer_json("etcd-server.json"), a2, i2);
     EXPECT_EQ(vm.defectos, 0) << a2.str();
     EXPECT_TRUE(vm.fatales.empty());
     const argus::etcdcfg::AlmacenClavesConfig d{};

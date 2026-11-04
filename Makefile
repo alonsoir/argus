@@ -826,8 +826,8 @@ test-provision-1:
 	@echo ""
 	@echo "── Check 5/8: systemd units instalados ──"
 	@vagrant ssh -c "systemctl list-unit-files ml-defender-*.service 2>/dev/null | grep -c 'ml-defender'" | \
-		grep -q "4" || \
-		(echo "❌ CHECK 5 FAILED: systemd units no instalados (esperado: 4)" && \
+		tr -d '\r ' | grep -qx "3" || \
+		(echo "❌ CHECK 5 FAILED: systemd units no instalados (esperado: 3; el etcd-server vive en la VM etcd)" && \
 		 echo "   Ejecuta: vagrant ssh -c 'sudo bash /vagrant/etcd-server/config/install-systemd-units.sh'" && \
 		 exit 1)
 	@echo "✅ Check 5/8 OK"
@@ -897,7 +897,7 @@ pipeline-start-x86-libpcap: test-provision-1
 pipeline-stop:
 	@echo "🛑 Stopping all pipeline components..."
 	@$(MAKE) --no-print-directory sniffer-stop  # [SNIFFER-STOP-D299] parada ordenada antes del resto
-	@vagrant ssh -c "for s in sniffer ml-detector firewall etcd-server; do tmux kill-session -t $$s 2>/dev/null || true; done"
+	@vagrant ssh -c "for s in sniffer ml-detector firewall; do tmux kill-session -t $$s 2>/dev/null || true; done"
 	@echo "✅ Pipeline stopped"
 
 pipeline-status:
@@ -1552,7 +1552,7 @@ test-e2e-vault: vault-dev-seed
 	@# [ARGUS-VAULT-QUOTE-D303] comillas simples: CMAKE_FLAGS lleva comillas dobles (medido DAY303)
 	@vagrant ssh -c 'mkdir -p /vagrant/etcd-server/build-vault-$(PROFILE) && cd /vagrant/etcd-server/build-vault-$(PROFILE) && cmake $(CMAKE_FLAGS) .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3'
 	@echo "── Step 5: Smoke test etcd-server enterprise (Acto I — VaultProvider) ──"
-	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
+	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server -c /vagrant/etcd-server/config/etcd-server.smoke-enterprise.json 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ TEST-E2E-VAULT PASSED                                 ║"
@@ -1572,7 +1572,7 @@ vault-fault-inject:
 	@echo "── Fase 1: Crear token hijo para etcd-server ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token create -ttl=120s -display-name=argus-etcd-server-fault -field=token) && echo \$$CHILD_TOKEN > /tmp/argus_fault_token.txt && echo '✅ Token hijo creado'"
 	@echo "── Fase 2: Arrancar etcd-server con token hijo ──"
-	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
+	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server -c /vagrant/etcd-server/config/etcd-server.smoke-enterprise.json > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
 	@echo "── Fase 3: Revocar token hijo (simular Vault KO) ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token revoke \$$CHILD_TOKEN > /dev/null && echo '✅ Token revocado — Vault KO simulado'"
 	@echo "── Fase 4: Verificar modo AUTONOMOUS (cache RCU) ──"

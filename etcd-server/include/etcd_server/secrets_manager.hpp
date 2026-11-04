@@ -1,7 +1,7 @@
 #pragma once
 // etcd-server/include/etcd_server/secrets_manager.hpp — [ETCD-CLAVES-D314]
-// Claves HMAC del bronce con ventana de dos, persistidas en un ISecretStore (Vault en la VM etcd; memoria en el defender
-// hasta el paso 6). DEBT-ETCD-HA-TLS-RAFT-001, paso 4b.4. Sustituye al SecretsManager de DAY54 (claves solo en memoria:
+// Claves HMAC del bronce con ventana de dos, persistidas en un ISecretStore (Vault en la VM etcd; memoria solo en el smoke
+// enterprise de emecas++). DEBT-ETCD-HA-TLS-RAFT-001, paso 4b.4. Sustituye al SecretsManager de DAY54 (claves solo en memoria:
 // un reinicio del etcd-server daba otra clave y el bronce anterior ya no se podía verificar; carrera de DAY311 en
 // leer-o-crear; enfriamiento sin mutex; parse_time con mktime).
 //

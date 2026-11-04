@@ -22,7 +22,7 @@
           etcd_servers o está vacío: no se despliega nada. Forma: ansible/inventory/ejemplo-preprod/
         quiet: true
 
-# [ETCD-CONFIG-ENTORNO-D315] etcd-server: etcd-server.etcd-vm.json del repo con almacen.endpoints y almacen.prefijo del
+# [ETCD-CONFIG-ENTORNO-D315] etcd-server: etcd-server.json del repo con almacen.endpoints y almacen.prefijo del
 # inventario (etcd_almacen_endpoints, argus_prefijo; sin defecto). Se escribe en la máquina del etcd-server, nunca en
 # /vagrant, y solo si el propio binario lo da por bueno (--check-config = 0: cualquier defecto lo rechaza).
 - name: aRGus NDR -- etcd-server (JSON del repo + almacen del inventario)
@@ -31,7 +31,7 @@
   become: true
 
   vars:
-    es_json_repo: "{{ playbook_dir }}/../../etcd-server/config/etcd-server.etcd-vm.json"
+    es_json_repo: "{{ playbook_dir }}/../../etcd-server/config/etcd-server.json"
     es_json_dest: /etc/ml-defender/etcd-server/etcd-server.json
     es_bin: /opt/argus/etcd-server/bin/etcd-server
     es_lib: /opt/argus/etcd-server/lib

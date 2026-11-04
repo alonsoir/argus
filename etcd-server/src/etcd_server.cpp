@@ -118,7 +118,7 @@ bool EtcdServer::initialize() {
     } else {
         server_ = std::make_unique<httplib::Server>();
         std::cout << "[ETCD-TLS-DESACTIVADO] tls.modo=http: HTTP en claro, SIN autenticación ni autorización. Solo "
-                     "para la transición (defender hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001)" << std::endl;
+                     "para el smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)" << std::endl;
     }
     configurar_rutas();
     return true;

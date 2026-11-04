@@ -8,8 +8,8 @@
 //     repetidos incluidos) son [ETCD-ALMACEN-FATAL] y el etcd-server no arranca (--check-config lo cuenta). Los
 //     rellena Ansible por despliegue (DEBT-ANSIBLE-DEPLOY-CONFIGS-001): un prefijo con errata nunca cae en /argus/ en
 //     silencio, donde dos despliegues del mismo clúster se pisarían. En modo memoria no se usan: solo se avisa.
-//     Un modo ausente o mal escrito va a "etcd". "memoria" solo existe para la transición (defender hasta el paso 6;
-//     decisión de Alonso DAY313, como tls.modo=http) y se borra entonces.
+//     Un modo ausente o mal escrito va a "etcd". "memoria" solo queda para el smoke enterprise de
+//     emecas++ (etcd-server.smoke-enterprise.json; DEBT-VAULT-ENTERPRISE-SMOKE-VM-001) y se borra entonces.
 //   - IRegistryStore: clave -> valor (texto) bajo un prefijo. Tres resultados: Ok, NoEncontrado, NoDisponible.
 //     NoDisponible = el almacén no responde (etcd caído o inalcanzable): quien llama decide (503 en escrituras, caché
 //     en lecturas; decisión de Alonso DAY313).
@@ -25,7 +25,7 @@
 
 namespace argus::etcdcfg {
 
-// Defectos validados: iguales a etcd-server.etcd-vm.json (el del defender lleva modo "memoria": transición).
+// Defectos validados: iguales a etcd-server.json (el del smoke enterprise lleva modo "memoria").
 // [ETCD-ALMACEN-FATAL-D315] endpoints, ca_file, cert_file, key_file y prefijo NO se sustituyen por su defecto en modo
 // etcd: ausentes o mal formados son fatales. Su valor de abajo es el del JSON del lab y solo sirve de ejemplo.
 struct AlmacenConfig {

@@ -4,7 +4,7 @@
 //   - V1: cliente propio de Vault en el etcd-server (httplib::SSLClient, mTLS, auth cert); common/vault_client hace otra
 //     cosa (semilla, token, solo lectura) y lo usan otros componentes.
 //   - V2: escritura única también en Vault: cas_required=true en el montaje (aprovisionamiento) y CAS desde el código.
-//   - V3: almacen_claves.modo = "memoria" en el defender hasta el paso 6 (como almacen.modo y tls.modo).
+//   - V3: almacen_claves.modo = "memoria" solo en el smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001).
 //   - V4: buscar una clave antigua por huella (re-verificar el grafo años después) queda FUERA (DEBT-BRONZE-KEY-ID-001).
 //   - JSON es la ley. Las direcciones de Vault NO tienen defecto: en modo vault, una lista ausente o mal formada (o una
 //     ruta de certificado ausente o mal formada) es [ETCD-VAULT-FATAL] y el etcd-server no arranca (--check-config lo
@@ -26,7 +26,7 @@
 
 namespace argus::etcdcfg {
 
-// Defectos validados: iguales a etcd-server.etcd-vm.json (el del defender lleva modo "memoria": transición).
+// Defectos validados: iguales a etcd-server.json (el del smoke enterprise lleva modo "memoria").
 // vault_addrs, ca_file, cert_file y key_file NO se sustituyen por su defecto en modo vault: ausentes o mal formados son
 // fatales. El valor de abajo es el del JSON de la VM y solo sirve de ejemplo en los mensajes.
 struct AlmacenClavesConfig {

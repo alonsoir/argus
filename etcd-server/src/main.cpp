@@ -126,7 +126,7 @@ int main(int argc, char** argv) {
         }
     } else if (almacen_cfg.modo == "memoria") {
         std::cerr << "[ETCD-ALMACEN-MEMORIA] almacen.modo=memoria: el registro vive solo en memoria y se pierde al "
-                     "reiniciar. Solo transición hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001" << std::endl;
+                     "reiniciar. Solo para el smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)" << std::endl;
     }
     // [ETCD-CLAVES-D314] en modo vault, los certificados para Vault deben poder leerse: si no, no hay claves nunca
     // (error de configuración, no un fallo pasajero): fatal como los de TLS
@@ -142,7 +142,7 @@ int main(int argc, char** argv) {
         }
     } else if (claves_cfg.modo == "memoria") {
         std::cerr << "[ETCD-CLAVES-MEMORIA] almacen_claves.modo=memoria: las claves HMAC viven solo en memoria y se "
-                     "pierden al reiniciar. Solo transición hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001" << std::endl;
+                     "pierden al reiniciar. Solo para el smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)" << std::endl;
     }
     const int claves_fatales = static_cast<int>(leida_claves.fatales.size()) + claves_ilegibles;
     if (check_only) {
@@ -316,8 +316,8 @@ int main(int argc, char** argv) {
         std::cout << "  Initializing SecretsManager (Day 54)" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        // [ETCD-CLAVES-D314] ventana de dos sobre el almacén de claves (Vault en la VM etcd; memoria en el defender
-        // hasta el paso 6). Los parámetros, del JSON (validado por argus::etcdcfg)
+        // [ETCD-CLAVES-D314] ventana de dos sobre el almacén de claves (Vault en la VM etcd; memoria solo en el smoke
+        // enterprise de emecas++). Los parámetros, del JSON (validado por argus::etcdcfg)
         std::unique_ptr<argus::claves::ISecretStore> almacen_claves;
         if (claves_cfg.modo == "vault") {
             almacen_claves = std::make_unique<argus::claves::VaultSecretStore>(claves_cfg, std::cout);
@@ -421,7 +421,7 @@ int main(int argc, char** argv) {
                 std::chrono::duration_cast<std::chrono::seconds>(now - last_tls_warning).count() >=
                     tls.aviso_http_intervalo_s) {
                 std::cerr << "[ETCD-TLS-DESACTIVADO] sirviendo HTTP en claro sin autenticación en " << cfg.host << ":"
-                          << cfg.port << " (tls.modo=http, solo transición hasta el paso 6)" << std::endl;
+                          << cfg.port << " (tls.modo=http, solo para el smoke enterprise de emecas++)" << std::endl;
                 last_tls_warning = now;
             }
 

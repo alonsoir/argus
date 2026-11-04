@@ -10,8 +10,9 @@ set -o noclobber          # REC-2: prevenir truncado accidental con >
 UNITS_DIR="/vagrant/etcd-server/config"
 SYSTEMD_DIR="/etc/systemd/system"
 
+# [ETCD-VM-D317] el etcd-server ya no corre en el defender: vive en la VM etcd (ml-defender-etcd-server.service del
+# Vagrantfile, [ETCD-SERVER-UNIT-D317]). Aquí, los tres componentes (TEST-PROVISION-1 comprobación 5 espera 3).
 UNITS=(
-    ml-defender-etcd-server.service
     ml-defender-ml-detector.service
     ml-defender-sniffer.service
     ml-defender-firewall-acl-agent.service
@@ -29,6 +30,15 @@ for unit in "${UNITS[@]}"; do
     install -m 0644 "$src" "$dst"
     echo "  ✅ Instalado: $dst"
 done
+
+# [ETCD-VM-D317] retira la unidad vieja del etcd-server del defender (solo si es la del defender: ExecStart en
+# /vagrant/etcd-server/build-active; la de la VM etcd, con el mismo nombre, no se toca nunca)
+OBSOLETA="${SYSTEMD_DIR}/ml-defender-etcd-server.service"
+if [[ -f "$OBSOLETA" ]] && grep -q "^ExecStart=/vagrant/etcd-server/build-active/etcd-server" "$OBSOLETA"; then
+    systemctl disable --now ml-defender-etcd-server.service > /dev/null 2>&1 || true
+    rm -f "$OBSOLETA"
+    echo "  🗑️  Retirada: $OBSOLETA (el etcd-server vive en la VM etcd)"
+fi
 
 echo ""
 echo "⏳ Recargando systemd daemon..."

@@ -151,8 +151,8 @@ void SecretsManager::revisar() {
         const auto t = reloj_();
         if (modo_memoria_ && (!aviso_memoria_dado_ || t - ultimo_aviso_memoria_ >= aviso_)) {
             log_ << "[ETCD-CLAVES-MEMORIA] claves HMAC solo en memoria (almacen_claves.modo=memoria): se pierden al "
-                    "reiniciar y el bronce firmado antes ya no se podrá verificar. Solo transición hasta el paso 6 de "
-                    "DEBT-ETCD-HA-TLS-RAFT-001"
+                    "reiniciar y el bronce firmado antes ya no se podrá verificar. Solo para el smoke enterprise de "
+                    "emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)"
                  << std::endl;
             ultimo_aviso_memoria_ = t;
             aviso_memoria_dado_ = true;

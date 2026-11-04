@@ -210,7 +210,7 @@ public:
         const auto t = reloj_();
         if (modo_memoria_ && (ultimo_aviso_memoria_ == 0 || t - ultimo_aviso_memoria_ >= aviso_)) {
             log_ << "[ETCD-ALMACEN-MEMORIA] registro solo en memoria (almacen.modo=memoria): se pierde al reiniciar. "
-                    "Solo transición hasta el paso 6 de DEBT-ETCD-HA-TLS-RAFT-001"
+                    "Solo para el smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)"
                  << std::endl;
             ultimo_aviso_memoria_ = t;
         }
