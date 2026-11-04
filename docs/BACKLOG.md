@@ -8640,3 +8640,11 @@ mirándose solo por proceso.
 ### Hallazgo DAY317 — corregido en 6d
 Las unidades systemd de sniffer, ml-detector y firewall en el defender llevaban
 `Requires=ml-defender-etcd-server.service` (contra G2). Fuera.
+
+## DAY317 — diseño del paso 7 de DEBT-ETCD-HA-TLS-RAFT-001
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Diseño del paso 7». Instrumento nuevo
+`scripts/etcd_ha/d317_reinicio_vm.sh` (+ ayudante del defender) que sustituye al de DAY311 (se borra): reinicia el
+etcd-server de la VM con el pipeline vivo y tráfico benigno, y da un veredicto PASA/FALLA (misma huella de bronce y CSV,
+ningún registro nuevo, latidos 200, todo el bronce del intervalo verificable con la clave de antes y la de después).
+Decisión de Alonso: primero se mide a mano; luego se decide si entra en `lab-e2e`.

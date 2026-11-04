@@ -1272,3 +1272,59 @@ parado y arrancado, antes y después de 6d.
   VM etcd rehecha desde cero: DEBT-LAB-VAULT-CLAVES-PRUEBA-001). `lab-e2e` no se ha corrido en el paso 6: va en el 8.
 - ggshield avisa `Unrecognized key in config: paths_ignore` en cada commit: esas exclusiones probablemente no se
   aplican. Sin decidir.
+
+## Diseño del paso 7 (reinicio del etcd-server de la VM con el pipeline vivo) — DAY317, escrito ANTES de tocar código
+
+Objetivo (predicción del paso 7 del diseño de DAY312): tras reiniciar el etcd-server, misma huella de clave, bronce
+anterior verificable, registro conservado y latidos 200. B1 y B2 midieron ya la huella y el registro conservado; falta
+el bronce anterior verificable y medirlo todo junto con el servicio de la VM.
+
+### Medido para este diseño
+
+- `d311_reinicio_etcd.sh` y `d311_etcd_defender.sh` ya no sirven: miran el 2379 del defender (ahora siempre vacío),
+  piden la clave por HTTP a `127.0.0.1:2379`, leen `/vagrant/logs/lab/etcd-server.log` (ahora el journal de la VM),
+  cuentan `Heartbeat failed` (anterior a B1) y clasifican como MEZCLA un segmento que verifica con las dos claves (lo
+  esperado ahora, si son la misma). Solo se llaman entre ellos.
+- Se reutiliza: la petición por mTLS de `clave_bronce_ml_detector.sh` (E5, identidad del conversor); el conversor
+  `/vagrant/correlation-engine/build/bronze_to_gold_converter` (`ARGUS_BRONZE_HMAC_KEY_HEX`, imprime `filas válidas:
+  N`); el bronce en `/vagrant/logs/correlation/argus-*.csv`; el pcap benigno de los E2E del lab (fuera de git).
+- El etcd-server escribe una línea por petición (`[ETCD←] MÉTODO ruta | status=… | cn=…`, sin relleno) y una por alta en
+  el registro (`[ETCD-REGISTRO] registrado <nombre>`). La regla de autorización `POST /register` también sale al
+  arrancar: no cuenta como registro (lección de DAY316).
+- Etiquetas que existen en el código: ml-detector `[BRONCE-CLAVE-SIN-CONFIRMAR|-CONFIRMADA|-CAMBIADA|-RECUPERADA]` y
+  `[BRONCE-SIN-CLAVE]`; firewall `[FW-CSV-CLAVE-SIN-CONFIRMAR|-CONFIRMADA|-CAMBIADA|-RECUPERADA]` y
+  `[FW-CSV-SIN-CLAVE]`; librería `[ETCD-CLIENTE-SIN-SERVICIO|-REANUDADO|-REGISTRADO|-REGISTRO-PERDIDO]`; firewall
+  `[SOMBRA-DDOS] resumen: ... eventos=N`.
+
+### Decisiones de Alonso (DAY317)
+
+1. El instrumento nuevo sustituye al de DAY311, que se borra (git lo conserva).
+2. Veredicto automático PASA/FALLA, pero primero se mide a mano; después se decide si entra en `lab-e2e` (EMECAS).
+3. La clave del CSV del firewall solo se comprueba por su huella (en el lab el firewall no escribe filas). Se pide por
+   `/secrets/valid/firewall-acl-agent` con la identidad del conversor, que la regla ya permite; no se abre ninguna vía
+   nueva.
+
+### Instrumento
+
+- `scripts/etcd_ha/d317_reinicio_vm.sh` (Mac) y `scripts/etcd_ha/d317_reinicio_defender.sh` (defender). Pasos:
+  comprobaciones (`etcd-vm-check`, pipeline sin `STOPPED`, alias `.51`); marcas de los logs, intervalos de latido de los
+  JSON de los componentes, hora de la VM y claves A (ml-detector y firewall: solo-root fuera de `/vagrant`, por pantalla
+  solo la huella, borradas al final); tráfico benigno a 10 pps; a los 60 s `make etcd-server-stop` y `CAIDO_S` segundos
+  (entero [60, 1800], defecto 150); `make etcd-server-start` (exige quedar sano) y `TRAS_S` segundos ([60, 1800], 150);
+  claves B; fin del tráfico y 40 s de rotación; copia de los logs de los componentes y del journal de la VM (desde el
+  inicio y desde el arranque); verificación de cada segmento con A y con B (clases AB, A, B, NINGUNA, MEZCLA, VACIO).
+- `--veredicto DIR` reevalúa una corrida ya hecha. Trap: para el tráfico, deja el etcd-server activo y borra las claves.
+
+### Veredicto y predicciones (PASA si se cumplen todas)
+
+- Huella A = huella B, en la clave del bronce y en la del CSV.
+- ml-detector: `[BRONCE-CLAVE-SIN-CONFIRMAR]` ≥ 1, `-CONFIRMADA` ≥ 1, `-CAMBIADA` = 0, `[BRONCE-SIN-CLAVE]` = 0.
+- firewall: `[FW-CSV-CLAVE-SIN-CONFIRMAR]` ≥ 1, `-CONFIRMADA` ≥ 1, `-CAMBIADA` = 0, `[FW-CSV-SIN-CLAVE]` = 0.
+- Cada componente: `[ETCD-CLIENTE-SIN-SERVICIO]` ≥ 1, `[ETCD-CLIENTE-REANUDADO]` = 1, `-REGISTRADO` = 0,
+  `-REGISTRO-PERDIDO` = 0.
+- etcd-server tras arrancar: 0 componentes registrados de nuevo, 0 `POST /register`, 0 latidos con status distinto de
+  200, y latidos 200 de cada componente ≥ `TRAS_S / intervalo − 1`.
+- Bronce: ≥ 1 segmento en el intervalo y todos en AB (también los escritos con el servidor caído, firmados en modo
+  extendido).
+- Continuidad: el firewall resume eventos (`eventos` > 0).
+- Banco: el veredicto con una corrida falsa buena da PASA y cada condición rota da FALLA.
