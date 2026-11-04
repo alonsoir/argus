@@ -1328,3 +1328,45 @@ el bronce anterior verificable y medirlo todo junto con el servicio de la VM.
   extendido).
 - Continuidad: el firewall resume eventos (`eventos` > 0).
 - Banco: el veredicto con una corrida falsa buena da PASA y cada condición rota da FALLA.
+
+## Resultados DAY317 — paso 7 (sección aparte, sin reescribir el diseño)
+
+Instrumento `scripts/etcd_ha/d317_reinicio_vm.sh` + `d317_reinicio_defender.sh` (parcheadores `d317_p7_instrumento.py` y
+`d317_p7_fix_saneado.py`); el de DAY311 borrado. La predicción del paso 7 del diseño de DAY312 («misma huella, bronce
+anterior verificable, registro conservado, latidos 200») **PASA**.
+
+### Banco
+
+- Veredicto con una corrida falsa buena: PASA; 16 condiciones rotas, una a una: FALLA cada una (la línea de la regla
+  `POST /register` del arranque no cuenta como registro). Clasificación de segmentos con un conversor falso: AB, A, B,
+  MEZCLA, NINGUNA y VACIO donde tocan.
+
+### Laboratorio
+
+- **`reinicio_vm_1` — PARADA en la verificación** (fallo del instrumento): `vagrant ssh` antepone una línea vacía y `T1`
+  llegó como `\n<epoch>`, partiendo la orden del ayudante (`line 59: 4: t1`, `1793779685: orden no encontrada`). Antes
+  de parar ya midió huellas iguales antes y después (`60768287`, `4f60123a`); el trap paró el tráfico, dejó el
+  etcd-server activo y borró las claves. No se completó a mano (sería verificar con una clave «B» pedida fuera de su
+  momento): se arregló (cada valor capturado saneado; el `wc` de macOS sin relleno) y se repitió. Los logs quedan en
+  `logs/lab/day317/reinicio_vm_1/`.
+- **`reinicio_vm_2` — VEREDICTO PASA** (CAIDO_S 150, TRAS_S 150, intervalos de latido 30 s):
+  - huellas iguales antes y después: bronce `60768287`, CSV del firewall `4f60123a`;
+  - ml-detector `[BRONCE-CLAVE-SIN-CONFIRMAR]` 3, `-CONFIRMADA` 1, `-CAMBIADA` 0, `[BRONCE-SIN-CLAVE]` 0; firewall
+    `[FW-CSV-CLAVE-SIN-CONFIRMAR]` 3, `-CONFIRMADA` 1, `-CAMBIADA` 0, `[FW-CSV-SIN-CLAVE]` 0;
+  - `[ETCD-CLIENTE-SIN-SERVICIO]` ml-detector 6, firewall 6, sniffer 5; `[ETCD-CLIENTE-REANUDADO]` 1 en cada uno;
+    `-REGISTRADO` 0 y `-REGISTRO-PERDIDO` 0 en los tres;
+  - etcd-server tras arrancar: 0 componentes registrados de nuevo, 0 `POST /register`, 0 latidos con status distinto de
+    200; latidos 200: sniffer 8, ml-detector 7, firewall 7 (mínimo 4);
+  - bronce: 16 segmentos (5276 filas) en el intervalo, los 16 en AB: también los escritos con el servidor caído,
+    firmados en modo extendido, verifican con la clave de antes y con la de después;
+  - continuidad: el firewall resumió 5248 eventos.
+
+### Lecciones DAY317 (paso 7)
+
+- Todo valor capturado por `vagrant ssh` se sanea antes de usarlo como argumento (la línea vacía inicial).
+- Una corrida que para por el instrumento no se completa a mano: se arregla y se repite con otro nombre.
+
+### Pendiente
+
+- Decisión 2 de Alonso: con este PASA, decidir si el instrumento entra en `lab-e2e` (EMECAS).
+- Paso 8: EMECAS+++ production desde cero (la VM etcd se rehace: Vault limpio, DEBT-LAB-VAULT-CLAVES-PRUEBA-001).

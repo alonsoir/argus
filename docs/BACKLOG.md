@@ -8648,3 +8648,11 @@ Documento: `docs/ml-heads/day312_diseno.md`, «Diseño del paso 7». Instrumento
 etcd-server de la VM con el pipeline vivo y tráfico benigno, y da un veredicto PASA/FALLA (misma huella de bronce y CSV,
 ningún registro nuevo, latidos 200, todo el bronce del intervalo verificable con la clave de antes y la de después).
 Decisión de Alonso: primero se mide a mano; luego se decide si entra en `lab-e2e`.
+
+## DAY317 — paso 7 de DEBT-ETCD-HA-TLS-RAFT-001 hecho
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Resultados DAY317 — paso 7». `reinicio_vm_2`: VEREDICTO PASA (misma huella
+de bronce y CSV tras reiniciar el etcd-server de la VM con el pipeline vivo, ningún registro nuevo, latidos 200, los 16
+segmentos del intervalo verificables con la clave de antes y la de después). `reinicio_vm_1` paró por un fallo del
+instrumento (valor de `vagrant ssh` sin sanear), arreglado. DEBT-ETCD-HA-TLS-RAFT-001: pasos 0-7 hechos; queda el 8
+(EMECAS+++ production).
