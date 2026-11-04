@@ -1283,7 +1283,8 @@ emecas:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	vagrant destroy -f
 	$(MAKE) clean-host-builds
-	vagrant up defender client suricata etcd
+	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
+	vagrant up defender client suricata zeek wazuh etcd
 	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	$(MAKE) bootstrap
 	$(MAKE) emecas-frescura
@@ -3066,12 +3067,31 @@ test-firewall-perf:
 # emecas/emecas++ sin cambios. Cuando exista Eslabon 1 (Flujo A/B, Landing
 # Zone), este target gana sus propios Actos rio-abajo sin tocar emecas/emecas++.
 # ══════════════════════════════════════════════════════════════════════════
+# [EMECAS-TODO-D317] Acto IV (río abajo, ADR-058): los tres adapters recompilados desde cero y probados (no se usan
+# binarios de VMs que ya no existen), pipeline arrancado y MITRE -> grafo con veredicto (scripts/mitre_veredicto.sh).
+.PHONY: mitre-check
+mitre-check:
+	@echo "[MITRE-CHECK] $$(date '+%T') 1/3 parando el pipeline (log: /tmp/argus_mitre_check_stop.txt)"
+	@# [EMECAS-TODO-D317] pipeline-start no admite un pipeline ya arrancado (duplicate session, medido DAY317): se para
+	@# antes, como en los E2E del lab, y el Acto IV parte siempre de un pipeline limpio
+	@$(MAKE) --no-print-directory pipeline-stop > /tmp/argus_mitre_check_stop.txt 2>&1 || { tail -n 20 /tmp/argus_mitre_check_stop.txt; echo "[MITRE-VEREDICTO] FALLA: pipeline-stop"; exit 1; }
+	@echo "[MITRE-CHECK] $$(date '+%T') 2/3 arrancando el pipeline (log: /tmp/argus_mitre_check_start.txt)"
+	@$(MAKE) --no-print-directory pipeline-start > /tmp/argus_mitre_check_start.txt 2>&1 || { tail -n 20 /tmp/argus_mitre_check_start.txt; echo "[MITRE-VEREDICTO] FALLA: pipeline-start"; exit 1; }
+	@if grep -E '^[[:space:]]*❌.*STOPPED' /tmp/argus_mitre_check_start.txt; then echo "[MITRE-VEREDICTO] FALLA: componente STOPPED"; exit 1; fi
+	@echo "[MITRE-CHECK] $$(date '+%T') 3/3 mitre_start.sh y veredicto (la salida sale aquí y en logs/lab/mitre-veredicto-*.txt)"
+	@bash scripts/mitre_veredicto.sh
+
 emecas+++: emecas++
 	@echo ""
+	@echo "══ Acto IV — río abajo: adapters desde cero y MITRE -> grafo con veredicto ══"
+	$(MAKE) suricata-adapter-test
+	$(MAKE) zeek-adapter-test
+	$(MAKE) wazuh-adapter-test
+	$(MAKE) mitre-check
+	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  ✅ EMECAS+++ PASSED — circuito bronce->Kuzu verificado    ║"
-	@echo "║  (test_bronze_to_kuzu_circuit, dentro de test-all)          ║"
-	@echo "║  Eslabon 1+ (Landing Zone) anadira Actos propios aqui       ║"
+	@echo "║  ✅ EMECAS+++ PASSED — Acto IV: aRGus, Suricata y Zeek     ║"
+	@echo "║  hasta el grafo, invariante 0, flujos corroborados > 0     ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
 .PHONY:eslabon1-smoke-build eslabon1-smoke-test
