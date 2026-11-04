@@ -334,22 +334,22 @@ lab-clock-step:
 	@echo "[LAB-CLOCK-STEP] OK: defender y client alineados"
 
 up-argus:
-	@vagrant up defender client
+	@vagrant up defender client etcd
 
 up-suricata:
 	@cd experiments/suricata-comparative && vagrant up suricata client
 
 up:
-	@vagrant up defender client suricata zeek wazuh
+	@vagrant up defender client suricata zeek wazuh etcd
 
 halt-argus:
-	@vagrant halt defender client
+	@vagrant halt defender client etcd
 
 halt-suricata:
 	@cd experiments/suricata-comparative && vagrant halt
 
 halt:
-	@vagrant halt defender client suricata zeek wazuh
+	@vagrant halt defender client suricata zeek wazuh etcd
 
 destroy:
 	@vagrant destroy -f
@@ -752,12 +752,8 @@ etcd-server:
 	@echo ""
 	@echo "✅ etcd-server built ($(PROFILE))"
 
-etcd-server-status:
-	@echo "════════════════════════════════════════════════════════════"
-	@echo "etcd-server Status:"
-	@vagrant ssh -c "pgrep -a -f etcd-server && echo '✅ etcd-server: RUNNING' || echo '❌ etcd-server: STOPPED'"
-	@vagrant ssh -c "curl -s http://localhost:2379/health || echo '⚠️  Not responding'"
-	@echo "════════════════════════════════════════════════════════════"
+etcd-server-status:  # [ETCD-VM-D317] el etcd-server vive en la VM etcd (servicio systemd)
+	@$(MAKE) --no-print-directory etcd-vm-estado
 
 
 # ============================================================================
@@ -874,10 +870,8 @@ test-invariant-seed:
 	"' || (echo "❌ INVARIANTE-SEED-001 violado: seeds divergentes" && exit 1)
 	@echo ""
 
-pipeline-start: test-provision-1 etcd-server-start
-	@echo "⏳ Waiting for etcd-server to stabilize (Seed generation)..."
-	@sleep 4
-	@sleep 5
+pipeline-start: test-provision-1
+	@$(MAKE) --no-print-directory etcd-vm-aviso  # [ETCD-VM-D317] avisa si la VM etcd no está sana; no para el arranque
 	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE) FORCE_ALL_HEADS=$(FORCE_ALL_HEADS)
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -888,10 +882,8 @@ pipeline-start: test-provision-1 etcd-server-start
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@$(MAKE) pipeline-status
 
-pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
-	@echo "⏳ Waiting for etcd-server to stabilize (Seed generation)..."
-	@sleep 4
-	@sleep 5
+pipeline-start-x86-libpcap: test-provision-1
+	@$(MAKE) --no-print-directory etcd-vm-aviso  # [ETCD-VM-D317]
 	@$(MAKE) ml-detector-start
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -1286,10 +1278,11 @@ emecas:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	vagrant destroy -f
 	$(MAKE) clean-host-builds
-	vagrant up defender client suricata
+	vagrant up defender client suricata etcd
 	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	$(MAKE) bootstrap
 	$(MAKE) emecas-frescura
+	$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] binario + config + servicio en la VM etcd; falla si no queda sano
 	$(MAKE) test-all
 	$(MAKE) test-firewall-e2e
 	$(MAKE) test-firewall-perf
@@ -2147,16 +2140,47 @@ dev-setup-tools:
 	@echo "🔧 Instalando herramientas de gestión en la VM..."
 	@vagrant ssh -c "sudo apt-get update && sudo apt-get install -y tmux net-tools"
 
-etcd-server-start: etcd-server
-	@echo "🚀 Starting etcd-server (Persistente)..."
-	@vagrant ssh -c "tmux kill-session -t etcd-server 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s etcd-server 'mkdir -p /vagrant/logs/lab && cd /vagrant && sudo env LD_LIBRARY_PATH=/usr/local/lib $(ETCD_SERVER_BUILD_DIR)/etcd-server >> /vagrant/logs/lab/etcd-server.log 2>&1'"
-	@sleep 2
-	@$(MAKE) etcd-server-status
+# ════════════════════════════════════════════════════════════════════════════
+# [ETCD-VM-D317] DEBT-ETCD-HA-TLS-RAFT-001 paso 6b: el etcd-server corre en la VM etcd como ml-defender-etcd-server.service
+# (Vagrantfile, [ETCD-SERVER-UNIT-D317]), junto a etcd y Vault. El binario se compila en el defender (única máquina que
+# compila) y etcd-vm-deploy lo lleva a la VM. Estado real (no procesos): scripts/etcd_ha/etcd_vm_estado.sh.
+#   ETCD_VM_ESPERA_S: segundos que etcd-vm-check y etcd-vm-aviso esperan a que todo esté sano (entero [0, 300], defecto 30)
+# ════════════════════════════════════════════════════════════════════════════
+ETCD_VM_ESPERA_S ?= 30
+ETCD_VM_UNIDAD := ml-defender-etcd-server.service
+ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
+.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso
 
-etcd-server-stop:
-	@vagrant ssh -c "tmux kill-session -t etcd-server 2>/dev/null || true"
-	@echo "✅ etcd-server stopped"
+# Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
+etcd-vm-deploy:
+	@bash scripts/etcd_ha/d312_etcd_vm_deploy.sh $(PROFILE)
+	@$(MAKE) --no-print-directory deploy-configs
+	@vagrant ssh etcd -c "sudo systemctl restart $(ETCD_VM_UNIDAD)"
+	@$(MAKE) --no-print-directory etcd-vm-check
+
+# Informe (rc 0 siempre)
+etcd-vm-estado:
+	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO)"
+
+# Estricto (EMECAS): rc 1 si etcd-server, algún miembro etcd o Vault no están sanos tras ETCD_VM_ESPERA_S
+etcd-vm-check:
+	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)"
+
+# pipeline-start: informa y, si no está sano (o la VM está parada), avisa claro y sigue (decisión 4 de Alonso, DAY317)
+etcd-vm-aviso:
+	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)" > /tmp/argus_etcd_vm_aviso.txt 2>&1; rc=$$?; \
+	  cat /tmp/argus_etcd_vm_aviso.txt; \
+	  if [ $$rc -ne 0 ]; then \
+	    echo "[ETCD-VM-AVISO] la VM etcd NO está sana (o está parada): los componentes arrancan y protegen, pero sin clave HMAC no"; \
+	    echo "[ETCD-VM-AVISO] firman bronce ni CSV hasta que vuelvan etcd-server, etcd y Vault. Ver: make etcd-vm-estado; VM parada: vagrant up etcd"; \
+	  fi
+
+etcd-server-start:  # [ETCD-VM-D317] arranca el servicio de la VM etcd y exige que quede sano
+	@vagrant ssh etcd -c "sudo systemctl start $(ETCD_VM_UNIDAD)"
+	@$(MAKE) --no-print-directory etcd-vm-check
+
+etcd-server-stop:  # [ETCD-VM-D317] para el servicio de la VM etcd (Restart=always no lo relanza tras un stop explícito)
+	@vagrant ssh etcd -c "sudo systemctl stop $(ETCD_VM_UNIDAD); echo \"etcd-server de la VM etcd: \$$(systemctl is-active $(ETCD_VM_UNIDAD))\""
 
 # ============================================================================
 # TSAN Validation Suite (Day 48 Phase 0)
