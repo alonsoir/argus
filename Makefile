@@ -905,7 +905,8 @@ pipeline-status:
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  📊 ML Defender Pipeline Status (via TMUX + pgrep)        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
-	@vagrant ssh -c "( tmux has-session -t etcd-server 2>/dev/null || pgrep -x etcd-server >/dev/null 2>&1 ) && echo '  ✅ etcd-server:   RUNNING' || echo '  ❌ etcd-server:   STOPPED'"
+	@# [ETCD-VM-D317] VM etcd: etcd-server (systemd + /health), cada miembro etcd (sano, líder, retraso) y Vault de las claves HMAC
+	@vagrant ssh etcd -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh" 2>/dev/null | grep -E '^  (✅|❌|⚠️)|^       - ' || echo '  ❌ etcd-server:   STOPPED [VM etcd parada o inalcanzable: vagrant up etcd]'
 	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
 	  EBPF=0; PCAP=0; \
