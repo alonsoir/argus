@@ -248,6 +248,8 @@ bootstrap-x86-ebpf:
 	@$(MAKE) deploy-models
 	@echo "[6b/8] Firmando plugins..."
 	@$(MAKE) sign-plugins
+	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
+	@$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] antes de pipeline-start: los componentes encuentran el etcd-server sano
 	@echo "[7/8] Verificando provisioning..."
 	@$(MAKE) test-provision-1
 	@echo "[8/8] Arrancando pipeline (Variant A — eBPF/XDP)..."
@@ -282,6 +284,8 @@ bootstrap-x86-libpcap:
 	@$(MAKE) deploy-models
 	@echo "[6b/8] Firmando plugins..."
 	@$(MAKE) sign-plugins
+	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
+	@$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] antes de pipeline-start: los componentes encuentran el etcd-server sano
 	@echo "[7/8] Verificando provisioning..."
 	@$(MAKE) test-provision-1
 	@echo "[8/8] Arrancando pipeline (Variant B — libpcap)..."
@@ -1283,7 +1287,6 @@ emecas:
 	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	$(MAKE) bootstrap
 	$(MAKE) emecas-frescura
-	$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] binario + config + servicio en la VM etcd; falla si no queda sano
 	$(MAKE) test-all
 	$(MAKE) test-firewall-e2e
 	$(MAKE) test-firewall-perf
