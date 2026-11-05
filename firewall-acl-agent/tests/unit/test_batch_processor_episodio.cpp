@@ -8,9 +8,10 @@
 #include <thread>
 #include "firewall/batch_processor.hpp"
 #include "firewall/ipset_wrapper.hpp"
-#include "firewall/ddos_protegidos.hpp"
+#include "protegidos/rangos.hpp"
 
 using namespace mldefender::firewall;
+using namespace argus::protegidos;  // [PROTEGIDOS-MANIFIESTO-D318] libs/protegidos
 using Estado = ResultadoEpisodio::Estado;
 
 namespace {

@@ -40,7 +40,7 @@
 
 #include <chrono>  // [DDOS-SHADOW-OBS-D293]
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
-#include "firewall/protegidos_manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
+#include "protegidos/manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
 #include "firewall/ddos_mitigacion.hpp"  // [DDOS-MITIGACION-B2-D302]
 #include "firewall/timebase_lite.hpp"  // [TIMEBASE-D295]
 #include "firewall/seq_tracker.hpp"  // [TIMEBASE-SEQ-D297]
@@ -125,7 +125,7 @@ public:
         std::string crypto_token;        ///< Decryption key (hex)
         ::mldefender::firewall::DdosShadowParams ddos_shadow;  ///< [DDOS-SHADOW-D293] política por víctima en sombra
         /// [PROTEGIDOS-MANIFIESTO-D318] lo vigente (ADR-060). null = nada protegido y candado cerrado
-        std::shared_ptr<::mldefender::firewall::ProtegidosVigentes> protegidos;
+        std::shared_ptr<::argus::protegidos::ProtegidosVigentes> protegidos;
         ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  ///< [DDOS-MITIGACION-B2-D302] mitigacion real
         std::vector<uint32_t> ddos_escalones_cortos;  ///< [DDOS-MITIGACION-B2-D302] escalones de prueba (aviso periodico)
         bool dry_run = true;  ///< [DDOS-MITIGACION-B2-D302] copia de operation.dry_run (1.a llave); defecto el seguro

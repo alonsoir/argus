@@ -1,12 +1,12 @@
-// ddos_protegidos.hpp
+// libs/protegidos/include/protegidos/rangos.hpp (antes firewall-acl-agent/include/firewall/ddos_protegidos.hpp; libs/protegidos, ADR-060 F-B)
 // [PROTEGIDOS-D300] rangos protegidos: un DROP de la cabeza DDoS cuyo ORIGEN cae en un rango protegido se registra
 // como ALERTA_PROTEGIDO y nunca se convierte en bloqueo automatico; ningun camino lo mete en el blacklist.
 // [PROTEGIDOS-MANIFIESTO-D318] ADR-060: los rangos salen SOLO del manifiesto firmado verificado
-// (protegidos_manifiesto.hpp). Fuera ddos_protegidos de firewall.json y el defecto RFC 1918 de DAY300: con el
+// (protegidos/manifiesto.hpp). Fuera ddos_protegidos de firewall.json y el defecto RFC 1918 de DAY300: con el
 // candado (D6), sin manifiesto verificado no hay bloqueo real del que proteger. La barrera protege por IP siempre
 // (D-G). Funciones puras, sin JSON ni red.
 #pragma once
-#include "firewall/ip_cidr_validator.hpp"
+#include "argus/ip_cidr_validator.hpp"
 #include <arpa/inet.h>
 #include <array>
 #include <cstdint>
@@ -16,7 +16,7 @@
 #include <string>
 #include <vector>
 
-namespace mldefender::firewall {
+namespace argus::protegidos {
 
 // [PROTEGIDOS-MANIFIESTO-D318] INFRAESTRUCTURA (ADR-060 D1): el plano de control de aRGus (etcd, etcd-server, Vault).
 enum class CategoriaProtegida : uint8_t { NINGUNA = 0, DMZ = 1, INTRANET = 2, EXTERNOS_CRITICOS = 3, INFRAESTRUCTURA = 4 };
@@ -85,7 +85,7 @@ inline std::string saneado(const std::string& s) {
 }  // namespace detalle_protegidos
 
 inline bool parsear_rango(const std::string& cidr, CategoriaProtegida cat, RangoProtegido& out) {
-    if (!is_valid_ip_cidr(cidr)) return false;
+    if (!::argus::is_valid_ip_cidr(cidr)) return false;
     const auto barra = cidr.find('/');
     const std::string ip = (barra == std::string::npos) ? cidr : cidr.substr(0, barra);
     RangoProtegido r;
@@ -122,4 +122,4 @@ struct RangosProtegidos {
     }
 };
 
-}  // namespace mldefender::firewall
+}  // namespace argus::protegidos

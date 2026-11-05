@@ -15,6 +15,7 @@
 // NOTA API: las lineas '<-- AJUSTA' usan has_value()/struct fields asumidos. Si tu API de
 // IPSetResult/IPSetConfig/IPSetEntry difiere, ajustalas. Los asertos set_exists/
 // get_entry_count (los PRIMARIOS) no dependen de eso y prueban el cierre por si solos.
+#include <sstream>
 #include <gtest/gtest.h>
 #include "firewall/ipset_wrapper.hpp"
 
@@ -28,6 +29,14 @@ namespace {
 
 constexpr const char* kTargetSet = "argus_h2_target";
 constexpr const char* kEvilSet   = "argus_h2_evil";
+// [PROTEGIDOS-MANIFIESTO-D318] "<ip>\nadd <kEvilSet> <otra>" con ostringstream y no con una cadena de operator+ sobre
+// temporales: con -O3 -flto -march=skylake, GCC 12.2 daba un falso -Werror=stringop-overflow (37 bytes en el búfer
+// corto de 16 de std::string) al cambiar el reparto LTO al enlazar libs/protegidos. Mismos bytes que antes.
+std::string inyeccion(const char* ip, const char* otra) {
+    std::ostringstream o;
+    o << ip << "\nadd " << kEvilSet << " " << otra;
+    return o.str();
+}
 
 class IpsetInjection : public ::testing::Test {
 protected:
@@ -57,7 +66,7 @@ protected:
 
 TEST_F(IpsetInjection, AddBatchNewlineInjectionDoesNotCreateEvilSet) {
     // [H-2 DAY188 IPSetEntry ctor fix] IPSetEntry exige IP en el ctor (no default-construct).
-    IPSetEntry evil{std::string("1.2.3.4/24\nadd ") + kEvilSet + " 6.6.6.6"};
+    IPSetEntry evil{inyeccion("1.2.3.4/24", "6.6.6.6")};
 
     auto res = w_.add_batch(kTargetSet, {evil});
 
@@ -69,7 +78,7 @@ TEST_F(IpsetInjection, AddBatchNewlineInjectionDoesNotCreateEvilSet) {
 
 TEST_F(IpsetInjection, DeleteBatchNewlineInjectionDoesNotCreateEvilSet) {
     std::vector<std::string> ips = {
-        std::string("9.9.9.9/24\nadd ") + kEvilSet + " 7.7.7.7"
+        inyeccion("9.9.9.9/24", "7.7.7.7")
     };
     auto res = w_.delete_batch(kTargetSet, ips);
 

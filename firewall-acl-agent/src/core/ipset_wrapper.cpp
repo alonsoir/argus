@@ -16,7 +16,7 @@
 #include "firewall/ipset_wrapper.hpp"
 #include "firewall/set_name_validator.hpp"
 #include "firewall/comment_validator.hpp"
-#include "firewall/ip_cidr_validator.hpp"
+#include "argus/ip_cidr_validator.hpp"
 #include "safe_exec.hpp"
 #include <cstring>
 #include <cctype>
@@ -75,11 +75,11 @@ const char* IPSetWrapper::family_to_string(IPSetFamily family) {
     return "inet";
 }
 
-// [H-2 DAY188 is_valid_ip hardened] — lógica MOVIDA a firewall/ip_cidr_validator.hpp
+// [H-2 DAY188 is_valid_ip hardened] — lógica MOVIDA a argus/ip_cidr_validator.hpp (common/include)
 // (DAY190, DEBT-AUTONOMY-REACTOR-CWE78-001). Este método es ahora un alias de
 // compatibilidad de la API pública; la implementación y su modelo de amenaza viven
 // en el header compartido. NO BORRAR este marcador (idempotencia del parche).
-bool IPSetWrapper::is_valid_ip(const std::string& ip) const { return is_valid_ip_cidr(ip); }
+bool IPSetWrapper::is_valid_ip(const std::string& ip) const { return ::argus::is_valid_ip_cidr(ip); }
 
 //===----------------------------------------------------------------------===//
 // System Command Execution
@@ -700,7 +700,7 @@ IPSetResult<void> IPSetWrapper::replace_net_iface(const std::string& set_name,
     std::ostringstream in;
     std::vector<std::string> malas;
     for (const auto& [cidr, iface] : entradas) {
-        if (!is_valid_ip_cidr(cidr) || cidr.find(':') != std::string::npos || !es_interfaz_ipset(iface)) {
+        if (!::argus::is_valid_ip_cidr(cidr) || cidr.find(':') != std::string::npos || !es_interfaz_ipset(iface)) {
             malas.push_back(cidr + "," + iface);
             continue;
         }

@@ -5,7 +5,7 @@
 
 #include "firewall/config_loader.hpp"
 #include "firewall/set_name_validator.hpp"
-#include "firewall/ip_cidr_validator.hpp"
+#include "argus/ip_cidr_validator.hpp"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -725,7 +725,7 @@ CsvBatchLoggerConfig ConfigLoader::parse_csv_batch_logger(const Json::Value& jso
     // estricto ANTES de aceptar = cierra inyección de comandos vía config. Fail-fast:
     // un solo CIDR inválido aborta la carga (JSON is LAW — config mala no arranca).
     for (const auto& cidr : config.whitelist_cidrs) {
-        if (!is_valid_ip_cidr(cidr)) {
+        if (!::argus::is_valid_ip_cidr(cidr)) {
             throw std::runtime_error(
                 "❌ INVALID CIDR en 'autonomy.whitelist_cidrs': '" + cidr + "' ("
                 + config_path + ")\n"

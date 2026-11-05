@@ -21,7 +21,7 @@
 #include "firewall/ipset_wrapper.hpp"
 #include "firewall/iptables_wrapper.hpp"
 #include "firewall/batch_processor.hpp"
-#include "firewall/protegidos_manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
+#include "protegidos/manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "firewall/zmq_subscriber.hpp"
@@ -211,17 +211,17 @@ void print_version() {
 // ═══════════════════════════════════════════════════════════════════════
 // [PROTEGIDOS-MANIFIESTO-D318] ADR-060: set del kernel, caché del manifiesto y vigilancia periódica
 // ═══════════════════════════════════════════════════════════════════════
-using ::mldefender::firewall::ProtegidosVigentes;
-using ::mldefender::firewall::ManifiestoVerificado;
-using ::mldefender::firewall::candado_cerrado;
-using ::mldefender::firewall::claves_protegidos_compiladas;
+using ::argus::protegidos::ProtegidosVigentes;
+using ::argus::protegidos::ManifiestoVerificado;
+using ::argus::protegidos::candado_cerrado;
+using ::argus::protegidos::claves_protegidos_compiladas;
 
 // El set hash:net,iface existe y es de ese tipo (lo crea si falta). false = sin exención del kernel (solo barrera).
 static bool protegidos_preparar_set(IPSetWrapper& ipset, const FirewallAgentConfig& config) {
     const auto& pc = config.protegidos;
     const auto& k = claves_protegidos_compiladas();
-    std::cout << "[PROTEGIDOS-CLAVE] actual huella=" << ::mldefender::firewall::huella_clave_protegidos(k.actual)
-              << (k.hay_siguiente ? " siguiente huella=" + ::mldefender::firewall::huella_clave_protegidos(k.siguiente)
+    std::cout << "[PROTEGIDOS-CLAVE] actual huella=" << ::argus::protegidos::huella_clave_protegidos(k.actual)
+              << (k.hay_siguiente ? " siguiente huella=" + ::argus::protegidos::huella_clave_protegidos(k.siguiente)
                                   : std::string(" siguiente=ninguna"))
               << " (compiladas)" << std::endl;
     const auto tipo = ipset.set_type(pc.set_name);
@@ -245,7 +245,7 @@ static bool protegidos_preparar_set(IPSetWrapper& ipset, const FirewallAgentConf
     c.type = IPSetType::HASH_NET_IFACE;
     c.family = IPSetFamily::INET;
     c.hashsize = 1024;
-    c.maxelem = static_cast<uint32_t>(::mldefender::firewall::kProtegidosMaxEntradas);
+    c.maxelem = static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas);
     c.timeout = 0;
     c.counters = true;
     c.comment = false;
@@ -269,7 +269,7 @@ static void protegidos_aplicar_kernel(IPSetWrapper& ipset, const std::string& se
         }
         e.emplace_back(en.rango.texto, en.interfaz);
     }
-    const auto r = ipset.replace_net_iface(set, e, static_cast<uint32_t>(::mldefender::firewall::kProtegidosMaxEntradas));
+    const auto r = ipset.replace_net_iface(set, e, static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas));
     if (r) {
         std::cout << "[PROTEGIDOS-KERNEL] " << set << " = version " << m.version << ": " << e.size()
                   << " entradas cidr,interfaz (IPv6 solo en la barrera: " << v6 << "; DEBT-FW-IPV6-SETS-001)" << std::endl;
@@ -280,10 +280,10 @@ static void protegidos_aplicar_kernel(IPSetWrapper& ipset, const std::string& se
 }
 
 static void protegidos_infra(const ManifiestoVerificado& m, const FirewallAgentConfig& config) {
-    const auto f = ::mldefender::firewall::infra_sin_cubrir(m, config.protegidos.etcd_endpoints);
+    const auto f = ::argus::protegidos::infra_sin_cubrir(m, config.protegidos.etcd_endpoints);
     if (f.empty()) return;
     std::ostringstream o;
-    for (std::size_t i = 0; i < f.size(); ++i) o << (i ? " " : "") << ::mldefender::firewall::detalle_protegidos::saneado(f[i]);
+    for (std::size_t i = 0; i < f.size(); ++i) o << (i ? " " : "") << ::argus::protegidos::detalle_protegidos::saneado(f[i]);
     std::cerr << "[PROTEGIDOS-INFRA-INCOMPLETA] etcd.endpoints sin entrada infraestructura en el manifiesto version "
               << m.version << ": " << o.str() << " (un DDoS podría dejar al plano de control en el blacklist: firme una "
                  "versión que lo incluya con argus-infra)" << std::endl;
@@ -299,18 +299,18 @@ static void protegidos_cargar_cache(ProtegidosVigentes& v, IPSetWrapper& ipset, 
         return;
     }
     std::string sobre, err;
-    if (!::mldefender::firewall::leer_cache_protegidos(pc.manifiesto_cache, sobre, err)) {
+    if (!::argus::protegidos::leer_cache_protegidos(pc.manifiesto_cache, sobre, err)) {
         std::cerr << "[PROTEGIDOS-SIN-MANIFIESTO] caché " << pc.manifiesto_cache << ": " << err
                   << " (hospital=" << pc.hospital_id << " planta=" << pc.despliegue_id << "; candado cerrado)" << std::endl;
         return;
     }
     const auto p = v.proponer(sobre);
     if (!p.resultado.ok) {
-        std::cerr << "[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=" << ::mldefender::firewall::nombre_motivo(p.resultado.motivo)
+        std::cerr << "[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=" << ::argus::protegidos::nombre_motivo(p.resultado.motivo)
                   << " " << p.resultado.detalle << " (caché " << pc.manifiesto_cache << "; candado cerrado)" << std::endl;
         return;
     }
-    std::cout << ::mldefender::firewall::resumen_manifiesto(*p.resultado.manifiesto) << " (caché " << pc.manifiesto_cache
+    std::cout << ::argus::protegidos::resumen_manifiesto(*p.resultado.manifiesto) << " (caché " << pc.manifiesto_cache
               << ")" << std::endl;
     if (set_ok) protegidos_aplicar_kernel(ipset, pc.set_name, *p.resultado.manifiesto);
     protegidos_infra(*p.resultado.manifiesto, config);
@@ -330,13 +330,13 @@ static void protegidos_vigilar(const ProtegidosVigentes& v, const FirewallAgentC
         return;
     }
     std::string sobre, err;
-    if (!::mldefender::firewall::leer_cache_protegidos(pc.manifiesto_cache, sobre, err)) {
+    if (!::argus::protegidos::leer_cache_protegidos(pc.manifiesto_cache, sobre, err)) {
         std::cerr << "[PROTEGIDOS-CACHE] no se puede leer " << pc.manifiesto_cache << ": " << err
                   << "; se conserva en memoria la version " << m->version << " (D7)" << std::endl;
     } else {
         const auto r = v.reverificar(sobre);
         if (!r.ok) {
-            std::cerr << "[PROTEGIDOS-CACHE] la caché ya no verifica (motivo=" << ::mldefender::firewall::nombre_motivo(r.motivo)
+            std::cerr << "[PROTEGIDOS-CACHE] la caché ya no verifica (motivo=" << ::argus::protegidos::nombre_motivo(r.motivo)
                       << " " << r.detalle << "): se conserva en memoria la version " << m->version
                       << " (D7); vuelva a firmar con argus-infra" << std::endl;
         }
@@ -667,7 +667,7 @@ int main(int argc, char** argv) {
                     } else {
                         if (ipset_cfg.set_type != "hash:ip") {
                             std::cerr << "[CONFIG-DEFAULT] ipsets." << name << ".set_type '"
-                                      << ::mldefender::firewall::detalle_protegidos::saneado(ipset_cfg.set_type)
+                                      << ::argus::protegidos::detalle_protegidos::saneado(ipset_cfg.set_type)
                                       << "' no admitido (formato: hash:ip | hash:net): se usa hash:ip" << std::endl;
                         }
                         ipset_config.type = IPSetType::HASH_IP;
@@ -917,7 +917,7 @@ int main(int argc, char** argv) {
                       << (vig ? "manifiesto version " + std::to_string(vig->version) : std::string("NINGUNO: sin manifiesto verificado"))
                       << "):";
             for (const auto& r : protegidos->rangos()->rangos) {
-                std::cout << " " << ::mldefender::firewall::nombre_categoria(r.cat) << "=" << r.texto;
+                std::cout << " " << ::argus::protegidos::nombre_categoria(r.cat) << "=" << r.texto;
             }
             std::cout << " (DROP de la cabeza DDoS con origen protegido = ALERTA_PROTEGIDO, nunca bloqueo)" << std::endl;
         }

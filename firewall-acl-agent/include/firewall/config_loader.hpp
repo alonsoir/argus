@@ -10,7 +10,7 @@
 #include <chrono>
 #include <json/json.h>
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
-#include "firewall/ddos_protegidos.hpp"  // [PROTEGIDOS-D300]
+#include "protegidos/rangos.hpp"  // [PROTEGIDOS-D300]
 
 namespace mldefender::firewall {
 

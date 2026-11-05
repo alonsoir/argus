@@ -1,7 +1,7 @@
 // test_protegidos_manifiesto.cpp — [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.1a. Standalone, CHECK propio.
 // Clave desechable generada aquí (tests unitarios, DAY316). El formato de firma es el de Vault transit (vault:vN:<b64>);
 // la compatibilidad real con Vault 2.2.1 se midió en el banco DAY318 (BACKLOG [PROTEGIDOS-PUBKEY-D318]).
-#include "firewall/protegidos_manifiesto.hpp"
+#include "protegidos/manifiesto.hpp"
 
 #include <sodium.h>
 
@@ -10,7 +10,7 @@
 #include <string>
 #include <unistd.h>
 
-using namespace mldefender::firewall;
+using namespace argus::protegidos;
 using C = CategoriaProtegida;
 using M = MotivoRechazo;
 

@@ -1,4 +1,5 @@
-// ip_cidr_validator.hpp
+// common/include/argus/ip_cidr_validator.hpp (antes firewall-acl-agent/include/firewall/ip_cidr_validator.hpp)
+// [PROTEGIDOS-MANIFIESTO-D318] en common: también lo usan los rangos de libs/protegidos (firewall y etcd-server).
 // H-2 / DEBT-AUTONOMY-REACTOR-CWE78-001: validación única de IP/CIDR, compartida
 // por ipset_wrapper (frontera ipset restore) y config_loader (frontera de carga:
 // autonomy.whitelist_cidrs → system("iptables ... -s <cidr>")). Una allowlist,
@@ -9,7 +10,7 @@
 #include <arpa/inet.h>
 #include <sys/socket.h>
 
-namespace mldefender::firewall {
+namespace argus {
 
     /// SEGURIDAD: allowlist estricto [0-9a-fA-F.:/] ANTES de descomponer — excluye
     /// \n \r \t espacio ; $ ` | & ( ) y todo metacarácter de shell (cierra CWE-78
@@ -45,4 +46,4 @@ namespace mldefender::firewall {
         return true;
     }
 
-}  // namespace mldefender::firewall
+}  // namespace argus

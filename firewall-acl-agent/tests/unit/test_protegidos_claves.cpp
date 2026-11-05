@@ -1,13 +1,13 @@
 // test_protegidos_claves.cpp — [PROTEGIDOS-MANIFIESTO-D318] la clave pública compilada (CMake -> binario) es la que
 // se usa: la misma que trae la definición, en las dos ranuras. Standalone, CHECK propio.
-#include "firewall/protegidos_manifiesto.hpp"
+#include "protegidos/manifiesto.hpp"
 
 #include <sodium.h>
 
 #include <iostream>
 #include <string>
 
-using namespace mldefender::firewall;
+using namespace argus::protegidos;
 
 static int g_fallos = 0;
 static int g_checks = 0;

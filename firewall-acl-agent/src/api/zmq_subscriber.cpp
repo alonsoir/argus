@@ -622,7 +622,7 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                     mit_renovar_total_ += mit_renovar_;
                     std::cout << "[DDOS-MITIGACION] resumen: modo="
                               << (!config_.ddos_mitigacion.habilitada ? "deshabilitada"
-                                  : (::mldefender::firewall::candado_cerrado(true, config_.protegidos.get())
+                                  : (::argus::protegidos::candado_cerrado(true, config_.protegidos.get())
                                          ? "CANDADO" : (config_.dry_run ? "dry_run" : "ACTIVA")))
                               << " candado=" << mit_candado_
                               << " bloquear=" << mit_bloquear_ << " renovar=" << mit_renovar_
@@ -733,13 +733,13 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
         {   // [PROTEGIDOS-D300] origen protegido: ALERTA_PROTEGIDO; no entra en el episodio ni se bloquea nunca
             // [PROTEGIDOS-MANIFIESTO-D318] lo vigente del manifiesto; por IP siempre, venga por donde venga (D-G)
             const auto rg = config_.protegidos ? config_.protegidos->rangos() : nullptr;
-            const auto cat = rg ? rg->categoria_de(nf2.source_ip()) : ::mldefender::firewall::CategoriaProtegida::NINGUNA;
-            if (cat != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+            const auto cat = rg ? rg->categoria_de(nf2.source_ip()) : ::argus::protegidos::CategoriaProtegida::NINGUNA;
+            if (cat != ::argus::protegidos::CategoriaProtegida::NINGUNA) {
                 ++prot_alertas_[static_cast<std::size_t>(cat)];
                 if (prot_detalle_ < static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) {
                     ++prot_detalle_;
                     std::cout << "[SOMBRA-DDOS] ALERTA_PROTEGIDO origen=" << nf2.source_ip()
-                              << " categoria=" << ::mldefender::firewall::nombre_categoria(cat)
+                              << " categoria=" << ::argus::protegidos::nombre_categoria(cat)
                               << " victima=" << nf2.destination_ip() << " proto=" << nf2.protocol_number()
                               << " ts_s=" << ts_s << " ratio=" << ratio << " p1=" << p1 << " modelo=" << modelo
                               << " evento=" << event.event_id() << " (no se bloquea)" << std::endl;
@@ -764,7 +764,7 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
             const std::string& src = nf2.source_ip();
             using Accion = ::mldefender::firewall::AccionMitigacion;
             using Estado = ::mldefender::firewall::ResultadoEpisodio::Estado;
-            if (::mldefender::firewall::candado_cerrado(config_.ddos_mitigacion.habilitada, config_.protegidos.get())) {
+            if (::argus::protegidos::candado_cerrado(config_.ddos_mitigacion.habilitada, config_.protegidos.get())) {
                 ++mit_candado_;  // [PROTEGIDOS-MANIFIESTO-D318] D6: sin manifiesto verificado, la mitigación no actúa
                 return;
             }

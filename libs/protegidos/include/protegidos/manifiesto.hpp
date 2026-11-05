@@ -1,4 +1,4 @@
-// protegidos_manifiesto.hpp — [PROTEGIDOS-MANIFIESTO-D318] ADR-060 (DEBT-FW-MANIFIESTO-PROTEGIDOS-001), paso 8e.1a.
+// libs/protegidos/include/protegidos/manifiesto.hpp (antes firewall/protegidos_manifiesto.hpp; libs/protegidos, ADR-060 F-B) — [PROTEGIDOS-MANIFIESTO-D318] ADR-060 (DEBT-FW-MANIFIESTO-PROTEGIDOS-001), paso 8e.1a.
 // Manifiesto firmado de rangos protegidos, uno por hospital con sus plantas dentro (ADR-060, sección 6).
 //
 // Sobre (lo que viaja y se guarda en disco):
@@ -11,7 +11,7 @@
 // Funciones puras salvo leer_cache/escribir_cache: sin red ni kernel. Las usa el agente al arrancar (caché), al
 // re-verificar la caché (D7) y, desde 8e.3, al recibir un manifiesto del etcd-server.
 #pragma once
-#include "firewall/ddos_protegidos.hpp"
+#include "protegidos/rangos.hpp"
 #include <array>
 #include <cstdint>
 #include <memory>
@@ -20,7 +20,7 @@
 #include <string>
 #include <vector>
 
-namespace mldefender::firewall {
+namespace argus::protegidos {
 
 // Formato del sobre y límites de tamaño (parte del formato v1; no son parámetros de operación).
 inline constexpr const char* kProtegidosFormato = "argus-protegidos/v1";
@@ -136,4 +136,4 @@ bool escribir_cache_protegidos(const std::string& ruta, const std::string& sobre
 // infraestructura del manifiesto. Una entrada de endpoints mal formada se devuelve tal cual (también falta).
 std::vector<std::string> infra_sin_cubrir(const ManifiestoVerificado& m, const std::vector<std::string>& endpoints);
 
-}  // namespace mldefender::firewall
+}  // namespace argus::protegidos

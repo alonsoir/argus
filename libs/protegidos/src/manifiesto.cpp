@@ -1,5 +1,5 @@
-// protegidos_manifiesto.cpp — [PROTEGIDOS-MANIFIESTO-D318] ADR-060, paso 8e.1a. Ver la cabecera.
-#include "firewall/protegidos_manifiesto.hpp"
+// libs/protegidos/src/manifiesto.cpp (antes firewall-acl-agent/src/core/protegidos_manifiesto.cpp) — [PROTEGIDOS-MANIFIESTO-D318] ADR-060, paso 8e.1a. Ver la cabecera.
+#include "protegidos/manifiesto.hpp"
 
 #include <json/json.h>
 #include <sodium.h>
@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-namespace mldefender::firewall {
+namespace argus::protegidos {
 
 namespace {
 
@@ -598,4 +598,4 @@ std::vector<std::string> infra_sin_cubrir(const ManifiestoVerificado& m, const s
     return faltan;
 }
 
-}  // namespace mldefender::firewall
+}  // namespace argus::protegidos

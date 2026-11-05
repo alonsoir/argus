@@ -1,7 +1,7 @@
 // protegidos_claves.cpp — [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D3 (patrón ADR-025): la clave pública del manifiesto
 // de protegidos, compilada en el binario en dos ranuras. CMake la valida (64 hex) y sin la actual no compila; aquí se
 // convierte una vez. Si aun así llega mal formada, el agente no arranca: no hay defecto sano para una clave de confianza.
-#include "firewall/protegidos_manifiesto.hpp"
+#include "protegidos/manifiesto.hpp"
 
 #include <exception>
 #include <iostream>
@@ -13,7 +13,7 @@
 #error "ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX sin definir (vacía si no hay rotación en curso)"
 #endif
 
-namespace mldefender::firewall {
+namespace argus::protegidos {
 
 const ClavesProtegidos& claves_protegidos_compiladas() {
     static const ClavesProtegidos c = [] {
@@ -28,4 +28,4 @@ const ClavesProtegidos& claves_protegidos_compiladas() {
     return c;
 }
 
-}  // namespace mldefender::firewall
+}  // namespace argus::protegidos

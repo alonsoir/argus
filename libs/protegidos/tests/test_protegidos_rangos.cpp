@@ -1,12 +1,12 @@
-// test_ddos_protegidos.cpp — [PROTEGIDOS-D300] rangos protegidos: análisis de CIDR y pertenencia. Standalone, CHECK propio.
+// test_protegidos_rangos.cpp (antes test_ddos_protegidos.cpp del firewall) — [PROTEGIDOS-D300] rangos protegidos: análisis de CIDR y pertenencia. Standalone, CHECK propio.
 // [PROTEGIDOS-MANIFIESTO-D318] ADR-060: los rangos salen solo del manifiesto firmado (test_protegidos_manifiesto.cpp);
 // fuera construir_rangos_protegidos y el defecto RFC 1918, y con ellos sus casos.
-#include "firewall/ddos_protegidos.hpp"
+#include "protegidos/rangos.hpp"
 #include <iostream>
 #include <string>
 #include <vector>
 
-using namespace mldefender::firewall;
+using namespace argus::protegidos;
 using C = CategoriaProtegida;
 
 static int g_fallos = 0;
@@ -95,9 +95,9 @@ int main() {
     }
 
     if (g_fallos != 0) {
-        std::cerr << "test_ddos_protegidos: " << g_fallos << " FALLOS de " << g_checks << " comprobaciones" << std::endl;
+        std::cerr << "test_protegidos_rangos: " << g_fallos << " FALLOS de " << g_checks << " comprobaciones" << std::endl;
         return 1;
     }
-    std::cout << "OK test_ddos_protegidos: " << g_checks << " comprobaciones" << std::endl;
+    std::cout << "OK test_protegidos_rangos: " << g_checks << " comprobaciones" << std::endl;
     return 0;
 }

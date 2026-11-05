@@ -133,15 +133,13 @@ message(STATUS "✅ LZ4 found: ${LZ4_VERSION}")
 include_directories(${LZ4_INCLUDE_DIRS})
 
 # ============================================================================
-# [PROTEGIDOS-MANIFIESTO-D318] ADR-060: libsodium (verificación Ed25519 del manifiesto de protegidos), la compilada
-# desde el código fuente (1.0.19), como plugin-loader.
+# [PROTEGIDOS-MANIFIESTO-D318] ADR-060 F-B: verificador del manifiesto de protegidos y rangos en libs/protegidos,
+# compartido con el etcd-server. Estática y compilada aquí con las opciones de este binario (ver su CMakeLists.txt).
 # ============================================================================
-find_library(SODIUM_LIB sodium PATHS /usr/local/lib /usr/lib NO_DEFAULT_PATH)
-find_path(SODIUM_INCLUDE sodium.h PATHS /usr/local/include /usr/include NO_DEFAULT_PATH)
-if(NOT SODIUM_LIB OR NOT SODIUM_INCLUDE)
-    message(FATAL_ERROR "[PROTEGIDOS-CLAVE] libsodium no encontrada (lib=${SODIUM_LIB} include=${SODIUM_INCLUDE})")
-endif()
-message(STATUS "libsodium: ${SODIUM_LIB}")
+option(BUILD_TESTS "Build unit tests" ON)
+set(ARGUS_PROTEGIDOS_TESTS ${BUILD_TESTS} CACHE BOOL "Tests de libs/protegidos" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos ${CMAKE_CURRENT_BINARY_DIR}/libs-protegidos)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos/include)
 
 # ============================================================================
 # [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D3 / D-E: clave PÚBLICA del manifiesto de protegidos (Vault transit del
@@ -239,7 +237,6 @@ set(FIREWALL_CORE_SOURCES
         src/core/autonomy_reactor.cpp
         src/core/autonomy_subscriber.cpp
         src/core/clave_csv.cpp           # [FW-CSV-CLAVE-B2-D316] clave HMAC del CSV pedida cada intervalo
-        src/core/protegidos_manifiesto.cpp  # [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto (ADR-060)
         src/core/protegidos_claves.cpp      # [PROTEGIDOS-MANIFIESTO-D318] clave pública compilada (dos ranuras)
         # src/core/acl_intelligence.cpp     # TODO: Phase 2+
 )
@@ -306,9 +303,8 @@ target_include_directories(firewall_core
         /usr/local/include
 )
 
-# [PROTEGIDOS-MANIFIESTO-D318] verificación Ed25519 del manifiesto y clave pública compilada (ADR-060)
-target_include_directories(firewall_core PUBLIC ${SODIUM_INCLUDE})
-target_link_libraries(firewall_core PUBLIC ${SODIUM_LIB})
+# [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto (libs/protegidos) y clave pública compilada (ADR-060)
+target_link_libraries(firewall_core PUBLIC argus_protegidos)
 target_compile_definitions(firewall_core PRIVATE
         ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX="${ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX}"
         ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX="${ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX}")
@@ -372,10 +368,8 @@ install(FILES systemd/firewall-acl-agent.service
 )
 
 #===----------------------------------------------------------------------===//
-# Testing
+# Testing (BUILD_TESTS se declara arriba, con libs/protegidos)
 #===----------------------------------------------------------------------===//
-
-option(BUILD_TESTS "Build unit tests" ON)
 
 if(BUILD_TESTS)
     enable_testing()
@@ -465,41 +459,22 @@ if(BUILD_TESTS)
     target_include_directories(test_ip_cidr_validator
             PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/../common/include  # [PROTEGIDOS-MANIFIESTO-D318] argus/ip_cidr_validator.hpp
     )
     add_test(NAME test_ip_cidr_validator COMMAND test_ip_cidr_validator)
 
-    # test_ddos_protegidos — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
-    add_executable(test_ddos_protegidos
-            tests/unit/test_ddos_protegidos.cpp
-    )
-    target_include_directories(test_ddos_protegidos
-            PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
-    add_test(NAME test_ddos_protegidos COMMAND test_ddos_protegidos)
-    # [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto (ADR-060 8e.1a): clave desechable, CHECK propio
-    add_executable(test_protegidos_manifiesto
-            tests/unit/test_protegidos_manifiesto.cpp
-            src/core/protegidos_manifiesto.cpp
-    )
-    target_include_directories(test_protegidos_manifiesto PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-            ${JSONCPP_INCLUDE_DIRS} ${SODIUM_INCLUDE})
-    target_link_libraries(test_protegidos_manifiesto PRIVATE ${JSONCPP_LIBRARIES} ${SODIUM_LIB})
-    add_test(NAME test_protegidos_manifiesto COMMAND test_protegidos_manifiesto)
-    # [PROTEGIDOS-MANIFIESTO-D318] la clave compilada es la de CMake, en las dos ranuras
+    # [PROTEGIDOS-MANIFIESTO-D318] test_protegidos_rangos y test_protegidos_manifiesto viven en libs/protegidos
+    # (ARGUS_PROTEGIDOS_TESTS = BUILD_TESTS). Aquí, la clave compilada es la de CMake, en las dos ranuras
     add_executable(test_protegidos_claves
             tests/unit/test_protegidos_claves.cpp
-            src/core/protegidos_manifiesto.cpp
             src/core/protegidos_claves.cpp
     )
-    target_include_directories(test_protegidos_claves PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
-            ${JSONCPP_INCLUDE_DIRS} ${SODIUM_INCLUDE})
-    target_link_libraries(test_protegidos_claves PRIVATE ${JSONCPP_LIBRARIES} ${SODIUM_LIB})
+    target_link_libraries(test_protegidos_claves PRIVATE argus_protegidos)
     target_compile_definitions(test_protegidos_claves PRIVATE
             ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX="${ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX}"
             ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX="${ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX}")
     add_test(NAME test_protegidos_claves COMMAND test_protegidos_claves)
-# [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_ddos_protegidos)
+# [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_protegidos_rangos)
     # test_ddos_mitigacion — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
     add_executable(test_ddos_mitigacion
             tests/unit/test_ddos_mitigacion.cpp

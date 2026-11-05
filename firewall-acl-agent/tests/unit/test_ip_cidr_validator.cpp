@@ -4,11 +4,11 @@
 //       histórico "1.2.3.4/24\nadd evil ..." (la propiedad que cierra CWE-78).
 //   (B) ESTRUCTURAL: acepta IP/CIDR legítimos, rechaza prefijos fuera de rango.
 // Sin gtest: macro CHECK propio (compila en cualquier sitio, como add_newline_guard).
-#include "firewall/ip_cidr_validator.hpp"
+#include "argus/ip_cidr_validator.hpp"
 #include <cstdio>
 #include <string>
 
-using mldefender::firewall::is_valid_ip_cidr;
+using argus::is_valid_ip_cidr;
 
 static int g_fail = 0;
 static int g_checks = 0;
