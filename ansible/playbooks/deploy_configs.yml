@@ -47,10 +47,14 @@
           - etcd_almacen_endpoints | length > 0
           - argus_prefijo is defined
           - argus_prefijo is string
+          - argus_hospital_id is defined
+          - argus_hospital_id is string
+          - argus_hospital_id is match('^[a-z0-9-]{1,64}$')
         fail_msg: >-
           [ETCD-CONFIG-ENTORNO] {{ inventory_hostname }}: faltan o están mal etcd_almacen_endpoints (lista con TODOS los
           miembros etcd del despliegue, "https://IPv4:puerto") o argus_prefijo (texto, p. ej. /argus/<hospital>/<planta>/)
-          en el group_vars del inventario. No hay defecto: sin ellos no se despliega.
+          en el group_vars del inventario, o argus_hospital_id ([a-z0-9-], de 1 a 64: el hospital de este etcd-server,
+          ADR-060). No hay defecto: sin ellos no se despliega.
         quiet: true
 
     - name: "El binario del etcd-server está instalado (d312_etcd_vm_deploy.sh desde el Mac)"
@@ -64,11 +68,13 @@
         fail_msg: "[ETCD-CONFIG-ENTORNO] {{ inventory_hostname }}: no existe {{ es_bin }} (antes, desde el Mac: bash scripts/etcd_ha/d312_etcd_vm_deploy.sh)"
         quiet: true
 
-    - name: "JSON del repo con almacen.endpoints y almacen.prefijo del inventario"
+    # [PROTEGIDOS-MANIFIESTO-D318] y protegidos.hospital_id = argus_hospital_id (ADR-060 F-C: un etcd-server, un hospital)
+    - name: "JSON del repo con almacen.endpoints, almacen.prefijo y protegidos.hospital_id del inventario"
       set_fact:
         es_json: >-
           {{ lookup('file', es_json_repo) | from_json
-             | combine({'almacen': {'endpoints': etcd_almacen_endpoints, 'prefijo': argus_prefijo}}, recursive=True) }}
+             | combine({'almacen': {'endpoints': etcd_almacen_endpoints, 'prefijo': argus_prefijo},
+                        'protegidos': {'hospital_id': argus_hospital_id}}, recursive=True) }}
 
     - name: "Escribir {{ es_json_dest }} (validado antes con --check-config; nunca sigue un enlace)"
       copy:
@@ -87,4 +93,4 @@
 
     - name: "Configuración efectiva del almacén"
       debug:
-        msg: "{{ (es_chk.stdout_lines + es_chk.stderr_lines) | select('search', 'ETCD-CONFIG-CHECK|\\[ETCD-ALMACEN\\]') | list }}"
+        msg: "{{ (es_chk.stdout_lines + es_chk.stderr_lines) | select('search', 'ETCD-CONFIG-CHECK|\\[ETCD-ALMACEN\\]|\\[ETCD-PROTEGIDOS\\]') | list }}"

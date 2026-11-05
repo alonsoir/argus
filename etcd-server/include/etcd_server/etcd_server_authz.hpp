@@ -183,7 +183,9 @@ inline const char* kReglasDefecto = R"([
   {"metodo": "POST", "ruta": "/secrets/rotate/{c}",   "permitir": ["ou:admin"]},
   {"metodo": "GET",  "ruta": "/components",           "permitir": ["ou:admin"]},
   {"metodo": "GET",  "ruta": "/validate",             "permitir": ["ou:admin"]},
-  {"metodo": "GET",  "ruta": "/info",                 "permitir": ["ou:admin"]}
+  {"metodo": "GET",  "ruta": "/info",                 "permitir": ["ou:admin"]},
+  {"metodo": "GET",  "ruta": "/v1/protegidos",        "permitir": ["ou:firewall-acl-agent", "ou:argus-infra"]},
+  {"metodo": "PUT",  "ruta": "/v1/protegidos",        "permitir": ["ou:argus-infra"]}
 ])";
 
 namespace detalle {

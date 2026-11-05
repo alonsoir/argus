@@ -17,6 +17,7 @@ namespace httplib { class Server; }
 namespace etcd_server {
     class SecretsManager;
 }
+namespace argus::protegidos { class AlmacenProtegidos; }  // [PROTEGIDOS-MANIFIESTO-D318]
 
 //etcd-server/include/etcd_server/etcd_server.hpp
 class ComponentRegistry;
@@ -25,6 +26,7 @@ class EtcdServer {
 private:
     std::unique_ptr<ComponentRegistry> component_registry_;
     etcd_server::SecretsManager* secrets_manager_ = nullptr;  // Non-owning pointer
+    argus::protegidos::AlmacenProtegidos* protegidos_ = nullptr;  // [PROTEGIDOS-MANIFIESTO-D318] no propietario
     std::atomic<bool> running_{false};
     std::string host_;
     int port_;
@@ -48,6 +50,8 @@ public:
     void set_secrets_manager(etcd_server::SecretsManager* manager) {
         secrets_manager_ = manager;
     }
+    // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3b: GET/PUT /v1/protegidos (antes de initialize())
+    void set_protegidos(argus::protegidos::AlmacenProtegidos* p) { protegidos_ = p; }
     // [ETCD-AUTHZ-D313] crea el servidor (SSLServer con mTLS o, solo en transición, HTTP) y sus rutas.
     // Devuelve false si en modo mtls los certificados no se pueden cargar: sin TLS válido no se sirve.
     bool initialize();

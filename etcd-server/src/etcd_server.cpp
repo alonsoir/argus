@@ -8,6 +8,7 @@
 #include <iomanip>
 #include <chrono>
 #include "etcd_server/secrets_manager.hpp"
+#include "etcd_server/protegidos_servidor.hpp"  // [PROTEGIDOS-MANIFIESTO-D318]
 #include <fstream>
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
@@ -455,6 +456,33 @@ void EtcdServer::configurar_rutas() {
             {"next_heartbeat_expected", server_time + heartbeat_interval_seconds_}  // heartbeat.interval_seconds
         };
         res.set_content(response.dump(), "application/json");
+    });
+
+    // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3b (F-C): el manifiesto firmado de protegidos de ESTE hospital. Quién puede,
+    // en la tabla authz (GET: ou:firewall-acl-agent y ou:argus-infra; PUT: solo ou:argus-infra). La autenticidad sale
+    // de la firma, que se verifica aquí antes de guardar (defensa en profundidad) y otra vez en cada firewall.
+    server.Get("/v1/protegidos", [this, error](const httplib::Request& /*req*/, httplib::Response& res) {
+        if (protegidos_ == nullptr) {
+            error(res, 503, "manifiesto de protegidos no disponible en este etcd-server");
+            return;
+        }
+        const auto r = protegidos_->obtener();
+        res.status = r.http;
+        res.set_content(r.cuerpo, "application/json");
+    });
+    server.Put("/v1/protegidos", [this, error, con_tls](const httplib::Request& req, httplib::Response& res) {
+        if (protegidos_ == nullptr) {
+            error(res, 503, "manifiesto de protegidos no disponible en este etcd-server");
+            return;
+        }
+        std::string cn = "-";
+        if (con_tls) {
+            const auto id = identidad_de_peticion(req);
+            cn = id.valida ? id.cn : "?";
+        }
+        const auto r = protegidos_->publicar(req.body, cn);
+        res.status = r.http;
+        res.set_content(r.cuerpo, "application/json");
     });
 
     server.Get("/health", [](const httplib::Request& /*req*/, httplib::Response& res) {

@@ -2,6 +2,7 @@
 // Clave desechable generada aquí (tests unitarios, DAY316). El formato de firma es el de Vault transit (vault:vN:<b64>);
 // la compatibilidad real con Vault 2.2.1 se midió en el banco DAY318 (BACKLOG [PROTEGIDOS-PUBKEY-D318]).
 #include "protegidos/manifiesto.hpp"
+#include "ayuda_firma.hpp"
 
 #include <sodium.h>
 
@@ -11,6 +12,7 @@
 #include <unistd.h>
 
 using namespace argus::protegidos;
+using namespace argus::protegidos::prueba;
 using C = CategoriaProtegida;
 using M = MotivoRechazo;
 
@@ -24,51 +26,6 @@ static int g_checks = 0;
             ++g_fallos;                                                       \
         }                                                                     \
     } while (0)
-
-struct Par {
-    unsigned char pk[crypto_sign_PUBLICKEYBYTES];
-    unsigned char sk[crypto_sign_SECRETKEYBYTES];
-    Par() { crypto_sign_keypair(pk, sk); }
-    std::string hex() const {
-        char h[crypto_sign_PUBLICKEYBYTES * 2 + 1];
-        sodium_bin2hex(h, sizeof h, pk, sizeof pk);
-        return h;
-    }
-};
-
-static std::string b64(const std::string& d) {
-    std::string o(sodium_base64_ENCODED_LEN(d.size(), sodium_base64_VARIANT_ORIGINAL), '\0');
-    sodium_bin2base64(o.data(), o.size(), reinterpret_cast<const unsigned char*>(d.data()), d.size(),
-                      sodium_base64_VARIANT_ORIGINAL);
-    o.resize(o.size() - 1);
-    return o;
-}
-
-static std::string firmar(const Par& p, const std::string& carga, int v = 1) {
-    unsigned char sig[crypto_sign_BYTES];
-    crypto_sign_detached(sig, nullptr, reinterpret_cast<const unsigned char*>(carga.data()), carga.size(), p.sk);
-    return "vault:v" + std::to_string(v) + ":" + b64(std::string(reinterpret_cast<const char*>(sig), sizeof sig));
-}
-
-static std::string sobre(const std::string& carga, const std::string& firma, const std::string& extra = "") {
-    return "{\"formato\":\"argus-protegidos/v1\",\"carga_b64\":\"" + b64(carga) + "\",\"firma\":\"" + firma + "\"" + extra + "}";
-}
-
-static std::string entrada(const std::string& cat, const std::string& cidr, const std::string& iface = "eth2",
-                           const std::string& mac = "", const std::string& motivo = "prueba") {
-    return "{\"categoria\":\"" + cat + "\",\"cidr\":\"" + cidr + "\",\"interfaz\":\"" + iface + "\",\"mac\":\"" + mac +
-           "\",\"motivo\":\"" + motivo + "\"}";
-}
-
-static std::string carga(uint64_t version, const std::string& planta_lab, const std::string& comun = "",
-                         const std::string& limites = "{\"infraestructura\":32,\"intranet\":24,\"dmz\":24,\"externos_criticos\":32}",
-                         const std::string& hospital = "hospital-lab", const std::string& extra = "",
-                         const std::string& otras_plantas = "") {
-    return "{\"esquema\":1,\"hospital_id\":\"" + hospital + "\",\"version\":" + std::to_string(version) +
-           ",\"emitido_utc\":\"2026-11-05T08:00:00Z\",\"firmante\":\"argus-infra\",\"motivo\":\"alta del lab\","
-           "\"hash_anterior\":\"\",\"limites\":" + limites + ",\"comun\":[" + comun + "],\"plantas\":{\"lab-vagrant\":[" +
-           planta_lab + "]" + otras_plantas + "}" + extra + "}";
-}
 
 static bool rech(const ResultadoVerificacion& r, MotivoRechazo m) { return !r.ok && r.motivo == m; }
 
@@ -303,6 +260,30 @@ int main() {
         CHECK(v.proponer(sobre(c2, firmar(a, c2))).resultado.ok);
         CHECK(v.rangos()->rangos.size() == 1 && v.rangos()->categoria_de("192.168.100.20") == C::NINGUNA);
         CHECK(r1->rangos.size() == 2);   // quien tenía la copia anterior la conserva entera
+    }
+    // 10c. [8e.3b] documento entero (etcd-server): sin planta; lo que rechazaría cualquier firewall, lo rechaza
+    {
+        const std::string otra_ok = ",\"planta-2\":[" + entrada("intranet", "10.1.0.0/24", "eth1") + "]";
+        const std::string c1 = carga(3, kLab, "", "{\"infraestructura\":32,\"intranet\":24,\"dmz\":24,\"externos_criticos\":32}",
+                                     "hospital-lab", "", otra_ok);
+        const auto r = verificar_documento(sobre(c1, firmar(a, c1)), solo_a, "hospital-lab", 2);
+        CHECK(r.ok && r.manifiesto && r.manifiesto->planta.empty() && r.manifiesto->version == 3);
+        CHECK(r.ok && r.manifiesto->entradas.size() == 3);   // comun (0) + lab-vagrant (2) + planta-2 (1)
+        CHECK(rech(verificar_documento(sobre(c1, firmar(a, c1)), solo_a, "hospital-lab", 3), M::VERSION));
+        CHECK(rech(verificar_documento(sobre(c1, firmar(a, c1)), solo_a, "otro-hospital", 0), M::HOSPITAL));
+        CHECK(rech(verificar_documento(sobre(c1, firmar(otra, c1)), solo_a, "hospital-lab", 0), M::FIRMA));
+        // En OTRA planta, la misma red e interfaz que en comun: el firewall de lab-vagrant lo aceptaría, el servidor no
+        const std::string comun = entrada("intranet", "10.9.0.0/24", "eth1");
+        const std::string otra_mal = ",\"planta-2\":[" + entrada("intranet", "10.9.0.0/24", "eth1") + "]";
+        const std::string c2 = carga(4, kLab, comun, "{\"infraestructura\":32,\"intranet\":24,\"dmz\":24,\"externos_criticos\":32}",
+                                     "hospital-lab", "", otra_mal);
+        CHECK(verificar_manifiesto(sobre(c2, firmar(a, c2)), solo_a, "hospital-lab", "lab-vagrant", 0).ok);
+        CHECK(rech(verificar_documento(sobre(c2, firmar(a, c2)), solo_a, "hospital-lab", 0), M::FORMATO));
+        // Sin ninguna planta
+        std::string c3 = carga(5, kLab);
+        const std::string pl = "\"plantas\":{\"lab-vagrant\":[" + kLab + "]}";
+        c3.replace(c3.find(pl), pl.size(), "\"plantas\":{}");
+        CHECK(rech(verificar_documento(sobre(c3, firmar(a, c3)), solo_a, "hospital-lab", 0), M::PLANTA));
     }
     // 11. Caché: escribir y leer; ausente; enlace simbólico; tamaño
     {

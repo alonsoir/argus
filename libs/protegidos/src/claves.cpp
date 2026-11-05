@@ -1,4 +1,4 @@
-// protegidos_claves.cpp — [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D3 (patrón ADR-025): la clave pública del manifiesto
+// libs/protegidos/src/claves.cpp (antes firewall-acl-agent/src/core/protegidos_claves.cpp) — [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D3 (patrón ADR-025): la clave pública del manifiesto
 // de protegidos, compilada en el binario en dos ranuras. CMake la valida (64 hex) y sin la actual no compila; aquí se
 // convierte una vez. Si aun así llega mal formada, el agente no arranca: no hay defecto sano para una clave de confianza.
 #include "protegidos/manifiesto.hpp"

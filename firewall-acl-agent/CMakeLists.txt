@@ -141,46 +141,6 @@ set(ARGUS_PROTEGIDOS_TESTS ${BUILD_TESTS} CACHE BOOL "Tests de libs/protegidos" 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos ${CMAKE_CURRENT_BINARY_DIR}/libs-protegidos)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos/include)
 
-# ============================================================================
-# [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D3 / D-E: clave PÚBLICA del manifiesto de protegidos (Vault transit del
-# hospital), compilada en dos ranuras (patrón ADR-025). No es un secreto. Sin la ranura actual NO se compila: no hay
-# defecto sano para una clave de confianza.
-#   -DARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX=<64 hex>     (producción: la pasa Jenkins)
-#   -DARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX=<64 hex>  (solo durante una rotación; si no, vacía)
-# Sin -D se leen de /etc/ml-defender/firewall-acl-agent/protegidos_pubkey_{actual,siguiente}.hex; en el lab los
-# trae de la VM etcd `make protegidos-pubkey` (bootstrap [4b/8]).
-# ============================================================================
-set(ARGUS_PROTEGIDOS_PUBKEY_DIR /etc/ml-defender/firewall-acl-agent)
-foreach(RANURA ACTUAL SIGUIENTE)
-    string(TOLOWER ${RANURA} ranura)
-    set(_fich ${ARGUS_PROTEGIDOS_PUBKEY_DIR}/protegidos_pubkey_${ranura}.hex)
-    if(DEFINED ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX)
-        set(_origen "-D")
-    elseif(EXISTS ${_fich})
-        file(READ ${_fich} _v)
-        string(STRIP "${_v}" _v)
-        set(ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX "${_v}")
-        set(_origen "fichero ${_fich}")
-    else()
-        set(ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX "")
-        set(_origen "ausente: ni -D ni ${_fich}")
-    endif()
-    set(_v "${ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX}")
-    if(RANURA STREQUAL "ACTUAL" AND _v STREQUAL "")
-        message(FATAL_ERROR "[PROTEGIDOS-CLAVE] falta la clave pública ACTUAL del manifiesto de protegidos (${_origen}). "
-                            "Lab: make protegidos-pubkey desde el Mac. Producción: -DARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX=<64 hex>")
-    endif()
-    string(LENGTH "${_v}" _n)
-    if(NOT _v STREQUAL "" AND (NOT _n EQUAL 64 OR NOT _v MATCHES "^[0-9a-f]+$"))
-        message(FATAL_ERROR "[PROTEGIDOS-CLAVE] clave pública ${RANURA} mal formada (${_origen}): 64 caracteres hex en minúsculas")
-    endif()
-    if(_v STREQUAL "")
-        message(STATUS "[PROTEGIDOS-CLAVE] ${RANURA}: ninguna (${_origen})")
-    else()
-        string(SUBSTRING "${_v}" 0 16 _ini)
-        message(STATUS "[PROTEGIDOS-CLAVE] ${RANURA}: ${_ini}... (${_origen})")
-    endif()
-endforeach()
 
 # ============================================================================
 # etcd-client Library (Custom)
@@ -237,7 +197,6 @@ set(FIREWALL_CORE_SOURCES
         src/core/autonomy_reactor.cpp
         src/core/autonomy_subscriber.cpp
         src/core/clave_csv.cpp           # [FW-CSV-CLAVE-B2-D316] clave HMAC del CSV pedida cada intervalo
-        src/core/protegidos_claves.cpp      # [PROTEGIDOS-MANIFIESTO-D318] clave pública compilada (dos ranuras)
         # src/core/acl_intelligence.cpp     # TODO: Phase 2+
 )
 
@@ -303,11 +262,8 @@ target_include_directories(firewall_core
         /usr/local/include
 )
 
-# [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto (libs/protegidos) y clave pública compilada (ADR-060)
-target_link_libraries(firewall_core PUBLIC argus_protegidos)
-target_compile_definitions(firewall_core PRIVATE
-        ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX="${ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX}"
-        ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX="${ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX}")
+# [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto y clave pública compilada (libs/protegidos, ADR-060)
+target_link_libraries(firewall_core PUBLIC argus_protegidos argus_protegidos_clave)
 
 #===----------------------------------------------------------------------===//
 # Main Executable (Day 50: Enhanced)
@@ -463,17 +419,8 @@ if(BUILD_TESTS)
     )
     add_test(NAME test_ip_cidr_validator COMMAND test_ip_cidr_validator)
 
-    # [PROTEGIDOS-MANIFIESTO-D318] test_protegidos_rangos y test_protegidos_manifiesto viven en libs/protegidos
-    # (ARGUS_PROTEGIDOS_TESTS = BUILD_TESTS). Aquí, la clave compilada es la de CMake, en las dos ranuras
-    add_executable(test_protegidos_claves
-            tests/unit/test_protegidos_claves.cpp
-            src/core/protegidos_claves.cpp
-    )
-    target_link_libraries(test_protegidos_claves PRIVATE argus_protegidos)
-    target_compile_definitions(test_protegidos_claves PRIVATE
-            ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX="${ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX}"
-            ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX="${ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX}")
-    add_test(NAME test_protegidos_claves COMMAND test_protegidos_claves)
+    # [PROTEGIDOS-MANIFIESTO-D318] test_protegidos_rangos, _manifiesto y _claves viven en libs/protegidos
+    # (ARGUS_PROTEGIDOS_TESTS = BUILD_TESTS)
 # [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_protegidos_rangos)
     # test_ddos_mitigacion — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
     add_executable(test_ddos_mitigacion

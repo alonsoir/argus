@@ -158,7 +158,16 @@ set(SOURCES
         src/secrets_manager.cpp
         src/etcd_registry_store.cpp
         src/vault_secret_store.cpp
+        src/protegidos_servidor.cpp   # [PROTEGIDOS-MANIFIESTO-D318] GET/PUT /v1/protegidos (ADR-060 8e.3b)
 )
+
+# ============================================================================
+# [PROTEGIDOS-MANIFIESTO-D318] ADR-060 F-A/F-B: el verificador del manifiesto de protegidos (libs/protegidos, estática,
+# compilada con las opciones de este binario) y la clave pública compilada, la misma que el firewall-acl-agent: -D o el
+# fichero que deja el bootstrap en el defender, donde se compilan los dos. Sin la clave actual no compila.
+# ============================================================================
+set(ARGUS_PROTEGIDOS_TESTS OFF CACHE BOOL "Tests de libs/protegidos (los corre el firewall-acl-agent)" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos ${CMAKE_CURRENT_BINARY_DIR}/libs-protegidos)
 
 # ============================================================================
 # ETCD-CPP-APIV3 v0.15.3 (gRPC + TLS hacia el etcd real) [ETCD-REGISTRO-D313]
@@ -208,6 +217,7 @@ target_link_libraries(etcd-server
         crypto_transport
         seed_client
         ${CRYPTO_PROVIDER_LIB}
+        argus_protegidos_clave   # [PROTEGIDOS-MANIFIESTO-D318] (arrastra argus_protegidos)
         sodium
         lz4
         ${OPENSSL_LIBRARIES}
@@ -397,6 +407,16 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
             ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
     target_link_libraries(test_almacen_claves PRIVATE GTest::gtest_main Threads::Threads OpenSSL::SSL OpenSSL::Crypto)
     add_test(NAME test_almacen_claves COMMAND test_almacen_claves)
+    # [PROTEGIDOS-MANIFIESTO-D318] GET/PUT del manifiesto de protegidos sobre MemoriaRegistryStore (sin red): publicar,
+    # versión no mayor, ya existe, firma, hospital, planta con duplicado, almacén caído, vigente que ya no verifica,
+    # sin configurar; clave desechable generada en el test (ayudantes de libs/protegidos/tests)
+    add_executable(test_protegidos_servidor tests/test_protegidos_servidor.cpp src/protegidos_servidor.cpp)
+    target_include_directories(test_protegidos_servidor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos/tests ${LIBSODIUM_INCLUDE_DIRS})
+    target_compile_definitions(test_protegidos_servidor PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_protegidos_servidor PRIVATE GTest::gtest_main argus_protegidos sodium)
+    add_test(NAME test_protegidos_servidor COMMAND test_protegidos_servidor)
     # target_include_directories(test_hmac_integration
     #         PRIVATE
     #         ${CMAKE_CURRENT_SOURCE_DIR}/include

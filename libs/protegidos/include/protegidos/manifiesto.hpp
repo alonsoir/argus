@@ -57,7 +57,7 @@ struct EntradaProtegida {
 struct ManifiestoVerificado {
     uint64_t version = 0;
     std::string hospital_id;
-    std::string planta;          // despliegue_id de este firewall
+    std::string planta;          // despliegue_id de este firewall (vacía en verificar_documento)
     std::string firmante;
     std::string emitido_utc;
     std::string motivo;
@@ -86,6 +86,12 @@ struct ResultadoVerificacion {
 ResultadoVerificacion verificar_manifiesto(const std::string& sobre, const ClavesProtegidos& claves,
                                            const std::string& hospital_id, const std::string& planta,
                                            uint64_t version_aplicada);
+// [PROTEGIDOS-MANIFIESTO-D318] 8e.3b, documento entero sin planta (el etcd-server antes de guardarlo, ADR-060 F-D):
+// misma firma, formato, límites y hospital, y versión > version_aplicada; además trae al menos una planta y ninguna,
+// sumada a "comun", repite red en la misma interfaz. Lo que rechazaría cualquier firewall del hospital, lo rechaza.
+// manifiesto->planta queda vacía; manifiesto->entradas = comun + todas las plantas.
+ResultadoVerificacion verificar_documento(const std::string& sobre, const ClavesProtegidos& claves,
+                                          const std::string& hospital_id, uint64_t version_aplicada);
 
 // Línea de log [PROTEGIDOS-MANIFIESTO] verificado ... (sin la carga).
 std::string resumen_manifiesto(const ManifiestoVerificado& m);

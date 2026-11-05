@@ -303,9 +303,10 @@ RangosProtegidos ManifiestoVerificado::rangos() const {
     return out;
 }
 
-ResultadoVerificacion verificar_manifiesto(const std::string& sobre, const ClavesProtegidos& claves,
-                                           const std::string& hospital_id, const std::string& planta,
-                                           uint64_t version_aplicada) {
+namespace {
+// [PROTEGIDOS-MANIFIESTO-D318] planta == nullptr: documento entero (etcd-server, 8e.3b); si no, para ESE firewall
+ResultadoVerificacion verificar(const std::string& sobre, const ClavesProtegidos& claves, const std::string& hospital_id,
+                                const std::string* planta_p, uint64_t version_aplicada) {
     if (sodium_init() < 0) return rechazo(MotivoRechazo::FIRMA, "libsodium no inicializa");
     if (sobre.size() > kProtegidosMaxSobreBytes) {
         return rechazo(MotivoRechazo::FORMATO, "sobre de " + std::to_string(sobre.size()) + " bytes (máximo " +
@@ -419,17 +420,32 @@ ResultadoVerificacion verificar_manifiesto(const std::string& sobre, const Clave
     if (version <= version_aplicada) {
         return rechazo(MotivoRechazo::VERSION, "version " + std::to_string(version) + " <= la aplicada " + std::to_string(version_aplicada));
     }
-    if (!plantas.isMember(planta)) {
-        return rechazo(MotivoRechazo::PLANTA, "el manifiesto no trae la planta '" + detalle_protegidos::saneado(planta) + "'");
-    }
     auto m = std::make_shared<ManifiestoVerificado>();
     std::size_t total2 = 0;
-    validar_entradas(c["comun"], "comun", lim, true, &m->entradas, total2);
-    validar_entradas(plantas[planta], "plantas." + planta, lim, false, &m->entradas, total2);
-    if (auto r = repetidas(m->entradas)) return rechazo(MotivoRechazo::FORMATO, "carga: " + *r);
+    if (planta_p != nullptr) {
+        const std::string& planta = *planta_p;
+        if (!plantas.isMember(planta)) {
+            return rechazo(MotivoRechazo::PLANTA, "el manifiesto no trae la planta '" + detalle_protegidos::saneado(planta) + "'");
+        }
+        validar_entradas(c["comun"], "comun", lim, true, &m->entradas, total2);
+        validar_entradas(plantas[planta], "plantas." + planta, lim, false, &m->entradas, total2);
+        if (auto r = repetidas(m->entradas)) return rechazo(MotivoRechazo::FORMATO, "carga: " + *r);
+        m->planta = planta;
+    } else {
+        // Documento entero: lo que rechazaría CUALQUIER firewall del hospital lo rechaza el servidor
+        if (plantas.getMemberNames().empty()) return rechazo(MotivoRechazo::PLANTA, "el manifiesto no trae ninguna planta");
+        validar_entradas(c["comun"], "comun", lim, true, &m->entradas, total2);
+        for (const auto& p : plantas.getMemberNames()) {
+            std::vector<EntradaProtegida> una;
+            std::size_t t3 = 0;
+            validar_entradas(c["comun"], "comun", lim, true, &una, t3);
+            validar_entradas(plantas[p], "plantas." + p, lim, false, &una, t3);
+            if (auto r = repetidas(una)) return rechazo(MotivoRechazo::FORMATO, "carga: planta " + p + ": " + *r);
+            validar_entradas(plantas[p], "plantas." + p, lim, false, &m->entradas, total2);
+        }
+    }
     m->version = version;
     m->hospital_id = c["hospital_id"].asString();
-    m->planta = planta;
     m->firmante = c["firmante"].asString();
     m->emitido_utc = c["emitido_utc"].asString();
     m->motivo = c["motivo"].asString();
@@ -442,6 +458,18 @@ ResultadoVerificacion verificar_manifiesto(const std::string& sobre, const Clave
     r.ok = true;
     r.manifiesto = m;
     return r;
+}
+}  // namespace
+
+ResultadoVerificacion verificar_manifiesto(const std::string& sobre, const ClavesProtegidos& claves,
+                                           const std::string& hospital_id, const std::string& planta,
+                                           uint64_t version_aplicada) {
+    return verificar(sobre, claves, hospital_id, &planta, version_aplicada);
+}
+
+ResultadoVerificacion verificar_documento(const std::string& sobre, const ClavesProtegidos& claves,
+                                          const std::string& hospital_id, uint64_t version_aplicada) {
+    return verificar(sobre, claves, hospital_id, nullptr, version_aplicada);
 }
 
 std::string resumen_manifiesto(const ManifiestoVerificado& m) {

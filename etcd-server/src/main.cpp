@@ -12,6 +12,7 @@
 #include "etcd_server/etcd_registry_store.hpp"
 #include "etcd_server/etcd_server_claves.hpp"   // [ETCD-CLAVES-D314]
 #include "etcd_server/vault_secret_store.hpp"   // [ETCD-CLAVES-D314]
+#include "etcd_server/protegidos_servidor.hpp"   // [PROTEGIDOS-MANIFIESTO-D318]
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <csignal>
@@ -28,6 +29,8 @@
 #include <iomanip>
 #include <cstdio>
 
+// [PROTEGIDOS-MANIFIESTO-D318] declarado ANTES que g_server: se destruye después (el servidor lo usa hasta pararse)
+std::unique_ptr<argus::protegidos::AlmacenProtegidos> g_protegidos;
 std::unique_ptr<EtcdServer> g_server;
 std::shared_ptr<etcd_server::SecretsManager> g_secrets_manager;
 
@@ -93,8 +96,10 @@ int main(int argc, char** argv) {
     // ausentes o mal formados en modo vault: [ETCD-VAULT-FATAL], no se arranca (decisión de Alonso DAY314)
     const auto leida_claves = argus::etcdcfg::parse_almacen_claves_config(root);
     const auto& claves_cfg = leida_claves.cfg;
+    // [PROTEGIDOS-MANIFIESTO-D318] bloque protegidos (hospital_id; sin defecto sano: ausente = 503 en /v1/protegidos)
+    const auto leida_protegidos = argus::protegidos::parse_protegidos_config(root, std::cerr, std::cout);
     const int defectos = leida.defectos + leida_tls.defectos + leida_authz.defectos + leida_almacen.defectos +
-                         leida_claves.defectos;
+                         leida_claves.defectos + leida_protegidos.defectos;
     if (defectos > 0) {
         std::cerr << "[CONFIG-DEFAULT] " << defectos << " ajustes con valor por defecto en " << config_path
                   << ": revisarlo" << std::endl;
@@ -349,6 +354,28 @@ int main(int argc, char** argv) {
         g_server = std::make_unique<EtcdServer>(cfg, tls, std::move(leida_authz.reglas), almacen_cfg,
                                                 std::move(almacen), config_path);
         g_server->set_secrets_manager(g_secrets_manager.get());
+
+        // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3b: el manifiesto de protegidos, en el mismo etcd que el registro (su
+        // propio cliente) y verificado con la clave pública compilada (F-A, la misma que el firewall-acl-agent)
+        {
+            const auto& k = argus::protegidos::claves_protegidos_compiladas();
+            std::cout << "[PROTEGIDOS-CLAVE] actual huella=" << argus::protegidos::huella_clave_protegidos(k.actual)
+                      << (k.hay_siguiente ? " siguiente huella=" + argus::protegidos::huella_clave_protegidos(k.siguiente)
+                                          : std::string(" siguiente=ninguna"))
+                      << " (compiladas) hospital=" << (leida_protegidos.cfg.hospital_id.empty()
+                                                           ? std::string("SIN CONFIGURAR (503)")
+                                                           : leida_protegidos.cfg.hospital_id)
+                      << std::endl;
+            std::unique_ptr<argus::almacen::IRegistryStore> almacen_prot;
+            if (almacen_cfg.modo == "etcd") {
+                almacen_prot = std::make_unique<argus::almacen::EtcdRegistryStore>(almacen_cfg);
+            } else {
+                almacen_prot = std::make_unique<argus::almacen::MemoriaRegistryStore>();
+            }
+            g_protegidos = std::make_unique<argus::protegidos::AlmacenProtegidos>(
+                std::move(almacen_prot), k, leida_protegidos.cfg.hospital_id, std::cout);
+            g_server->set_protegidos(g_protegidos.get());
+        }
 
         if (!g_server->initialize()) {
             std::cerr << "❌ Error inicializando etcd-server" << std::endl;
