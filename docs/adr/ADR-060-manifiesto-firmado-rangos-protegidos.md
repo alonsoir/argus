@@ -1,10 +1,10 @@
-# ADR-060 — Manifiesto firmado de rangos protegidos, uno por despliegue
+# ADR-060 — Manifiesto firmado de rangos protegidos, uno por hospital
 
 | Campo | Valor |
 |---|---|
 | **ADR** | 060 |
 | **Fecha** | 2026-11-04 (DAY 317) |
-| **Estado** | Propuesto (decisiones de Alonso DAY317; diseño fino de 8e.1 por revisar DAY318) |
+| **Estado** | Aceptado (decisiones de Alonso DAY317; diseño fino cerrado DAY318, sección 6) |
 | **Decisión final** | Alonso |
 | **Rama / PR** | `feat/etcd-mtls-vault`, PR1 de DEBT-ETCD-HA-TLS-RAFT-001 (pasos 8e.1–8e.5) |
 | **Deuda** | DEBT-FW-MANIFIESTO-PROTEGIDOS-001 |
@@ -52,14 +52,18 @@ bloqueado una hora a la VM etcd y, con ella, el HTTPS del etcd-server, es decir,
 
 ## 2. Decisión
 
-**D1. Un manifiesto por despliegue, en un solo sitio.** Todas las listas protegidas salen de un único manifiesto
-firmado por despliegue, con cuatro categorías: `infraestructura` (nueva: el plano de control de aRGus, etcd,
+**D1. Un manifiesto por hospital, en un solo sitio.** Todas las listas protegidas salen de un único manifiesto
+firmado por hospital, con sus plantas dentro (DAY318, sección 6), con cuatro categorías: `infraestructura` (nueva: el plano de control de aRGus, etcd,
 etcd-server, Vault), `intranet`, `dmz`, `externos_criticos`. `ddos_protegidos` desaparece de `firewall.json` (lo
 deprecado se borra). Las categorías se mantienen separadas para contar y para aplicar a cada una su política.
 
 **D2. Entradas estrechas.** Cada entrada: `{cidr, interfaz, mac?, motivo}`.
-- `interfaz` obligatoria: un paquete con origen protegido que llega por otra interfaz no se protege nunca y dispara
-  la alerta de spoofing (vale aunque haya routers por medio).
+- `interfaz` obligatoria: un paquete con origen protegido que llega por otra interfaz es falso por construcción: no
+  recibe la exención del kernel, se descarta en `raw PREROUTING` (antispoofing, D8, 8e.4) y dispara la alerta de
+  spoofing (vale aunque haya routers por medio). Precisión DAY318: la barrera de usuario (suscriptor y
+  `BatchProcessor`) protege por IP siempre, venga por donde venga; si no, falsificar el origen de un protegido
+  bastaría para que aRGus lo bloqueara, que es el DoS que este ADR evita. Un host con varias interfaces legítimas
+  lleva una entrada por interfaz.
 - `mac` opcional, cuando el host está en el mismo segmento L2 que el firewall; una IP protegida con otra MAC es alerta
   de spoofing. (Más allá de un router la MAC que se ve es la del router: por eso es opcional.)
 - La plantilla de despliegue fija **el prefijo más amplio permitido por categoría**. `infraestructura`: solo /32 y
@@ -69,13 +73,14 @@ deprecado se borra). Las categorías se mantienen separadas para contar y para a
 **D3. Firma asimétrica, clave por hospital.**
 - Ed25519, no HMAC: con HMAC el verificador tendría el secreto y un malware en el defender podría firmar.
 - Clave privada en **Vault transit**, no exportable, una por **hospital**: el límite de daño coincide con el límite de
-  confianza (las plantas de un hospital comparten administración). Lo que separa las plantas es el `despliegue_id`
-  del manifiesto. Descartadas: una por planta (más imágenes sin más seguridad real) y una para todos los hospitales
+  confianza (las plantas de un hospital comparten administración). Lo que separa las plantas es su sección dentro
+  del manifiesto (`plantas.<despliegue_id>`). Descartadas: una por planta (más imágenes sin más seguridad real) y una para todos los hospitales
   (comprometerla los expone a todos).
 - Clave pública **compilada en el firewall-acl-agent** (patrón ADR-025), inyectada por Jenkins en la compilación de la
   imagen del hospital. No es un fichero que se pueda cambiar: para cambiarla hay que cambiar el binario, que vigilan
   Falco y la verificación de la imagen. Dos ranuras compiladas (actual y siguiente) para rotar sin dejar a los
-  firewalls sin poder verificar mientras llega la imagen nueva.
+  firewalls sin poder verificar mientras llega la imagen nueva. El agente prueba las dos; el sobre no dice cuál
+  (DAY318).
 
 **D4. Contra la reproducción y el deshacer sin firma.**
 - `version` entera que solo crece. El firewall rechaza toda versión ≤ la última aplicada; el etcd-server también.
@@ -90,10 +95,10 @@ deprecado se borra). Las categorías se mantienen separadas para contar y para a
    Vault solo acepta desde el CIDR autorizado (`token_bound_cidrs`) y lo registra en su audit device: quién, cuándo,
    desde qué IP.
 2. Publica con `PUT` al etcd-server por mTLS con certificado de admin. El etcd-server verifica la firma, el
-   `despliegue_id` y la versión antes de guardarlo en etcd (defensa en profundidad; la autenticidad sale de la firma,
+   `hospital_id` y la versión antes de guardarlo en etcd (defensa en profundidad; la autenticidad sale de la firma,
    no del transporte).
 3. Cada firewall-acl-agent del despliegue lo recoge con su etcd-client. Verifica firma (clave compilada), versión >
-   última aplicada, `despliegue_id` propio y límites. Si cuadra, aplica de forma atómica, registra `[INFRA-CAMBIO]`
+   última aplicada, `hospital_id` propio, que esté su planta y límites. Si cuadra, aplica de forma atómica, registra `[INFRA-CAMBIO]`
    (firmante, fecha, versión anterior y nueva, diferencias) y lanza la alerta nuclear de cambio.
 4. Cada firewall informa en su latido de la versión aplicada. `pipeline-status` y la futura consola muestran qué
    firewall va desfasado.
@@ -112,7 +117,10 @@ no puede ser una gota en el océano.
 **D8. Vigilancia "como halcones".**
 - Comprobación continua: cada N s (en el JSON, con rango y defecto) el agente compara el ipset del kernel con el
   manifiesto. Cualquier diferencia es alarma y la entrada no firmada pierde la protección.
-- Spoofing por interfaz o MAC (D2): alerta nuclear, no se protege.
+- Spoofing por interfaz o MAC (D2): alerta nuclear y descarte en `raw PREROUTING` generado desde el manifiesto: una
+  regla por entrada (origen protegido que no entra por su interfaz = DROP), con contador por regla, resumen
+  periódico y muestra de los primeros paquetes como evidencia. Postura de partida (Alonso DAY318): agresiva y con
+  todo registrado; si resulta demasiado dura, se mide y se suaviza.
 - Host (Falco): toda operación sobre el set protegido que no venga del agente, y toda escritura en el manifiesto en
   disco o en el binario del agente.
 - Wazuh: FIM del manifiesto en disco.
@@ -125,7 +133,7 @@ código abierto como el resto de aRGus: la seguridad sale de la clave y de la vi
 (Kerckhoffs).
 
 **D10. Plantilla de despliegue.** Un fichero de despliegue, generado por Jenkins desde una plantilla certificada por
-nosotros, fija: máquina admin, CIDR autorizado, `hospital_id`, `despliegue_id`, límites de prefijo por categoría. Solo
+nosotros, fija: máquina admin, CIDR autorizado, `hospital_id`, las plantas (`despliegue_id`), límites de prefijo por categoría. Solo
 desde ahí se pueden firmar cambios. Controlar Jenkins y sus plantillas es imprescindible (siempre lo ha sido).
 
 **D11. Laboratorio.**
@@ -152,8 +160,10 @@ desde ahí se pueden firmar cambios. Controlar Jenkins y sus plantillas es impre
 - Root comprometido en el defender por una vulnerabilidad del kernel lo derrota todo (puede cambiar el binario). Lo
   que se consigue es que no pueda hacerlo en silencio. Contra eso: imágenes con los parches de seguridad del kernel
   siempre al día desde Jenkins.
-- Proteger .20 implica que un paquete falsificado con origen .20 no se bloquea, solo se alerta; lo frena la atadura a
-  interfaz/MAC (D2) y el antispoofing de entrada.
+- Proteger .20 implica que aRGus nunca bloquea la IP .20, aunque llegue tráfico falsificado con ese origen. Si entra
+  por otra interfaz lo descarta el antispoofing (D2, D8); desde el mismo segmento solo lo frena la MAC, cuando la
+  entrada la lleva. Falsificar orígenes ajenos con herramientas de fabricación o manipulación de paquetes (Scapy,
+  hping3, Polymorph) no se resuelve desde el borde del hospital: DEBT-FW-SPOOFING-ORIGENES-AJENOS-001.
 - El falso positivo de `ddos_v2` con un cliente NTP de 48 bytes es un defecto del modelo: DEBT-DDOS-V2-NTP-CLIENTE-001
   (rama `diag/ml-heads`). El manifiesto evita el daño, no corrige el modelo.
 - Regla de dos personas (Vault control groups): no ahora. Muchos hospitales no tendrán dos administradores. Deuda,
@@ -183,19 +193,28 @@ falte algo en ella.
 
 ## 5. Plan (dentro de PR1, un commit por cambio lógico)
 
-- **8e.1** firewall-acl-agent: categoría `infraestructura`, carga del manifiesto firmado (Ed25519 con libsodium, clave
-  pública compilada en dos ranuras), versión monótona, límites de prefijo, aplicación atómica al set del kernel,
-  candado (D6), último verificado y avisos periódicos (D7), contadores por categoría. Fuera `ddos_protegidos` de
-  `firewall.json`. Tests.
+Orden de los commits (DAY318): 8e.2 va antes que 8e.1, para que el firewall compile en cada commit (desde 8e.1 no
+compila sin la clave pública). EMECAS se pasa al final, con todos los commits de la rama.
+
 - **8e.2** Vault: motor transit, clave ed25519 no exportable por hospital, política `argus-infra-admin`,
-  `token_bound_cidrs`, audit device. Vagrantfile y Ansible.
+  `token_bound_cidrs`, audit device. Vagrantfile y Ansible. El bootstrap trae la clave pública al defender.
+- **8e.1** firewall-acl-agent: categoría `infraestructura`, manifiesto por hospital con sus plantas, carga desde la
+  caché y verificación (Ed25519 con libsodium, clave pública compilada en dos ranuras), versión monótona, límites de
+  prefijo, set `hash:net,iface` aplicado de forma atómica con `ipset swap`, candado (D6), último verificado y avisos
+  periódicos (D7), aviso si falta el plano de control, contadores por categoría. Fuera `ddos_protegidos`,
+  `ipsets.whitelist` y el defecto RFC 1918. Tests.
 - **8e.3** `argus-infra` y las rutas del manifiesto en el etcd-server (`GET`/`PUT`, PUT solo con certificado de admin,
-  verificación de firma, versión y despliegue). Fichero de despliegue del lab.
-- **8e.4** Comprobación continua kernel ↔ manifiesto, alertas de spoofing por interfaz y MAC, versión en el latido y en
+  verificación de firma, versión y hospital); el firewall lo pide cada `protegidos.consulta_sec`. Fichero de
+  despliegue del lab.
+- **8e.4** Comprobación continua kernel ↔ manifiesto, antispoofing en `raw PREROUTING` generado desde el manifiesto,
+  alertas de spoofing por interfaz y MAC, versión en el latido y en
   `pipeline-status`, reglas Falco (en la VM hardened-x86, `check-prod-falco`) y Wazuh.
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
 
-## 6. Diseño fino de 8e.1 (borrador para revisar DAY318, antes del parcheador)
+## 6. Diseño fino de 8e.1 (cerrado DAY318)
+
+Decisiones de Alonso DAY318 (D-A a D-I de la revisión), medidas antes de decidir donde se podía. Resumen en
+`docs/BACKLOG.md`, sección `[MANIFIESTO-PROTEGIDOS-D318]`.
 
 **Formato del manifiesto en disco y en etcd** (lo que se firma son bytes exactos, no un JSON reformateado):
 
@@ -203,63 +222,112 @@ falte algo en ella.
 {
   "formato": "argus-protegidos/v1",
   "carga_b64": "<base64 de los bytes exactos de la carga>",
-  "firma": "vault:v1:<base64 de la firma Ed25519 sobre esos bytes>",
-  "ranura_clave": "actual"
+  "firma": "vault:v1:<base64 de la firma Ed25519 sobre esos bytes>"
 }
 ```
 
-Carga (JSON):
+Sin `ranura_clave` (D-F, menos es más): el agente verifica con la clave actual y, si no, con la siguiente, y el log
+dice cuál valió. Vault transit firma Ed25519 puro sobre los bytes: basta `crypto_sign_verify_detached`.
+
+**Carga: un manifiesto por hospital, con sus plantas dentro (D-B).**
 
 ```json
 {
   "esquema": 1,
   "hospital_id": "lab",
-  "despliegue_id": "lab-vagrant",
   "version": 1,
   "emitido_utc": "2026-11-05T08:00:00Z",
   "firmante": "<entidad de Vault del admin>",
   "motivo": "alta inicial del laboratorio",
   "hash_anterior": "<sha256 de la carga anterior, vacío en la versión 1>",
   "limites": { "infraestructura": 32, "intranet": 24, "dmz": 24, "externos_criticos": 32 },
-  "entradas": [
-    { "categoria": "infraestructura", "cidr": "192.168.100.20/32", "interfaz": "eth2", "mac": "", "motivo": "VM etcd: etcd, etcd-server, Vault" },
-    { "categoria": "intranet", "cidr": "192.168.100.61/32", "interfaz": "eth2", "mac": "", "motivo": "protegido de prueba DAY300" }
-  ]
+  "comun": [],
+  "plantas": {
+    "lab-vagrant": [
+      { "categoria": "infraestructura", "cidr": "192.168.100.20/32", "interfaz": "eth2", "mac": "", "motivo": "VM etcd: etcd, etcd-server, Vault" },
+      { "categoria": "intranet", "cidr": "192.168.100.61/32", "interfaz": "eth2", "mac": "", "motivo": "protegido de prueba DAY300" }
+    ]
+  }
 }
 ```
 
-(`limites` en IPv4; los de IPv6 se añaden en la misma estructura cuando se cierre DEBT-FW-IPV6-SETS-001.)
+- Un documento, una firma y una versión describen el hospital entero. Nada de manifiesto de manifiestos.
+- Cada firewall aplica `comun` y la sección de su planta (`protegidos.despliegue_id` de su `firewall.json`). Si su
+  planta no aparece, no hay manifiesto verificado para él: candado cerrado y aviso.
+- Un cambio en una planta sube la versión del hospital; los firewalls de las demás plantas la aplican y registran
+  `sin cambios para esta planta`.
+- Una entrada por interfaz: un host con dos interfaces legítimas lleva dos entradas.
+- Solo un `motivo` corto: ni ubicación ni función de cada máquina. El manifiesto llega a todos los firewalls del
+  hospital; con más detalle sería un mapa del hospital para quien tome uno. El inventario rico vive en la consola del
+  admin.
+- `limites` en IPv4. IPv6 (D-I): la barrera de usuario lo protege; en el kernel se omite con `[CONFIG-AVISO]` hasta
+  DEBT-FW-IPV6-SETS-001.
+- Interfaz del lab medida DAY318: `eth2` (192.168.100.1; la ruta a .20 sale por `eth2`).
+
+**El set del kernel (D-A).** Medido DAY318 en el defender (`scripts/etcd_ha/d318_medir_set_iface.sh`): ipset v7.17;
+`hash:net,iface` acepta `192.168.100.20/32,eth2`; `ipset test` da 0 con `eth2` y 1 con otra interfaz o con otra IP; la
+regla `--match-set <set> src,src -j RETURN` entra; `ipset swap` deja el contenido nuevo. `ml_defender_whitelist`
+(`hash:net`) no puede llevar interfaz y se cargaba con `flush` + `add` (hueco sin protegidos). Decisión:
+- set nuevo `hash:net,iface`, tipo fijo en el código y nombre en `protegidos.set_name`; entradas `cidr,interfaz`;
+- regla de la cadena de aRGus `--match-set <set> src,src -j RETURN` (origen e interfaz de entrada);
+- aplicación atómica: set temporal, `ipset swap`, borrar el temporal; nunca `flush` + `add`;
+- si el set ya existe con otro tipo, `[PROTEGIDOS-SET-TIPO]` claro con la orden para rehacerlo;
+- solo el agente lo escribe; fuera `ipsets.whitelist` y su `RETURN` sin interfaz;
+- `IPSetWrapper` gana el tipo y la validación de `cidr,interfaz` (interfaz: 1 a 15 caracteres `[A-Za-z0-9._-]`).
+
+**La barrera de usuario (D-G).** El suscriptor (`ALERTA_PROTEGIDO`, fuera del episodio) y `BatchProcessor` (nunca entra
+en el blacklist) protegen por IP siempre, venga por donde venga el paquete: si dejaran de proteger lo que llega por
+otra interfaz, falsificar el origen de un protegido bastaría para que aRGus lo bloqueara. Además, la interfaz del
+evento es la del host del sniffer (el BPF escribe `ifNN` desde el ifindex), que en un despliegue distribuido no es la
+del firewall. La interfaz y la MAC atan la exención del kernel y alimentan el antispoofing y la alerta (8e.4).
+
+**El defecto RFC 1918 se borra (D-B).** Medido: el único camino que mete un origen en el blacklist es la mitigación
+`ddos_v2`; el camino viejo (`add_detections`) es inalcanzable (DEBT-FW-LEGACY-STEPS-001). Sin manifiesto verificado
+el candado (D6) deja la mitigación en sombra, así que el defecto amplio ya no protege nada.
+
+**Plano de control ausente (D-C).** Al arrancar y al aplicar cada manifiesto, el agente compara los hosts de su
+`etcd.endpoints` con las entradas `infraestructura` de `comun` y de su planta. Si falta alguno,
+`[PROTEGIDOS-INFRA-INCOMPLETA]` cada `protegidos.aviso_sec`. No cierra el candado: el hospital siempre protegido, y
+perder el etcd-server no para la protección (DAY316). Coste: dos listas pequeñas, una vez por cambio; nada por paquete
+ni acceso al kernel.
+
+**La clave pública (D-E, patrón ADR-025).** `-DARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX` (obligatoria) y
+`-DARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX` (vacía si no hay rotación en curso). Sin `-D`, CMake las lee de
+`/etc/ml-defender/firewall-acl-agent/protegidos_pubkey_actual.hex` y `..._siguiente.hex` (opcional), que el bootstrap
+trae de Vault (8e.2). Sin la actual: `FATAL_ERROR` con mensaje claro; aquí no hay defecto sano posible. En producción,
+Jenkins pasa `-D`. El firewall enlaza libsodium (hoy no lo hace). Los tests usan una clave desechable generada en el
+propio test.
+
+**Alcance de 8e.1 (D-H).** Carga el manifiesto de la caché al arrancar, la vuelve a verificar cada `aviso_sec` (D7: si
+deja de verificar, se queda con lo que tiene en memoria y avisa) y guarda lo vigente en un contenedor seguro entre
+hilos (hoy el suscriptor y `BatchProcessor` copian los rangos una sola vez al arrancar). Pedirlo al etcd-server
+(`consulta_sec`) va en 8e.3, con sus rutas.
 
 **Campos nuevos en `firewall.json`** (el JSON sigue siendo la ley para lo que no es la lista):
 
 | Campo | Rango | Defecto | Doc |
 |---|---|---|---|
+| `protegidos.hospital_id` | cadena [1, 64], `[a-z0-9-]` | — | sin valor sano por defecto: si falta, candado cerrado y aviso |
+| `protegidos.despliegue_id` | cadena [1, 64], `[a-z0-9-]` | — | la planta de este firewall; sin valor sano por defecto: si falta, candado cerrado y aviso |
+| `protegidos.set_name` | lo que acepta `is_valid_set_name` (1 a 31, `[A-Za-z0-9_-]`) | `ml_defender_protegidos` | set `hash:net,iface` del kernel |
 | `protegidos.manifiesto_cache` | ruta absoluta | `/var/lib/ml-defender/firewall/protegidos.manifiesto` | último manifiesto verificado |
-| `protegidos.consulta_sec` | [5, 3600] | 30 | cada cuánto se pide el manifiesto al etcd-server |
-| `protegidos.comprobacion_kernel_sec` | [5, 3600] | 30 | comprobación kernel ↔ manifiesto |
-| `protegidos.aviso_sec` | [30, 86400] | 300 | ritmo del aviso periódico mientras no haya manifiesto verificado |
-| `protegidos.despliegue_id` | cadena [1, 64], `[a-z0-9-]` | — | sin valor sano por defecto: si falta, no hay manifiesto verificado (candado cerrado) y se avisa |
+| `protegidos.aviso_sec` | [30, 86400] | 300 | aviso periódico y nueva verificación de la caché |
+| `protegidos.comprobacion_kernel_sec` | [5, 3600] | 30 | comprobación kernel ↔ manifiesto (8e.4) |
+| `protegidos.consulta_sec` | [5, 3600] | 30 | cada cuánto se pide el manifiesto al etcd-server (8e.3) |
 
 **Mensajes de log** (etiquetas para buscar):
-- `[PROTEGIDOS-MANIFIESTO] verificado version=N firmante=... despliegue=... entradas=E (infraestructura=a intranet=b dmz=c externos_criticos=d)`
-- `[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=firma|version|despliegue|limite|formato ...` (se conserva el último verificado)
+- `[PROTEGIDOS-MANIFIESTO] verificado version=N clave=actual|siguiente firmante=... hospital=... planta=... entradas=E (infraestructura=a intranet=b dmz=c externos_criticos=d)`
+- `[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=firma|version|hospital|planta|limite|formato ...` (se conserva el último verificado)
 - `[PROTEGIDOS-SIN-MANIFIESTO] mitigacion real BLOQUEADA (candado); sombra` (periódico)
+- `[PROTEGIDOS-INFRA-INCOMPLETA] etcd.endpoints sin entrada infraestructura: ...` (periódico)
+- `[PROTEGIDOS-SET-TIPO] el set <nombre> existe con tipo <tipo> (se espera hash:net,iface): ...`
 - `[INFRA-CAMBIO] version A -> B firmante=... altas=... bajas=...`
-- `[PROTEGIDOS-DIVERGENCIA] kernel != manifiesto: ...` / `[PROTEGIDOS-SPOOFING] origen=... interfaz|mac ...`
+- `[PROTEGIDOS-DIVERGENCIA] kernel != manifiesto: ...` / `[PROTEGIDOS-SPOOFING] origen=... interfaz|mac ...` (8e.4)
 - `protegidos:` gana `infraestructura=N`.
 
-**Tests de 8e.1:** firma válida; firma de otra clave; carga alterada un byte; versión igual y menor; otro
-`despliegue_id`; prefijo más amplio que el límite (en `infraestructura`, /31); entrada sin interfaz; cache
-ausente/alterada al arrancar; candado con `habilitada=true` y sin manifiesto; último verificado conservado tras un
-rechazo en caliente.
-
-**Puntos abiertos para DAY318 (medir o decidir antes del parcheador):**
-1. El set del kernel: reutilizar `ml_defender_whitelist` (lo que ya existe y ya está en la cadena de iptables con
-   `RETURN`) o crear uno nuevo. Recomendación: reutilizar (no reinventar) y que solo el agente lo escriba.
-2. El defecto RFC 1918 de DAY300: con el candado (D6), sin manifiesto verificado no hay bloqueo real, así que ese
-   defecto amplio deja de hacer falta para la seguridad. Recomendación: borrarlo. Es una decisión de DAY300 y la
-   revisa Alonso.
-3. Cómo entra la clave pública en la compilación (opción de CMake que lee un fichero que el bootstrap trae de Vault;
-   sin él, la compilación falla con un mensaje claro: aquí no hay defecto sano posible) y el orden en el bootstrap
-   (VM etcd y clave transit antes de compilar el firewall).
-4. El nombre de la interfaz del lab en las entradas (`eth2` en el defender según el Vagrantfile): medir en la VM.
+**Tests de 8e.1:** firma válida con la clave actual y con la siguiente; firma de otra clave; carga alterada un byte;
+versión igual y menor; otro `hospital_id`; planta ausente; prefijo más amplio que el límite (en `infraestructura`,
+/31); entrada sin interfaz o con interfaz mal formada; caché ausente o alterada al arrancar; candado con
+`habilitada=true` y sin manifiesto; último verificado conservado tras un rechazo en caliente; aviso
+`INFRA-INCOMPLETA`; set existente de otro tipo y órdenes del `swap` (en dry_run); barrera por IP con un origen
+protegido que llega por otra interfaz.

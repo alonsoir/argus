@@ -8728,3 +8728,44 @@ EMECAS debe levantar la topología de producción, no un subconjunto: con solo d
 pasaba. El fallo no estaba en el código de ninguna pieza, sino en la topología. El DoS autoinfligido no solo viene de
 que alguien escriba en la lista protegida: también de que falte algo en ella. Antes de afirmar una causa, mirar el
 protocolo del episodio (la primera hipótesis, el HTTPS del etcd-server, cayó con `proto=17`).
+
+---
+
+## DAY318 — Diseño fino de 8e cerrado [MANIFIESTO-PROTEGIDOS-D318]
+
+Documento: `docs/adr/ADR-060-manifiesto-firmado-rangos-protegidos.md`, sección 6 (cerrada) y precisiones en D1, D2,
+D3, D5, D8, D10, consecuencias y plan. Decisiones de Alonso DAY318:
+- **D-A** set nuevo `hash:net,iface` con `ipset swap` atómico; fuera `ipsets.whitelist` (medido en el defender: ipset
+  v7.17, `eth2`, `src,src` y `swap` funcionan).
+- **D-B** un manifiesto por hospital, con `comun` y `plantas`; solo `motivo` corto (ni ubicación ni función: sería un
+  mapa del hospital); fuera el defecto RFC 1918.
+- **D-C** aviso `[PROTEGIDOS-INFRA-INCOMPLETA]` si un host de `etcd.endpoints` falta en `infraestructura`; no cierra el
+  candado (el hospital siempre protegido). Se compara al aplicar cada manifiesto, no por paquete.
+- **D-D** 8e.2 (Vault transit) se commitea antes que 8e.1; EMECAS, al final de la rama.
+- **D-E** clave pública con el patrón de ADR-025 (`-D` o fichero traído de Vault; sin ella, `FATAL_ERROR`); el
+  firewall enlaza libsodium.
+- **D-F** fuera `ranura_clave`: se prueban las dos ranuras.
+- **D-G** la barrera de usuario protege por IP siempre; la interfaz y la MAC atan la exención del kernel y el
+  antispoofing en `raw PREROUTING` generado desde el manifiesto (8e.4), con todo registrado.
+- **D-H** `protegidos.consulta_sec` pasa a 8e.3; 8e.1 trabaja con la caché.
+- **D-I** IPv6 como hoy: protegido en la barrera, omitido en el kernel con aviso hasta DEBT-FW-IPV6-SETS-001.
+
+### DEBT-FW-SPOOFING-ORIGENES-AJENOS-001 — ABIERTA, permanente (nueva DAY318)
+Falsificar orígenes ajenos (IPs de terceros) con herramientas de fabricación o manipulación de paquetes (Scapy,
+hping3, o Polymorph de shramos, que además manipula el tráfico en tiempo de ejecución) no se resuelve desde el borde
+del hospital: depende de que los operadores apliquen BCP 38. Lo falsificado con el origen de un protegido sí se cubre
+(antispoofing por interfaz y MAC desde el manifiesto, 8e.4). Ideas sin medir: en TCP, que la cabeza DDoS pese solo los
+orígenes con el saludo completo (`diag/ml-heads`); en la reflexión UDP el origen que se ve es el reflector real.
+Postura de partida (Alonso DAY318): mejor pasarse de duros mientras se diseña y registrarlo todo; si resulta demasiado
+lesivo, se mide y se suaviza. Se revisa en cada rama que toque la cabeza DDoS o el firewall.
+
+### Hallazgos DAY318
+- El aprovisionamiento del Vagrantfile pone `rp_filter=0` en todas las interfaces del defender (modo gateway). El
+  antispoofing de 8e.4 no depende de él; en 8e.4 se mide si el lab lo necesita.
+- `firewall-acl-agent/src/rules/*.cpp` (`whitelist_manager`, `rate_limiter`, `temporal_acl`) no se compila: código
+  muerto. Sin decidir (DEBT-REPO-RESIDUOS-001).
+- La barrera de usuario recorre la lista entera por cada DROP de la cabeza DDoS (no por paquete). Con miles de
+  entradas, medir y cambiar a un árbol de prefijos.
+- `make up` no arranca el pipeline, ni lo ha hecho nunca (git): solo `make pipeline-start`, `make bootstrap` y EMECAS.
+  Un primer `pipeline-status` con la VM etcd apagada tras un `make up` no se reprodujo (la VM arrancó con un
+  `vagrant up` posterior); si vuelve a pasar: `make halt`, `make up` mirando la VM `etcd`, `vagrant status`.
