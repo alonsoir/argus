@@ -2625,6 +2625,8 @@ Derivar subclaves especializadas desde K_root usando HKDF (NIST SP 800-108): K_p
 **Estado:** ABIERTO — DAY 149
 **Descripción:** Backend `file` suficiente para dev/FEDER. Producción real requiere Vault HA con backend `raft` (3+ nodos). Dev y prod no deben ser idénticos — diferencial se mitiga con tests específicos.
 **Test de cierre:** Vault HA 3 nodos. Kill del líder → failover < 5s → componentes siguen operativos.
+**DAY318 (Alonso):** Vault puede caerse y aún no hemos hecho ni visto nada de Vault en HA. Hoy, con Vault caído, no
+se pueden firmar manifiestos de protegidos nuevos (la verificación no depende de Vault: ADR-060, F-A). Va con PR2.
 **Estimación:** 2 sesiones post-FEDER
 
 ### DEBT-CRYPTO-STAMPEDE-001 — Jitter startup en vault_client
@@ -8852,3 +8854,29 @@ cableado). Diseño: ADR-060, secciones 5 y 6.
 - `lab-e2e-mitigacion` y `lab-e2e-protegidos` fallan hasta 8e.5: sin manifiesto el candado para la mitigación, y
   `d303_veredicto_protegidos.sh` busca líneas de log que ya no existen (se reescribe en 8e.5 con P1–P6).
 - 8e.3: anti-rollback entre reinicios (ADR-060, sección 6), `[INFRA-CAMBIO]`, `consulta_sec`.
+
+---
+
+## DAY318 — diseño de 8e.3 cerrado [PROTEGIDOS-MANIFIESTO-D318]
+
+Decisiones de Alonso F-A..F-I: ADR-060, sección 5 (8e.3). La más discutida, F-A: la clave pública va compilada
+también en el etcd-server, no se lee de Vault. Aclarado en la discusión (DAY318):
+- La **privada del manifiesto** no está en ningún disco: vive solo dentro de Vault transit (ed25519, no exportable,
+  sin borrado, 8e.2). Vault firma por dentro y devuelve la firma: hace de HSM.
+- La **pública** no es secreta (que REA la vea no da nada, D9). El riesgo es sustituirla, y eso exige cambiar el
+  binario (firma ADR-025, Falco y Wazuh).
+- El par **no se regenera** con cada build ni con cada EMECAS: es por hospital y de larga vida; solo cambia en una
+  rotación deliberada (dos ranuras, D3). Jenkins recibe la pública con `-D`. En el lab cambia cada vez que se
+  destruye la VM etcd (Vault nace de cero) y el bootstrap la vuelve a traer ([4b/8]).
+- Lo que sí está en disco es la **privada TLS de `argus-infra`** (`/etc/argus-pki/argus-infra.key`, VM etcd): da
+  derecho a pedir firmas (desde 127.0.0.1, token de 300 s). Es la que hay que proteger: DEBT-FW-ARGUS-INFRA-LLAVE-HW-001.
+- Vault puede caerse y hoy no está en HA (Alonso DAY318; DEBT-VAULT-HA-001, PR2). Con F-A, Vault caído solo impide
+  firmar versiones nuevas: el etcd-server y los firewalls verifican y protegen sin Vault.
+
+### DEBT-FW-ARGUS-INFRA-LLAVE-HW-001 — ABIERTA (nueva DAY318, Alonso)
+En producción la privada del certificado de `argus-infra` no puede estar en el disco de una máquina: va en una
+llave hardware (USB tipo YubiKey o smartcard PIV) de la que no se puede extraer, y firmar exige tenerla enchufada;
+Vault registra en su audit quién firmó, cuándo y desde dónde. En el lab queda en el disco de la VM etcd porque no hay
+VM admin (RAM) ni hardware. Va con DEBT-VAULT-GESTION-TRAS-INIT-001 y con la máquina del admin (ADR-060, D8).
+**Test de cierre:** sin la llave enchufada `argus-infra` no consigue token de Vault; con ella, firma y queda en el
+audit.

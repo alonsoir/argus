@@ -216,10 +216,33 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
     forma atómica con `ipset swap` y regla `src,src`, candado (D6), barrera por IP con los rangos del vigente,
     avisos periódicos (D6, D7, D-C), contadores por categoría. Fuera `ddos_protegidos`, `ipsets.whitelist` y el
     defecto RFC 1918. Tests.
-- **8e.3** `argus-infra` y las rutas del manifiesto en el etcd-server (`GET`/`PUT`, PUT solo con certificado
-  OU=argus-infra (D9 bis), verificación de firma, versión y hospital); el firewall lo pide cada
-  `protegidos.consulta_sec`. El etcd-server necesita leer la clave pública: medido DAY318, hoy su política de Vault
-  da 403 en `argus-transit/keys/...`. Fichero de despliegue del lab.
+- **8e.3** `argus-infra` y las rutas del manifiesto en el etcd-server. Diseño cerrado DAY318 (decisiones de Alonso
+  F-A..F-I):
+  - **F-A** El etcd-server verifica con la clave pública **compilada**, la misma que el firewall (patrón ADR-025;
+    CMake lee el mismo `.hex`). No se le da permiso de lectura en Vault. Que REA vea la pública no importa (es
+    pública, D9); cambiarla exige cambiar el binario. Consecuencia: con Vault caído no se pueden firmar versiones
+    nuevas, pero verificar y proteger no depende de Vault.
+  - **F-B** Un solo verificador: el de 8e.1a pasa a una librería compartida (`libs/protegidos`, jsoncpp +
+    libsodium) que enlazan el firewall y el etcd-server, con modo "documento entero, sin planta" para el servidor.
+  - **F-C** Un etcd-server sirve a un hospital: `protegidos.hospital_id` en su JSON (Ansible, desde
+    `argus_hospital_id`). Rutas sin segmento de hospital: `GET /v1/protegidos` (`ou:firewall-acl-agent`,
+    `ou:argus-infra`) y `PUT /v1/protegidos` (`ou:argus-infra`).
+  - **F-D** En etcd, el sobre tal cual: `/argus/protegidos/vigente` y `/argus/protegidos/v/<N>` (inmutable). PUT
+    rechazado si versión <= vigente, firma u hospital no cuadran o se sale de los límites.
+  - **F-E** El firewall lo pide cada `protegidos.consulta_sec` ([5, 3600], 30) con un método nuevo del etcd-client.
+    Nueva y verificada: kernel, caché y `[INFRA-CAMBIO]` con altas y bajas. Igual: nada. Menor: rechazo
+    `motivo=version` (intento de rollback). Servidor caído o 404: sigue con lo vigente y avisa cada `aviso_sec`.
+  - **F-F** Anti-rollback entre reinicios: `protegidos.version` junto a la caché (versión más alta aplicada) y
+    consulta al etcd-server antes de aplicar la caché. Caché con versión menor que la del fichero: rechazo y alarma.
+  - **F-G** `argus-infra`: un fichero Python con la biblioteca estándar (medido en la VM etcd: Python 3.11.2,
+    OpenSSL 3.0.22), instalado por el Vagrantfile en la VM etcd. `init`, `list`, `add`, `del`, `diff`,
+    `verificar`, `deshacer N` (contenido de N como N+1 firmado). Firma y verifica con Vault transit; comprueba los
+    límites de D2 antes del PUT.
+  - **F-H** Plantilla de despliegue sin firmar en el repo (lab: `.20` infraestructura por eth2, `.61` intranet);
+    `argus-infra init --desde FICHERO` la rellena y firma la versión 1 solo si no hay ninguna. El bootstrap la usa
+    en 8e.5.
+  - **F-I** `set/get/del/list_keys` del etcd-client piden `/kv/...`, rutas que el servidor no tiene: se borran en
+    un commit propio cuando 8e.3 funcione, tras comprobar con `git grep` que nadie los usa.
 - **8e.4** Comprobación continua kernel ↔ manifiesto, antispoofing en `raw PREROUTING` generado desde el manifiesto,
   alertas de spoofing por interfaz y MAC, versión en el latido y en
   `pipeline-status`, reglas Falco (en la VM hardened-x86, `check-prod-falco`) y Wazuh. Falco y Wazuh avisan también
