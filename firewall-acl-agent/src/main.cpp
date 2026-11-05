@@ -23,6 +23,7 @@
 #include "firewall/batch_processor.hpp"
 #include "protegidos/manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
 #include <fstream>
+#include <filesystem>  // [PROTEGIDOS-MANIFIESTO-D318] directorio de la caché
 #include <nlohmann/json.hpp>
 #include "firewall/zmq_subscriber.hpp"
 #include "firewall/etcd_client.hpp"
@@ -289,31 +290,113 @@ static void protegidos_infra(const ManifiestoVerificado& m, const FirewallAgentC
                  "versión que lo incluya con argus-infra)" << std::endl;
 }
 
-// Arranque: el último manifiesto verificado está en la caché (ADR-060 D5.5).
+// [PROTEGIDOS-MANIFIESTO-D318] 8e.3c: un manifiesto ya verificado y vigente: kernel, caché + versión (si viene del
+// etcd-server), [INFRA-CAMBIO] con altas y bajas, y el plano de control (D-C).
+static void protegidos_aplicado(const ProtegidosVigentes::Propuesta& p, IPSetWrapper& ipset,
+                                const FirewallAgentConfig& config, bool set_ok, const char* origen, bool guardar) {
+    const auto& pc = config.protegidos;
+    const auto& m = *p.resultado.manifiesto;
+    std::cout << ::argus::protegidos::resumen_manifiesto(m) << " (" << origen << ")" << std::endl;
+    if (p.anterior) {
+        std::cout << "[INFRA-CAMBIO] version " << p.anterior->version << " -> " << m.version << " firmante="
+                  << ::argus::protegidos::detalle_protegidos::saneado(m.firmante) << " emitido=" << m.emitido_utc
+                  << " motivo=" << ::argus::protegidos::detalle_protegidos::saneado(m.motivo) << " "
+                  << ::argus::protegidos::diferencias_protegidos(p.anterior.get(), m) << " (" << origen << ")" << std::endl;
+    }
+    if (set_ok) protegidos_aplicar_kernel(ipset, pc.set_name, m);
+    if (guardar) {
+        std::string err;
+        std::error_code ec;
+        std::filesystem::create_directories(std::filesystem::path(pc.manifiesto_cache).parent_path(), ec);
+        if (!::argus::protegidos::escribir_cache_protegidos(pc.manifiesto_cache, m.sobre, err)) {
+            std::cerr << "[PROTEGIDOS-CACHE] no se pudo guardar " << pc.manifiesto_cache << ": " << err
+                      << " (la version " << m.version << " sigue vigente en memoria)" << std::endl;
+        }
+    }
+    std::string err;
+    if (!::argus::protegidos::escribir_version_protegidos(pc.manifiesto_cache + ".version", m.version, err)) {
+        std::cerr << "[PROTEGIDOS-VERSION] no se pudo guardar " << pc.manifiesto_cache << ".version: " << err
+                  << " (anti-rollback entre reinicios sin la version " << m.version << ")" << std::endl;
+    }
+    protegidos_infra(m, config);
+}
+
+// [PROTEGIDOS-MANIFIESTO-D318] 8e.3c (F-E): pide el manifiesto al etcd-server. true si respondió (200 o 404).
+// El mismo sobre que el vigente: nada (cada consulta_sec). Otro: se verifica; con versión menor, rechazo y alarma.
+static bool protegidos_consultar(ProtegidosVigentes& v, mldefender::firewall::EtcdClient* etcd, IPSetWrapper& ipset,
+                                 const FirewallAgentConfig& config, bool set_ok, std::string& fallo) {
+    if (etcd == nullptr) {
+        fallo = "sin cliente etcd";
+        return false;
+    }
+    std::string cuerpo;
+    const int st = etcd->get_protegidos(cuerpo);
+    if (st == 404) {
+        fallo = "el etcd-server no tiene manifiesto publicado (404)";
+        return true;
+    }
+    if (st != 200) {
+        fallo = "status " + std::to_string(st) + ": " + ::argus::protegidos::detalle_protegidos::saneado(cuerpo.substr(0, 200));
+        return false;
+    }
+    fallo.clear();
+    const auto vig = v.vigente();
+    if (vig && vig->sobre == cuerpo) return true;
+    const auto p = v.proponer(cuerpo);
+    if (!p.resultado.ok) {
+        std::cerr << "[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=" << ::argus::protegidos::nombre_motivo(p.resultado.motivo)
+                  << " " << p.resultado.detalle << " (etcd-server; se conserva "
+                  << (vig ? "la version " + std::to_string(vig->version) : std::string("el estado sin manifiesto"))
+                  << ")" << std::endl;
+        return true;
+    }
+    protegidos_aplicado(p, ipset, config, set_ok, "etcd-server", true);
+    return true;
+}
+
+// Arranque (ADR-060 D5.5 y F-F): suelo = la versión más alta aplicada antes de reiniciar; primero el etcd-server y, si
+// no responde o no hay nada nuevo, la caché (que no puede ser más vieja que el suelo).
 static void protegidos_cargar_cache(ProtegidosVigentes& v, IPSetWrapper& ipset, const FirewallAgentConfig& config,
-                                    bool set_ok) {
+                                    bool set_ok, mldefender::firewall::EtcdClient* etcd) {
     const auto& pc = config.protegidos;
     if (pc.hospital_id.empty() || pc.despliegue_id.empty()) {
         std::cerr << "[PROTEGIDOS-SIN-MANIFIESTO] protegidos.hospital_id/despliegue_id sin valor: no hay manifiesto que "
                      "verificar (candado cerrado)" << std::endl;
         return;
     }
-    std::string sobre, err;
+    uint64_t suelo = 0;
+    std::string err;
+    if (!::argus::protegidos::leer_version_protegidos(pc.manifiesto_cache + ".version", suelo, err)) {
+        std::cerr << "[PROTEGIDOS-VERSION] " << pc.manifiesto_cache << ".version: " << err
+                  << " (sin suelo: revise el fichero; el etcd-server y la firma siguen mandando)" << std::endl;
+        suelo = 0;
+    }
+    v.fijar_suelo(suelo);
+    std::cout << "[PROTEGIDOS-VERSION] suelo=" << suelo << " (" << pc.manifiesto_cache << ".version)" << std::endl;
+    std::string fallo;
+    if (!protegidos_consultar(v, etcd, ipset, config, set_ok, fallo)) {
+        std::cerr << "[PROTEGIDOS-CONSULTA] al arrancar: " << fallo << "; se usa la caché" << std::endl;
+    }
+    std::string sobre;
     if (!::argus::protegidos::leer_cache_protegidos(pc.manifiesto_cache, sobre, err)) {
-        std::cerr << "[PROTEGIDOS-SIN-MANIFIESTO] caché " << pc.manifiesto_cache << ": " << err
-                  << " (hospital=" << pc.hospital_id << " planta=" << pc.despliegue_id << "; candado cerrado)" << std::endl;
+        if (!v.vigente()) {
+            std::cerr << "[PROTEGIDOS-SIN-MANIFIESTO] caché " << pc.manifiesto_cache << ": " << err << " (hospital="
+                      << pc.hospital_id << " planta=" << pc.despliegue_id << "; candado cerrado)" << std::endl;
+        }
         return;
     }
+    const auto vig = v.vigente();
+    if (vig && vig->sobre == sobre) return;   // el etcd-server dio el mismo que la caché
     const auto p = v.proponer(sobre);
     if (!p.resultado.ok) {
-        std::cerr << "[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=" << ::argus::protegidos::nombre_motivo(p.resultado.motivo)
-                  << " " << p.resultado.detalle << " (caché " << pc.manifiesto_cache << "; candado cerrado)" << std::endl;
+        if (!vig) {
+            std::cerr << "[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=" << ::argus::protegidos::nombre_motivo(p.resultado.motivo)
+                      << " " << p.resultado.detalle << " (caché " << pc.manifiesto_cache << ", suelo=" << suelo
+                      << "; candado cerrado)" << std::endl;
+        }
         return;
     }
-    std::cout << ::argus::protegidos::resumen_manifiesto(*p.resultado.manifiesto) << " (caché " << pc.manifiesto_cache
-              << ")" << std::endl;
-    if (set_ok) protegidos_aplicar_kernel(ipset, pc.set_name, *p.resultado.manifiesto);
-    protegidos_infra(*p.resultado.manifiesto, config);
+    protegidos_aplicado(p, ipset, config, set_ok, "caché", false);
 }
 
 // Cada aviso_sec: sin manifiesto, aviso (D6); con él, la caché tiene que seguir verificando (D7) y el plano de
@@ -744,7 +827,7 @@ int main(int argc, char** argv) {
         auto protegidos = std::make_shared<ProtegidosVigentes>(claves_protegidos_compiladas(),
                                                                config.protegidos.hospital_id, config.protegidos.despliegue_id);
         const bool protegidos_set_ok = protegidos_preparar_set(ipset, config);
-        protegidos_cargar_cache(*protegidos, ipset, config, protegidos_set_ok);
+        protegidos_cargar_cache(*protegidos, ipset, config, protegidos_set_ok, etcd_client.get());
         const auto& blacklist_ipset = config.ipsets.at("blacklist");
 
         FIREWALL_LOG_INFO("Configuring IPTables",
@@ -999,6 +1082,9 @@ int main(int argc, char** argv) {
 
         auto last_health_check = std::chrono::steady_clock::now();
         auto last_protegidos = std::chrono::steady_clock::now();  // [PROTEGIDOS-MANIFIESTO-D318] D6/D7/D-C
+        auto last_consulta = std::chrono::steady_clock::now();    // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c (F-E)
+        auto last_aviso_consulta = std::chrono::steady_clock::time_point{};
+        uint64_t consultas_fallidas = 0;
         auto last_metrics_export = std::chrono::steady_clock::now();
 
         while (g_running.load() &&
@@ -1015,6 +1101,23 @@ int main(int argc, char** argv) {
                     config.protegidos.aviso_sec) {
                     protegidos_vigilar(*protegidos, config);  // [PROTEGIDOS-MANIFIESTO-D318]
                     last_protegidos = now;
+                }
+                if (!config.protegidos.hospital_id.empty() && !config.protegidos.despliegue_id.empty() &&
+                    std::chrono::duration_cast<std::chrono::seconds>(now - last_consulta).count() >=
+                        config.protegidos.consulta_sec) {
+                    std::string fallo;  // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c: un aviso cada aviso_sec, no uno por consulta
+                    const bool respondio =
+                        protegidos_consultar(*protegidos, etcd_client.get(), ipset, config, protegidos_set_ok, fallo);
+                    if (!fallo.empty()) {
+                        if (!respondio) ++consultas_fallidas;
+                        if (std::chrono::duration_cast<std::chrono::seconds>(now - last_aviso_consulta).count() >=
+                            config.protegidos.aviso_sec) {
+                            std::cerr << "[PROTEGIDOS-CONSULTA] " << fallo << " (fallidas=" << consultas_fallidas
+                                      << "; se conserva lo vigente)" << std::endl;
+                            last_aviso_consulta = now;
+                        }
+                    }
+                    last_consulta = now;
                 }
 
                 if (elapsed_health >= 30) {

@@ -43,6 +43,9 @@ namespace mldefender::firewall {
          * @return 32 bytes, o nullopt si no hay clave o no responde ningún etcd-server
          */
         std::optional<std::vector<uint8_t>> get_hmac_key(const std::string& key_path);
+
+        /// [PROTEGIDOS-MANIFIESTO-D318] GET /v1/protegidos: status HTTP (0 = nadie respondió, -1 = sin cliente) y cuerpo
+        int get_protegidos(std::string& cuerpo);
     private:
         struct Impl;
         std::unique_ptr<Impl> pImpl;

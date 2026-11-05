@@ -220,6 +220,11 @@ public:
      */
     std::optional<std::vector<uint8_t>> get_hmac_key(const std::string& key_path);
 
+    // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3c: GET /v1/protegidos (mismo transporte mTLS y conmutación de direcciones).
+    // Devuelve el status HTTP (0 = ningún etcd-server respondió) y, con 200, el sobre tal cual en cuerpo; si no, el
+    // error o la respuesta del servidor. No interpreta nada: verifica el firewall.
+    int get_protegidos(std::string& cuerpo);
+
     /**
      * @brief Compute HMAC-SHA256 over data
      *

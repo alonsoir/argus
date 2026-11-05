@@ -77,4 +77,13 @@ std::optional<std::vector<uint8_t>> EtcdClient::get_hmac_key(const std::string& 
     return key;
 }
 
+// [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3c
+int EtcdClient::get_protegidos(std::string& cuerpo) {
+    if (!pImpl->client_) {
+        cuerpo = "sin cliente etcd";
+        return -1;
+    }
+    return pImpl->client_->get_protegidos(cuerpo);
+}
+
 } // namespace mldefender::firewall

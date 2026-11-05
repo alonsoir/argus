@@ -114,6 +114,10 @@ public:
     // los consulta en cada DROP de la cabeza DDoS: se construyen una vez por manifiesto, no por evento.
     std::shared_ptr<const RangosProtegidos> rangos() const;
     uint64_t rechazos() const;
+    // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c anti-rollback entre reinicios (ADR-060 F-F): sin vigente, el primer manifiesto
+    // tiene que tener versión >= suelo (la más alta aplicada antes de reiniciar). Con vigente manda la vigente.
+    void fijar_suelo(uint64_t suelo);
+    uint64_t suelo() const;
     const std::string& hospital_id() const { return hospital_id_; }
     const std::string& planta() const { return planta_; }
 
@@ -125,6 +129,7 @@ private:
     std::shared_ptr<const ManifiestoVerificado> vigente_;
     std::shared_ptr<const RangosProtegidos> rangos_;
     uint64_t rechazos_ = 0;
+    uint64_t suelo_ = 0;
 };
 
 // [PROTEGIDOS-MANIFIESTO-D318] candado (ADR-060 D6): con la mitigación habilitada, sin manifiesto verificado la
@@ -140,6 +145,14 @@ bool escribir_cache_protegidos(const std::string& ruta, const std::string& sobre
 
 // [PROTEGIDOS-INFRA-INCOMPLETA] (D-C): hosts de etcd.endpoints ("https://IPv4:puerto") que no cubre ninguna entrada
 // infraestructura del manifiesto. Una entrada de endpoints mal formada se devuelve tal cual (también falta).
+// [PROTEGIDOS-MANIFIESTO-D318] 8e.3c (F-F): la versión más alta aplicada, en un fichero aparte (decimal; mismas reglas
+// que la caché: O_NOFOLLOW, temporal y rename). Ausente: 0 y true (primer arranque). Mal formado: false + error.
+bool leer_version_protegidos(const std::string& ruta, uint64_t& version, std::string& error);
+bool escribir_version_protegidos(const std::string& ruta, uint64_t version, std::string& error);
+// [PROTEGIDOS-MANIFIESTO-D318] 8e.3c [INFRA-CAMBIO]: altas y bajas entre dos manifiestos de la misma planta
+// ("categoria cidr interfaz"), en una línea. anterior null = todo altas.
+std::string diferencias_protegidos(const ManifiestoVerificado* anterior, const ManifiestoVerificado& nuevo);
+
 std::vector<std::string> infra_sin_cubrir(const ManifiestoVerificado& m, const std::vector<std::string>& endpoints);
 
 }  // namespace argus::protegidos

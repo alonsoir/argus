@@ -285,6 +285,29 @@ int main() {
         c3.replace(c3.find(pl), pl.size(), "\"plantas\":{}");
         CHECK(rech(verificar_documento(sobre(c3, firmar(a, c3)), solo_a, "hospital-lab", 0), M::PLANTA));
     }
+    // 10d. [8e.3c] suelo (anti-rollback entre reinicios), fichero de versión y altas/bajas
+    {
+        ProtegidosVigentes v(solo_a, "hospital-lab", "lab-vagrant");
+        v.fijar_suelo(3);
+        const std::string c2 = carga(2, kLab), c3 = carga(3, kLab), c4 = carga(4, entrada("intranet", "192.168.100.61/32"));
+        CHECK(rech(v.proponer(sobre(c2, firmar(a, c2))).resultado, M::VERSION));   // caché vieja tras reiniciar
+        CHECK(v.proponer(sobre(c3, firmar(a, c3))).resultado.ok);                    // la misma que se aplicó: vale
+        const auto ant = v.vigente();
+        CHECK(v.proponer(sobre(c4, firmar(a, c4))).resultado.ok);
+        const std::string d = diferencias_protegidos(ant.get(), *v.vigente());
+        CHECK(d == "altas=[] bajas=[infraestructura 192.168.100.20/32 eth2]");
+        CHECK(diferencias_protegidos(nullptr, *ant).find("altas=[infraestructura 192.168.100.20/32 eth2, intranet 192.168.100.61/32 eth2]") == 0);
+        char plantilla[] = "/tmp/prot_version_XXXXXX";
+        const std::string dir = mkdtemp(plantilla);
+        const std::string f = dir + "/protegidos.version";
+        uint64_t n = 99;
+        std::string e;
+        CHECK(leer_version_protegidos(f, n, e) && n == 0);              // ausente: primer arranque
+        CHECK(escribir_version_protegidos(f, 17, e) && leer_version_protegidos(f, n, e) && n == 17);
+        CHECK(escribir_cache_protegidos(f, "17x", e) && !leer_version_protegidos(f, n, e));
+        std::remove(f.c_str());
+        rmdir(dir.c_str());
+    }
     // 11. Caché: escribir y leer; ausente; enlace simbólico; tamaño
     {
         char dir[] = "/tmp/test_protegidos_XXXXXX";

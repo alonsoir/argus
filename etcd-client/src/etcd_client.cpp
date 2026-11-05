@@ -698,6 +698,13 @@ std::optional<std::vector<uint8_t>> EtcdClient::get_hmac_key(const std::string& 
     } catch (...) { return std::nullopt; }
 }
 
+// [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3c
+int EtcdClient::get_protegidos(std::string& cuerpo) {
+    auto r = pImpl->transporte_.peticion("GET", "/v1/protegidos");
+    cuerpo = r.status == 0 ? r.error : r.body;
+    return r.status;
+}
+
 ServicePaths EtcdClient::get_service_paths() const {
     std::lock_guard<std::mutex> lock(pImpl->mutex_);
     return pImpl->service_paths_;

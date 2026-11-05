@@ -302,6 +302,18 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
                           << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
             }
         }
+        {   // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c (F-E)
+            constexpr int kMin = 5, kMax = 3600;
+            const int def = pc.consulta_sec;
+            const bool hay = p.isObject() && p.isMember("consulta_sec");
+            if (hay && p["consulta_sec"].isInt() && p["consulta_sec"].asInt() >= kMin && p["consulta_sec"].asInt() <= kMax) {
+                pc.consulta_sec = p["consulta_sec"].asInt();
+                std::cout << "[CONFIG] protegidos.consulta_sec=" << pc.consulta_sec << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.consulta_sec " << (hay ? "mal formado" : "ausente")
+                          << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+            }
+        }
         // D-C: los endpoints del etcd-server (los valida etcd-client; aquí solo se copian para comparar)
         if (root.isMember("etcd") && root["etcd"].isObject() && root["etcd"]["endpoints"].isArray()) {
             for (const auto& e : root["etcd"]["endpoints"]) {

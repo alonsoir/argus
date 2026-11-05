@@ -494,7 +494,8 @@ ProtegidosVigentes::Propuesta ProtegidosVigentes::proponer(const std::string& so
     std::lock_guard<std::mutex> l(m_);
     Propuesta p;
     p.anterior = vigente_;
-    p.resultado = verificar_manifiesto(sobre, claves_, hospital_id_, planta_, vigente_ ? vigente_->version : 0);
+    const uint64_t aplicada = vigente_ ? vigente_->version : (suelo_ > 0 ? suelo_ - 1 : 0);
+    p.resultado = verificar_manifiesto(sobre, claves_, hospital_id_, planta_, aplicada);
     if (p.resultado.ok) {
         vigente_ = p.resultado.manifiesto;
         rangos_ = std::make_shared<const RangosProtegidos>(vigente_->rangos());
@@ -502,6 +503,56 @@ ProtegidosVigentes::Propuesta ProtegidosVigentes::proponer(const std::string& so
         ++rechazos_;
     }
     return p;
+}
+
+void ProtegidosVigentes::fijar_suelo(uint64_t suelo) {
+    std::lock_guard<std::mutex> l(m_);
+    suelo_ = suelo;
+}
+
+uint64_t ProtegidosVigentes::suelo() const {
+    std::lock_guard<std::mutex> l(m_);
+    return suelo_;
+}
+
+bool leer_version_protegidos(const std::string& ruta, uint64_t& version, std::string& error) {
+    version = 0;
+    std::string t;
+    if (!leer_cache_protegidos(ruta, t, error)) {
+        if (error.find("No such file") != std::string::npos) {
+            error.clear();
+            return true;
+        }
+        return false;
+    }
+    while (!t.empty() && (t.back() == '\n' || t.back() == '\r')) t.pop_back();
+    if (t.empty() || t.size() > 20 || !std::all_of(t.begin(), t.end(), [](char c) { return c >= '0' && c <= '9'; })) {
+        error = "contenido mal formado (se espera un entero decimal)";
+        return false;
+    }
+    version = std::strtoull(t.c_str(), nullptr, 10);
+    return true;
+}
+
+bool escribir_version_protegidos(const std::string& ruta, uint64_t version, std::string& error) {
+    return escribir_cache_protegidos(ruta, std::to_string(version) + "\n", error);
+}
+
+std::string diferencias_protegidos(const ManifiestoVerificado* anterior, const ManifiestoVerificado& nuevo) {
+    auto clave = [](const EntradaProtegida& e) {
+        return std::string(nombre_categoria(e.rango.cat)) + " " + e.rango.texto + " " + e.interfaz;
+    };
+    std::set<std::string> a, n;
+    if (anterior) for (const auto& e : anterior->entradas) a.insert(clave(e));
+    for (const auto& e : nuevo.entradas) n.insert(clave(e));
+    std::ostringstream o;
+    std::size_t na = 0, nb = 0;
+    o << "altas=[";
+    for (const auto& x : n) if (!a.count(x)) o << (na++ ? ", " : "") << x;
+    o << "] bajas=[";
+    for (const auto& x : a) if (!n.count(x)) o << (nb++ ? ", " : "") << x;
+    o << "]";
+    return o.str();
 }
 
 ResultadoVerificacion ProtegidosVigentes::reverificar(const std::string& sobre) const {
