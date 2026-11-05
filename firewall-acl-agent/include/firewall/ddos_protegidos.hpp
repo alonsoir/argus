@@ -19,13 +19,15 @@
 
 namespace mldefender::firewall {
 
-enum class CategoriaProtegida : uint8_t { NINGUNA = 0, DMZ = 1, INTRANET = 2, EXTERNOS_CRITICOS = 3 };
+// [PROTEGIDOS-MANIFIESTO-D318] INFRAESTRUCTURA (ADR-060 D1): el plano de control de aRGus (etcd, etcd-server, Vault).
+enum class CategoriaProtegida : uint8_t { NINGUNA = 0, DMZ = 1, INTRANET = 2, EXTERNOS_CRITICOS = 3, INFRAESTRUCTURA = 4 };
 
 inline const char* nombre_categoria(CategoriaProtegida c) {
     switch (c) {
         case CategoriaProtegida::DMZ: return "dmz";
         case CategoriaProtegida::INTRANET: return "intranet";
         case CategoriaProtegida::EXTERNOS_CRITICOS: return "externos_criticos";
+        case CategoriaProtegida::INFRAESTRUCTURA: return "infraestructura";
         default: return "ninguna";
     }
 }

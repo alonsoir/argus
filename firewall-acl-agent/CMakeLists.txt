@@ -133,6 +133,58 @@ message(STATUS "✅ LZ4 found: ${LZ4_VERSION}")
 include_directories(${LZ4_INCLUDE_DIRS})
 
 # ============================================================================
+# [PROTEGIDOS-MANIFIESTO-D318] ADR-060: libsodium (verificación Ed25519 del manifiesto de protegidos), la compilada
+# desde el código fuente (1.0.19), como plugin-loader.
+# ============================================================================
+find_library(SODIUM_LIB sodium PATHS /usr/local/lib /usr/lib NO_DEFAULT_PATH)
+find_path(SODIUM_INCLUDE sodium.h PATHS /usr/local/include /usr/include NO_DEFAULT_PATH)
+if(NOT SODIUM_LIB OR NOT SODIUM_INCLUDE)
+    message(FATAL_ERROR "[PROTEGIDOS-CLAVE] libsodium no encontrada (lib=${SODIUM_LIB} include=${SODIUM_INCLUDE})")
+endif()
+message(STATUS "libsodium: ${SODIUM_LIB}")
+
+# ============================================================================
+# [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D3 / D-E: clave PÚBLICA del manifiesto de protegidos (Vault transit del
+# hospital), compilada en dos ranuras (patrón ADR-025). No es un secreto. Sin la ranura actual NO se compila: no hay
+# defecto sano para una clave de confianza.
+#   -DARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX=<64 hex>     (producción: la pasa Jenkins)
+#   -DARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX=<64 hex>  (solo durante una rotación; si no, vacía)
+# Sin -D se leen de /etc/ml-defender/firewall-acl-agent/protegidos_pubkey_{actual,siguiente}.hex; en el lab los
+# trae de la VM etcd `make protegidos-pubkey` (bootstrap [4b/8]).
+# ============================================================================
+set(ARGUS_PROTEGIDOS_PUBKEY_DIR /etc/ml-defender/firewall-acl-agent)
+foreach(RANURA ACTUAL SIGUIENTE)
+    string(TOLOWER ${RANURA} ranura)
+    set(_fich ${ARGUS_PROTEGIDOS_PUBKEY_DIR}/protegidos_pubkey_${ranura}.hex)
+    if(DEFINED ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX)
+        set(_origen "-D")
+    elseif(EXISTS ${_fich})
+        file(READ ${_fich} _v)
+        string(STRIP "${_v}" _v)
+        set(ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX "${_v}")
+        set(_origen "fichero ${_fich}")
+    else()
+        set(ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX "")
+        set(_origen "ausente: ni -D ni ${_fich}")
+    endif()
+    set(_v "${ARGUS_PROTEGIDOS_PUBKEY_${RANURA}_HEX}")
+    if(RANURA STREQUAL "ACTUAL" AND _v STREQUAL "")
+        message(FATAL_ERROR "[PROTEGIDOS-CLAVE] falta la clave pública ACTUAL del manifiesto de protegidos (${_origen}). "
+                            "Lab: make protegidos-pubkey desde el Mac. Producción: -DARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX=<64 hex>")
+    endif()
+    string(LENGTH "${_v}" _n)
+    if(NOT _v STREQUAL "" AND (NOT _n EQUAL 64 OR NOT _v MATCHES "^[0-9a-f]+$"))
+        message(FATAL_ERROR "[PROTEGIDOS-CLAVE] clave pública ${RANURA} mal formada (${_origen}): 64 caracteres hex en minúsculas")
+    endif()
+    if(_v STREQUAL "")
+        message(STATUS "[PROTEGIDOS-CLAVE] ${RANURA}: ninguna (${_origen})")
+    else()
+        string(SUBSTRING "${_v}" 0 16 _ini)
+        message(STATUS "[PROTEGIDOS-CLAVE] ${RANURA}: ${_ini}... (${_origen})")
+    endif()
+endforeach()
+
+# ============================================================================
 # etcd-client Library (Custom)
 # ============================================================================
 set(ETCD_CLIENT_LIB /vagrant/etcd-client/build/libetcd_client.so)
@@ -187,6 +239,8 @@ set(FIREWALL_CORE_SOURCES
         src/core/autonomy_reactor.cpp
         src/core/autonomy_subscriber.cpp
         src/core/clave_csv.cpp           # [FW-CSV-CLAVE-B2-D316] clave HMAC del CSV pedida cada intervalo
+        src/core/protegidos_manifiesto.cpp  # [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto (ADR-060)
+        src/core/protegidos_claves.cpp      # [PROTEGIDOS-MANIFIESTO-D318] clave pública compilada (dos ranuras)
         # src/core/acl_intelligence.cpp     # TODO: Phase 2+
 )
 
@@ -251,6 +305,13 @@ target_include_directories(firewall_core
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
         /usr/local/include
 )
+
+# [PROTEGIDOS-MANIFIESTO-D318] verificación Ed25519 del manifiesto y clave pública compilada (ADR-060)
+target_include_directories(firewall_core PUBLIC ${SODIUM_INCLUDE})
+target_link_libraries(firewall_core PUBLIC ${SODIUM_LIB})
+target_compile_definitions(firewall_core PRIVATE
+        ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX="${ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX}"
+        ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX="${ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX}")
 
 #===----------------------------------------------------------------------===//
 # Main Executable (Day 50: Enhanced)
@@ -416,6 +477,28 @@ if(BUILD_TESTS)
             ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
     add_test(NAME test_ddos_protegidos COMMAND test_ddos_protegidos)
+    # [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto (ADR-060 8e.1a): clave desechable, CHECK propio
+    add_executable(test_protegidos_manifiesto
+            tests/unit/test_protegidos_manifiesto.cpp
+            src/core/protegidos_manifiesto.cpp
+    )
+    target_include_directories(test_protegidos_manifiesto PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${JSONCPP_INCLUDE_DIRS} ${SODIUM_INCLUDE})
+    target_link_libraries(test_protegidos_manifiesto PRIVATE ${JSONCPP_LIBRARIES} ${SODIUM_LIB})
+    add_test(NAME test_protegidos_manifiesto COMMAND test_protegidos_manifiesto)
+    # [PROTEGIDOS-MANIFIESTO-D318] la clave compilada es la de CMake, en las dos ranuras
+    add_executable(test_protegidos_claves
+            tests/unit/test_protegidos_claves.cpp
+            src/core/protegidos_manifiesto.cpp
+            src/core/protegidos_claves.cpp
+    )
+    target_include_directories(test_protegidos_claves PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${JSONCPP_INCLUDE_DIRS} ${SODIUM_INCLUDE})
+    target_link_libraries(test_protegidos_claves PRIVATE ${JSONCPP_LIBRARIES} ${SODIUM_LIB})
+    target_compile_definitions(test_protegidos_claves PRIVATE
+            ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX="${ARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX}"
+            ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX="${ARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX}")
+    add_test(NAME test_protegidos_claves COMMAND test_protegidos_claves)
 # [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_ddos_protegidos)
     # test_ddos_mitigacion — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
     add_executable(test_ddos_mitigacion
