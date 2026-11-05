@@ -8880,3 +8880,43 @@ Vault registra en su audit quién firmó, cuándo y desde dónde. En el lab qued
 VM admin (RAM) ni hardware. Va con DEBT-VAULT-GESTION-TRAS-INIT-001 y con la máquina del admin (ADR-060, D8).
 **Test de cierre:** sin la llave enchufada `argus-infra` no consigue token de Vault; con ella, firma y queda en el
 audit.
+
+---
+
+## DAY318 — pasos 8e.3a, 8e.3b y 8e.3c hechos [PROTEGIDOS-MANIFIESTO-D318]
+
+Commits: a5a41ba4 (8e.3a `libs/protegidos`), 465e6aa4 (8e.3b etcd-server), 91981329 (8e.3c consulta del firewall).
+Diseño: ADR-060, sección 5 (F-A..F-I).
+
+### Medido en el banco
+- 8e.3a: 117/117 con `native` y con `skylake`; una mutación en la librería la caza el ctest del firewall.
+- 8e.3b: firewall 117/117 y etcd-server 8/8 (antes 7) con `skylake` y `native`. Prueba de punta a punta con el
+  etcd-server real (mTLS), firma real de Vault 2.2.1 transit y `curl` por rol, 12/12 dos veces (404 sin manifiesto;
+  PUT con firewall-acl-agent o admin 403; PUT con argus-infra 201; GET devuelve los bytes exactos; sniffer 403;
+  repetida y rollback 409; alterada tras firmar 403). 6 mutaciones detectadas.
+- 8e.3c: 117/117 con `skylake` y `native`; `test_protegidos_manifiesto` 125 comprobaciones; 3 mutaciones (sin suelo,
+  sin bajas, fichero de versión ausente como error) detectadas. La consulta y el arranque de `main.cpp` no tienen test
+  unitario: la primera prueba real es 8e.3d (publicar la versión 1 y verla aplicada sin reiniciar).
+
+### Medido en el lab (PROFILE=production)
+- El etcd-server de la VM y el firewall tienen la misma huella de clave (`52ba6180cf5e8e9a`); reglas 14/15 y 15/15;
+  `[ETCD-PROTEGIDOS] protegidos.hospital_id=hospital-lab (JSON)`; `--check-config` sin defectos; `GET` con argus-infra
+  404 (aún no hay manifiesto).
+- El firewall: `consulta_sec=30`, `suelo=0` y `[PROTEGIDOS-CONSULTA] ... 404`: llega al etcd-server con su certificado y
+  authz le deja pasar.
+
+### Hallazgos DAY318 (8e.3)
+- **`-march=native` engaña al banco:** el defender es `skylake` y el banco otra CPU. Con LTO, GCC 12.2 dio en el lab un
+  falso `-Werror=stringop-overflow` (37 bytes en el búfer corto de 16 de `std::string`) en
+  `test_ipset_injection_integration` que en el banco no salía. Reproducido con `-march=skylake`; arreglado sin
+  desactivar el aviso (cadenas con `ostringstream`). Desde entonces el banco compila también con `-march=skylake`.
+- El despliegue del etcd-server a la VM copia `libsodium.so.23` como librería propia: es el enlace del FIX DAY107 a la
+  `.so.26` (1.0.19) copiado con `cp -L` (ver DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001).
+- La escritura del manifiesto en etcd no es una transacción (primero `protegidos/v/<N>`, después `protegidos/vigente`)
+  y un `PUT` a la vez lo asegura un mutex: con varios etcd-server (PR2) hace falta una transacción de etcd.
+
+### DEBT-FW-TEST-IPSET-INJECTION-DEBIL-001 — ABIERTA (nueva DAY318, Alonso)
+`test_ipset_injection_integration` pasa aunque el validador de CIDR lo acepte todo (medido DAY318 en el banco, también
+en el árbol de 8e.1b): lo más probable es que la línea inyectada (`add argus_h2_evil ...`) falle por sí sola porque ese
+set no existe. Arreglo: que el test cree antes el set víctima.
+**Test de cierre:** con el validador mutado (acepta todo), el test falla; con el bueno, pasa.
