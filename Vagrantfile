@@ -128,6 +128,17 @@ VAULT_INSTALL_SHELL
 # el defender (certificados de cliente de sus componentes).
 ARGUS_PKI_DIR = ENV.fetch("ARGUS_PKI_DIR", File.join(Dir.home, "argus-pki"))
 
+# [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2: hospital de este despliegue, de su group_vars (el mismo fichero por despliegue
+# que rellena Jenkins). Nombra la clave transit del manifiesto de protegidos (argus-transit/keys/protegidos-<hospital>):
+# una clave por hospital. Sin valor válido Vagrant para aquí: no hay defecto sano para la identidad de un hospital.
+require "yaml"
+ARGUS_GROUP_VARS = File.expand_path(File.join("ansible", "inventory", "group_vars", "argus_dev.yml"), __dir__)
+ARGUS_HOSPITAL_ID = ((YAML.safe_load(File.read(ARGUS_GROUP_VARS)) || {})["argus_hospital_id"]).to_s
+unless ARGUS_HOSPITAL_ID.match?(/\A[a-z0-9-]{1,64}\z/)
+  abort "[PROTEGIDOS-PUBKEY-D318] argus_hospital_id ausente o mal formado en #{ARGUS_GROUP_VARS} " \
+        "(formato: [a-z0-9-], de 1 a 64 caracteres; p. ej. hospital-lab)"
+end
+
 Vagrant.configure("2") do |config|
 
   # [APT-ESPERA-D317] determinismo de EMECAS: en una VM recién arrancada, unattended-upgrades coge el bloqueo de dpkg y un
@@ -1621,7 +1632,8 @@ NFT
 
     # [VAULT-SERVER-D312] PKI: directorio de entrada 0700 y copia desde ARGUS_PKI_DIR (Mac); vault-server la instala y borra
     etcd.vm.provision "shell", name: "pki-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki"
-    %w[ca.crt vault.crt vault.key etcd-server.crt etcd-server.key].each do |f|
+    # [PROTEGIDOS-PUBKEY-D318] argus-infra: certificado que SOLO firma el manifiesto de protegidos (ver d312_pki.sh)
+    %w[ca.crt vault.crt vault.key etcd-server.crt etcd-server.key argus-infra.crt argus-infra.key].each do |f|
       etcd.vm.provision "pki-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki/#{f}"
     end
     etcd.vm.provision "shell", name: "vault-install", inline: VAULT_INSTALL
@@ -1630,7 +1642,8 @@ NFT
     # kv v2 argus-hmac/ (sin borrado), auth cert para CN=etcd-server, root revocado. docs/ml-heads/day312_diseno.md
     # [VAULT-CAS-D314] el montaje lleva cas_required=true (decisión V2 de Alonso, DAY314): ninguna escritura sin CAS puede
     # pisar una clave aunque el código falle. Se comprueba en cada aprovisionamiento (sonda: escribir sin CAS da 400)
-    etcd.vm.provision "shell", name: "vault-server", inline: <<-'VAULT_SERVER'
+    etcd.vm.provision "shell", name: "vault-server", env: { "ARGUS_HOSPITAL_ID" => ARGUS_HOSPITAL_ID },
+      inline: <<-'VAULT_SERVER'
       set -e
       umask 077
       export DEBIAN_FRONTEND=noninteractive
@@ -1644,15 +1657,21 @@ NFT
         install -d -m 0700 -o root -g root /etc/argus-pki
         for f in ca.crt etcd-server.crt; do install -m 0644 -o root -g root "$PKI_IN/$f" /etc/argus-pki/$f; done
         install -m 0600 -o root -g root "$PKI_IN/etcd-server.key" /etc/argus-pki/etcd-server.key
+        # [PROTEGIDOS-PUBKEY-D318] argus-infra (OU=argus-infra) SOLO firma el manifiesto de protegidos (rol de Vault
+        # argus-infra-admin). No es admin (OU=admin: en el etcd-server rota claves HMAC y lista componentes).
+        install -m 0644 -o root -g root "$PKI_IN/argus-infra.crt" /etc/argus-pki/argus-infra.crt
+        install -m 0600 -o root -g root "$PKI_IN/argus-infra.key" /etc/argus-pki/argus-infra.key
         install -d -m 0750 -o vault -g vault /etc/vault.d/tls
         install -m 0644 -o vault -g vault "$PKI_IN/ca.crt"    /etc/vault.d/tls/ca.crt
         install -m 0644 -o vault -g vault "$PKI_IN/vault.crt" /etc/vault.d/tls/vault.crt
         install -m 0600 -o vault -g vault "$PKI_IN/vault.key" /etc/vault.d/tls/vault.key
         rm -rf "$PKI_IN"
       fi
-      for f in /etc/vault.d/tls/ca.crt /etc/vault.d/tls/vault.crt /etc/vault.d/tls/vault.key /etc/argus-pki/etcd-server.crt /etc/argus-pki/etcd-server.key; do
+      for f in /etc/vault.d/tls/ca.crt /etc/vault.d/tls/vault.crt /etc/vault.d/tls/vault.key /etc/argus-pki/etcd-server.crt /etc/argus-pki/etcd-server.key /etc/argus-pki/argus-infra.crt /etc/argus-pki/argus-infra.key; do
         [ -s "$f" ] || { echo "❌ vault-server: falta $f (¿existe la PKI del lab en el Mac? ARGUS_PKI_DIR)"; exit 1; }
       done
+      [[ "${ARGUS_HOSPITAL_ID:-}" =~ ^[a-z0-9-]{1,64}$ ]] || { echo "❌ vault-server: ARGUS_HOSPITAL_ID '${ARGUS_HOSPITAL_ID:-}' ausente o mal formado ([a-z0-9-], 1 a 64)"; exit 1; }
+      CLAVE_PROT="protegidos-$ARGUS_HOSPITAL_ID"
 
       # 2. Configuración: raft en /opt/vault/data, solo 127.0.0.1, TLS con certificado de cliente obligatorio
       install -d -m 0700 -o vault -g vault /opt/vault/data
@@ -1676,6 +1695,28 @@ listener "tcp" {
 }
 HCL
       chown root:vault /etc/vault.d/vault.hcl; chmod 0640 /etc/vault.d/vault.hcl
+
+      # [PROTEGIDOS-PUBKEY-D318] directorio del audit device de fichero y su rotación (sin ella el disco se llena seguro).
+      # Vault reabre el fichero con SIGHUP. Retención del lab: 30 días (en producción la fija la ley de cada hospital).
+      install -d -m 0750 -o vault -g vault /var/log/vault
+      command -v logrotate >/dev/null || apt-get install -y logrotate
+      cat > /etc/logrotate.d/argus-vault-audit <<'LOGROTATE'
+# [PROTEGIDOS-PUBKEY-D318] generado por el Vagrantfile; no editar a mano
+/var/log/vault/audit.log {
+  daily
+  rotate 30
+  missingok
+  notifempty
+  compress
+  delaycompress
+  create 0640 vault vault
+  postrotate
+    systemctl kill -s HUP vault.service > /dev/null 2>&1 || true
+  endscript
+}
+LOGROTATE
+      logrotate -d /etc/logrotate.d/argus-vault-audit > /dev/null 2>&1 \
+        || { echo "❌ vault-server: logrotate rechaza /etc/logrotate.d/argus-vault-audit"; exit 1; }
 
       # 3. Desellado c (SOLO laboratorio): la clave vive en /etc/vault.d/unseal.key (root 0600); sale por stdin, nunca por argv
       cat > /usr/local/sbin/argus-vault-unseal <<'UNSEAL'
@@ -1726,6 +1767,10 @@ UNIT
         unset INIT_JSON
         systemctl start argus-vault-unseal
         export VAULT_TOKEN="$ROOT"
+        # [PROTEGIDOS-PUBKEY-D318] audit ANTES que todo lo demás (también queda auditada la configuración). Dos devices:
+        # Vault rechaza TODA petición si no puede escribir en ninguno; con dos, un disco lleno en /var/log no lo para.
+        vault audit enable file file_path=/var/log/vault/audit.log mode=0640 >/dev/null
+        vault audit enable syslog tag=vault-audit facility=AUTH >/dev/null
         vault secrets enable -path=argus-hmac -version=2 kv >/dev/null
         vault write argus-hmac/config cas_required=true >/dev/null   # [VAULT-CAS-D314]
         vault policy write etcd-server - >/dev/null <<'POL'
@@ -1736,9 +1781,26 @@ POL
         vault auth enable cert >/dev/null
         vault write auth/cert/certs/etcd-server display_name=etcd-server policies=etcd-server \
           certificate=@/etc/vault.d/tls/ca.crt allowed_common_names=etcd-server token_ttl=3600 >/dev/null
+        # [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2: firma del manifiesto de protegidos. Clave ed25519 por hospital, NO
+        # exportable y sin borrado: la privada nunca sale de Vault. Solo argus-infra (rol argus-infra-admin) firma, y solo
+        # desde el CIDR autorizado (lab: 127.0.0.1/32, Vault solo escucha ahí; producción: el de la plantilla de despliegue).
+        vault secrets enable -path=argus-transit transit >/dev/null
+        vault write -f "argus-transit/keys/$CLAVE_PROT" type=ed25519 exportable=false allow_plaintext_backup=false >/dev/null
+        vault policy write argus-infra-admin - >/dev/null <<POL
+# [PROTEGIDOS-PUBKEY-D318] argus-infra firma, verifica y lee la clave pública del manifiesto de su hospital; nada más
+path "argus-transit/sign/$CLAVE_PROT"   { capabilities = ["update"] }
+path "argus-transit/verify/$CLAVE_PROT" { capabilities = ["update"] }
+path "argus-transit/keys/$CLAVE_PROT"   { capabilities = ["read"] }
+POL
+        vault write auth/cert/certs/argus-infra display_name=argus-infra policies=argus-infra-admin \
+          certificate=@/etc/vault.d/tls/ca.crt allowed_common_names=argus-infra \
+          token_ttl=300 token_max_ttl=900 token_bound_cidrs=127.0.0.1/32 >/dev/null
+        printf '%s\n' "$CLAVE_PROT" > /etc/vault.d/argus-protegidos.clave
+        chmod 0644 /etc/vault.d/argus-protegidos.clave
         vault token revoke -self >/dev/null
         unset VAULT_TOKEN ROOT
-        echo "✅ vault-server: inicializado (1/1), argus-hmac (kv v2), política etcd-server, auth cert; root revocado"
+        echo "✅ vault-server: inicializado (1/1), audit (fichero + syslog), argus-hmac (kv v2), política etcd-server, auth cert,"
+        echo "   argus-transit con $CLAVE_PROT (ed25519, no exportable) y rol argus-infra; root revocado"
       elif [ "$INIT_RC" = "0" ]; then
         systemctl start argus-vault-unseal
         echo "✅ vault-server: ya inicializado; desellado comprobado"
@@ -1757,6 +1819,35 @@ POL
         echo "❌ vault-server: escritura sin CAS dio HTTP $SONDA (se esperaba 400): el montaje no tiene cas_required."
         echo "   Vault inicializado antes de DAY314. Desde el Mac: vagrant destroy -f etcd && vagrant up etcd"; exit 1
       fi
+      # [PROTEGIDOS-PUBKEY-D318] sonda en cada aprovisionamiento: con el certificado de argus-infra se lee la clave del
+      # manifiesto (ed25519, no exportable, sin borrado), y esa lectura tiene que aparecer en los dos audit devices. Un
+      # Vault inicializado antes de DAY318 no tiene transit y, con el root revocado, no se puede añadir: se rehace.
+      REHACER="Desde el Mac: vagrant destroy -f etcd && vagrant up etcd"
+      [ -s /etc/vault.d/argus-protegidos.clave ] || { echo "❌ vault-server: Vault sin argus-transit (inicializado antes de DAY318). $REHACER"; exit 1; }
+      HAY=$(cat /etc/vault.d/argus-protegidos.clave)
+      [ "$HAY" = "$CLAVE_PROT" ] || { echo "❌ vault-server: este Vault firma con $HAY y el despliegue pide $CLAVE_PROT (argus_hospital_id). Un Vault por hospital. $REHACER"; exit 1; }
+      N0=$(wc -l < /var/log/vault/audit.log)
+      audit_syslog() { journalctl -t vault-audit --since "-15min" --no-pager 2>/dev/null | grep -c "argus-transit/keys/$CLAVE_PROT"; }
+      S0=$(audit_syslog)
+      TI=$(VAULT_CLIENT_CERT=/etc/argus-pki/argus-infra.crt VAULT_CLIENT_KEY=/etc/argus-pki/argus-infra.key \
+           vault login -method=cert -path=cert -token-only name=argus-infra 2>/dev/null) || { echo "❌ vault-server: login cert de argus-infra"; exit 1; }
+      INFO=$(curl -s --cacert "$VAULT_CACERT" --cert /etc/argus-pki/argus-infra.crt --key /etc/argus-pki/argus-infra.key \
+        -H "X-Vault-Token: $TI" "https://127.0.0.1:8200/v1/argus-transit/keys/$CLAVE_PROT")
+      unset TI
+      printf '%s' "$INFO" | python3 -c '
+import sys, json
+d = json.load(sys.stdin)["data"]
+ver = {k: d.get(k) for k in ("type", "exportable", "deletion_allowed", "supports_signing")}
+if ver != {"type": "ed25519", "exportable": False, "deletion_allowed": False, "supports_signing": True}:
+    sys.exit("❌ vault-server: la clave del manifiesto no es ed25519 no exportable y sin borrado: %s" % ver)
+print("✅ vault-server: argus-transit/keys/%s ed25519, exportable=False, deletion_allowed=False, version %s" % (sys.argv[1], d["latest_version"]))
+' "$CLAVE_PROT" || exit 1
+      tail -n +"$((N0 + 1))" /var/log/vault/audit.log | grep -q "argus-transit/keys/$CLAVE_PROT" \
+        || { echo "❌ vault-server: la lectura de la clave no aparece en /var/log/vault/audit.log (audit de fichero sin escribir)"; exit 1; }
+      S1=$S0; for i in 1 2 3 4 5; do S1=$(audit_syslog); [ "$S1" -gt "$S0" ] && break; sleep 1; done
+      [ "$S1" -gt "$S0" ] \
+        || { echo "❌ vault-server: la lectura de la clave no aparece en el audit de syslog (journalctl -t vault-audit: $S0 -> $S1)"; exit 1; }
+      echo "✅ vault-server: los dos audit devices escriben (fichero: $(wc -l < /var/log/vault/audit.log) líneas; syslog: vault-audit)"
       vault status -format=json | python3 -c 'import sys,json; s=json.load(sys.stdin); print("✅ vault-server: sealed=%s storage=%s version=%s" % (s["sealed"], s["storage_type"], s["version"]))'
     VAULT_SERVER
 

@@ -5,6 +5,13 @@
 #   bash d312_pki.sh reemitir DIR etcd|vault    reemite un certificado de servidor de perfil fijo con la CA existente
 #   bash d312_pki.sh cliente DIR ROL [INSTANCIA] añade un certificado de cliente (CN=INSTANCIA, defecto ROL; OU=ROL)
 # Identidad (DAY312): CN = instancia (clave HMAC propia, /secrets/{CN}); OU = rol (permisos de todo el rol).
+# Roles de administración (DAY318, ADR-060), separados a propósito:
+#   admin        (OU=admin)        operación diaria en el etcd-server: rotar claves HMAC, listar componentes, /info.
+#                                  NO puede firmar el manifiesto de protegidos.
+#   argus-infra  (OU=argus-infra)  SOLO firma el manifiesto de protegidos (Vault transit, rol argus-infra-admin) desde
+#                                  la máquina del admin. Firmar da inmunidad frente a todo bloqueo de aRGus: si se
+#                                  compromete el certificado de uso diario, el manifiesto sigue a salvo.
+#   PKI creada antes de DAY318: bash d312_pki.sh cliente DIR argus-infra
 # Parámetros (entorno): PKI_DIAS_CA (defecto 3650, rango 365-7300), PKI_DIAS_HOJA (defecto 397, rango 30-825).
 # Por la terminal solo salen huellas SHA-256 de certificados; nunca una clave.
 set -euo pipefail
@@ -98,7 +105,7 @@ case "$MODO" in
     # etcd necesita también clientAuth: su pasarela interna se conecta a su propio puerto (medido DAY312) y, en el PR2, los peers
     firmar etcd          etcd          etcd        "serverAuth,clientAuth" "DNS:localhost,IP:127.0.0.1"
     # Clientes: una instancia por rol en el PR1 (CN = OU = nombre con el que cada componente se registra hoy)
-    for r in sniffer ml-detector firewall-acl-agent admin; do firmar "$r" "$r" "$r" clientAuth ""; done
+    for r in sniffer ml-detector firewall-acl-agent admin argus-infra; do firmar "$r" "$r" "$r" clientAuth ""; done
     comprobar
     ;;
   cliente)

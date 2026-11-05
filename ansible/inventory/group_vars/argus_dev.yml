@@ -13,3 +13,8 @@ argus_env: dev
 etcd_almacen_endpoints:
   - "https://127.0.0.1:2381"
 argus_prefijo: "/argus/"
+
+# [PROTEGIDOS-PUBKEY-D318] hospital de este despliegue (ADR-060): nombra la clave transit del manifiesto de protegidos
+# (argus-transit/keys/protegidos-<hospital>, una por hospital) y es el hospital_id del manifiesto. Formato: [a-z0-9-],
+# de 1 a 64. Sin defecto en ningún sitio: el Vagrantfile para si falta. Lab: hospital-lab (decisión de Alonso DAY318).
+argus_hospital_id: "hospital-lab"

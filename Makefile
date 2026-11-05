@@ -241,6 +241,8 @@ bootstrap-x86-ebpf:
 	@$(MAKE) set-build-profile
 	@echo "[4/8] Instalando systemd units..."
 	@$(MAKE) install-systemd-units
+	@echo "[4b/8] Clave pública del manifiesto de protegidos (Vault transit de la VM etcd) al defender..."
+	@$(MAKE) protegidos-pubkey  # [PROTEGIDOS-PUBKEY-D318] antes de compilar: sin ella el firewall no compila (8e.1)
 	@echo "[5/8] Compilando pipeline (incluye pubkey runtime + plugin-test-message)..."
 	@$(MAKE) pipeline-build
 	@$(MAKE) check-build-artifacts
@@ -276,6 +278,8 @@ bootstrap-x86-libpcap:
 	@$(MAKE) set-build-profile
 	@echo "[4/8] Instalando systemd units..."
 	@$(MAKE) install-systemd-units
+	@echo "[4b/8] Clave pública del manifiesto de protegidos (Vault transit de la VM etcd) al defender..."
+	@$(MAKE) protegidos-pubkey  # [PROTEGIDOS-PUBKEY-D318] antes de compilar: sin ella el firewall no compila (8e.1)
 	@echo "[5/8] Compilando pipeline (incluye Variant B sniffer-libpcap)..."
 	@$(MAKE) pipeline-build
 	@$(MAKE) sniffer-libpcap
@@ -2162,7 +2166,12 @@ dev-setup-tools:
 ETCD_VM_ESPERA_S ?= 30
 ETCD_VM_UNIDAD := ml-defender-etcd-server.service
 ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
-.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso
+.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey
+
+# [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2 (Mac): clave PÚBLICA del manifiesto de protegidos (Vault transit de la VM etcd)
+# al defender, donde CMake la compila en el firewall-acl-agent (patrón ADR-025). Lee con el certificado de argus-infra.
+protegidos-pubkey:
+	@bash scripts/etcd_ha/protegidos_pubkey.sh
 
 # Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
 etcd-vm-deploy:
