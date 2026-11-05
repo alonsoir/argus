@@ -926,6 +926,13 @@ deja de ser benigno (símbolo divergente, no solo soname).
 verificación de que ambos resuelven al símbolo correcto). Sin warning de `ld`, o warning
 documentado como esperado.
 **Estimación:** 0.5 sesión (investigación).
+**Medido DAY318 (8e.1a, el firewall enlaza libsodium):** en el defender conviven la 1.0.18 de Debian
+(`libsodium23`) y la 1.0.19 compilada desde el código fuente en `/usr/local/lib`. La buena solo carga porque el FIX
+DAY107 de `tools/provision.sh` enlaza `/usr/local/lib/libsodium.so.23 -> .so.26` y porque las unidades systemd,
+`firewall-start`, `test-firewall` y el perfil del Vagrantfile ponen `LD_LIBRARY_PATH=/usr/local/lib`. Funciona,
+pero es frágil: un binario lanzado sin esa variable carga la 1.0.18. Hay que hacerlo bien (rpath o una sola
+versión instalada); lo ideal, que la 1.0.19 llegue con Debian (Alonso DAY318). El banco reproduce ya el enlace y la
+variable.
 
 ### DEBT-SEMGREP-CPP-HANG-001 — semgrep-core se cuelga sobre el árbol C++ completo
 **Severidad:** 🟡 P2
@@ -8807,3 +8814,41 @@ sin decidir).
 Falco y Wazuh avisan cuando la partición del audit de Vault pasa de un umbral (p. ej. 75 %) y cuando falla uno de los
 dos audit devices, con prioridad en el log. Retención del audit en el lab: 30 días (`logrotate`); en producción la fija
 la ley de cada hospital.
+
+---
+
+## DAY318 — pasos 8e.1a y 8e.1b hechos [PROTEGIDOS-MANIFIESTO-D318]
+
+Commits: 3af32373c (8e.1a, el verificador, sin cambiar el comportamiento del agente) y f9076a97c (8e.1b, el
+cableado). Diseño: ADR-060, secciones 5 y 6.
+
+### Medido en el banco (Debian 12, GCC 12.2.0, opciones de production, dos pasadas)
+- 8e.1a y 8e.1b: 117/117 tests en cada pasada, los mismos que el control.
+- Mutaciones del verificador (8e.1a): todas detectadas, después de exigir `!ok` en cada rechazo (`rech()`) y de
+  añadir la caché con la misma versión y otro contenido.
+- Mutaciones del cableado (8e.1b), las 8 detectadas: candado siempre abierto, candado que ignora el nulo, rangos que
+  no se renuevan, sin `swap`, entradas malas aceptadas, temporal sin borrar, regla `src` en vez de `src,src`, tipo
+  del set mal leído. `test_argus_cadena_root` corre contra el kernel de verdad.
+
+### Medido en el lab (PROFILE=production)
+- `pipeline-build` rc 0. `test-firewall`: 94/94 (2 de rendimiento saltados, como antes). `test-firewall-e2e`: 23/23,
+  0 saltados en el gate; `test_argus_cadena_root` 58/58.
+- La huella compilada (52ba6180cf5e8e9a) es la del sha256 de `protegidos_pubkey_actual.hex`: la misma clave que
+  trajo `make protegidos-pubkey` de `protegidos-hospital-lab`.
+- Arranque: cinco `[CONFIG] protegidos.*` del JSON y ningún `ddos_protegidos`; `[PROTEGIDOS-SIN-MANIFIESTO]` (no hay
+  caché hasta 8e.3); regla `ml_defender_protegidos src,src RETURN`; rangos `NINGUNO`; resumen con
+  `infraestructura=0 manifiesto=ninguno`.
+
+### Hallazgos DAY318 (8e.1)
+- En `dry_run` el agente no crea ningún set: la whitelist vieja no ha existido nunca en el kernel del defender del
+  lab (medido: ningún set ni regla de aRGus). Los sets solo los crean los E2E que ponen `dry_run=false`.
+- La llamada al candado dentro de `zmq_subscriber` no tiene test unitario (el suscriptor no tiene ninguno); la
+  función `candado_cerrado` sí. La cubre el E2E de 8e.5.
+- libsodium del lab: ver DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001 (medido DAY318).
+- `firewall-acl-agent/config/rules/` (`blacklist.json` y `whitelist.json`, vacíos) tampoco se usa; va con
+  `src/rules` en DEBT-REPO-RESIDUOS-001.
+
+### Pendiente
+- `lab-e2e-mitigacion` y `lab-e2e-protegidos` fallan hasta 8e.5: sin manifiesto el candado para la mitigación, y
+  `d303_veredicto_protegidos.sh` busca líneas de log que ya no existen (se reescribe en 8e.5 con P1–P6).
+- 8e.3: anti-rollback entre reinicios (ADR-060, sección 6), `[INFRA-CAMBIO]`, `consulta_sec`.

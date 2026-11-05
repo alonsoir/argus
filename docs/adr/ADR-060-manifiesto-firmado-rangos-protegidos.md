@@ -207,11 +207,15 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
 
 - **8e.2** Vault: motor transit, clave ed25519 no exportable por hospital, política `argus-infra-admin`,
   `token_bound_cidrs`, audit device. Vagrantfile y Ansible. El bootstrap trae la clave pública al defender.
-- **8e.1** firewall-acl-agent: categoría `infraestructura`, manifiesto por hospital con sus plantas, carga desde la
-  caché y verificación (Ed25519 con libsodium, clave pública compilada en dos ranuras), versión monótona, límites de
-  prefijo, set `hash:net,iface` aplicado de forma atómica con `ipset swap`, candado (D6), último verificado y avisos
-  periódicos (D7), aviso si falta el plano de control, contadores por categoría. Fuera `ddos_protegidos`,
-  `ipsets.whitelist` y el defecto RFC 1918. Tests.
+- **8e.1** firewall-acl-agent, en dos commits (DAY318):
+  - **8e.1a** (hecho, 3af32373c) el verificador, sin cambiar el comportamiento del agente: categoría
+    `infraestructura`, manifiesto por hospital con sus plantas, verificación Ed25519 con libsodium y clave pública
+    compilada en dos ranuras, versión monótona, límites de prefijo, lo vigente seguro entre hilos (D7), caché en
+    disco, aviso si falta el plano de control (D-C). Tests.
+  - **8e.1b** (hecho, f9076a97c) el cableado: carga desde la caché al arrancar, set `hash:net,iface` sustituido de
+    forma atómica con `ipset swap` y regla `src,src`, candado (D6), barrera por IP con los rangos del vigente,
+    avisos periódicos (D6, D7, D-C), contadores por categoría. Fuera `ddos_protegidos`, `ipsets.whitelist` y el
+    defecto RFC 1918. Tests.
 - **8e.3** `argus-infra` y las rutas del manifiesto en el etcd-server (`GET`/`PUT`, PUT solo con certificado
   OU=argus-infra (D9 bis), verificación de firma, versión y hospital); el firewall lo pide cada
   `protegidos.consulta_sec`. El etcd-server necesita leer la clave pública: medido DAY318, hoy su política de Vault
@@ -315,13 +319,18 @@ deja de verificar, se queda con lo que tiene en memoria y avisa) y guarda lo vig
 hilos (hoy el suscriptor y `BatchProcessor` copian los rangos una sola vez al arrancar). Pedirlo al etcd-server
 (`consulta_sec`) va en 8e.3, con sus rutas.
 
+**Límite de 8e.1 (medido DAY318).** La versión monótona protege mientras el agente está vivo: al arrancar no hay
+versión aplicada y se acepta cualquier manifiesto bien firmado de la caché, también uno más viejo. La caché solo la
+escribe root (O_NOFOLLOW, temporal y rename), pero el anti-rollback entre reinicios (la versión más alta vista,
+guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.
+
 **Campos nuevos en `firewall.json`** (el JSON sigue siendo la ley para lo que no es la lista):
 
 | Campo | Rango | Defecto | Doc |
 |---|---|---|---|
 | `protegidos.hospital_id` | cadena [1, 64], `[a-z0-9-]` | — | sin valor sano por defecto: si falta, candado cerrado y aviso |
 | `protegidos.despliegue_id` | cadena [1, 64], `[a-z0-9-]` | — | la planta de este firewall; sin valor sano por defecto: si falta, candado cerrado y aviso |
-| `protegidos.set_name` | lo que acepta `is_valid_set_name` (1 a 31, `[A-Za-z0-9_-]`) | `ml_defender_protegidos` | set `hash:net,iface` del kernel |
+| `protegidos.set_name` | `[A-Za-z0-9_-]`, de 1 a 29 (el temporal `<set>_n` del swap añade dos y tiene que caber en los 31 de `is_valid_set_name`) | `ml_defender_protegidos` | set `hash:net,iface` del kernel |
 | `protegidos.manifiesto_cache` | ruta absoluta | `/var/lib/ml-defender/firewall/protegidos.manifiesto` | último manifiesto verificado |
 | `protegidos.aviso_sec` | [30, 86400] | 300 | aviso periódico y nueva verificación de la caché |
 | `protegidos.comprobacion_kernel_sec` | [5, 3600] | 30 | comprobación kernel ↔ manifiesto (8e.4) |
@@ -336,6 +345,11 @@ hilos (hoy el suscriptor y `BatchProcessor` copian los rangos una sola vez al ar
 - `[INFRA-CAMBIO] version A -> B firmante=... altas=... bajas=...`
 - `[PROTEGIDOS-DIVERGENCIA] kernel != manifiesto: ...` / `[PROTEGIDOS-SPOOFING] origen=... interfaz|mac ...` (8e.4)
 - `protegidos:` gana `infraestructura=N`.
+
+Implementados en 8e.1b, además: `[PROTEGIDOS-CLAVE]` (huellas de las dos ranuras compiladas: los 16 primeros hex
+del sha256 de la clave, no los de la clave), `[PROTEGIDOS-SET]`, `[PROTEGIDOS-KERNEL]` (entradas llevadas al set;
+las IPv6 solo en la barrera) y `[PROTEGIDOS-CACHE]` (la caché no se lee o ya no verifica: se conserva lo que hay en
+memoria). `[INFRA-CAMBIO]` llega con 8e.3, cuando el manifiesto cambia en caliente.
 
 **Tests de 8e.1:** firma válida con la clave actual y con la siguiente; firma de otra clave; carga alterada un byte;
 versión igual y menor; otro `hospital_id`; planta ausente; prefijo más amplio que el límite (en `infraestructura`,
