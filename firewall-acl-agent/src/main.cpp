@@ -21,6 +21,7 @@
 #include "firewall/ipset_wrapper.hpp"
 #include "firewall/iptables_wrapper.hpp"
 #include "firewall/batch_processor.hpp"
+#include "firewall/protegidos_manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
 #include <fstream>
 #include <nlohmann/json.hpp>
 #include "firewall/zmq_subscriber.hpp"
@@ -206,6 +207,142 @@ void print_version() {
 //===----------------------------------------------------------------------===//
 // Main Entry Point (Day 52 Enhanced)
 //===----------------------------------------------------------------------===//
+
+// ═══════════════════════════════════════════════════════════════════════
+// [PROTEGIDOS-MANIFIESTO-D318] ADR-060: set del kernel, caché del manifiesto y vigilancia periódica
+// ═══════════════════════════════════════════════════════════════════════
+using ::mldefender::firewall::ProtegidosVigentes;
+using ::mldefender::firewall::ManifiestoVerificado;
+using ::mldefender::firewall::candado_cerrado;
+using ::mldefender::firewall::claves_protegidos_compiladas;
+
+// El set hash:net,iface existe y es de ese tipo (lo crea si falta). false = sin exención del kernel (solo barrera).
+static bool protegidos_preparar_set(IPSetWrapper& ipset, const FirewallAgentConfig& config) {
+    const auto& pc = config.protegidos;
+    const auto& k = claves_protegidos_compiladas();
+    std::cout << "[PROTEGIDOS-CLAVE] actual huella=" << ::mldefender::firewall::huella_clave_protegidos(k.actual)
+              << (k.hay_siguiente ? " siguiente huella=" + ::mldefender::firewall::huella_clave_protegidos(k.siguiente)
+                                  : std::string(" siguiente=ninguna"))
+              << " (compiladas)" << std::endl;
+    const auto tipo = ipset.set_type(pc.set_name);
+    if (tipo && *tipo != "hash:net,iface") {
+        std::cerr << "[PROTEGIDOS-SET-TIPO] el set " << pc.set_name << " existe con tipo " << *tipo
+                  << " (se espera hash:net,iface): la exención del kernel NO se aplica; la barrera del agente sí protege. "
+                     "Con el agente parado: sudo ipset destroy " << pc.set_name << std::endl;
+        return false;
+    }
+    if (tipo) {
+        std::cout << "[PROTEGIDOS-SET] " << pc.set_name << " hash:net,iface ya existe" << std::endl;
+        return true;
+    }
+    if (config.operation.dry_run) {
+        std::cout << "[DRY-RUN] ipset create " << pc.set_name << " hash:net,iface family inet counters (no se crea en "
+                     "dry_run)" << std::endl;
+        return true;
+    }
+    IPSetConfig c;
+    c.name = pc.set_name;
+    c.type = IPSetType::HASH_NET_IFACE;
+    c.family = IPSetFamily::INET;
+    c.hashsize = 1024;
+    c.maxelem = static_cast<uint32_t>(::mldefender::firewall::kProtegidosMaxEntradas);
+    c.timeout = 0;
+    c.counters = true;
+    c.comment = false;
+    if (!ipset.create_set(c)) {
+        std::cerr << "[PROTEGIDOS-SET] ERROR: no se pudo crear " << pc.set_name << " (hash:net,iface): la exención del "
+                     "kernel NO se aplica; la barrera del agente sí protege" << std::endl;
+        return false;
+    }
+    std::cout << "[PROTEGIDOS-SET] " << pc.set_name << " hash:net,iface creado (vacío hasta verificar un manifiesto)" << std::endl;
+    return true;
+}
+
+// Lleva al kernel las entradas IPv4 del manifiesto (sustitución atómica). IPv6: solo la barrera (D-I).
+static void protegidos_aplicar_kernel(IPSetWrapper& ipset, const std::string& set, const ManifiestoVerificado& m) {
+    std::vector<std::pair<std::string, std::string>> e;
+    std::size_t v6 = 0;
+    for (const auto& en : m.entradas) {
+        if (en.rango.v6) {
+            ++v6;
+            continue;
+        }
+        e.emplace_back(en.rango.texto, en.interfaz);
+    }
+    const auto r = ipset.replace_net_iface(set, e, static_cast<uint32_t>(::mldefender::firewall::kProtegidosMaxEntradas));
+    if (r) {
+        std::cout << "[PROTEGIDOS-KERNEL] " << set << " = version " << m.version << ": " << e.size()
+                  << " entradas cidr,interfaz (IPv6 solo en la barrera: " << v6 << "; DEBT-FW-IPV6-SETS-001)" << std::endl;
+    } else {
+        std::cerr << "[PROTEGIDOS-KERNEL] ERROR al cargar " << set << ": " << r.get_error().message
+                  << "; la barrera del agente sí protege; revise: sudo ipset list " << set << std::endl;
+    }
+}
+
+static void protegidos_infra(const ManifiestoVerificado& m, const FirewallAgentConfig& config) {
+    const auto f = ::mldefender::firewall::infra_sin_cubrir(m, config.protegidos.etcd_endpoints);
+    if (f.empty()) return;
+    std::ostringstream o;
+    for (std::size_t i = 0; i < f.size(); ++i) o << (i ? " " : "") << ::mldefender::firewall::detalle_protegidos::saneado(f[i]);
+    std::cerr << "[PROTEGIDOS-INFRA-INCOMPLETA] etcd.endpoints sin entrada infraestructura en el manifiesto version "
+              << m.version << ": " << o.str() << " (un DDoS podría dejar al plano de control en el blacklist: firme una "
+                 "versión que lo incluya con argus-infra)" << std::endl;
+}
+
+// Arranque: el último manifiesto verificado está en la caché (ADR-060 D5.5).
+static void protegidos_cargar_cache(ProtegidosVigentes& v, IPSetWrapper& ipset, const FirewallAgentConfig& config,
+                                    bool set_ok) {
+    const auto& pc = config.protegidos;
+    if (pc.hospital_id.empty() || pc.despliegue_id.empty()) {
+        std::cerr << "[PROTEGIDOS-SIN-MANIFIESTO] protegidos.hospital_id/despliegue_id sin valor: no hay manifiesto que "
+                     "verificar (candado cerrado)" << std::endl;
+        return;
+    }
+    std::string sobre, err;
+    if (!::mldefender::firewall::leer_cache_protegidos(pc.manifiesto_cache, sobre, err)) {
+        std::cerr << "[PROTEGIDOS-SIN-MANIFIESTO] caché " << pc.manifiesto_cache << ": " << err
+                  << " (hospital=" << pc.hospital_id << " planta=" << pc.despliegue_id << "; candado cerrado)" << std::endl;
+        return;
+    }
+    const auto p = v.proponer(sobre);
+    if (!p.resultado.ok) {
+        std::cerr << "[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=" << ::mldefender::firewall::nombre_motivo(p.resultado.motivo)
+                  << " " << p.resultado.detalle << " (caché " << pc.manifiesto_cache << "; candado cerrado)" << std::endl;
+        return;
+    }
+    std::cout << ::mldefender::firewall::resumen_manifiesto(*p.resultado.manifiesto) << " (caché " << pc.manifiesto_cache
+              << ")" << std::endl;
+    if (set_ok) protegidos_aplicar_kernel(ipset, pc.set_name, *p.resultado.manifiesto);
+    protegidos_infra(*p.resultado.manifiesto, config);
+}
+
+// Cada aviso_sec: sin manifiesto, aviso (D6); con él, la caché tiene que seguir verificando (D7) y el plano de
+// control tiene que estar dentro (D-C). Nunca se pierde lo vigente por un fallo de disco.
+static void protegidos_vigilar(const ProtegidosVigentes& v, const FirewallAgentConfig& config) {
+    const auto& pc = config.protegidos;
+    const auto m = v.vigente();
+    if (!m) {
+        std::cerr << "[PROTEGIDOS-SIN-MANIFIESTO] sin manifiesto verificado (hospital=" << pc.hospital_id << " planta="
+                  << pc.despliegue_id << " caché=" << pc.manifiesto_cache << "): "
+                  << (candado_cerrado(config.ddos_mitigacion.habilitada, &v) ? "mitigacion real BLOQUEADA (candado); sombra"
+                                                                            : "mitigacion deshabilitada")
+                  << "; ningún rango protegido" << std::endl;
+        return;
+    }
+    std::string sobre, err;
+    if (!::mldefender::firewall::leer_cache_protegidos(pc.manifiesto_cache, sobre, err)) {
+        std::cerr << "[PROTEGIDOS-CACHE] no se puede leer " << pc.manifiesto_cache << ": " << err
+                  << "; se conserva en memoria la version " << m->version << " (D7)" << std::endl;
+    } else {
+        const auto r = v.reverificar(sobre);
+        if (!r.ok) {
+            std::cerr << "[PROTEGIDOS-CACHE] la caché ya no verifica (motivo=" << ::mldefender::firewall::nombre_motivo(r.motivo)
+                      << " " << r.detalle << "): se conserva en memoria la version " << m->version
+                      << " (D7); vuelva a firmar con argus-infra" << std::endl;
+        }
+    }
+    protegidos_infra(*m, config);
+}
 
 int main(int argc, char** argv) {
 #ifdef PLUGIN_LOADER_ENABLED
@@ -602,44 +739,12 @@ int main(int argc, char** argv) {
         // IPTables Configuration (Day 52: uses ipsets.at("blacklist"))
         // ───────────────────────────────────────────────────────────────────
 
-        {   // [ARGUS-WHITELIST-D301] la whitelist refleja EXACTAMENTE los rangos protegidos (decision de Alonso DAY300)
-            if (config.ipsets.count("whitelist") > 0) {
-                const std::string wl = config.ipsets.at("whitelist").set_name;
-                std::vector<IPSetEntry> entradas;
-                size_t v6 = 0;
-                for (const auto& r : config.ddos_protegidos.rangos) {
-                    if (r.texto.find(':') != std::string::npos) {
-                        ++v6;
-                        std::cerr << "[CONFIG-AVISO] ddos_protegidos " << r.texto << ": IPv6 no cabe en la whitelist (family "
-                                     "inet; DEBT-FW-IPV6-SETS-001); la barrera del suscriptor si lo protege" << std::endl;
-                        continue;
-                    }
-                    entradas.push_back(IPSetEntry{r.texto});
-                }
-                if (config.operation.dry_run) {
-                    std::cout << "[DRY-RUN] ipset flush " << wl << std::endl;
-                    for (const auto& en : entradas) {
-                        std::cout << "[DRY-RUN] ipset add " << wl << " " << en.ip << std::endl;
-                    }
-                    std::cout << "[ARGUS-WHITELIST] " << wl << ": se vaciaria y cargaria con " << entradas.size()
-                              << " rangos protegidos IPv4 (IPv6 omitidos=" << v6 << ") (DRY-RUN: nada aplicado)" << std::endl;
-                } else {
-                    const bool vaciada = static_cast<bool>(ipset.flush_set(wl));
-                    const bool cargada = entradas.empty() || static_cast<bool>(ipset.add_batch(wl, entradas));
-                    if (vaciada && cargada) {
-                        std::cout << "[ARGUS-WHITELIST] " << wl << ": vaciada y cargada con " << entradas.size()
-                                  << " rangos protegidos IPv4 (IPv6 omitidos=" << v6 << ")" << std::endl;
-                    } else {
-                        std::cerr << "[ARGUS-WHITELIST] ERROR " << wl << ": flush=" << (vaciada ? "ok" : "FALLO")
-                                  << " carga=" << (cargada ? "ok" : "FALLO") << "; el agente sigue (la barrera del "
-                                     "suscriptor protege los rangos); revise el set con: sudo ipset list " << wl << std::endl;
-                    }
-                }
-            } else {
-                std::cerr << "[CONFIG-AVISO] ipsets.whitelist ausente: los rangos protegidos no se reflejan en el kernel; "
-                             "solo los protege la barrera del suscriptor" << std::endl;
-            }
-        }
+        // [PROTEGIDOS-MANIFIESTO-D318] ADR-060: set hash:net,iface de protegidos (solo lo escribe el agente) y manifiesto
+        // firmado desde la caché. Sin manifiesto verificado el set queda vacío y el candado (D6) cerrado.
+        auto protegidos = std::make_shared<ProtegidosVigentes>(claves_protegidos_compiladas(),
+                                                               config.protegidos.hospital_id, config.protegidos.despliegue_id);
+        const bool protegidos_set_ok = protegidos_preparar_set(ipset, config);
+        protegidos_cargar_cache(*protegidos, ipset, config, protegidos_set_ok);
         const auto& blacklist_ipset = config.ipsets.at("blacklist");
 
         FIREWALL_LOG_INFO("Configuring IPTables",
@@ -650,11 +755,8 @@ int main(int argc, char** argv) {
         firewall_config.blacklist_chain = config.iptables.chain_name;
         firewall_config.blacklist_ipset = blacklist_ipset.set_name;  // ✅ Day 52
 
-        if (config.ipsets.count("whitelist") > 0) {
-            firewall_config.whitelist_ipset = config.ipsets.at("whitelist").set_name;
-            FIREWALL_LOG_INFO("Whitelist configured",
-                "ipset_name", firewall_config.whitelist_ipset);
-        }
+        // [PROTEGIDOS-MANIFIESTO-D318] exención del kernel solo si el set es hash:net,iface (si no, solo la barrera)
+        firewall_config.protegidos_ipset = protegidos_set_ok ? config.protegidos.set_name : std::string();
 
         firewall_config.enable_rate_limiting = config.iptables.enable_rate_limiting;
         firewall_config.rate_limit_connections = config.iptables.rate_limit_connections;
@@ -694,13 +796,9 @@ int main(int argc, char** argv) {
 
         // ✅ Day 52: Assign ipset names from ipsets map
         batch_config.blacklist_ipset = blacklist_ipset.set_name;
-        if (config.ipsets.count("whitelist") > 0) {
-            batch_config.whitelist_ipset = config.ipsets.at("whitelist").set_name;
-        }
 
         FIREWALL_LOG_INFO("Batch processor ipset configuration",
-            "blacklist_ipset", batch_config.blacklist_ipset,
-            "whitelist_ipset", batch_config.whitelist_ipset);
+            "blacklist_ipset", batch_config.blacklist_ipset);
 
         FIREWALL_LOG_INFO("Initializing batch processor");
         BatchProcessor processor(ipset, batch_config);
@@ -737,7 +835,7 @@ int main(int argc, char** argv) {
         static_cast<size_t>(config.recidivism.max_tracked_ips);
     recidivism_config.overflow_log_path = config.recidivism.overflow_log_path;
     processor.set_recidivism_config(recidivism_config);  // RECIDIVISM-D276
-    processor.set_rangos_protegidos(config.ddos_protegidos);  // [DDOS-MITIGACION-B2-D302] barrera (2 puertas)
+    processor.set_rangos_protegidos(*protegidos->rangos());  // [DDOS-MITIGACION-B2-D302] barrera (2 puertas); D318: del manifiesto
     {   // [DDOS-MITIGACION-B1-D301] escalera efectiva al log y aviso de castigos de prueba
         std::ostringstream esc;
         for (size_t i = 0; i < recidivism_config.strike_durations_sec.size(); ++i) {
@@ -800,7 +898,7 @@ int main(int argc, char** argv) {
 
         // [DDOS-SHADOW-D293] política por víctima en sombra (solo registra)
         zmq_config.ddos_shadow = config.ddos_shadow;
-        zmq_config.ddos_protegidos = config.ddos_protegidos;  // [PROTEGIDOS-D300]
+        zmq_config.protegidos = protegidos;  // [PROTEGIDOS-MANIFIESTO-D318] lo vigente (ADR-060)
         zmq_config.ddos_mitigacion = config.ddos_mitigacion;  // [DDOS-MITIGACION-B2-D302]
         zmq_config.dry_run = config.operation.dry_run;        // [DDOS-MITIGACION-B2-D302] 1.a llave
         zmq_config.hmac_key_check_interval_seconds = config.hmac_key_check_interval_seconds;  // [FW-CSV-CLAVE-B2-D316]
@@ -808,13 +906,17 @@ int main(int argc, char** argv) {
             recidivism_config.strike_durations_sec, static_cast<uint32_t>(config.ddos_mitigacion.aviso_castigo_corto_sec));
         std::cout << "[DDOS-MITIGACION] modo: "
                   << (!config.ddos_mitigacion.habilitada ? "DESHABILITADA (sombra pura, no se llama a la mitigacion)"
+                      : candado_cerrado(true, protegidos.get())
+                      ? "BLOQUEADA POR EL CANDADO (sin manifiesto verificado de protegidos; sombra) [PROTEGIDOS-SIN-MANIFIESTO]"
                       : (config.operation.dry_run ? "DRY_RUN (simula; solo resumen periodico)"
                                                   : "ACTIVA (bloquea en el ipset; una linea por accion)"))
                   << std::endl;
         {
+            const auto vig = protegidos->vigente();
             std::cout << "[SOMBRA-DDOS] rangos protegidos ("
-                      << (config.ddos_protegidos.por_defecto ? "DEFECTO RFC 1918 + fc00::/7" : "JSON") << "):";
-            for (const auto& r : config.ddos_protegidos.rangos) {
+                      << (vig ? "manifiesto version " + std::to_string(vig->version) : std::string("NINGUNO: sin manifiesto verificado"))
+                      << "):";
+            for (const auto& r : protegidos->rangos()->rangos) {
                 std::cout << " " << ::mldefender::firewall::nombre_categoria(r.cat) << "=" << r.texto;
             }
             std::cout << " (DROP de la cabeza DDoS con origen protegido = ALERTA_PROTEGIDO, nunca bloqueo)" << std::endl;
@@ -896,6 +998,7 @@ int main(int argc, char** argv) {
                   << std::endl;
 
         auto last_health_check = std::chrono::steady_clock::now();
+        auto last_protegidos = std::chrono::steady_clock::now();  // [PROTEGIDOS-MANIFIESTO-D318] D6/D7/D-C
         auto last_metrics_export = std::chrono::steady_clock::now();
 
         while (g_running.load() &&
@@ -907,6 +1010,12 @@ int main(int argc, char** argv) {
                 // Health checks every 30 seconds
                 auto elapsed_health = std::chrono::duration_cast<std::chrono::seconds>(
                     now - last_health_check).count();
+
+                if (std::chrono::duration_cast<std::chrono::seconds>(now - last_protegidos).count() >=
+                    config.protegidos.aviso_sec) {
+                    protegidos_vigilar(*protegidos, config);  // [PROTEGIDOS-MANIFIESTO-D318]
+                    last_protegidos = now;
+                }
 
                 if (elapsed_health >= 30) {
                     perform_health_checks(config, ipset, iptables, subscriber);

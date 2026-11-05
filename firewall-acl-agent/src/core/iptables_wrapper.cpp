@@ -448,7 +448,9 @@ std::vector<std::string> IPTablesWrapper::list_rules(
 
 // [ARGUS-CADENA-D301] Reglas base: UNA cadena propia de aRGus con un unico salto desde INPUT (posicion 1).
 //   INPUT -I 1 -j <cadena>                                  (unico salto; los anteriores se retiran)
-//   <cadena> -m set --match-set <whitelist> src -j RETURN   ("protegido" = aRGus nunca lo bloquea: vuelve a INPUT y
+//   <cadena> -m set --match-set <protegidos> src,src -j RETURN  ([PROTEGIDOS-MANIFIESTO-D318] origen E interfaz de
+//                                                            entrada del manifiesto; "protegido" = aRGus nunca lo
+//                                                            bloquea: vuelve a INPUT y
 //                                                            siguen las reglas del admin; NUNCA ACCEPT)
 //   <cadena> -m set --match-set <blacklist> src -j DROP
 // La cadena es config.blacklist_chain (iptables.chain_name del JSON). Idempotente: crea o vacia la cadena y deja un
@@ -500,9 +502,9 @@ IPTablesResult<void> IPTablesWrapper::setup_base_rules(const FirewallConfig& con
         if (!run({"-t", "filter", "-N", ch})) return fallo("create");
     }
     // 2. reglas dentro de la cadena: whitelist RETURN, blacklist DROP
-    if (!config.whitelist_ipset.empty()) {
-        if (!run({"-t", "filter", "-A", ch, "-m", "set", "--match-set", config.whitelist_ipset, "src",
-                  "-m", "comment", "--comment", "argus-protegidos", "-j", "RETURN"})) return fallo("whitelist RETURN");
+    if (!config.protegidos_ipset.empty()) {
+        if (!run({"-t", "filter", "-A", ch, "-m", "set", "--match-set", config.protegidos_ipset, "src,src",
+                  "-m", "comment", "--comment", "argus-protegidos", "-j", "RETURN"})) return fallo("protegidos RETURN");
     }
     if (!config.blacklist_ipset.empty()) {
         if (!run({"-t", "filter", "-A", ch, "-m", "set", "--match-set", config.blacklist_ipset, "src",
@@ -529,8 +531,8 @@ IPTablesResult<void> IPTablesWrapper::setup_base_rules(const FirewallConfig& con
             std::istringstream is(out);
             std::string l;
             while (std::getline(is, l)) {
-                const bool wl = !config.whitelist_ipset.empty() &&
-                                l.find("--match-set " + config.whitelist_ipset + " ") != std::string::npos;
+                const bool wl = !config.protegidos_ipset.empty() &&
+                                l.find("--match-set " + config.protegidos_ipset + " ") != std::string::npos;
                 const bool bl = !config.blacklist_ipset.empty() &&
                                 l.find("--match-set " + config.blacklist_ipset + " ") != std::string::npos;
                 if (wl || bl) {
@@ -546,7 +548,7 @@ IPTablesResult<void> IPTablesWrapper::setup_base_rules(const FirewallConfig& con
                      "toda conexion TCP nueva); DEBT-FW-RATELIMIT-ACCEPT-ALL-001" << std::endl;
     }
     std::cout << "[ARGUS-CADENA] INPUT -j " << ch << " en posicion 1 (saltos previos retirados=" << retirados
-              << "); dentro: " << (config.whitelist_ipset.empty() ? "sin whitelist" : config.whitelist_ipset + " RETURN")
+              << "); dentro: " << (config.protegidos_ipset.empty() ? "sin protegidos" : config.protegidos_ipset + " src,src RETURN")
               << ", " << (config.blacklist_ipset.empty() ? "sin blacklist" : config.blacklist_ipset + " DROP")
               << (m_dry_run ? " (DRY-RUN: nada aplicado)" : "") << std::endl;
     return IPTablesResult<void>();

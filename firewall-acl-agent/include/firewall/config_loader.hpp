@@ -188,6 +188,16 @@ struct IrpConfig {
         std::string zmq_endpoint = "ipc:///run/argus/autonomy.sock";
     };
 
+    // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 sección 6: el manifiesto firmado de protegidos de ESTE firewall.
+    struct ProtegidosConfig {
+        std::string hospital_id;    // [a-z0-9-]{1,64}; sin defecto: vacío = sin manifiesto (candado cerrado) y aviso
+        std::string despliegue_id;  // la planta; igual que hospital_id
+        std::string set_name = "ml_defender_protegidos";  // set hash:net,iface; 1 a 29 (el temporal añade _n)
+        std::string manifiesto_cache = "/var/lib/ml-defender/firewall/protegidos.manifiesto";
+        int aviso_sec = 300;        // [30, 86400]: avisos periódicos y nueva verificación de la caché (D7)
+        std::vector<std::string> etcd_endpoints;  // copia de etcd.endpoints para D-C (solo lectura)
+    };
+
 //===----------------------------------------------------------------------===//
 // MAIN CONFIGURATION STRUCTURE
 //===----------------------------------------------------------------------===//
@@ -195,7 +205,7 @@ struct FirewallAgentConfig {
     OperationConfig operation;
     ZMQConfigNew zmq;
     IPSetConfigNew ipset;
-    std::map<std::string, IPSetConfigNew> ipsets;  // Multiple ipsets (blacklist, whitelist)
+    std::map<std::string, IPSetConfigNew> ipsets;  // blacklist (el de protegidos lo crea el agente: ADR-060)
     IPTablesConfigNew iptables;
     BatchProcessorConfigNew batch_processor;
     RecidivismConfigNew recidivism;   // RECIDIVISM-D276
@@ -207,7 +217,7 @@ struct FirewallAgentConfig {
     IrpConfig irp;                           // ADR-042 auto-isolate
     AutonomyConfig autonomy;   // DAY 155 — DEBT-FIREWALL-DENY-SELECTIVE-001
     DdosShadowParams ddos_shadow;  // [DDOS-SHADOW-D293] política por víctima en sombra
-    ::mldefender::firewall::RangosProtegidos ddos_protegidos;  // [PROTEGIDOS-D300] rangos protegidos de la cabeza DDoS
+    ProtegidosConfig protegidos;  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 (sustituye a ddos_protegidos)
     ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  // [DDOS-MITIGACION-B1-D301] mitigacion real de ddos_v2
     // [FW-CSV-CLAVE-B2-D316] cada cuánto se pide la clave HMAC del CSV al etcd-server; entero [10, 3600], defecto 60
     int hmac_key_check_interval_seconds = 60;

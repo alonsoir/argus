@@ -175,7 +175,8 @@ struct FirewallConfig {
     std::string ratelimit_chain{"ML_DEFENDER_RATELIMIT"};
 
     std::string blacklist_ipset{"ml_defender_blacklist"};
-    std::string whitelist_ipset{"ml_defender_whitelist"};
+    // [PROTEGIDOS-MANIFIESTO-D318] set hash:net,iface de protegidos (ADR-060); vacío = sin regla de exención
+    std::string protegidos_ipset{};
 
     bool enable_rate_limiting{true};
     uint32_t rate_limit_connections{100};  // Connections per 60 seconds

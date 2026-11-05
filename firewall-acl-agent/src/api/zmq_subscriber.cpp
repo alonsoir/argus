@@ -597,14 +597,11 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                           << " victimas_activas=" << ddos_shadow_.victims() << std::endl;
                 {   // [PROTEGIDOS-D300] linea propia (no altera [SOMBRA-DDOS] resumen); alertas acumuladas
                     const uint64_t* pa = prot_alertas_;
-                    std::cout << "[SOMBRA-DDOS] protegidos: alertas=" << (pa[1] + pa[2] + pa[3]) << " dmz=" << pa[1]
-                              << " intranet=" << pa[2] << " externos_criticos=" << pa[3]
-                              << " por_defecto=" << (config_.ddos_protegidos.por_defecto ? 1 : 0) << std::endl;
-                    if (config_.ddos_protegidos.por_defecto) {
-                        std::cerr << "[CONFIG-DEFAULT] ddos_protegidos: rigen los rangos privados por defecto (RFC 1918 + "
-                                     "fc00::/7 como intranet); configure los de ESTE despliegue (GUIA_OPERACIONES, "
-                                     "seccion DDOS-PROTEGIDOS)" << std::endl;
-                    }
+                    const auto vig = config_.protegidos ? config_.protegidos->vigente() : nullptr;
+                    std::cout << "[SOMBRA-DDOS] protegidos: alertas=" << (pa[1] + pa[2] + pa[3] + pa[4]) << " dmz=" << pa[1]
+                              << " intranet=" << pa[2] << " externos_criticos=" << pa[3] << " infraestructura=" << pa[4]
+                              << " manifiesto=" << (vig ? "version " + std::to_string(vig->version) : std::string("ninguno"))
+                              << std::endl;
                     prot_detalle_ = 0;
                 }
                 {   // [SOMBRA-AISLADO-D311] linea propia: DROP de victimas que no llegaron a episodio (cerrados en el
@@ -625,7 +622,9 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                     mit_renovar_total_ += mit_renovar_;
                     std::cout << "[DDOS-MITIGACION] resumen: modo="
                               << (!config_.ddos_mitigacion.habilitada ? "deshabilitada"
-                                  : (config_.dry_run ? "dry_run" : "ACTIVA"))
+                                  : (::mldefender::firewall::candado_cerrado(true, config_.protegidos.get())
+                                         ? "CANDADO" : (config_.dry_run ? "dry_run" : "ACTIVA")))
+                              << " candado=" << mit_candado_
                               << " bloquear=" << mit_bloquear_ << " renovar=" << mit_renovar_
                               << " esperar=" << mit_esperar_ << " rechazo_protegido=" << mit_protegido_
                               << " rechazo_ip_invalida=" << mit_invalida_
@@ -648,6 +647,7 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                     mit_esperar_ = 0;
                     mit_protegido_ = 0;
                     mit_invalida_ = 0;
+                    mit_candado_ = 0;
                 }
                 {  // [TIMEBASE-D295] retraso sniffer->firewall y anomalias de tiempo del periodo
                     uint64_t total = 0;
@@ -731,7 +731,9 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
         }
         const double ratio = nf2.has_ddos_embedded() ? static_cast<double>(nf2.ddos_embedded().victim_rate_ratio()) : 0.0;
         {   // [PROTEGIDOS-D300] origen protegido: ALERTA_PROTEGIDO; no entra en el episodio ni se bloquea nunca
-            const auto cat = config_.ddos_protegidos.categoria_de(nf2.source_ip());
+            // [PROTEGIDOS-MANIFIESTO-D318] lo vigente del manifiesto; por IP siempre, venga por donde venga (D-G)
+            const auto rg = config_.protegidos ? config_.protegidos->rangos() : nullptr;
+            const auto cat = rg ? rg->categoria_de(nf2.source_ip()) : ::mldefender::firewall::CategoriaProtegida::NINGUNA;
             if (cat != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
                 ++prot_alertas_[static_cast<std::size_t>(cat)];
                 if (prot_detalle_ < static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) {
@@ -762,6 +764,10 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
             const std::string& src = nf2.source_ip();
             using Accion = ::mldefender::firewall::AccionMitigacion;
             using Estado = ::mldefender::firewall::ResultadoEpisodio::Estado;
+            if (::mldefender::firewall::candado_cerrado(config_.ddos_mitigacion.habilitada, config_.protegidos.get())) {
+                ++mit_candado_;  // [PROTEGIDOS-MANIFIESTO-D318] D6: sin manifiesto verificado, la mitigación no actúa
+                return;
+            }
             const Accion accion = ddos_mitigacion_.decidir(dst, proto, src, ddos_shadow_.en_episodio(dst, proto));
             if (accion == Accion::ESPERAR) {
                 ++mit_esperar_;

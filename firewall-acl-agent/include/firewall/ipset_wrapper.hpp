@@ -40,6 +40,7 @@ enum class IPSetType {
     HASH_IP,      ///< Individual IPs (1.2.3.4)
     HASH_NET,     ///< CIDR blocks (1.2.3.0/24)
     HASH_IP_PORT, ///< IP + Port tuples
+    HASH_NET_IFACE, ///< CIDR + interfaz de entrada (192.168.100.20/32,eth2) [PROTEGIDOS-MANIFIESTO-D318]
 };
 
 /// Address family
@@ -384,6 +385,16 @@ public:
         const std::string& set1,
         const std::string& set2
     );
+
+    /// [PROTEGIDOS-MANIFIESTO-D318] tipo de un set existente ('ipset list -t'); nullopt si no existe
+    std::optional<std::string> set_type(const std::string& set_name) const;
+
+    /// [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D-A: sustituye de forma ATÓMICA el contenido de un set hash:net,iface
+    /// existente: temporal <set>_n con las entradas (cidr, interfaz), ipset swap y borrado del temporal. Nunca deja
+    /// un instante sin entradas; si algo falla el set queda como estaba. En dry_run solo imprime las órdenes.
+    IPSetResult<void> replace_net_iface(const std::string& set_name,
+                                        const std::vector<std::pair<std::string, std::string>>& entradas,
+                                        uint32_t maxelem);
 
     /// Save all sets to file
     /// @param filepath Path to save file

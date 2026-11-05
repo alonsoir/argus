@@ -22,9 +22,11 @@ RecidivismConfig escalera_prueba() {
     return cfg;
 }
 
-RangosProtegidos intranet_lab() {
-    std::ostringstream log;
-    return construir_rangos_protegidos({}, {"192.168.100.0/24"}, {}, log);
+RangosProtegidos intranet_lab() {  // [PROTEGIDOS-MANIFIESTO-D318] sin construir_rangos_protegidos (ADR-060)
+    RangosProtegidos r;
+    RangoProtegido x;
+    if (parsear_rango("192.168.100.0/24", CategoriaProtegida::INTRANET, x)) r.rangos.push_back(x);
+    return r;
 }
 }  // namespace
 

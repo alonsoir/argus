@@ -87,7 +87,6 @@ struct BatchProcessorConfig {
 
     // IPSet names
     std::string blacklist_ipset{"ml_defender_blacklist"};
-    std::string whitelist_ipset{"ml_defender_whitelist"};
 
     // Performance tuning
     size_t max_pending_ips{10000};           ///< Max IPs in queue before backpressure

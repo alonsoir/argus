@@ -1,5 +1,6 @@
 // ddos_mitigacion.hpp -- [DDOS-MITIGACION-D301] paso 3b: mitigacion real de la cabeza ddos_v2 (funciones puras).
-// Por cada DROP de ddos_v2 cuyo origen NO esta protegido (el suscriptor filtra antes con ddos_protegidos) decide:
+// Por cada DROP de ddos_v2 cuyo origen NO esta protegido (el suscriptor filtra antes con el manifiesto de protegidos,
+// ADR-060, y solo llama aqui con el candado abierto: hay manifiesto verificado) decide:
 //   NADA      mitigacion deshabilitada o victima {dst, proto} fuera de episodio: un DROP aislado no bloquea.
 //   ESPERAR   victima en episodio; el origen aun no suma min_drops_origen DROP en ESTE episodio.
 //   BLOQUEAR  primer bloqueo del origen en ESTE episodio: cuenta UN strike de reincidencia (RECIDIVISM-D276).

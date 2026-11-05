@@ -235,39 +235,79 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
                       << " (entero en [" << kMin << ", " << kMax << "]): se usa " << kDef << std::endl;
         }
     }
-    {   // [PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001: rangos protegidos de la cabeza DDoS
-        const Json::Value p = root.isMember("ddos_protegidos") ? root["ddos_protegidos"] : Json::Value(Json::nullValue);
-        std::vector<std::string> dmz, intranet, externos;
-        if (!p.isObject()) {
-            std::cerr << "[CONFIG-DEFAULT] ddos_protegidos ausente o no es un objeto (formato: {\"dmz\": [CIDR, ...], "
-                         "\"intranet\": [...], \"externos_criticos\": [...]})" << std::endl;
-        } else {
-            auto lista = [&p](const char* nombre, std::vector<std::string>& out) {
-                if (!p.isMember(nombre)) {
-                    std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre << " ausente: lista vacia" << std::endl;
-                    return;
-                }
-                if (!p[nombre].isArray()) {
-                    std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre
-                              << " no es una lista de cadenas CIDR: se ignora" << std::endl;
-                    return;
-                }
-                for (const auto& it : p[nombre]) {
-                    if (it.isString()) {
-                        out.push_back(it.asString());
-                    } else {
-                        std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre
-                                  << ": entrada que no es una cadena, descartada" << std::endl;
-                    }
-                }
-            };
-            lista("dmz", dmz);
-            lista("intranet", intranet);
-            lista("externos_criticos", externos);
+    {   // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 sección 6. Los rangos NO están aquí: salen del manifiesto firmado.
+        // Ningún campo se lee en silencio: cada uno se registra con su valor y su origen.
+        auto& pc = config.protegidos;
+        const Json::Value p = root.isMember("protegidos") ? root["protegidos"] : Json::Value(Json::nullValue);
+        if (root.isMember("ddos_protegidos")) {
+            std::cerr << "[CONFIG-AVISO] ddos_protegidos ya no se lee (ADR-060): los rangos protegidos salen SOLO del "
+                         "manifiesto firmado; retire el bloque de este firewall.json" << std::endl;
         }
-        std::ostringstream plog;
-        config.ddos_protegidos = ::mldefender::firewall::construir_rangos_protegidos(dmz, intranet, externos, plog);
-        std::cout << plog.str() << std::flush;
+        if (!p.isObject()) {
+            std::cerr << "[CONFIG-AVISO] protegidos ausente o no es un objeto: sin hospital_id ni despliegue_id no hay "
+                         "manifiesto verificado (candado cerrado); el resto, defectos" << std::endl;
+        }
+        auto es_id = [](const std::string& s) {
+            return !s.empty() && s.size() <= 64 && std::all_of(s.begin(), s.end(), [](char c) {
+                return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-';
+            });
+        };
+        auto id = [&](const char* k, std::string& out) {
+            if (p.isObject() && p.isMember(k) && p[k].isString() && es_id(p[k].asString())) {
+                out = p[k].asString();
+                std::cout << "[CONFIG] protegidos." << k << "=" << out << " (JSON)" << std::endl;
+            } else {
+                out.clear();
+                std::cerr << "[CONFIG-AVISO] protegidos." << k << " " << (p.isObject() && p.isMember(k) ? "mal formado" : "ausente")
+                          << " ([a-z0-9-], de 1 a 64): sin valor sano por defecto; no habrá manifiesto verificado "
+                             "(candado cerrado)" << std::endl;
+            }
+        };
+        id("hospital_id", pc.hospital_id);
+        id("despliegue_id", pc.despliegue_id);
+        {
+            const std::string def = pc.set_name;
+            const bool hay = p.isObject() && p.isMember("set_name");
+            if (hay && p["set_name"].isString() && p["set_name"].asString().size() <= 29 &&
+                ::mldefender::firewall::is_valid_set_name(p["set_name"].asString())) {
+                pc.set_name = p["set_name"].asString();
+                std::cout << "[CONFIG] protegidos.set_name=" << pc.set_name << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.set_name " << (hay ? "mal formado" : "ausente")
+                          << " ([A-Za-z0-9_-], de 1 a 29): se usa " << def << std::endl;
+            }
+        }
+        {
+            const std::string def = pc.manifiesto_cache;
+            const bool hay = p.isObject() && p.isMember("manifiesto_cache");
+            const std::string v = hay && p["manifiesto_cache"].isString() ? p["manifiesto_cache"].asString() : "";
+            if (!v.empty() && v[0] == '/' && v.size() <= 255 && v.find("..") == std::string::npos &&
+                std::none_of(v.begin(), v.end(), [](char c) { return static_cast<unsigned char>(c) < 0x20; })) {
+                pc.manifiesto_cache = v;
+                std::cout << "[CONFIG] protegidos.manifiesto_cache=" << v << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.manifiesto_cache " << (hay ? "mal formado" : "ausente")
+                          << " (ruta absoluta, sin .., hasta 255): se usa " << def << std::endl;
+            }
+        }
+        {
+            constexpr int kMin = 30, kMax = 86400;
+            const int def = pc.aviso_sec;
+            const bool hay = p.isObject() && p.isMember("aviso_sec");
+            if (hay && p["aviso_sec"].isInt() && p["aviso_sec"].asInt() >= kMin && p["aviso_sec"].asInt() <= kMax) {
+                pc.aviso_sec = p["aviso_sec"].asInt();
+                std::cout << "[CONFIG] protegidos.aviso_sec=" << pc.aviso_sec << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.aviso_sec " << (hay ? "mal formado" : "ausente")
+                          << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+            }
+        }
+        // D-C: los endpoints del etcd-server (los valida etcd-client; aquí solo se copian para comparar)
+        if (root.isMember("etcd") && root["etcd"].isObject() && root["etcd"]["endpoints"].isArray()) {
+            for (const auto& e : root["etcd"]["endpoints"]) {
+                if (e.isString()) pc.etcd_endpoints.push_back(e.asString());
+            }
+        }
     }
     
     if (root.isMember("validation")) {

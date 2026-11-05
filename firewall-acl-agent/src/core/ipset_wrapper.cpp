@@ -62,6 +62,7 @@ const char* IPSetWrapper::type_to_string(IPSetType type) {
         case IPSetType::HASH_IP:      return "hash:ip";
         case IPSetType::HASH_NET:     return "hash:net";
         case IPSetType::HASH_IP_PORT: return "hash:ip,port";
+        case IPSetType::HASH_NET_IFACE: return "hash:net,iface";  // [PROTEGIDOS-MANIFIESTO-D318]
     }
     return "hash:ip";
 }
@@ -653,6 +654,100 @@ IPSetResult<void> IPSetWrapper::swap_sets(
             IPSetErrorCode::KERNEL_ERROR, "Failed to swap sets"
         });
     }
+    return IPSetResult<void>();
+}
+
+// [PROTEGIDOS-MANIFIESTO-D318] tipo de un set existente, leído de 'ipset list -t' (línea "Type: ...").
+std::optional<std::string> IPSetWrapper::set_type(const std::string& set_name) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!is_valid_set_name(set_name)) return std::nullopt;
+    auto [ret, output] = safe_exec_with_output({kIpsetBin, "list", "-t", set_name});
+    if (ret != 0) return std::nullopt;
+    std::istringstream is(output);
+    std::string l;
+    while (std::getline(is, l)) {
+        if (l.rfind("Type: ", 0) == 0) return l.substr(6);
+    }
+    return std::nullopt;
+}
+
+namespace {
+// [A-Za-z0-9._-]{1,15} (IFNAMSIZ - 1): lo mismo que exige el manifiesto
+bool es_interfaz_ipset(const std::string& s) {
+    if (s.empty() || s.size() > 15) return false;
+    for (char c : s) {
+        if (!std::isalnum(static_cast<unsigned char>(c)) && c != '.' && c != '_' && c != '-') return false;
+    }
+    return true;
+}
+}  // namespace
+
+// [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D-A: sustitución atómica (temporal + swap) de un set hash:net,iface.
+IPSetResult<void> IPSetWrapper::replace_net_iface(const std::string& set_name,
+                                                  const std::vector<std::pair<std::string, std::string>>& entradas,
+                                                  uint32_t maxelem) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    const std::string tmp = set_name + "_n";
+    if (!is_valid_set_name(set_name) || !is_valid_set_name(tmp)) {
+        return IPSetResult<void>(IPSetError{IPSetErrorCode::INVALID_SET_NAME,
+                                            "Invalid set name (or temporary '" + tmp + "'): '" + set_name + "'"});
+    }
+    if (maxelem == 0 || entradas.size() > maxelem) {
+        return IPSetResult<void>(IPSetError{IPSetErrorCode::KERNEL_ERROR,
+                                            "Too many entries: " + std::to_string(entradas.size()) + " > maxelem " +
+                                                std::to_string(maxelem)});
+    }
+    std::ostringstream in;
+    std::vector<std::string> malas;
+    for (const auto& [cidr, iface] : entradas) {
+        if (!is_valid_ip_cidr(cidr) || cidr.find(':') != std::string::npos || !es_interfaz_ipset(iface)) {
+            malas.push_back(cidr + "," + iface);
+            continue;
+        }
+        in << "add " << tmp << " " << cidr << "," << iface << "\n";
+    }
+    if (!malas.empty()) {
+        return IPSetResult<void>(IPSetError{IPSetErrorCode::INVALID_IP_FORMAT,
+                                            "Invalid cidr,iface entries (IPv4 only)", malas});
+    }
+    const std::vector<std::string> crear = {kIpsetBin, "create", tmp, "hash:net,iface", "family", "inet",
+                                            "hashsize", "1024", "maxelem", std::to_string(maxelem), "counters"};
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " create " << tmp << " hash:net,iface family inet" << std::endl;
+        std::istringstream o(in.str());
+        std::string linea;
+        std::size_t n = 0;
+        while (std::getline(o, linea)) {
+            if (n++ < 20) std::cout << "[DRY-RUN]   " << linea << std::endl;
+        }
+        if (n > 20) std::cout << "[DRY-RUN]   ... (+" << (n - 20) << " ordenes)" << std::endl;
+        std::cout << "[DRY-RUN] Would execute: " << kIpsetBin << " swap " << tmp << " " << set_name
+                  << " && " << kIpsetBin << " destroy " << tmp << std::endl;
+        return IPSetResult<void>();
+    }
+    if (!set_exists_unlocked(set_name)) {
+        return IPSetResult<void>(IPSetError{IPSetErrorCode::SET_NOT_FOUND, "Set '" + set_name + "' does not exist"});
+    }
+    if (set_exists_unlocked(tmp)) safe_exec({kIpsetBin, "destroy", tmp});
+    if (safe_exec(crear) != 0) {
+        return IPSetResult<void>(IPSetError{IPSetErrorCode::KERNEL_ERROR, "Failed to create temporary set " + tmp});
+    }
+    auto falla = [&](const std::string& que) {
+        safe_exec({kIpsetBin, "destroy", tmp});
+        return IPSetResult<void>(IPSetError{IPSetErrorCode::KERNEL_ERROR, que + " (set '" + set_name + "' unchanged)"});
+    };
+    if (!entradas.empty()) {
+        const char* fichero = "/run/argus/irp/ipset_protegidos.tmp";  // como add_batch (DEBT-IRP-IPSET-TMP-001)
+        std::ofstream f(fichero);
+        if (!f) return falla("Failed to create temporary restore file");
+        f << in.str();
+        f.close();
+        const int r = safe_exec_with_file_in({kIpsetBin, "restore"}, fichero);
+        std::remove(fichero);
+        if (r != 0) return falla("ipset restore exit=" + std::to_string(r));
+    }
+    if (safe_exec({kIpsetBin, "swap", tmp, set_name}) != 0) return falla("ipset swap failed (types differ?)");
+    safe_exec({kIpsetBin, "destroy", tmp});
     return IPSetResult<void>();
 }
 

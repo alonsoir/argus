@@ -1,7 +1,10 @@
-// test_ddos_protegidos.cpp — [PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001. Standalone, CHECK propio.
+// test_ddos_protegidos.cpp — [PROTEGIDOS-D300] rangos protegidos: análisis de CIDR y pertenencia. Standalone, CHECK propio.
+// [PROTEGIDOS-MANIFIESTO-D318] ADR-060: los rangos salen solo del manifiesto firmado (test_protegidos_manifiesto.cpp);
+// fuera construir_rangos_protegidos y el defecto RFC 1918, y con ellos sus casos.
 #include "firewall/ddos_protegidos.hpp"
 #include <iostream>
-#include <sstream>
+#include <string>
+#include <vector>
 
 using namespace mldefender::firewall;
 using C = CategoriaProtegida;
@@ -17,95 +20,78 @@ static int g_checks = 0;
         }                                                                     \
     } while (0)
 
-static RangosProtegidos construir(const std::vector<std::string>& dmz, const std::vector<std::string>& intranet,
-                                  const std::vector<std::string>& ext, std::string& log) {
-    std::ostringstream o;
-    RangosProtegidos r = construir_rangos_protegidos(dmz, intranet, ext, o);
-    log = o.str();
+static RangosProtegidos rangos(const std::vector<std::pair<std::string, C>>& v) {
+    RangosProtegidos r;
+    for (const auto& [cidr, cat] : v) {
+        RangoProtegido x;
+        if (parsear_rango(cidr, cat, x)) r.rangos.push_back(x);
+    }
     return r;
 }
 
 int main() {
-    std::string log;
-
-    // 1. Host unico (lab: .61 simula un host interno); .50 no protegido.
+    // 1. Host único; vecinos no protegidos.
     {
-        auto r = construir({}, {"192.168.100.61/32"}, {}, log);
-        CHECK(!r.por_defecto);
+        auto r = rangos({{"192.168.100.61/32", C::INTRANET}, {"192.168.100.20/32", C::INFRAESTRUCTURA}});
         CHECK(r.categoria_de("192.168.100.61") == C::INTRANET);
+        CHECK(r.categoria_de("192.168.100.20") == C::INFRAESTRUCTURA);
         CHECK(r.categoria_de("192.168.100.50") == C::NINGUNA);
-        CHECK(r.categoria_de("192.168.100.51") == C::NINGUNA);
-        CHECK(log.find("[CONFIG] ddos_protegidos.intranet += 192.168.100.61/32 (JSON)") != std::string::npos);
+        CHECK(std::string(nombre_categoria(C::INFRAESTRUCTURA)) == "infraestructura");
+        CHECK(std::string(nombre_categoria(C::NINGUNA)) == "ninguna");
     }
-    // 2. Red /24 y frontera; red no normalizada en el JSON; IP sin prefijo = host.
+    // 2. Red /24 y frontera; red no normalizada; IP sin prefijo = host.
     {
-        auto r = construir({"192.168.100.77/24"}, {"10.1.2.3"}, {}, log);
+        auto r = rangos({{"192.168.100.77/24", C::DMZ}, {"10.1.2.3", C::INTRANET}});
         CHECK(r.categoria_de("192.168.100.1") == C::DMZ);
         CHECK(r.categoria_de("192.168.100.254") == C::DMZ);
         CHECK(r.categoria_de("192.168.101.1") == C::NINGUNA);
         CHECK(r.categoria_de("10.1.2.3") == C::INTRANET);
         CHECK(r.categoria_de("10.1.2.4") == C::NINGUNA);
+        RangoProtegido x;
+        CHECK(parsear_rango("192.168.100.77/24", C::DMZ, x) && x.red[3] == 0 && x.prefijo == 24);
     }
-    // 3. Prefijo no multiplo de 8 (/12) y categoria correcta por lista.
+    // 3. Prefijo no múltiplo de 8 (/12).
     {
-        auto r = construir({}, {}, {"172.16.0.0/12"}, log);
+        auto r = rangos({{"172.16.0.0/12", C::EXTERNOS_CRITICOS}});
         CHECK(r.categoria_de("172.31.255.255") == C::EXTERNOS_CRITICOS);
         CHECK(r.categoria_de("172.32.0.1") == C::NINGUNA);
         CHECK(r.categoria_de("172.15.255.255") == C::NINGUNA);
     }
-    // 4. /0 IPv4 contiene todo IPv4 y nada IPv6.
+    // 4. IPv6 /128 y /64; las familias no se mezclan.
     {
-        auto r = construir({"0.0.0.0/0"}, {}, {}, log);
-        CHECK(r.categoria_de("8.8.8.8") == C::DMZ);
-        CHECK(r.categoria_de("2001:db8::1") == C::NINGUNA);
-    }
-    // 5. IPv6 /64 y familias que no se mezclan.
-    {
-        auto r = construir({}, {"2001:db8:1:2::/64"}, {}, log);
+        auto r = rangos({{"2001:db8:1:2::/64", C::INTRANET}, {"fd00::20/128", C::INFRAESTRUCTURA}});
         CHECK(r.categoria_de("2001:db8:1:2::abcd") == C::INTRANET);
         CHECK(r.categoria_de("2001:db8:1:3::1") == C::NINGUNA);
+        CHECK(r.categoria_de("fd00::20") == C::INFRAESTRUCTURA);
+        CHECK(r.categoria_de("fd00::21") == C::NINGUNA);
         CHECK(r.categoria_de("192.168.1.1") == C::NINGUNA);
     }
-    // 6. Entradas invalidas: se descartan con aviso y las validas siguen protegiendo; el log no se rompe.
+    // 5. Entradas inválidas: parsear_rango las rechaza (nunca protege por error).
     {
-        auto r = construir({"999.1.1.1", "10.0.0.0/33"}, {"abc", "1.2.3.4;rm -rf /", "192.168.5.0/24"},
-                           {"1.2.3.4\nINYECTADO"}, log);
-        CHECK(!r.por_defecto);
-        CHECK(r.rangos.size() == 1);
-        CHECK(r.categoria_de("192.168.5.9") == C::INTRANET);
-        CHECK(log.find("descartada") != std::string::npos);
-        CHECK(log.find("\nINYECTADO") == std::string::npos);
+        RangoProtegido x;
+        for (const std::string& e : {std::string("999.1.1.1"), std::string("10.0.0.0/33"), std::string("abc"),
+                                     std::string("1.2.3.4;rm -rf /"), std::string("1.2.3.4\nINYECTADO"),
+                                     std::string("::/129"), std::string("")}) {
+            CHECK(!parsear_rango(e, C::INTRANET, x));
+        }
     }
-    // 7. Bloque ausente / listas vacias: defecto RFC 1918 + fc00::/7 como intranet.
+    // 6. IP de consulta inválida o vacía: NINGUNA; sin rangos, nada protegido.
     {
-        auto r = construir({}, {}, {}, log);
-        CHECK(r.por_defecto);
-        CHECK(r.rangos.size() == 4);
-        CHECK(r.categoria_de("10.200.3.4") == C::INTRANET);
-        CHECK(r.categoria_de("172.16.5.5") == C::INTRANET);
-        CHECK(r.categoria_de("172.32.0.1") == C::NINGUNA);
-        CHECK(r.categoria_de("192.168.100.50") == C::INTRANET);
-        CHECK(r.categoria_de("8.8.8.8") == C::NINGUNA);
-        CHECK(r.categoria_de("fd12:3456::1") == C::INTRANET);
-        CHECK(r.categoria_de("2001:db8::1") == C::NINGUNA);
-        CHECK(log.find("[CONFIG-DEFAULT] ddos_protegidos: ningun rango valido") != std::string::npos);
-    }
-    // 8. Todas las entradas invalidas: mismo defecto (el descuido grave no deja nada sin proteger).
-    {
-        auto r = construir({"x"}, {"300.0.0.0/8"}, {"::/129"}, log);
-        CHECK(r.por_defecto);
-        CHECK(r.categoria_de("192.168.1.1") == C::INTRANET);
-    }
-    // 9. IP de consulta invalida o vacia: NINGUNA (no protege por error ni rompe).
-    {
-        auto r = construir({}, {}, {}, log);
+        auto r = rangos({{"10.0.0.0/8", C::INTRANET}});
         CHECK(r.categoria_de("") == C::NINGUNA);
         CHECK(r.categoria_de("no-es-ip") == C::NINGUNA);
+        RangosProtegidos vacio;
+        CHECK(vacio.categoria_de("10.1.2.3") == C::NINGUNA);
     }
-    // 10. Primera coincidencia gana: el orden es dmz, intranet, externos_criticos.
+    // 7. Primera coincidencia gana (el manifiesto ordena: infraestructura delante, luego lo más específico).
     {
-        auto r = construir({"10.0.0.0/8"}, {"10.1.0.0/16"}, {}, log);
+        auto r = rangos({{"10.0.0.0/8", C::DMZ}, {"10.1.0.0/16", C::INTRANET}});
         CHECK(r.categoria_de("10.1.2.3") == C::DMZ);
+    }
+    // 8. El log no se rompe con entradas hostiles.
+    {
+        const std::string s = detalle_protegidos::saneado("a\nb\x01" + std::string(100, 'x'));
+        CHECK(s.find('\n') == std::string::npos && s.size() <= 67);
     }
 
     if (g_fallos != 0) {

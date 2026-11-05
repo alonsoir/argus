@@ -50,7 +50,7 @@ paso "1 alias .51 en el client, JSON de serie y nombres de los sets"
 vagrant ssh client -c "ip -4 addr show dev eth1 | grep -q 192.168.100.51" || falla "falta 192.168.100.51 en eth1 del client (sudo ip addr add 192.168.100.51/24 dev eth1)"
 git diff --quiet -- "$JSON" || falla "$JSON tiene cambios sin commit: no se toca"
 BL=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["ipsets"]["blacklist"]["set_name"])' "$JSON") || falla "no leo ipsets.blacklist.set_name"
-WL=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["ipsets"]["whitelist"]["set_name"])' "$JSON") || falla "no leo ipsets.whitelist.set_name"
+WL=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("protegidos", {}).get("set_name", "ml_defender_protegidos"))' "$JSON") || falla "no leo protegidos.set_name"  # [PROTEGIDOS-MANIFIESTO-D318]
 echo "    blacklist=$BL whitelist=$WL cadena=$CHAIN"
 paso "2 pipeline-stop y comprobacion"
 make pipeline-stop > "/tmp/${N}_stop0.txt" 2>&1 || falla "pipeline-stop"

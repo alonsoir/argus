@@ -300,7 +300,6 @@ RangosProtegidos ManifiestoVerificado::rangos() const {
         if (ia != ib) return ia;
         return a.prefijo > b.prefijo;
     });
-    out.por_defecto = false;
     return out;
 }
 
@@ -460,7 +459,8 @@ std::string resumen_manifiesto(const ManifiestoVerificado& m) {
 }
 
 ProtegidosVigentes::ProtegidosVigentes(ClavesProtegidos claves, std::string hospital_id, std::string planta)
-    : claves_(claves), hospital_id_(std::move(hospital_id)), planta_(std::move(planta)) {}
+    : claves_(claves), hospital_id_(std::move(hospital_id)), planta_(std::move(planta)),
+      rangos_(std::make_shared<const RangosProtegidos>()) {}
 
 ProtegidosVigentes::Propuesta ProtegidosVigentes::proponer(const std::string& sobre) {
     std::lock_guard<std::mutex> l(m_);
@@ -469,6 +469,7 @@ ProtegidosVigentes::Propuesta ProtegidosVigentes::proponer(const std::string& so
     p.resultado = verificar_manifiesto(sobre, claves_, hospital_id_, planta_, vigente_ ? vigente_->version : 0);
     if (p.resultado.ok) {
         vigente_ = p.resultado.manifiesto;
+        rangos_ = std::make_shared<const RangosProtegidos>(vigente_->rangos());
     } else {
         ++rechazos_;
     }
@@ -494,6 +495,11 @@ std::shared_ptr<const ManifiestoVerificado> ProtegidosVigentes::vigente() const 
 bool ProtegidosVigentes::verificado() const {
     std::lock_guard<std::mutex> l(m_);
     return vigente_ != nullptr;
+}
+
+std::shared_ptr<const RangosProtegidos> ProtegidosVigentes::rangos() const {
+    std::lock_guard<std::mutex> l(m_);
+    return rangos_;
 }
 
 uint64_t ProtegidosVigentes::rechazos() const {

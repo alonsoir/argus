@@ -104,6 +104,9 @@ public:
     ResultadoVerificacion reverificar(const std::string& sobre) const;
     std::shared_ptr<const ManifiestoVerificado> vigente() const;
     bool verificado() const;   // candado (D6): hay manifiesto verificado
+    // [PROTEGIDOS-MANIFIESTO-D318] 8e.1b: los rangos del vigente, ya ordenados (vacíos sin manifiesto). La barrera
+    // los consulta en cada DROP de la cabeza DDoS: se construyen una vez por manifiesto, no por evento.
+    std::shared_ptr<const RangosProtegidos> rangos() const;
     uint64_t rechazos() const;
     const std::string& hospital_id() const { return hospital_id_; }
     const std::string& planta() const { return planta_; }
@@ -114,8 +117,15 @@ private:
     const std::string planta_;
     mutable std::mutex m_;
     std::shared_ptr<const ManifiestoVerificado> vigente_;
+    std::shared_ptr<const RangosProtegidos> rangos_;
     uint64_t rechazos_ = 0;
 };
+
+// [PROTEGIDOS-MANIFIESTO-D318] candado (ADR-060 D6): con la mitigación habilitada, sin manifiesto verificado la
+// mitigación no actúa (ni simulada en dry_run: lo simulado es lo que haría de verdad). true = cerrado.
+inline bool candado_cerrado(bool mitigacion_habilitada, const ProtegidosVigentes* v) {
+    return mitigacion_habilitada && (v == nullptr || !v->verificado());
+}
 
 // Caché en disco del último manifiesto verificado (ADR-060 D5.5). Lectura sin seguir enlaces y con tope de tamaño;
 // escritura atómica (temporal 0640 + rename). false + error si no se puede.

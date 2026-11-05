@@ -287,6 +287,23 @@ int main() {
         CHECK(!v.reverificar(s_mal).ok);
         CHECK(v.vigente()->version == 2);
     }
+    // 10b. [8e.1b] rangos cacheados (vacíos sin manifiesto) y candado (D6)
+    {
+        ProtegidosVigentes v(solo_a, "hospital-lab", "lab-vagrant");
+        CHECK(v.rangos() && v.rangos()->rangos.empty());
+        CHECK(candado_cerrado(true, &v) && !candado_cerrado(false, &v) && candado_cerrado(true, nullptr));
+        const std::string c1 = carga(1, kLab);
+        CHECK(v.proponer(sobre(c1, firmar(a, c1))).resultado.ok);
+        CHECK(!candado_cerrado(true, &v));
+        const auto r1 = v.rangos();
+        CHECK(r1->rangos.size() == 2 && r1->categoria_de("192.168.100.20") == C::INFRAESTRUCTURA);
+        const std::string c2 = carga(2, entrada("intranet", "192.168.100.61/32"));
+        CHECK(!v.proponer(sobre(c2, firmar(otra, c2))).resultado.ok);
+        CHECK(v.rangos() == r1);   // un rechazo no toca los rangos
+        CHECK(v.proponer(sobre(c2, firmar(a, c2))).resultado.ok);
+        CHECK(v.rangos()->rangos.size() == 1 && v.rangos()->categoria_de("192.168.100.20") == C::NINGUNA);
+        CHECK(r1->rangos.size() == 2);   // quien tenía la copia anterior la conserva entera
+    }
     // 11. Caché: escribir y leer; ausente; enlace simbólico; tamaño
     {
         char dir[] = "/tmp/test_protegidos_XXXXXX";

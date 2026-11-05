@@ -1,11 +1,10 @@
 // ddos_protegidos.hpp
-// [PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001: rangos protegidos de la cabeza DDoS.
-// Un DROP de la cabeza DDoS cuyo ORIGEN cae en un rango protegido (dmz, intranet, externos_criticos) se
-// registra como ALERTA_PROTEGIDO y nunca se convierte en bloqueo automatico.
-// Si no queda ningun rango valido (bloque ausente, listas vacias o todas las entradas invalidas) se
-// protegen por defecto los rangos privados RFC 1918 y fc00::/7 como intranet (decision de Alonso DAY300:
-// un descuido de configuracion no puede acabar bloqueando la intranet o la DMZ).
-// Funciones puras, sin JSON ni red: config_loader extrae las listas y las pasa aqui.
+// [PROTEGIDOS-D300] rangos protegidos: un DROP de la cabeza DDoS cuyo ORIGEN cae en un rango protegido se registra
+// como ALERTA_PROTEGIDO y nunca se convierte en bloqueo automatico; ningun camino lo mete en el blacklist.
+// [PROTEGIDOS-MANIFIESTO-D318] ADR-060: los rangos salen SOLO del manifiesto firmado verificado
+// (protegidos_manifiesto.hpp). Fuera ddos_protegidos de firewall.json y el defecto RFC 1918 de DAY300: con el
+// candado (D6), sin manifiesto verificado no hay bloqueo real del que proteger. La barrera protege por IP siempre
+// (D-G). Funciones puras, sin JSON ni red.
 #pragma once
 #include "firewall/ip_cidr_validator.hpp"
 #include <arpa/inet.h>
@@ -110,7 +109,6 @@ inline bool parsear_rango(const std::string& cidr, CategoriaProtegida cat, Rango
 
 struct RangosProtegidos {
     std::vector<RangoProtegido> rangos;
-    bool por_defecto = false;
 
     // Categoria del primer rango que contiene la IP; NINGUNA si ninguno o si la IP no es valida.
     CategoriaProtegida categoria_de(const std::string& ip) const {
@@ -123,56 +121,5 @@ struct RangosProtegidos {
         return CategoriaProtegida::NINGUNA;
     }
 };
-
-inline const std::vector<std::string>& rangos_protegidos_por_defecto() {
-    static const std::vector<std::string> v{"10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "fc00::/7"};
-    return v;
-}
-
-// Construye los rangos desde las tres listas del JSON. Cada entrada valida se registra con [CONFIG];
-// cada invalida se descarta con [CONFIG-DEFAULT] (el resto sigue protegiendo). Sin ningun rango valido:
-// defecto RFC 1918 + fc00::/7 como intranet, con [CONFIG-DEFAULT].
-inline RangosProtegidos construir_rangos_protegidos(const std::vector<std::string>& dmz,
-                                                    const std::vector<std::string>& intranet,
-                                                    const std::vector<std::string>& externos_criticos,
-                                                    std::ostream& log) {
-    RangosProtegidos out;
-    struct Lista {
-        const std::vector<std::string>* entradas;
-        CategoriaProtegida cat;
-    };
-    const Lista listas[] = {{&dmz, CategoriaProtegida::DMZ},
-                            {&intranet, CategoriaProtegida::INTRANET},
-                            {&externos_criticos, CategoriaProtegida::EXTERNOS_CRITICOS}};
-    for (const auto& l : listas) {
-        for (const auto& e : *l.entradas) {
-            RangoProtegido r;
-            if (parsear_rango(e, l.cat, r)) {
-                log << "[CONFIG] ddos_protegidos." << nombre_categoria(l.cat) << " += " << e << " (JSON)\n";
-                out.rangos.push_back(r);
-            } else {
-                log << "[CONFIG-DEFAULT] ddos_protegidos." << nombre_categoria(l.cat) << ": entrada '"
-                    << detalle_protegidos::saneado(e)
-                    << "' descartada (formato: IPv4 o IPv6 con prefijo opcional /0-32 o /0-128, p. ej. "
-                       "10.20.0.0/16 o fd00::/8)\n";
-            }
-        }
-    }
-    if (out.rangos.empty()) {
-        out.por_defecto = true;
-        log << "[CONFIG-DEFAULT] ddos_protegidos: ningun rango valido en el JSON (bloque ausente, listas vacias o "
-               "entradas invalidas). Se protegen como intranet los rangos privados:";
-        for (const auto& e : rangos_protegidos_por_defecto()) {
-            RangoProtegido r;
-            if (parsear_rango(e, CategoriaProtegida::INTRANET, r)) {
-                out.rangos.push_back(r);
-                log << " " << e;
-            }
-        }
-        log << ". Configure dmz, intranet y externos_criticos de ESTE despliegue "
-               "(docs/operaciones/GUIA_OPERACIONES.md, seccion DDOS-PROTEGIDOS)\n";
-    }
-    return out;
-}
 
 }  // namespace mldefender::firewall
