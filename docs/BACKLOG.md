@@ -8769,3 +8769,41 @@ lesivo, se mide y se suaviza. Se revisa en cada rama que toque la cabeza DDoS o 
 - `make up` no arranca el pipeline, ni lo ha hecho nunca (git): solo `make pipeline-start`, `make bootstrap` y EMECAS.
   Un primer `pipeline-status` con la VM etcd apagada tras un `make up` no se reprodujo (la VM arrancó con un
   `vagrant up` posterior); si vuelve a pasar: `make halt`, `make up` mirando la VM `etcd`, `vagrant status`.
+
+---
+
+## DAY318 — paso 8e.2 hecho [PROTEGIDOS-PUBKEY-D318]
+
+Commit de código: «DAY318 paso 8e.2: Vault transit para el manifiesto de protegidos ...». Decisiones de Alonso DAY318:
+E1 certificado nuevo `argus-infra` separado de `admin` (ADR-060, D9 bis); E2 dos audit devices (fichero + syslog) con
+rotación; E3 `argus_hospital_id` en `group_vars` (lab: `hospital-lab`); E4 Vault en Ansible va con PR2; E5
+DEBT-VAULT-GESTION-TRAS-INIT-001.
+
+### Medido en el banco (Debian 12, Vault 2.2.1 real, dos pasadas idénticas)
+- Desde cero y segunda pasada: rc 0; sonda: clave ed25519, `exportable=False`, `deletion_allowed=False`, los dos audit
+  escriben.
+- La firma de Vault transit se verifica con `crypto_sign_verify_detached` de libsodium 1.0.19; con un byte de la carga o
+  un bit de la firma cambiados, no verifica (confirma D-E para 8e.1).
+- Permisos: 7 de 7 con 403 (ver ADR-060, D9 bis).
+- Mutaciones: Vault de DAY317 sin transit, otro hospital y syslog caído dan rc 1 con su mensaje. Con syslog caído Vault
+  sigue respondiendo: el audit de fichero basta para no bloquearlo, y la sonda lo canta.
+- Fallo del instrumento corregido antes de entregar: la primera sonda de syslog buscaba en los últimos 5 minutos y dio
+  OK con líneas de una pasada anterior (en la VM habría pasado igual al reaprovisionar). Ahora cuenta antes y después.
+
+### Medido en el lab
+`vagrant destroy -f etcd && vagrant up etcd`: inicializado con audit de fichero + syslog, `protegidos-hospital-lab`
+ed25519 no exportable versión 1, los dos audit escriben, ningún `❌`. `etcd-vm-deploy`: PASA, SANO.
+`make protegidos-pubkey`: clave versión 1, huella 52ba6180cf5e8e9a, en el defender. `pipeline-start`: 8/8, los tres
+componentes RUNNING. Se perdieron las claves HMAC de prueba del lab (previsto: DEBT-LAB-VAULT-CLAVES-PRUEBA-001).
+
+### DEBT-VAULT-GESTION-TRAS-INIT-001 — ABIERTA (nueva DAY318, decisión E5 de Alonso)
+El root de Vault se revoca tras el `init`: nadie puede rotar la clave transit del manifiesto (las dos ranuras de D3) ni
+cambiar políticas o el CIDR autorizado sin rehacer Vault. Lo mismo para `argus-hmac/`. Hace falta una identidad de
+gestión de Vault propia, con su certificado y su auditoría. Va con PR2 (Vault HA). Sin la regla de dos personas: en los
+hospitales no suele haber tanta gente y uno puede no estar disponible (Alonso DAY318; DEBT-FW-DOS-PERSONAS-001 sigue
+sin decidir).
+
+### Para 8e.4 (Alonso DAY318)
+Falco y Wazuh avisan cuando la partición del audit de Vault pasa de un umbral (p. ej. 75 %) y cuando falla uno de los
+dos audit devices, con prioridad en el log. Retención del audit en el lab: 30 días (`logrotate`); en producción la fija
+la ley de cada hospital.

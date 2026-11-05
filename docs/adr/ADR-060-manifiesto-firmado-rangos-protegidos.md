@@ -132,6 +132,15 @@ no puede ser una gota en el océano.
 código abierto como el resto de aRGus: la seguridad sale de la clave y de la vigilancia, no de ocultar el código
 (Kerckhoffs).
 
+**D9 bis. Dos roles de administración, separados a propósito (DAY318).**
+- `admin` (certificado OU=admin): operación diaria en el etcd-server (rotar claves HMAC, listar componentes,
+  `/info`). No puede firmar el manifiesto.
+- `argus-infra` (certificado OU=argus-infra; rol de Vault `argus-infra-admin`): solo firma, verifica y lee la clave
+  pública del manifiesto de su hospital, y solo publica el manifiesto en el etcd-server. Firmar da inmunidad frente a
+  todo bloqueo de aRGus: si se compromete el certificado de uso diario, el manifiesto sigue a salvo.
+- Medido DAY318 (banco y lab): `argus-infra` recibe 403 al leer `argus-hmac`, rotar, exportar o reconfigurar su
+  clave y firmar con otra; `etcd-server` recibe 403 al firmar. Token de `argus-infra`: 300 s, atado a 127.0.0.1.
+
 **D10. Plantilla de despliegue.** Un fichero de despliegue, generado por Jenkins desde una plantilla certificada por
 nosotros, fija: máquina admin, CIDR autorizado, `hospital_id`, las plantas (`despliegue_id`), límites de prefijo por categoría. Solo
 desde ahí se pueden firmar cambios. Controlar Jenkins y sus plantillas es imprescindible (siempre lo ha sido).
@@ -203,12 +212,15 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
   prefijo, set `hash:net,iface` aplicado de forma atómica con `ipset swap`, candado (D6), último verificado y avisos
   periódicos (D7), aviso si falta el plano de control, contadores por categoría. Fuera `ddos_protegidos`,
   `ipsets.whitelist` y el defecto RFC 1918. Tests.
-- **8e.3** `argus-infra` y las rutas del manifiesto en el etcd-server (`GET`/`PUT`, PUT solo con certificado de admin,
-  verificación de firma, versión y hospital); el firewall lo pide cada `protegidos.consulta_sec`. Fichero de
-  despliegue del lab.
+- **8e.3** `argus-infra` y las rutas del manifiesto en el etcd-server (`GET`/`PUT`, PUT solo con certificado
+  OU=argus-infra (D9 bis), verificación de firma, versión y hospital); el firewall lo pide cada
+  `protegidos.consulta_sec`. El etcd-server necesita leer la clave pública: medido DAY318, hoy su política de Vault
+  da 403 en `argus-transit/keys/...`. Fichero de despliegue del lab.
 - **8e.4** Comprobación continua kernel ↔ manifiesto, antispoofing en `raw PREROUTING` generado desde el manifiesto,
   alertas de spoofing por interfaz y MAC, versión en el latido y en
-  `pipeline-status`, reglas Falco (en la VM hardened-x86, `check-prod-falco`) y Wazuh.
+  `pipeline-status`, reglas Falco (en la VM hardened-x86, `check-prod-falco`) y Wazuh. Falco y Wazuh avisan también
+  cuando la partición del audit de Vault (`/var/log/vault`) pasa de un umbral (p. ej. 75 %), con prioridad en el log,
+  y cuando falla uno de los dos audit devices (Alonso DAY318: es su trabajo avisarnos).
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
 
 ## 6. Diseño fino de 8e.1 (cerrado DAY318)
@@ -234,7 +246,7 @@ dice cuál valió. Vault transit firma Ed25519 puro sobre los bytes: basta `cryp
 ```json
 {
   "esquema": 1,
-  "hospital_id": "lab",
+  "hospital_id": "hospital-lab",
   "version": 1,
   "emitido_utc": "2026-11-05T08:00:00Z",
   "firmante": "<entidad de Vault del admin>",
