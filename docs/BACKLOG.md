@@ -8920,3 +8920,52 @@ Diseño: ADR-060, sección 5 (F-A..F-I).
 en el árbol de 8e.1b): lo más probable es que la línea inyectada (`add argus_h2_evil ...`) falle por sí sola porque ese
 set no existe. Arreglo: que el test cree antes el set víctima.
 **Test de cierre:** con el validador mutado (acepta todo), el test falla; con el bueno, pasa.
+
+
+---
+
+## DAY319 — pasos 8e.3d-0 y 8e.3d hechos [PROTEGIDOS-MANIFIESTO-D319]
+
+Commits: a831c44b0 (8e.3d-0, `GET /v1/protegidos/v/{n}` en el etcd-server) y 6b88a0c84 (8e.3d, `tools/argus-infra/`).
+Diseño fino G-A..G-G (decisiones de Alonso DAY319):
+- G-A configuración `/etc/argus-infra/argus-infra.json` (lab: `tools/argus-infra/argus-infra.lab.json`): hospital,
+  plantas, límites, Vault, etcd-server y TLS sin defecto sano (no firma); `timeout_s` [1, 120], 10, con aviso.
+- G-B plantilla sin firmar separada (`tools/argus-infra/plantillas/hospital-lab.json`); los límites salen siempre de la
+  configuración, nunca de la plantilla ni de la versión anterior.
+- G-C el historial se lee del etcd-server (ruta nueva, solo `ou:argus-infra`), no de un archivo local.
+- G-D firmante desde la identidad de Vault. Cambiado tras medir: `<cn> entidad=<entity_id>` (<= 64 caracteres), porque el
+  etcd-server y el firewall registran el firmante con `saneado()`, que corta a 64, y el entity_id salía cortado.
+- G-E cada cambio: login, vigente validado (reglas portadas de libs/protegidos + transit verify), N+1, diff, confirmación
+  tecleando el número de versión (`--si` para el bootstrap), sign, verify, PUT, GET byte a byte, revoke-self.
+- G-F órdenes init, list, add, del, diff, verificar (con la cadena `hash_anterior`), deshacer N. Salidas 0/1/2/3.
+- G-G `tools/argus-infra/`, instalado por el aprovisionador `argus-infra` de la VM etcd (run: always); `make test-argus-infra`.
+
+### Medido en el banco (Debian 12, GCC 12.2, Python 3.11.2, Vault 2.2.1, etcd 3.6.16)
+- etcd-server 8/8 con native y skylake; mutaciones (ceros a la izquierda, devolver la vigente, el firewall lee el
+  histórico, tabla por defecto sin la regla): 4/4 detectadas.
+- argus-infra: unittest 19/19; prueba diferencial C++ (libs/protegidos) contra el porte en Python con 8000 cargas al azar,
+  0 discrepancias de motivo (con `repetidas` mutada, 94: el instrumento detecta); E2E contra el etcd-server real 43/43 en
+  tres pasadas (native x2, skylake); 12/12 mutaciones detectadas (dos sobrevivían a los unitarios, base64 sucio y clave
+  duplicada con el mismo valor: casos añadidos tras medir que libs/protegidos los rechaza).
+- Fallos de predicción (no del código): un segundo `15u` en test_etcd_server_authz; en el chroot faltaba el plugin LTO de
+  `ar` (`/usr/lib/bfd-plugins`).
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0; ctest del etcd-server 8/8; `etcd-vm-deploy` SANO; `regla 16/16`; aprovisionador `argus-infra` OK
+(Python 3.11.2); `make test-argus-infra` 19 OK; huella 52ba6180cf5e8e9a en argus-infra, etcd-server y firewall.
+Publicadas v1..v5. El firewall, al arrancar, aplica la vigente desde el etcd-server (`[PROTEGIDOS-MANIFIESTO] verificado
+version=3 ... entradas=2 (infraestructura=1 intranet=1 dmz=0 externos_criticos=0) (etcd-server)`, caché y `.version`=3) y,
+sin reiniciar, `[INFRA-CAMBIO] version 3 -> 4 ... altas=[intranet 192.168.100.62/32 eth2]` y `4 -> 5 ... bajas=[...]`.
+Primera prueba real de 8e.3c: PASA. Lab vigente al cierre: v5 (contenido de la plantilla).
+
+### Hallazgos DAY319
+- `[INFRA-CAMBIO]` solo se escribe si ya había vigente (con la primera versión, solo `[PROTEGIDOS-MANIFIESTO]`).
+- La VM etcd es `autostart: false`: `vagrant up` a secas no la levanta y `etcd-vm-deploy` falla con "vagrant ssh-config".
+  Para el cierre del PR1 hay que comprobar el arranque del lab con la VM etcd (plan de DAY316).
+- Los ficheros nuevos de `tools/argus-infra` quedaron 100644 en git (el parcheador aplica el modo, pero git en el Mac no lo
+  registró): no afecta (el Vagrantfile instala con `install -m 0750` y los tests se lanzan con `python3 -I`).
+
+### Pendiente (por orden)
+8e.3e (borrar `set/get/del/list_keys` del etcd-client), docs de 8e.3 en ADR-060 (F-C con la ruta del historial, G-A..G-G,
+firmante corto), 8e.4, 8e.5 (bootstrap con `argus-infra init --si`, P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ y
+cierre del PR1.

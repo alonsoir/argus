@@ -1,75 +1,58 @@
-# Prompt de continuidad — DAY319 (tras DAY318, jueves 2026-11-05)
+# Prompt de continuidad — DAY320 (tras DAY319, viernes 2026-11-06)
 
-Hola, Claude. Soy Alonso (aRGus NDR, único desarrollador). Seguimos con **DEBT-ETCD-HA-TLS-RAFT-001** en la rama
-`feat/etcd-mtls-vault` (PR1, un nodo) y, dentro de ella, con **DEBT-FW-MANIFIESTO-PROTEGIDOS-001** (ADR-060, paso 8e).
-Responde siempre en español. Lee, en este orden:
-`docs/adr/ADR-060-manifiesto-firmado-rangos-protegidos.md` (entero: decisiones D1-D11, D-A..D-I, F-A..F-I, plan
-8e.1-8e.5 y diseño fino) y el final de `docs/BACKLOG.md` (secciones `[PROTEGIDOS-MANIFIESTO-D318]` y
-`[PROTEGIDOS-PUBKEY-D318]`).
+Hola, Claude. Soy Alonso (aRGus NDR). Seguimos con DEBT-ETCD-HA-TLS-RAFT-001, rama `feat/etcd-mtls-vault`, y dentro con
+DEBT-FW-MANIFIESTO-PROTEGIDOS-001 (ADR-060). Responde en español. Lee ADR-060 entero y el final de `docs/BACKLOG.md`.
+Comprueba con `git log --oneline -5` que HEAD es el commit de docs de DAY319 (posterior a `6b88a0c84`). **DAY320 empieza en 8e.3e.**
 
-**DAY319 empieza en 8e.3d.** Comprueba antes con `git log --oneline -12` que HEAD es `919813290` (o posterior).
-
-## Hecho DAY318 (10 commits, 07:00-18:10)
-
+## Hecho DAY319 (3 commits, 05:37-07:30)
 | commit | qué |
 |---|---|
-| addc844a | docs: diseño fino de 8e (D-A..D-I) |
-| 77077b47 | 8e.2 Vault transit: clave ed25519 `protegidos-<hospital>` no exportable, rol `argus-infra`, audit fichero + syslog, `make protegidos-pubkey` |
-| 9e9c58c6 | docs de 8e.2 |
-| 3af32373 | 8e.1a verificador del manifiesto (Ed25519 libsodium, JSON estricto, límites, versión, caché, clave compilada en dos ranuras) |
-| f9076a97 | 8e.1b cableado: set `hash:net,iface` con swap atómico, regla `src,src`, candado D6, barrera por IP, avisos D6/D7/D-C; fuera `ddos_protegidos` y la whitelist |
-| b8bf8a4a | docs de 8e.1 |
-| 7d2b58e1 | docs: diseño de 8e.3 (F-A..F-I) y DEBT-FW-ARGUS-INFRA-LLAVE-HW-001 |
-| a5a41ba4 | 8e.3a `libs/protegidos` (estática, `argus::protegidos`); validador de CIDR a `common/include/argus`; falso `stringop-overflow` de GCC 12 con `-march=skylake` |
-| 465e6aa4 | 8e.3b etcd-server: `GET/PUT /v1/protegidos` (authz por OU), `verificar_documento`, etcd `protegidos/vigente` + `protegidos/v/<N>`, `protegidos.hospital_id` (Ansible) |
-| 91981329 | 8e.3c firewall: `get_protegidos()` en etcd-client, consulta cada `consulta_sec`, `[INFRA-CAMBIO]`, anti-rollback con `<cache>.version` |
+| a831c44b0 | 8e.3d-0 etcd-server: `GET /v1/protegidos/v/{n}` (solo ou:argus-infra; 400/404/503), 16 reglas authz |
+| 6b88a0c84 | 8e.3d `tools/argus-infra/` (Python 3.11 stdlib): init/list/add/del/diff/verificar/deshacer; `argus-infra.lab.json`, `plantillas/hospital-lab.json`, tests unittest, aprovisionador `argus-infra` de la VM etcd (run: always), `make test-argus-infra` |
 
-Medido en el lab al cierre: huella de la clave `52ba6180cf5e8e9a` igual en el firewall y en el etcd-server de la VM;
-el firewall consulta y recibe 404 (no hay manifiesto publicado todavía); el lab está en `dry_run`.
+Decisiones de Alonso DAY319 (G-A..G-G): configuración `/etc/argus-infra/argus-infra.json` sin defecto sano para la
+identidad (solo `timeout_s` [1,120] 10); plantilla separada (límites siempre de la configuración); historial por ruta nueva
+del etcd-server (G-C); confirmación tecleando el número de versión (`--si` para bootstrap); orden de cada cambio: login
+Vault, vigente validado (reglas portadas + transit verify), N+1, diff, confirmar, sign, verify, PUT, GET byte a byte,
+revoke-self. Salidas 0/1/2/3 (3 = rechazo del etcd-server).
+
+Cambio sobre G-D, medido: `firmante` = `<cn> entidad=<entity_id de Vault>` (<= 64 caracteres) porque el etcd-server y el
+firewall cortan a 64 con `saneado()`; con el formato largo el entity_id se perdía.
+
+## Medido
+- Banco: etcd-server 8/8 (native y skylake), 4 mutaciones; unittest 19/19; diferencial C++ (libs/protegidos) vs Python con
+  8000 cargas, 0 discrepancias (mutación detectada: 94); E2E 43/43 x3; 12 mutaciones de argus-infra detectadas.
+- Lab: `pipeline-build` rc 0; etcd-server ctest 8/8; `etcd-vm-deploy` SANO; `regla 16/16`; huella 52ba6180cf5e8e9a en
+  argus-infra, etcd-server y firewall; `make test-argus-infra` 19 OK; publicadas v1..v4. Firewall: al arrancar
+  `[PROTEGIDOS-MANIFIESTO] verificado version=3 ... entradas=2 (infraestructura=1 intranet=1 ...) (etcd-server)`, caché
+  1036 B y `.version`=3; en vivo `[INFRA-CAMBIO] version 3 -> 4 ... altas=[intranet 192.168.100.62/32 eth2] bajas=[]`.
+  Primera prueba real de 8e.3c: PASA. Al cierre: `deshacer 1` firmó la v5 (contenido de la plantilla) y el firewall
+  registró `[INFRA-CAMBIO] version 4 -> 5 ... bajas=[intranet 192.168.100.62/32 eth2]`. Lab vigente: v5.
+- Notas: `[INFRA-CAMBIO]` solo sale si había vigente (con la v1 no). La VM etcd es `autostart: false`: `vagrant up etcd`
+  antes de `etcd-vm-deploy`. `pgrep` sin `-f` no casa nombres de más de 15 caracteres.
 
 ## Lo que queda, por orden
+1. **8e.3e** borrar `set/get/del/list_keys` del etcd-client (`/kv/...`) tras `git grep` de usos.
+2. **Docs de 8e.3** (ADR-060: F-C con la ruta del historial, G-A..G-G, firmante corto; BACKLOG con las medidas de arriba).
+3. **8e.4** vigilancia (kernel <-> manifiesto, antispoofing raw PREROUTING, MAC, rp_filter, versión en latido y
+   pipeline-status, Falco/Wazuh, alarma de disco del audit de Vault 75 %).
+4. **8e.5** bootstrap con `argus-infra init --si` (.20 y .61), reescribir `d303_veredicto_protegidos.sh` (P1-P6),
+   meter `test-argus-infra` en EMECAS.
+5. **EMECAS+++ PROFILE=production**: rc 0, `lab-e2e-protegidos` P1-P6 PASA, Acto IV con `err_to_row=0`.
+6. **Cierre del PR1**: comprobar que el arranque del lab levanta la VM etcd (DAY319: `vagrant up` a secas no, es
+   `autostart: false`; el plan de DAY316 pedía `make up` con la VM etcd), README del etcd-server (DAY311), push y PR.
+   Lo demás (HA de 3 nodos, Vault HA, Ansible de Vault, transacción de etcd en el PUT) es PR2.
 
-1. **8e.3d** `argus-infra`: un fichero Python con la biblioteca estándar (Python 3.11.2 y OpenSSL 3.0.22 medidos en la
-   VM etcd), instalado por el Vagrantfile en la VM etcd. `init --desde PLANTILLA`, `list`, `add`, `del`, `diff`,
-   `verificar`, `deshacer N`. Login en Vault con `/etc/argus-pki/argus-infra.{crt,key}` (token 300 s, 127.0.0.1),
-   firma con `argus-transit/sign/protegidos-<hospital>`, comprueba los límites de D2 y hace `PUT /v1/protegidos` con
-   el mismo certificado. Plantilla `hospital-lab` en el repo: `.20` infraestructura por `eth2`, `.61` intranet.
-   **Primera prueba real de 8e.3c:** al publicar la versión 1, el firewall tiene que aplicarla sin reiniciar
-   (`[PROTEGIDOS-MANIFIESTO] verificado ... (etcd-server)`, caché y `.version` escritas).
-2. **8e.3e** borrar `set/get/del/list_keys` del etcd-client (`/kv/...`, rutas que el servidor no tiene) tras
-   comprobar con `git grep` que nadie los usa.
-3. **Docs de 8e.3** (ADR-060 y BACKLOG).
-4. **8e.4** vigilancia: kernel ↔ manifiesto, antispoofing `raw PREROUTING`, MAC, `rp_filter`, versión en el latido y en
-   `pipeline-status`, Falco y Wazuh (incluida la alarma de disco del audit de Vault al 75 %).
-5. **8e.5** bootstrap con `argus-infra` (`.20` y `.61`), reescribir `d303_veredicto_protegidos.sh` (P1-P6).
-6. **EMECAS+++ PROFILE=production**: rc 0, `lab-e2e-protegidos` P1-P6 PASA, Acto IV con `err_to_row=0`.
-
-Hasta 8e.5, `lab-e2e-mitigacion` y `lab-e2e-protegidos` fallan (sin manifiesto el candado para la mitigación).
-
-## Herramientas de Claude (en su contenedor, no en el repo; si el contenedor es nuevo, hay que rehacerlas)
-
-- Banco Debian 12 en `/srv/banco`: GCC 12.2.0, libsodium 1.0.19, httplib v0.63.0, Vault 2.2.1, gRPC 1.51,
-  cpprest, etcd-cpp-apiv3 v0.15.3 (clonado fuera del chroot: dentro no hay CA del proxy).
-- `/root/banco_fw.sh ÁRBOL ETIQUETA`: compila las librerías, el firewall y su ctest. Variables: `PUBKEY_ACTUAL`,
-  `PUBKEY_SIGUIENTE`, `SOLO_FW=1` (solo el firewall; no sirve si cambia el etcd-client), `ES=1` (también el
-  etcd-server y su ctest), `MARCH=skylake` (la CPU del defender; compilar SIEMPRE también así).
-- `/root/vault_8e3b.sh` (Vault dev con la clave transit) y `/root/e2e_8e3b.sh` (etcd-server con mTLS + firma real +
-  curl por rol, 12 pruebas).
-- `/home/claude/gen/generar.py VIEJO NUEVO SALIDA "cabecera"` + `plantilla.py`: parcheador con ficheros nuevos,
-  borrados y trozos anclados a partir de dos árboles (lista de rutas en `gen/rutas.txt`).
+## Banco de Claude (contenedor; si es nuevo, rehacer)
+Chroot Debian 12 en `/srv/banco` (debootstrap minbase + `gcc g++` de Debian para el plugin LTO de `ar`, `cppzmq-dev`),
+libsodium 1.0.19, httplib v0.63.0, etcd-cpp-apiv3 v0.15.3, Vault 2.2.1, etcd 3.6.16, PKI con `d312_pki.sh init`, identidad
+del etcd-server (seed.bin 32 B + par ed25519). Scripts: `/root/banco_plano.sh arrancar hospital-lab` (etcd + Vault como
+la VM), `/root/banco_es.sh ARBOL ETIQUETA` (MARCH, LIBS=1), `/root/e2e_8e3d.sh`, `/root/mut_8e3d.py`, `/root/mut_es.sh`,
+`/root/dif/{arnes.cpp,dif.py,verifica_sobre.cpp}`. Generador de parcheadores `/home/claude/gen/generar.py VIEJO NUEVO
+SALIDA "cabecera" RUTAS...` (funde trozos solapados).
 
 ## Reglas
-
-- Medir, no votar. Predicción escrita antes de medir; si algo no da lo esperado, parar.
-- Todo lo que se compile se prueba antes en el banco con las opciones de production (g++-12, `-std=c++20 -Wall -Wextra
-  -Wpedantic -Werror -O3 -march=native -DNDEBUG -flto -fno-omit-frame-pointer`, y además con `-march=skylake`), dos
-  veces y contra el comportamiento viejo (mutaciones: tiene que fallar).
-- Compilar el pipeline completo (`make pipeline-build PROFILE=production`), no un componente suelto.
-- Parcheadores: `--check`/`--apply <raíz>`, todo o nada, idempotentes, con sha256 previo y final; se copian a
-  `scripts/etcd_ha/` y se ejecutan desde allí; se entregan con su sha256; un sha por línea, nunca diccionarios largos
-  con hex (ggshield); quedan sin trackear.
-- Comandos: exactos, uno por bloque, diciendo dónde se ejecuta cada uno (Mac / defender / VM etcd); salidas largas a
-  un fichero con `; cat`; búsquedas con `git grep`; sin emojis.
-- El JSON es la ley. Lo deprecado se borra. No romper la seguridad ni abrir un camino para romperla en producción.
-- El repo es de solo lectura para Claude: los commits los hace Alonso, uno por cambio lógico; **Claude propone siempre
-  el `git commit -m`**. Push solo al cerrar un paso grande o el día: tras cada commit basta `git rev-parse HEAD`.
+Las de siempre: medir, no votar; predicción escrita antes; si no da, parar. Banco con opciones de production, native y
+skylake, dos veces, mutaciones. Pipeline completo. Parcheadores `--check`/`--apply`, todo o nada, idempotentes, sha256, a
+`scripts/etcd_ha/`. Comandos exactos, uno por bloque, diciendo dónde. Repo de solo lectura para Claude; Claude propone
+el `git commit -m`.
