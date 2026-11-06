@@ -6,6 +6,7 @@
 //     responden 503. Ansible lo escribe desde argus_hospital_id del inventario.
 //   - Almacén (el etcd del despliegue, mismo prefijo que el registro): protegidos/vigente = el sobre tal cual, y
 //     protegidos/v/<N> = cada versión publicada, que no se vuelve a escribir.
+//   - GET /v1/protegidos/v/{n} (solo ou:argus-infra, 8e.3d-0): protegidos/v/<n> tal cual.
 //   - PUT: verificar_documento (libs/protegidos) con la clave pública COMPILADA (la misma que el firewall): firma,
 //     formato, límites, hospital propio, versión > la vigente y, en cada planta, nada que su firewall rechazaría. Con
 //     Vault caído se verifica igual: Vault solo hace falta para firmar.
@@ -47,6 +48,11 @@ public:
     };
     // GET /v1/protegidos: 200 con el sobre vigente, 404 si no hay, 503 sin configurar o almacén no disponible
     Respuesta obtener();
+    // [PROTEGIDOS-MANIFIESTO-D319] 8e.3d-0 (decisión G-C de Alonso): GET /v1/protegidos/v/{n}, una versión del histórico
+    // (protegidos/v/<N>) tal cual, para que argus-infra haga diff y deshacer N (el contenido de N firmado como N+1).
+    // 200 con el sobre; 400 si n no es un decimal >= 1 sin ceros a la izquierda que quepa en 64 bits; 404 si esa
+    // versión no existe; 503 sin configurar o almacén no disponible. No verifica: quien lo pide verifica la firma.
+    Respuesta obtener_version(const std::string& n);
     // PUT /v1/protegidos: 201 publicado; 400 formato, límites o planta; 403 firma u hospital; 409 versión no mayor que
     // la vigente o ya existe; 413 demasiado grande; 503 sin configurar o almacén no disponible. quien = CN del
     // certificado (para el log).

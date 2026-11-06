@@ -470,6 +470,16 @@ void EtcdServer::configurar_rutas() {
         res.status = r.http;
         res.set_content(r.cuerpo, "application/json");
     });
+    // [PROTEGIDOS-MANIFIESTO-D319] 8e.3d-0: una versión del histórico (solo ou:argus-infra, tabla authz): diff y deshacer
+    server.Get(R"(/v1/protegidos/v/([^/]+))", [this, error](const httplib::Request& req, httplib::Response& res) {
+        if (protegidos_ == nullptr) {
+            error(res, 503, "manifiesto de protegidos no disponible en este etcd-server");
+            return;
+        }
+        const auto r = protegidos_->obtener_version(req.matches[1]);
+        res.status = r.http;
+        res.set_content(r.cuerpo, "application/json");
+    });
     server.Put("/v1/protegidos", [this, error, con_tls](const httplib::Request& req, httplib::Response& res) {
         if (protegidos_ == nullptr) {
             error(res, 503, "manifiesto de protegidos no disponible en este etcd-server");

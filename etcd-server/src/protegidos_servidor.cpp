@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <cstdio>
+#include <cstdlib>
 #include <map>
 
 namespace argus::protegidos {
@@ -84,6 +85,25 @@ AlmacenProtegidos::Respuesta AlmacenProtegidos::obtener() {
     const Estado e = almacen_->leer(kVigente, s);
     if (e == Estado::Ok) return {200, s};
     if (e == Estado::NoEncontrado) return {404, error_json("sin-manifiesto", "no hay manifiesto de protegidos publicado")};
+    return {503, error_json("almacen", "almacén no disponible: " + almacen_->ultimo_error())};
+}
+
+AlmacenProtegidos::Respuesta AlmacenProtegidos::obtener_version(const std::string& n) {
+    if (hospital_id_.empty()) return {503, error_json("sin-configurar", "protegidos.hospital_id sin valor en etcd-server.json")};
+    // [PROTEGIDOS-MANIFIESTO-D319] decimal >= 1, sin ceros a la izquierda, que quepa en 64 bits (20 cifras como mucho)
+    static const std::string kMax = "18446744073709551615";
+    const bool cifras = !n.empty() && n.size() <= kMax.size() && n[0] != '0' &&
+                        std::all_of(n.begin(), n.end(), [](char c) { return c >= '0' && c <= '9'; });
+    if (!cifras || (n.size() == kMax.size() && n > kMax)) {
+        return {400, error_json("formato", "versión '" + detalle_protegidos::saneado(n) +
+                                               "' mal formada (entero decimal >= 1 sin ceros a la izquierda, 64 bits)")};
+    }
+    const uint64_t v = std::strtoull(n.c_str(), nullptr, 10);
+    std::lock_guard<std::mutex> l(m_);
+    std::string s;
+    const Estado e = almacen_->leer(clave_version(v), s);
+    if (e == Estado::Ok) return {200, s};
+    if (e == Estado::NoEncontrado) return {404, error_json("sin-version", "la versión " + n + " no está en el histórico")};
     return {503, error_json("almacen", "almacén no disponible: " + almacen_->ultimo_error())};
 }
 

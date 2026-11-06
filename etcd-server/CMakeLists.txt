@@ -409,7 +409,8 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
     add_test(NAME test_almacen_claves COMMAND test_almacen_claves)
     # [PROTEGIDOS-MANIFIESTO-D318] GET/PUT del manifiesto de protegidos sobre MemoriaRegistryStore (sin red): publicar,
     # versión no mayor, ya existe, firma, hospital, planta con duplicado, almacén caído, vigente que ya no verifica,
-    # sin configurar; clave desechable generada en el test (ayudantes de libs/protegidos/tests)
+    # sin configurar; histórico por versión (D319, 8e.3d-0); clave desechable generada en el test (ayudantes de
+    # libs/protegidos/tests)
     add_executable(test_protegidos_servidor tests/test_protegidos_servidor.cpp src/protegidos_servidor.cpp)
     target_include_directories(test_protegidos_servidor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
             ${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos/tests ${LIBSODIUM_INCLUDE_DIRS})

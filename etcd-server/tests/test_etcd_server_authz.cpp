@@ -131,9 +131,9 @@ TEST(EtcdServerAuthz, TablaPorDefectoValidaYAvisada) {
     Salida o;
     auto r = parse_authz(json::object(), o.aviso, o.info);
     EXPECT_EQ(r.defectos, 1);
-    EXPECT_EQ(r.reglas.size(), 15u);  // [ADR045-FUERA-D316] 15 menos las dos de /v1/epoch; [D318] + las dos de /v1/protegidos
+    EXPECT_EQ(r.reglas.size(), 16u);  // [ADR045-FUERA-D316] 15 menos las dos de /v1/epoch; [D318] + las dos de /v1/protegidos; [D319] + /v1/protegidos/v/{c}
     EXPECT_NE(o.aviso.str().find("authz ausente"), std::string::npos);
-    EXPECT_NE(o.info.str().find("[ETCD-AUTHZ] regla 1/15: GET /health permitir=cualquiera (DEFECTO: ausente)"),
+    EXPECT_NE(o.info.str().find("[ETCD-AUTHZ] regla 1/16: GET /health permitir=cualquiera (DEFECTO: ausente)"),
               std::string::npos) << o.info.str();
 }
 
@@ -155,7 +155,7 @@ TEST(EtcdServerAuthz, ReglaMalFormadaInvalidaLaTablaEntera) {
             {"metodo": "GET", "ruta": "/health", "permitir": ["ou:admin"]}, )") + mala + "]}}");
         auto r = parse_authz(root, o.aviso, o.info);
         EXPECT_EQ(r.defectos, 1) << mala;
-        EXPECT_EQ(r.reglas.size(), 15u) << mala;  // la tabla por defecto ENTERA, no la buena a medias
+        EXPECT_EQ(r.reglas.size(), 16u) << mala;  // la tabla por defecto ENTERA, no la buena a medias
         EXPECT_NE(o.aviso.str().find("authz.reglas[1]"), std::string::npos) << mala << "\n" << o.aviso.str();
     }
 }
@@ -202,6 +202,16 @@ TEST(EtcdServerAuthz, ManifiestoDeProtegidos) {
     EXPECT_FALSE(permite(t, "POST", "/v1/protegidos", inf));
     EXPECT_FALSE(permite(t, "DELETE", "/v1/protegidos", inf)); // deshacer = firmar una versión nueva (D4)
     EXPECT_FALSE(permite(t, "GET", "/v1/protegidos/hospital-lab", fw));
+    // [PROTEGIDOS-MANIFIESTO-D319] 8e.3d-0: el histórico, SOLO argus-infra (diff y deshacer); el firewall no lo necesita
+    EXPECT_TRUE(permite(t, "GET", "/v1/protegidos/v/1", inf));
+    EXPECT_TRUE(permite(t, "GET", "/v1/protegidos/v/12345", inf));
+    EXPECT_FALSE(permite(t, "GET", "/v1/protegidos/v/1", fw));
+    EXPECT_FALSE(permite(t, "GET", "/v1/protegidos/v/1", adm));
+    EXPECT_FALSE(permite(t, "GET", "/v1/protegidos/v/1", sn));
+    EXPECT_FALSE(permite(t, "PUT", "/v1/protegidos/v/1", inf));     // el histórico no se escribe
+    EXPECT_FALSE(permite(t, "DELETE", "/v1/protegidos/v/1", inf));  // ni se borra
+    EXPECT_FALSE(permite(t, "GET", "/v1/protegidos/v", inf));
+    EXPECT_FALSE(permite(t, "GET", "/v1/protegidos/v/1/x", inf));
 }
 
 TEST(EtcdServerAuthz, InstanciaYRol) {

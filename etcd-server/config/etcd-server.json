@@ -122,11 +122,18 @@
         "permitir": [
           "ou:argus-infra"
         ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/v1/protegidos/v/{c}",
+        "permitir": [
+          "ou:argus-infra"
+        ]
       }
     ]
   },
   "protegidos": {
-    "_doc": "[PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3b. hospital_id: el hospital al que sirve ESTE etcd-server ([a-z0-9-], de 1 a 64); sin valor sano por defecto: ausente o mal formado = [CONFIG-DEFAULT] y GET/PUT /v1/protegidos responden 503. Ansible (make deploy-configs) lo escribe desde argus_hospital_id del inventario. GET /v1/protegidos da el sobre vigente (firewall-acl-agent, argus-infra); PUT /v1/protegidos solo con certificado OU=argus-infra: el etcd-server verifica firma (clave publica compilada, la misma que el firewall), formato, limites, hospital y version > la vigente antes de guardarlo en etcd (protegidos/vigente y protegidos/v/<N>).",
+    "_doc": "[PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3b. hospital_id: el hospital al que sirve ESTE etcd-server ([a-z0-9-], de 1 a 64); sin valor sano por defecto: ausente o mal formado = [CONFIG-DEFAULT] y GET/PUT /v1/protegidos responden 503. Ansible (make deploy-configs) lo escribe desde argus_hospital_id del inventario. GET /v1/protegidos da el sobre vigente (firewall-acl-agent, argus-infra); PUT /v1/protegidos solo con certificado OU=argus-infra: el etcd-server verifica firma (clave publica compilada, la misma que el firewall), formato, limites, hospital y version > la vigente antes de guardarlo en etcd (protegidos/vigente y protegidos/v/<N>). [PROTEGIDOS-MANIFIESTO-D319] GET /v1/protegidos/v/{n} solo con certificado OU=argus-infra: la versi\u00f3n n del hist\u00f3rico tal cual (n: decimal >= 1 sin ceros a la izquierda; 404 si no existe), para el diff y el deshacer de argus-infra.",
     "hospital_id": "hospital-lab"
   },
   "almacen": {

@@ -132,6 +132,39 @@ TEST(ProtegidosServidor, SinHospital503) {
     EXPECT_EQ(b.al->publicar(b.firmado(1), "x").http, 503);
 }
 
+TEST(ProtegidosServidor, HistoricoPorVersion) {
+    // [PROTEGIDOS-MANIFIESTO-D319] 8e.3d-0: GET /v1/protegidos/v/{n}, para el diff y el deshacer de argus-infra
+    Banco b;
+    EXPECT_EQ(b.al->obtener_version("1").http, 404);   // nada publicado
+    const std::string s1 = b.firmado(1), s2 = b.firmado(2);
+    ASSERT_EQ(b.al->publicar(s1, "argus-infra").http, 201);
+    ASSERT_EQ(b.al->publicar(s2, "argus-infra").http, 201);
+    const auto g1 = b.al->obtener_version("1");
+    EXPECT_EQ(g1.http, 200);
+    EXPECT_EQ(g1.cuerpo, s1);                           // los bytes exactos: argus-infra verifica la misma firma
+    EXPECT_EQ(b.al->obtener_version("2").cuerpo, s2);
+    EXPECT_EQ(b.al->obtener().cuerpo, s2);              // el vigente no cambia por leer el histórico
+    const auto g3 = b.al->obtener_version("3");
+    EXPECT_EQ(g3.http, 404);
+    EXPECT_EQ(json::parse(g3.cuerpo)["motivo"], "sin-version");
+    for (const char* mal : {"0", "01", "", "-1", "1a", "abc", "18446744073709551616", "99999999999999999999",
+                            "123456789012345678901", " 1", "1 "}) {
+        const auto r = b.al->obtener_version(mal);
+        EXPECT_EQ(r.http, 400) << "'" << mal << "'";
+        EXPECT_EQ(json::parse(r.cuerpo)["motivo"], "formato") << mal;
+    }
+    EXPECT_EQ(b.al->obtener_version("18446744073709551615").http, 404);   // el máximo de 64 bits es válido
+    b.mem->simular_caido(true);
+    EXPECT_EQ(b.al->obtener_version("1").http, 503);
+    b.mem->simular_caido(false);
+    EXPECT_EQ(b.al->obtener_version("1").http, 200);
+}
+
+TEST(ProtegidosServidor, HistoricoSinHospital503) {
+    Banco b("");
+    EXPECT_EQ(b.al->obtener_version("1").http, 503);
+}
+
 TEST(ProtegidosServidor, ClaveVersionOrdenaBien) {
     EXPECT_EQ(AlmacenProtegidos::clave_version(7), "protegidos/v/00000000000000000007");
     EXPECT_LT(AlmacenProtegidos::clave_version(9), AlmacenProtegidos::clave_version(10));
