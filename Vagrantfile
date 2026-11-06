@@ -2050,6 +2050,34 @@ UNIT
       echo "✅ etcd-server-unit: $U activa, pid $(systemctl show -p MainPID --value "$U"), escucha $(ss -ltnH 'sport = :2379' | awk '{print $4}' | tr '\n' ' ')"
     ETCD_SERVER_UNIT
 
+    # [PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (F-G, G-G): argus-infra, la herramienta que firma el manifiesto de
+    # protegidos (Vault transit) y lo publica en el etcd-server. Solo en la máquina del admin (D9); en el lab, esta VM
+    # (D11: Vault solo escucha en 127.0.0.1). Un fichero Python con la biblioteca estándar, desde el repo (es código, no
+    # un secreto). La configuración del lab (tools/argus-infra/argus-infra.lab.json) tiene que ser del hospital de
+    # group_vars. run: always: la herramienta y su configuración siguen al repo en cada vagrant provision.
+    etcd.vm.provision "shell", name: "argus-infra", run: "always", env: { "ARGUS_HOSPITAL_ID" => ARGUS_HOSPITAL_ID },
+      inline: <<-'ARGUS_INFRA'
+      set -e
+      echo "=== etcd VM: argus-infra (firma del manifiesto de protegidos) [PROTEGIDOS-MANIFIESTO-D319] ==="
+      SRC=/vagrant/tools/argus-infra
+      PY=/usr/bin/python3
+      [ -x "$PY" ] || { echo "❌ argus-infra: falta $PY"; exit 1; }
+      "$PY" -I -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' \
+        || { echo "❌ argus-infra: se exige Python >= 3.11 (hay $("$PY" --version 2>&1))"; exit 1; }
+      for f in argus-infra.py argus-infra.lab.json; do
+        [ -s "$SRC/$f" ] || { echo "❌ argus-infra: falta $SRC/$f"; exit 1; }
+      done
+      HJ=$("$PY" -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["hospital_id"])' "$SRC/argus-infra.lab.json")
+      [ "$HJ" = "$ARGUS_HOSPITAL_ID" ] \
+        || { echo "❌ argus-infra: argus-infra.lab.json es de '$HJ' y group_vars de '$ARGUS_HOSPITAL_ID'"; exit 1; }
+      install -m 0750 -o root -g root "$SRC/argus-infra.py" /usr/local/sbin/argus-infra
+      install -d -m 0750 -o root -g root /etc/argus-infra
+      install -m 0640 -o root -g root "$SRC/argus-infra.lab.json" /etc/argus-infra/argus-infra.json
+      /usr/local/sbin/argus-infra --check-config > /tmp/argus_infra_check.txt 2>&1 \
+        || { cat /tmp/argus_infra_check.txt; echo "❌ argus-infra: --check-config (arriba)"; exit 1; }
+      echo "✅ argus-infra: /usr/local/sbin/argus-infra (sha256 $(sha256sum /usr/local/sbin/argus-infra | cut -c1-16)), /etc/argus-infra/argus-infra.json, --check-config OK, $("$PY" --version 2>&1)"
+    ARGUS_INFRA
+
   end  # End etcd VM
 
 end  # End Vagrant configuration

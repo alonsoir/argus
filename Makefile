@@ -2166,12 +2166,18 @@ dev-setup-tools:
 ETCD_VM_ESPERA_S ?= 30
 ETCD_VM_UNIDAD := ml-defender-etcd-server.service
 ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
-.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey
+.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey test-argus-infra
 
 # [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2 (Mac): clave PÚBLICA del manifiesto de protegidos (Vault transit de la VM etcd)
 # al defender, donde CMake la compila en el firewall-acl-agent (patrón ADR-025). Lee con el certificado de argus-infra.
 protegidos-pubkey:
 	@bash scripts/etcd_ha/protegidos_pubkey.sh
+
+# [PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (Mac): tests de argus-infra (unittest, biblioteca estándar, sin red ni
+# Vault) con el Python de la VM etcd, donde vive la herramienta: el validador portado de libs/protegidos, la
+# configuración, la plantilla del laboratorio, el diff y la política.
+test-argus-infra:
+	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
 
 # Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
 etcd-vm-deploy:
