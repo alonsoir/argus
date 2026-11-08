@@ -33,7 +33,10 @@ paso()  { echo; echo "=== [$(date +%T)] $*"; }
 falla() { echo; echo "PARADA [$(date +%T)]: $*"; exit 1; }
 pasa()  { echo "PASA  $*"; }
 mal()   { echo "FALLA $*"; FALLOS=$((FALLOS + 1)); }
-vm()    { vagrant ssh "$1" -c "$2" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]'; }
+# vm VM ORDEN: salida sin la línea [argus] de vagrant y con el código de salida DEL COMANDO REMOTO (no del filtro:
+# medido DAY320, con el filtro al final un 'grep -q' remoto sin salida devolvía 1 aunque hubiera casado).
+vm()    { local out rc; out=$(vagrant ssh "$1" -c "$2" 2>/dev/null); rc=$?
+          [ -n "$out" ] && printf '%s\n' "$out" | tr -d '\r' | grep -v '^\[argus\]'; return $rc; }
 infra() { vm etcd "sudo /usr/local/sbin/argus-infra $1"; }
 cuenta(){ vm defender "sudo iptables -w -t raw -L $1 -v -x -n 2>/dev/null | awk 'NR == 4 {print \$1}'"; }   # regla 2 = la de cuenta
 llegan(){ vm defender "sudo iptables -w -t mangle -L PREROUTING -v -x -n | awk '/$1/ {print \$1}'"; }
