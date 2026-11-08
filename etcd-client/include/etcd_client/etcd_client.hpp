@@ -128,16 +128,6 @@ public:
     void iniciar(const std::string& ruta_config, const std::string& tipo);
 
     // ========================================================================
-    // Key-Value Operations
-    // (encryption/compression applied automatically based on config)
-    // ========================================================================
-
-    bool set(const std::string& key, const std::string& value);
-    std::string get(const std::string& key);
-    bool del(const std::string& key);
-    std::vector<std::string> list_keys(const std::string& prefix = "");
-
-    // ========================================================================
     // Component Discovery & Registration
     // ========================================================================
 
@@ -161,22 +151,8 @@ public:
     ServicePaths get_service_paths() const;
 
     // ========================================================================
-    // Config Management (Master + Active copies for rollback)
+    // Config Management
     // ========================================================================
-
-    // Save master config (immutable, original)
-    bool save_config_master(const std::string& config_json);
-
-    // Save active config (mutable, working copy)
-    bool save_config_active(const std::string& config_json);
-
-    // Get master config
-    std::string get_config_master();
-
-    // Get active config
-    std::string get_config_active();
-
-    std::string get_component_config(const std::string& component_name);
 
     /**
      * Upload configuration to etcd-server
@@ -185,9 +161,6 @@ public:
      * @return true if successful, false otherwise
      */
     bool put_config(const std::string& json_config);
-
-    // Rollback active to master
-    bool rollback_config();
 
     // ========================================================================
     // Encryption Key Management (handled automatically by library)

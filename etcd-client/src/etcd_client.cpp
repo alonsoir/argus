@@ -455,110 +455,6 @@ void EtcdClient::iniciar(const std::string& ruta_config_arranque, const std::str
     pImpl->arrancar_mantenedor();
 }
 
-// Key-value operations
-bool EtcdClient::set(const std::string& key, const std::string& value) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    try {
-        // Process data (compress + encrypt)
-        std::string processed_value = value;
-
-        // Build JSON payload
-        json payload = {
-            {"key", key},
-            {"value", processed_value},
-            {"original_size", value.size()}
-        };
-
-        // Send to etcd-server
-        auto response = pImpl->transporte_.peticion("POST", "/kv/set", payload.dump());
-
-        if (response.exito) {
-            std::cout << "✅ Key set: " << key << std::endl;
-            return true;
-        }
-
-        std::cerr << "❌ Failed to set key: " << key << std::endl;
-        return false;
-
-    } catch (const std::exception& e) {
-        std::cerr << "❌ Exception in set(): " << e.what() << std::endl;
-        return false;
-    }
-}
-
-std::string EtcdClient::get(const std::string& key) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    try {
-        // Request from etcd-server
-        auto response = pImpl->transporte_.peticion("GET", "/kv/get?key=" + key);
-
-        if (!response.exito) {
-            std::cerr << "❌ Failed to get key: " << key << std::endl;
-            return "";
-        }
-
-        // Parse response
-        json j = json::parse(response.body);
-        std::string value = j.value("value", "");
-        // original_size = j.value("original_size", 0);
-
-        // Process data (decrypt + decompress)
-        std::string processed_value = value;
-
-        std::cout << "✅ Key retrieved: " << key << std::endl;
-        return processed_value;
-
-    } catch (const std::exception& e) {
-        std::cerr << "❌ Exception in get(): " << e.what() << std::endl;
-        return "";
-    }
-}
-
-bool EtcdClient::del(const std::string& key) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    auto response = pImpl->transporte_.peticion("DELETE", "/kv/delete?key=" + key);
-
-    if (response.exito) {
-        std::cout << "✅ Key deleted: " << key << std::endl;
-        return true;
-    }
-
-    std::cerr << "❌ Failed to delete key: " << key << std::endl;
-    return false;
-}
-
-std::vector<std::string> EtcdClient::list_keys(const std::string& prefix) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    std::vector<std::string> keys;
-
-    try {
-        std::string path = "/kv/list";
-        if (!prefix.empty()) {
-            path += "?prefix=" + prefix;
-        }
-
-        auto response = pImpl->transporte_.peticion("GET", path);
-
-        if (response.exito) {
-            json j = json::parse(response.body);
-            if (j.contains("keys") && j["keys"].is_array()) {
-                for (const auto& key : j["keys"]) {
-                    keys.push_back(key.get<std::string>());
-                }
-            }
-        }
-
-    } catch (const std::exception& e) {
-        std::cerr << "❌ Exception in list_keys(): " << e.what() << std::endl;
-    }
-
-    return keys;
-}
-
 // Component discovery
 // Registro inmediato (lo usan los inyectores y los tests): con éxito arranca el mantenedor (latidos), si heartbeat_enabled
 bool EtcdClient::register_component() {
@@ -627,39 +523,8 @@ std::vector<ComponentInfo> EtcdClient::list_components() {
 }
 
 // Config management
-bool EtcdClient::save_config_master(const std::string& config_json) {
-    return set("/config/" + pImpl->config_.component_name + "/master", config_json);
-}
-
-bool EtcdClient::save_config_active(const std::string& config_json) {
-    return set("/config/" + pImpl->config_.component_name + "/active", config_json);
-}
-
-std::string EtcdClient::get_config_master() {
-    return get("/config/" + pImpl->config_.component_name + "/master");
-}
-
-std::string EtcdClient::get_config_active() {
-    return get("/config/" + pImpl->config_.component_name + "/active");
-}
-
 bool EtcdClient::put_config(const std::string& json_config) {
     return pImpl->put_config_impl(json_config);
-}
-
-bool EtcdClient::rollback_config() {
-    std::string master = get_config_master();
-    if (master.empty()) {
-        std::cerr << "❌ No master config found for rollback" << std::endl;
-        return false;
-    }
-
-    bool result = save_config_active(master);
-    if (result) {
-        std::cout << "✅ Config rolled back to master" << std::endl;
-    }
-
-    return result;
 }
 
 // Encryption key management
@@ -672,11 +537,6 @@ bool EtcdClient::has_encryption_key() const {
     // DEPRECATED DAY 98 — retorna true si CryptoTransport está inicializado
     std::lock_guard<std::mutex> lock(pImpl->mutex_);
     return pImpl->tx_ != nullptr;
-}
-
-
-std::string EtcdClient::get_component_config(const std::string& component_name) {
-    return get("/config/" + component_name + "/active");
 }
 
 std::optional<std::vector<uint8_t>> EtcdClient::get_hmac_key(const std::string& key_path) {
