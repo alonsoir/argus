@@ -314,6 +314,20 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
                           << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
             }
         }
+        {   // [PROTEGIDOS-VIGIA-D320] 8e.4a (ADR-060 D8): vigía kernel <-> manifiesto
+            constexpr int kMin = 5, kMax = 3600;
+            const int def = pc.comprobacion_kernel_sec;
+            const bool hay = p.isObject() && p.isMember("comprobacion_kernel_sec");
+            if (hay && p["comprobacion_kernel_sec"].isInt() && p["comprobacion_kernel_sec"].asInt() >= kMin &&
+                p["comprobacion_kernel_sec"].asInt() <= kMax) {
+                pc.comprobacion_kernel_sec = p["comprobacion_kernel_sec"].asInt();
+                std::cout << "[CONFIG] protegidos.comprobacion_kernel_sec=" << pc.comprobacion_kernel_sec << " (JSON)"
+                          << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.comprobacion_kernel_sec " << (hay ? "mal formado" : "ausente")
+                          << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+            }
+        }
         // D-C: los endpoints del etcd-server (los valida etcd-client; aquí solo se copian para comparar)
         if (root.isMember("etcd") && root["etcd"].isObject() && root["etcd"]["endpoints"].isArray()) {
             for (const auto& e : root["etcd"]["endpoints"]) {

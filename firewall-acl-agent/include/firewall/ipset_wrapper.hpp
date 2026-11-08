@@ -363,6 +363,11 @@ public:
     /// @note Thread-safe
     std::vector<std::string> list_entries(const std::string& set_name) const;
 
+    /// [PROTEGIDOS-VIGIA-D320] ADR-060 D8: cada entrada con sus opciones ('ipset save'), sin los contadores
+    /// (packets N bytes N): "192.168.100.20,eth2", "10.9.0.0/24,eth2 nomatch"... Lo usa el vigía para que una entrada
+    /// cambiada a nomatch (que anularía la exención) cuente como divergencia. Vacío si el set no existe.
+    std::vector<std::string> list_entries_opciones(const std::string& set_name) const;
+
     //===------------------------------------------------------------------===//
     // Advanced Operations
     //===------------------------------------------------------------------===//

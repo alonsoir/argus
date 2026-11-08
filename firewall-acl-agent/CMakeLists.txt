@@ -499,6 +499,33 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     add_test(NAME test_argus_cadena_root COMMAND test_argus_cadena_root)
     set_tests_properties(test_argus_cadena_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
 
+    # [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a: el vigía kernel <-> manifiesto. Parte pura (sin root) y contra el
+    # kernel (requiere root; sin root sale 77 = Skipped).
+    add_executable(test_protegidos_vigia
+        tests/unit/test_protegidos_vigia.cpp
+    )
+    target_include_directories(test_protegidos_vigia PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_vigia PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_vigia COMMAND test_protegidos_vigia)
+
+    add_executable(test_protegidos_vigia_root
+        tests/unit/test_protegidos_vigia_root.cpp
+    )
+    target_include_directories(test_protegidos_vigia_root PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_vigia_root PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_vigia_root COMMAND test_protegidos_vigia_root)
+    set_tests_properties(test_protegidos_vigia_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
+
     # test_recidivism_e2e — RECIDIVISM-D276 (INTEGRACION, requiere root+ipset -> VM, no make test normal)
     add_executable(test_recidivism_e2e
         tests/test_recidivism_e2e.cpp

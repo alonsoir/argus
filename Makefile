@@ -1314,7 +1314,7 @@ emecas-frescura:
 # Corridas en logs/lab/$(LAB_E2E_DIA)/lab_*/. Duracion total de lab-e2e: ~60 min.
 # lab_corrida_defender.sh exige DIA con formato dayNNN (medido DAY303)
 LAB_E2E_DIA ?= day303
-.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion lab-e2e-reinicio-etcd
+.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion lab-e2e-vigia lab-e2e-reinicio-etcd
 lab-e2e-prep:
 	@echo "[LAB-E2E] client: alias 192.168.100.51 en eth1 y MAC de 192.168.100.1 en la tabla de vecinos"
 	@vagrant ssh client -c "ip -4 addr show dev eth1 | grep -q 192.168.100.51 || sudo ip addr add 192.168.100.51/24 dev eth1; ping -c 3 -W 1 -I eth1 192.168.100.1 > /dev/null 2>&1; ip -4 addr show dev eth1 | grep -q 192.168.100.51 && ip neigh show 192.168.100.1 dev eth1 | grep -q lladdr && ip neigh show 192.168.100.1 dev eth1" || { echo "[LAB-E2E] FALLA: client sin alias .51 o sin MAC de .1"; exit 1; }
@@ -1343,6 +1343,12 @@ lab-e2e-mitigacion:
 	@$(MAKE) lab-e2e-prep
 	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d302_mitigacion_e2e.sh lab_mitigacion
 
+# [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a: el vigía kernel <-> manifiesto con el pipeline vivo (dry_run=false SOLO
+# durante la prueba; el JSON se restaura con cmp). Estropea el set y la cadena cuatro veces y exige que cada una se
+# reconcilie en <= comprobacion_kernel_sec + 5 s. Deja el pipeline parado, como lab-e2e-mitigacion. ~4 min.
+lab-e2e-vigia:
+	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d320_vigia_e2e.sh lab_vigia_$$(date -u +%Y%m%dT%H%M%SZ)
+
 # [REINICIO-VM-D317] sexto E2E: reinicia el etcd-server de la VM etcd con el pipeline vivo (scripts/etcd_ha/d317_reinicio_vm.sh,
 # veredicto PASA/FALLA). Requiere el pipeline arrancado: va al final de lab-e2e, tras la restauración. El nombre de la
 # corrida lleva la fecha (el instrumento no reescribe una corrida y EMECAS se repite). ~10 min.
@@ -1351,12 +1357,13 @@ lab-e2e-reinicio-etcd:
 	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d317_reinicio_vm.sh lab_reinicio_etcd_$$(date -u +%Y%m%dT%H%M%SZ)
 
 lab-e2e:
-	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion, reinicio del etcd-server"
+	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion, vigia, reinicio del etcd-server"
 	$(MAKE) lab-e2e-reinicio-antes
 	$(MAKE) lab-e2e-reinicio-ordenada
 	$(MAKE) lab-e2e-reinicio-kill9
 	$(MAKE) lab-e2e-protegidos
 	$(MAKE) lab-e2e-mitigacion
+	$(MAKE) lab-e2e-vigia
 	@echo "[LAB-E2E] [ARGUS-LAB-RESTORE-D303] los E2E paran el pipeline: se deja arrancado, como se encontro"
 	$(MAKE) pipeline-start > /tmp/argus_lab_e2e_restore.txt 2>&1 || { tail -n 20 /tmp/argus_lab_e2e_restore.txt; echo "[LAB-E2E] FALLA: pipeline-start al restaurar"; exit 1; }
 	@# [ARGUS-LAB-RESTORE-D303] patron estricto: pgrep -a -f se imprime a si mismo y su linea contiene STOPPED

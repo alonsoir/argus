@@ -196,6 +196,7 @@ struct IrpConfig {
         std::string manifiesto_cache = "/var/lib/ml-defender/firewall/protegidos.manifiesto";
         int aviso_sec = 300;        // [30, 86400]: avisos periódicos y nueva verificación de la caché (D7)
         int consulta_sec = 30;      // [5, 3600]: cada cuánto se pide el manifiesto al etcd-server (8e.3c, F-E)
+        int comprobacion_kernel_sec = 30;  // [5, 3600]: vigía kernel <-> manifiesto (8e.4a, D8) [PROTEGIDOS-VIGIA-D320]
         std::vector<std::string> etcd_endpoints;  // copia de etcd.endpoints para D-C (solo lectura)
     };
 

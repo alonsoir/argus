@@ -683,6 +683,44 @@ bool es_interfaz_ipset(const std::string& s) {
 }  // namespace
 
 // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D-A: sustitución atómica (temporal + swap) de un set hash:net,iface.
+// [PROTEGIDOS-VIGIA-D320] ADR-060 D8: entradas con opciones y sin contadores (ver la cabecera).
+std::vector<std::string> IPSetWrapper::list_entries_opciones(const std::string& set_name) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::vector<std::string> entries;
+    if (!is_valid_set_name(set_name)) {
+        return entries;
+    }
+    auto [ret, output] = safe_exec_with_output({kIpsetBin, "save", set_name});
+    if (ret != 0) {
+        return entries;
+    }
+    std::istringstream iss(output);
+    std::string line;
+    while (std::getline(iss, line)) {
+        if (line.rfind("add ", 0) != 0) {
+            continue;
+        }
+        std::istringstream ls(line);
+        std::string cmd_word, setname, tok;
+        ls >> cmd_word >> setname;
+        std::string out;
+        bool primero = true;
+        while (ls >> tok) {
+            if (!primero && (tok == "packets" || tok == "bytes")) {
+                std::string valor;
+                ls >> valor;  // el número del contador
+                continue;
+            }
+            out += (primero ? "" : " ") + tok;
+            primero = false;
+        }
+        if (!out.empty()) {
+            entries.push_back(out);
+        }
+    }
+    return entries;
+}
+
 IPSetResult<void> IPSetWrapper::replace_net_iface(const std::string& set_name,
                                                   const std::vector<std::pair<std::string, std::string>>& entradas,
                                                   uint32_t maxelem) {

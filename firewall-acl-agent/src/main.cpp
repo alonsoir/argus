@@ -22,6 +22,7 @@
 #include "firewall/iptables_wrapper.hpp"
 #include "firewall/batch_processor.hpp"
 #include "protegidos/manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
+#include "firewall/protegidos_vigia.hpp"  // [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a
 #include <fstream>
 #include <filesystem>  // [PROTEGIDOS-MANIFIESTO-D318] directorio de la caché
 #include <nlohmann/json.hpp>
@@ -241,15 +242,9 @@ static bool protegidos_preparar_set(IPSetWrapper& ipset, const FirewallAgentConf
                      "dry_run)" << std::endl;
         return true;
     }
-    IPSetConfig c;
-    c.name = pc.set_name;
-    c.type = IPSetType::HASH_NET_IFACE;
-    c.family = IPSetFamily::INET;
-    c.hashsize = 1024;
-    c.maxelem = static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas);
-    c.timeout = 0;
-    c.counters = true;
-    c.comment = false;
+    // [PROTEGIDOS-VIGIA-D320] la misma configuración que usa el vigía si tiene que recrear el set
+    const IPSetConfig c = mldefender::firewall::config_set_protegidos(
+        pc.set_name, static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas));
     if (!ipset.create_set(c)) {
         std::cerr << "[PROTEGIDOS-SET] ERROR: no se pudo crear " << pc.set_name << " (hash:net,iface): la exención del "
                      "kernel NO se aplica; la barrera del agente sí protege" << std::endl;
@@ -259,17 +254,27 @@ static bool protegidos_preparar_set(IPSetWrapper& ipset, const FirewallAgentConf
     return true;
 }
 
-// Lleva al kernel las entradas IPv4 del manifiesto (sustitución atómica). IPv6: solo la barrera (D-I).
-static void protegidos_aplicar_kernel(IPSetWrapper& ipset, const std::string& set, const ManifiestoVerificado& m) {
+// Entradas IPv4 (cidr, interfaz) de un manifiesto verificado: las que van al set del kernel. IPv6: solo la barrera
+// (D-I). nullptr (sin vigente) = ninguna. [PROTEGIDOS-VIGIA-D320] la usan la aplicación y el vigía.
+static std::vector<std::pair<std::string, std::string>> protegidos_entradas_kernel(const ManifiestoVerificado* m,
+                                                                                   std::size_t* v6 = nullptr) {
     std::vector<std::pair<std::string, std::string>> e;
-    std::size_t v6 = 0;
-    for (const auto& en : m.entradas) {
+    if (v6) *v6 = 0;
+    if (m == nullptr) return e;
+    for (const auto& en : m->entradas) {
         if (en.rango.v6) {
-            ++v6;
+            if (v6) ++*v6;
             continue;
         }
         e.emplace_back(en.rango.texto, en.interfaz);
     }
+    return e;
+}
+
+// Lleva al kernel las entradas IPv4 del manifiesto (sustitución atómica). IPv6: solo la barrera (D-I).
+static void protegidos_aplicar_kernel(IPSetWrapper& ipset, const std::string& set, const ManifiestoVerificado& m) {
+    std::size_t v6 = 0;
+    const auto e = protegidos_entradas_kernel(&m, &v6);
     const auto r = ipset.replace_net_iface(set, e, static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas));
     if (r) {
         std::cout << "[PROTEGIDOS-KERNEL] " << set << " = version " << m.version << ": " << e.size()
@@ -425,6 +430,65 @@ static void protegidos_vigilar(const ProtegidosVigentes& v, const FirewallAgentC
         }
     }
     protegidos_infra(*m, config);
+}
+
+// [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a: contadores del vigía (solo los toca el bucle principal).
+struct ContadoresVigia {
+    uint64_t comprobaciones = 0, divergencias = 0, reconciliaciones = 0, fallos = 0;
+};
+
+// Lista corta para el log: como mucho 10 elementos saneados y el resto contado.
+static std::string protegidos_lista(const std::vector<std::string>& v) {
+    std::ostringstream o;
+    o << "[";
+    for (std::size_t i = 0; i < v.size() && i < 10; ++i) {
+        o << (i ? " " : "") << ::argus::protegidos::detalle_protegidos::saneado(v[i]);
+    }
+    if (v.size() > 10) o << " ... (+" << (v.size() - 10) << ")";
+    o << "]";
+    return o.str();
+}
+
+// Una vuelta del vigía (cada comprobacion_kernel_sec, desde el bucle principal: fuera del camino del paquete).
+static void protegidos_vigia(const ProtegidosVigentes& v, IPSetWrapper& ipset, IPTablesWrapper& iptables,
+                             const FirewallConfig& fc, const FirewallAgentConfig& config, bool set_ok,
+                             ContadoresVigia& cv) {
+    const auto& pc = config.protegidos;
+    const auto m = v.vigente();
+    const std::string version = m ? std::to_string(m->version) : std::string("ninguna");
+    const auto r = mldefender::firewall::vigia_protegidos_paso(
+        ipset, iptables, fc, pc.set_name, set_ok, protegidos_entradas_kernel(m.get()),
+        static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas));
+    ++cv.comprobaciones;
+    if (r.set_divergente) {
+        ++cv.divergencias;
+        std::cerr << "[PROTEGIDOS-DIVERGENCIA] set " << pc.set_name << " != manifiesto version " << version << ": "
+                  << (r.motivo_set.empty() ? std::string() : r.motivo_set + "; ")
+                  << "sobran=" << protegidos_lista(r.diferencia.sobran) << " faltan=" << protegidos_lista(r.diferencia.faltan)
+                  << std::endl;
+        if (r.set_tipo_ajeno) {
+            std::cerr << "[PROTEGIDOS-SET-TIPO] no se destruye un set ajeno; con el agente parado: sudo ipset destroy "
+                      << pc.set_name << std::endl;
+        } else if (r.set_reconciliado) {
+            ++cv.reconciliaciones;
+            std::cout << "[PROTEGIDOS-RECONCILIADO] set " << pc.set_name << " = manifiesto version " << version
+                      << " (comprobado tras la sustitución atómica)" << std::endl;
+        }
+    }
+    if (r.reglas_divergentes) {
+        ++cv.divergencias;
+        std::cerr << "[PROTEGIDOS-DIVERGENCIA] reglas: " << r.motivo_reglas << std::endl;
+        if (r.reglas_reconciliadas) {
+            ++cv.reconciliaciones;
+            std::cout << "[PROTEGIDOS-RECONCILIADO] reglas de " << fc.blacklist_chain
+                      << " rehechas (salto INPUT en la posición 1; protegidos RETURN antes de blacklist DROP)" << std::endl;
+        }
+    }
+    if (!r.error.empty()) {
+        ++cv.fallos;
+        std::cerr << "[PROTEGIDOS-VIGIA] ERROR al reconciliar: " << r.error
+                  << " (la barrera del agente sigue protegiendo por IP; se reintenta en la próxima vuelta)" << std::endl;
+    }
 }
 
 int main(int argc, char** argv) {
@@ -1083,6 +1147,16 @@ int main(int argc, char** argv) {
         auto last_health_check = std::chrono::steady_clock::now();
         auto last_protegidos = std::chrono::steady_clock::now();  // [PROTEGIDOS-MANIFIESTO-D318] D6/D7/D-C
         auto last_consulta = std::chrono::steady_clock::now();    // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c (F-E)
+        auto last_vigia = std::chrono::steady_clock::now();       // [PROTEGIDOS-VIGIA-D320] 8e.4a (D8)
+        ContadoresVigia vigia_cv;
+        if (config.operation.dry_run) {
+            std::cerr << "[PROTEGIDOS-VIGIA] operation.dry_run=true: el agente no toca el kernel y el vigía no compara "
+                         "set ni reglas (se avisa cada aviso_sec)" << std::endl;
+        } else {
+            std::cout << "[PROTEGIDOS-VIGIA] kernel <-> manifiesto cada " << config.protegidos.comprobacion_kernel_sec
+                      << " s (set " << config.protegidos.set_name << (protegidos_set_ok ? "" : " NO utilizable: solo reglas")
+                      << ", cadena " << firewall_config.blacklist_chain << ")" << std::endl;
+        }
         auto last_aviso_consulta = std::chrono::steady_clock::time_point{};
         uint64_t consultas_fallidas = 0;
         auto last_metrics_export = std::chrono::steady_clock::now();
@@ -1100,6 +1174,14 @@ int main(int argc, char** argv) {
                 if (std::chrono::duration_cast<std::chrono::seconds>(now - last_protegidos).count() >=
                     config.protegidos.aviso_sec) {
                     protegidos_vigilar(*protegidos, config);  // [PROTEGIDOS-MANIFIESTO-D318]
+                    if (config.operation.dry_run) {  // [PROTEGIDOS-VIGIA-D320]
+                        std::cerr << "[PROTEGIDOS-VIGIA] dry_run: no se compara el kernel con el manifiesto" << std::endl;
+                    } else {
+                        std::cout << "[PROTEGIDOS-VIGIA] comprobaciones=" << vigia_cv.comprobaciones
+                                  << " divergencias=" << vigia_cv.divergencias
+                                  << " reconciliaciones=" << vigia_cv.reconciliaciones << " fallos=" << vigia_cv.fallos
+                                  << std::endl;
+                    }
                     last_protegidos = now;
                 }
                 if (!config.protegidos.hospital_id.empty() && !config.protegidos.despliegue_id.empty() &&
@@ -1118,6 +1200,13 @@ int main(int argc, char** argv) {
                         }
                     }
                     last_consulta = now;
+                }
+
+                if (!config.operation.dry_run &&  // [PROTEGIDOS-VIGIA-D320] 8e.4a (D8)
+                    std::chrono::duration_cast<std::chrono::seconds>(now - last_vigia).count() >=
+                        config.protegidos.comprobacion_kernel_sec) {
+                    protegidos_vigia(*protegidos, ipset, iptables, firewall_config, config, protegidos_set_ok, vigia_cv);
+                    last_vigia = now;
                 }
 
                 if (elapsed_health >= 30) {
