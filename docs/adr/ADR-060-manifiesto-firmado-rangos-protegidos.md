@@ -217,7 +217,9 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
     avisos periódicos (D6, D7, D-C), contadores por categoría. Fuera `ddos_protegidos`, `ipsets.whitelist` y el
     defecto RFC 1918. Tests.
 - **8e.3** `argus-infra` y las rutas del manifiesto en el etcd-server. Diseño cerrado DAY318 (decisiones de Alonso
-  F-A..F-I):
+  F-A..F-I). Hecho: 8e.3a a5a41ba4 (`libs/protegidos`), 8e.3b 465e6aa4 (etcd-server), 8e.3c 91981329 (consulta del
+  firewall), 8e.3d-0 a831c44b (historial en el etcd-server), 8e.3d 6b88a0c8 (`argus-infra`), 8e.3e e2f4bb79
+  (fuera la familia `/kv` del etcd-client):
   - **F-A** El etcd-server verifica con la clave pública **compilada**, la misma que el firewall (patrón ADR-025;
     CMake lee el mismo `.hex`). No se le da permiso de lectura en Vault. Que REA vea la pública no importa (es
     pública, D9); cambiarla exige cambiar el binario. Consecuencia: con Vault caído no se pueden firmar versiones
@@ -226,7 +228,10 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
     libsodium) que enlazan el firewall y el etcd-server, con modo "documento entero, sin planta" para el servidor.
   - **F-C** Un etcd-server sirve a un hospital: `protegidos.hospital_id` en su JSON (Ansible, desde
     `argus_hospital_id`). Rutas sin segmento de hospital: `GET /v1/protegidos` (`ou:firewall-acl-agent`,
-    `ou:argus-infra`) y `PUT /v1/protegidos` (`ou:argus-infra`).
+    `ou:argus-infra`) y `PUT /v1/protegidos` (`ou:argus-infra`). Añadida DAY319 (G-C): `GET /v1/protegidos/v/{n}`
+    (solo `ou:argus-infra`), la versión n de `protegidos/v/<N>` tal cual, sin verificar (verifica quien la pide);
+    400 si n no es un decimal >= 1 sin ceros a la izquierda que quepa en 64 bits, 404 si no existe, 503 sin
+    `hospital_id` o con el almacén caído. El firewall no la puede leer.
   - **F-D** En etcd, el sobre tal cual: `/argus/protegidos/vigente` y `/argus/protegidos/v/<N>` (inmutable). PUT
     rechazado si versión <= vigente, firma u hospital no cuadran o se sale de los límites.
   - **F-E** El firewall lo pide cada `protegidos.consulta_sec` ([5, 3600], 30) con un método nuevo del etcd-client.
@@ -237,12 +242,32 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
   - **F-G** `argus-infra`: un fichero Python con la biblioteca estándar (medido en la VM etcd: Python 3.11.2,
     OpenSSL 3.0.22), instalado por el Vagrantfile en la VM etcd. `init`, `list`, `add`, `del`, `diff`,
     `verificar`, `deshacer N` (contenido de N como N+1 firmado). Firma y verifica con Vault transit; comprueba los
-    límites de D2 antes del PUT.
+    límites de D2 antes del PUT. Diseño fino DAY319 (decisiones de Alonso G-A..G-G):
+    - **G-A** Configuración `/etc/argus-infra/argus-infra.json` (lab: `tools/argus-infra/argus-infra.lab.json`):
+      hospital, plantas, límites, Vault, etcd-server y TLS sin defecto sano (sin ellos no firma); solo `timeout_s`
+      tiene defecto ([1, 120], 10, con aviso).
+    - **G-B** Plantilla sin firmar aparte (`tools/argus-infra/plantillas/hospital-lab.json`); los límites salen
+      siempre de la configuración, nunca de la plantilla ni de la versión anterior.
+    - **G-C** El historial se lee del etcd-server (`GET /v1/protegidos/v/{n}`, F-C), no de un archivo local: la
+      verdad en un solo sitio.
+    - **G-D** `firmante` = `<cn> entidad=<entity_id de Vault>`, como mucho 64 caracteres. Cambiado tras medir: el
+      etcd-server y el firewall registran el firmante con `saneado()`, que corta a 64, y con el formato largo el
+      entity_id se perdía.
+    - **G-E** Cada cambio: login en Vault; lo vigente se valida (reglas de `libs/protegidos` portadas a Python y
+      transit verify); N+1; diff; confirmación tecleando el número de versión (`--si` para el bootstrap); sign;
+      verify; PUT; GET final comparado byte a byte; revoke-self del token.
+    - **G-F** Órdenes `init --desde`, `list`, `add`, `del`, `diff`, `verificar` (también la cadena
+      `hash_anterior`), `deshacer N`. Salidas: 0 bien, 1 error, 2 uso, 3 rechazo del etcd-server.
+    - **G-G** Vive en `tools/argus-infra/`; lo instala el aprovisionador `argus-infra` de la VM etcd (run: always);
+      `make test-argus-infra`.
   - **F-H** Plantilla de despliegue sin firmar en el repo (lab: `.20` infraestructura por eth2, `.61` intranet);
     `argus-infra init --desde FICHERO` la rellena y firma la versión 1 solo si no hay ninguna. El bootstrap la usa
     en 8e.5.
   - **F-I** `set/get/del/list_keys` del etcd-client piden `/kv/...`, rutas que el servidor no tiene: se borran en
-    un commit propio cuando 8e.3 funcione, tras comprobar con `git grep` que nadie los usa.
+    un commit propio cuando 8e.3 funcione, tras comprobar con `git grep` que nadie los usa. Hecho DAY320
+    (e2f4bb79): medido que borrar solo esos 4 rompe la librería, porque otros 6 métodos suyos los llaman
+    (`save_config_master`, `save_config_active`, `get_config_master`, `get_config_active`, `get_component_config`
+    y `rollback_config`). Decisión de Alonso: fuera los 10; se queda `put_config` (sí funciona).
 - **8e.4** Comprobación continua kernel ↔ manifiesto, antispoofing en `raw PREROUTING` generado desde el manifiesto,
   alertas de spoofing por interfaz y MAC, versión en el latido y en
   `pipeline-status`, reglas Falco (en la VM hardened-x86, `check-prod-falco`) y Wazuh. Falco y Wazuh avisan también
@@ -276,7 +301,7 @@ dice cuál valió. Vault transit firma Ed25519 puro sobre los bytes: basta `cryp
   "hospital_id": "hospital-lab",
   "version": 1,
   "emitido_utc": "2026-11-05T08:00:00Z",
-  "firmante": "<entidad de Vault del admin>",
+  "firmante": "<cn> entidad=<entity_id de Vault> (<= 64 caracteres; G-D)",
   "motivo": "alta inicial del laboratorio",
   "hash_anterior": "<sha256 de la carga anterior, vacío en la versión 1>",
   "limites": { "infraestructura": 32, "intranet": 24, "dmz": 24, "externos_criticos": 32 },
@@ -372,7 +397,8 @@ guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.
 Implementados en 8e.1b, además: `[PROTEGIDOS-CLAVE]` (huellas de las dos ranuras compiladas: los 16 primeros hex
 del sha256 de la clave, no los de la clave), `[PROTEGIDOS-SET]`, `[PROTEGIDOS-KERNEL]` (entradas llevadas al set;
 las IPv6 solo en la barrera) y `[PROTEGIDOS-CACHE]` (la caché no se lee o ya no verifica: se conserva lo que hay en
-memoria). `[INFRA-CAMBIO]` llega con 8e.3, cuando el manifiesto cambia en caliente.
+memoria). `[INFRA-CAMBIO]` llega con 8e.3, cuando el manifiesto cambia en caliente (medido DAY319: solo se
+escribe si ya había un vigente; con la primera versión sale solo `[PROTEGIDOS-MANIFIESTO]`).
 
 **Tests de 8e.1:** firma válida con la clave actual y con la siguiente; firma de otra clave; carga alterada un byte;
 versión igual y menor; otro `hospital_id`; planta ausente; prefijo más amplio que el límite (en `infraestructura`,

@@ -8969,3 +8969,54 @@ Primera prueba real de 8e.3c: PASA. Lab vigente al cierre: v5 (contenido de la p
 8e.3e (borrar `set/get/del/list_keys` del etcd-client), docs de 8e.3 en ADR-060 (F-C con la ruta del historial, G-A..G-G,
 firmante corto), 8e.4, 8e.5 (bootstrap con `argus-infra init --si`, P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ y
 cierre del PR1.
+
+
+---
+
+## DAY320 — paso 8e.3e hecho y docs de 8e.3 [PROTEGIDOS-MANIFIESTO-D320]
+
+Commit e2f4bb79 (8e.3e). Fuera del etcd-client todo lo que pide `/kv/...` (rutas que el etcd-server no tiene): `set`,
+`get`, `del`, `list_keys` y los 6 que se apoyan en ellos, `save_config_master`, `save_config_active`, `get_config_master`,
+`get_config_active`, `get_component_config` y `rollback_config` (decisión de Alonso DAY320, tras medir que borrar solo los
+4 rompía la librería). Se quedan `put_config` (va por `put_config_impl`) y el `mutex_`. ADR-060 al día: 8e.3 hecho, F-C con
+`GET /v1/protegidos/v/{n}`, G-A..G-G y firmante corto, F-I con el alcance real.
+
+### Medido en el banco (Debian 12, GCC 12.2.0, CMake 3.25.1, libsodium 1.0.19, httplib v0.63.0; banco rehecho)
+- Base (2cc8c344) y parcheado, con Release (como `etcd-client-build`), native y skylake (opciones de production), dos
+  pasadas: 12/12 compilan sin avisos del código y ctest de etcd-client 5/5.
+- `nm -DC`: `EtcdClient` exporta 26 símbolos (antes 36); el diff son exactamente los 10, ninguno nuevo.
+- Mutación: una sonda que llama a los 10 métodos compila contra la base; contra el parcheado, 10 "has no member named".
+- Parcheador `d320_8e3e.py`: `--check`, `--apply`, idempotente; con un fichero alterado o en estado mezclado no escribe.
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0 (etcd-server, ml-detector, sniffer, firewall y tools recompilados contra la cabecera nueva);
+`make etcd-client-test` 5/5; en el defender, 0 símbolos de la familia en `/usr/local/lib/libetcd_client.so`.
+
+### Hallazgos DAY320
+- **Buscar usos por palabra, no por `objeto.metodo(`.** El primer `git grep` (`.set(`, `->set(`) daba 0 usos y se le
+  escaparon las llamadas sin calificar dentro de la propia clase; la compilación del banco lo cazó. Para borrar un
+  método: `git grep -w`.
+- `etcd-client-build` (y crypto-transport, seed-client, plugin-loader, vault-client) compila con
+  `-DCMAKE_BUILD_TYPE=Release` y sin los flags de `PROFILE` (`CXX Flags (from Makefile):` vacío); los consumidores sí van
+  con production. Anotado, sin decidir.
+- `common/EtcdServiceRegistry.{h,cpp}` (habla con la API v3 de etcd directamente) solo lo cita
+  `scripts/build_and_run.sh`, que exige `service1/`, `service2/` y `docker-compose.yaml`, que no existen en el repo: el
+  script siempre aborta. Es de la época de Docker. Candidato a borrar, sin decidir.
+- `EtcdClient::set_encryption_key` (no-op desde DAY98) y `has_encryption_key`: nadie los llama. Candidatos a borrar, sin
+  decidir.
+
+### DEBT-ETCD-CLIENT-TEST-R2-CARRERA-001 — ABIERTA (nueva DAY320, Alonso)
+`test_etcd_cliente_tls` (DAY316, mantenedor G1-G3) falla de vez en cuando en R2 ("el etcd-server aparece: se registra
+en <= 1 latido y sube la config del JSON de arranque"). Medido DAY320 en el banco, en el árbol base 2cc8c344 sin ningún
+cambio: 1 de 30 y 1 de 60 ejecuciones, más 1 en la matriz. Con R2 instrumentado en una copia aparte: en los 60 casos el
+servidor falso cuenta `register=1 config=1` y `reg=1`; en el que falla, las líneas `[ETCD-CLIENTE-REGISTRADO] sniffer` y
+`config subida: ...` aún no están en la salida capturada. Es una carrera del test (comprueba el log en cuanto el
+servidor cuenta la petición, antes de que el hilo mantenedor escriba su línea), no del cliente.
+Arreglo: que R2 espere (`espera(...)`) también a las dos líneas del log antes de comprobar.
+**Test de cierre:** 200 ejecuciones seguidas de `test_etcd_cliente_tls` sin un fallo de R2; y con la espera del log
+quitada, vuelve a fallar alguna (el instrumento detecta).
+
+### Pendiente (por orden)
+8e.4 (vigilancia: kernel <-> manifiesto, antispoofing en raw PREROUTING, MAC, rp_filter, versión en latido y
+pipeline-status, Falco/Wazuh, alarma de disco del audit de Vault al 75 %), 8e.5 (bootstrap con `argus-infra init --si`,
+`d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1.
