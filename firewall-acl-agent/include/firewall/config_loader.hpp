@@ -188,6 +188,18 @@ struct IrpConfig {
         std::string zmq_endpoint = "ipc:///run/argus/autonomy.sock";
     };
 
+    // [PROTEGIDOS-ANTISPOOF-D320] ADR-060 8e.4b: antispoofing en raw PREROUTING generado desde el manifiesto.
+    struct AntispoofConfig {
+        std::string cadena = "ARGUS_ANTISPOOF";          // raw; [A-Za-z0-9_-], 1 a 24 (las de spoofing: _IF y _MAC)
+        std::string set_redes = "ml_defender_prot_redes";  // hash:net, redes protegidas con su ruta comprobada
+        std::string set_ips_mac = "ml_defender_prot_ipmac";  // hash:ip, las /32 que llevan MAC
+        std::string set_mac = "ml_defender_prot_mac";      // hash:ip,mac
+        int log_por_minuto = 5;  // [1, 600]: muestras de evidencia (LOG) por minuto y cadena
+        int log_rafaga = 5;      // [1, 100]: ráfaga inicial de esas muestras
+        bool valido = true;      // false: nombres que chocan entre sí o con protegidos.set_name (no se instala)
+        std::string motivo_invalido;
+    };
+
     // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 sección 6: el manifiesto firmado de protegidos de ESTE firewall.
     struct ProtegidosConfig {
         std::string hospital_id;    // [a-z0-9-]{1,64}; sin defecto: vacío = sin manifiesto (candado cerrado) y aviso
@@ -197,6 +209,7 @@ struct IrpConfig {
         int aviso_sec = 300;        // [30, 86400]: avisos periódicos y nueva verificación de la caché (D7)
         int consulta_sec = 30;      // [5, 3600]: cada cuánto se pide el manifiesto al etcd-server (8e.3c, F-E)
         int comprobacion_kernel_sec = 30;  // [5, 3600]: vigía kernel <-> manifiesto (8e.4a, D8) [PROTEGIDOS-VIGIA-D320]
+        AntispoofConfig antispoof;         // [PROTEGIDOS-ANTISPOOF-D320] 8e.4b
         std::vector<std::string> etcd_endpoints;  // copia de etcd.endpoints para D-C (solo lectura)
     };
 

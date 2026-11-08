@@ -1,11 +1,11 @@
 {
-  "_doc": "[PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (F-H, G-B). Plantilla SIN FIRMAR del contenido inicial del manifiesto de protegidos del laboratorio: sudo argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json firma con ella la versión 1, solo si no hay ninguna publicada. hospital_id y plantas tienen que ser los de /etc/argus-infra/argus-infra.json; los límites NO van aquí (los fija la configuración). Cada entrada: categoria (infraestructura | intranet | dmz | externos_criticos), cidr (la red, con prefijo), interfaz (la del firewall por la que entra ese origen; lab: eth2, medido DAY318), mac (vacía o xx:xx:xx:xx:xx:xx en minúsculas) y motivo corto (sin ubicación ni función: el manifiesto llega a todos los firewalls del hospital). Valores de LABORATORIO: nunca copiarlos a producción.",
+  "_doc": "[PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (F-H, G-B). Plantilla SIN FIRMAR del contenido inicial del manifiesto de protegidos del laboratorio: sudo argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json firma con ella la versión 1, solo si no hay ninguna publicada. hospital_id y plantas tienen que ser los de /etc/argus-infra/argus-infra.json; los límites NO van aquí (los fija la configuración). Cada entrada: categoria (infraestructura | intranet | dmz | externos_criticos), cidr (la red, con prefijo), interfaz (la del firewall por la que entra ese origen; lab: eth2, medido DAY318), mac (vacía o xx:xx:xx:xx:xx:xx en minúsculas) y motivo corto (sin ubicación ni función: el manifiesto llega a todos los firewalls del hospital). [PROTEGIDOS-ANTISPOOF-D320] La MAC de .20 es la fija de la VM etcd en el Vagrantfile (H-G): si se cambia allí, cambiarla aquí. Valores de LABORATORIO: nunca copiarlos a producción.",
   "hospital_id": "hospital-lab",
   "motivo": "alta inicial del laboratorio (ADR-060 D11)",
   "comun": [],
   "plantas": {
     "lab-vagrant": [
-      { "categoria": "infraestructura", "cidr": "192.168.100.20/32", "interfaz": "eth2", "mac": "", "motivo": "VM etcd: etcd, etcd-server, Vault" },
+      { "categoria": "infraestructura", "cidr": "192.168.100.20/32", "interfaz": "eth2", "mac": "08:00:27:a2:00:20", "motivo": "VM etcd: etcd, etcd-server, Vault" },
       { "categoria": "intranet", "cidr": "192.168.100.61/32", "interfaz": "eth2", "mac": "", "motivo": "protegido de prueba DAY300" }
     ]
   }

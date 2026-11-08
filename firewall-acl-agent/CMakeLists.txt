@@ -526,6 +526,33 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     add_test(NAME test_protegidos_vigia_root COMMAND test_protegidos_vigia_root)
     set_tests_properties(test_protegidos_vigia_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
 
+    # [PROTEGIDOS-ANTISPOOF-D320] ADR-060 D8, 8e.4b: antispoofing en raw PREROUTING. Parte pura (sin root) y contra el
+    # kernel con netns + veth (requiere root y hash:ip,mac; si falta alguno sale 77 = Skipped, que el gate e2e cuenta).
+    add_executable(test_protegidos_antispoof
+        tests/unit/test_protegidos_antispoof.cpp
+    )
+    target_include_directories(test_protegidos_antispoof PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_antispoof PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_antispoof COMMAND test_protegidos_antispoof)
+
+    add_executable(test_protegidos_antispoof_root
+        tests/unit/test_protegidos_antispoof_root.cpp
+    )
+    target_include_directories(test_protegidos_antispoof_root PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_antispoof_root PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_antispoof_root COMMAND test_protegidos_antispoof_root)
+    set_tests_properties(test_protegidos_antispoof_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
+
     # test_recidivism_e2e — RECIDIVISM-D276 (INTEGRACION, requiere root+ipset -> VM, no make test normal)
     add_executable(test_recidivism_e2e
         tests/test_recidivism_e2e.cpp

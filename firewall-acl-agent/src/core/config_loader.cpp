@@ -328,6 +328,63 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
                           << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
             }
         }
+        {   // [PROTEGIDOS-ANTISPOOF-D320] 8e.4b (ADR-060 D8, H-B..H-E): protegidos.antispoof
+            auto& ac = pc.antispoof;
+            const Json::Value a = (p.isObject() && p.isMember("antispoof")) ? p["antispoof"] : Json::Value();
+            if (!a.isObject()) {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.antispoof " << (a.isNull() ? "ausente" : "mal formado")
+                          << " (objeto): se usan los defectos de todos sus campos" << std::endl;
+            }
+            auto nombre = [&](const char* k, std::string& dst, std::size_t max, bool es_set) {
+                const std::string def = dst;
+                const bool hay = a.isObject() && a.isMember(k);
+                const std::string v = hay && a[k].isString() ? a[k].asString() : "";
+                const bool ok = !v.empty() && v.size() <= max && v[0] != '-' &&
+                                std::all_of(v.begin(), v.end(), [](char c) {
+                                    return std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-';
+                                }) &&
+                                (!es_set || ::mldefender::firewall::is_valid_set_name(v));
+                if (ok) {
+                    dst = v;
+                    std::cout << "[CONFIG] protegidos.antispoof." << k << "=" << v << " (JSON)" << std::endl;
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] protegidos.antispoof." << k << " " << (hay ? "mal formado" : "ausente")
+                              << " ([A-Za-z0-9_-], de 1 a " << max << "): se usa " << def << std::endl;
+                }
+            };
+            nombre("cadena", ac.cadena, 24, false);
+            nombre("set_redes", ac.set_redes, 29, true);
+            nombre("set_ips_mac", ac.set_ips_mac, 29, true);
+            nombre("set_mac", ac.set_mac, 29, true);
+            auto entero = [&](const char* k, int& dst, int kMin, int kMax) {
+                const int def = dst;
+                const bool hay = a.isObject() && a.isMember(k);
+                if (hay && a[k].isInt() && a[k].asInt() >= kMin && a[k].asInt() <= kMax) {
+                    dst = a[k].asInt();
+                    std::cout << "[CONFIG] protegidos.antispoof." << k << "=" << dst << " (JSON)" << std::endl;
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] protegidos.antispoof." << k << " " << (hay ? "mal formado" : "ausente")
+                              << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+                }
+            };
+            entero("log_por_minuto", ac.log_por_minuto, 1, 600);
+            entero("log_rafaga", ac.log_rafaga, 1, 100);
+            // Cuatro sets de tipos distintos: un nombre repetido haría chocar los tipos en el kernel.
+            const std::vector<std::string> nombres{pc.set_name, ac.set_redes, ac.set_ips_mac, ac.set_mac};
+            for (std::size_t i = 0; i < nombres.size(); ++i) {
+                for (std::size_t j = i + 1; j < nombres.size(); ++j) {
+                    if (nombres[i] == nombres[j]) {
+                        ac.valido = false;
+                        ac.motivo_invalido = "el set " + nombres[i] + " aparece dos veces entre protegidos.set_name y "
+                                             "protegidos.antispoof.set_*";
+                    }
+                }
+            }
+            if (!ac.valido) {
+                std::cerr << "[CONFIG-AVISO] protegidos.antispoof NO se instala: " << ac.motivo_invalido
+                          << " (cada set necesita su propio nombre)" << std::endl;
+            }
+        }
         // D-C: los endpoints del etcd-server (los valida etcd-client; aquí solo se copian para comparar)
         if (root.isMember("etcd") && root["etcd"].isObject() && root["etcd"]["endpoints"].isArray()) {
             for (const auto& e : root["etcd"]["endpoints"]) {

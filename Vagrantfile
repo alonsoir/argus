@@ -1578,8 +1578,12 @@ BASHRC_EOF
       vb.customize ["modifyvm", :id, "--usb", "off"]
     end
 
+    # [PROTEGIDOS-ANTISPOOF-D320] ADR-060 H-G: MAC fija (VirtualBox, OUI 08:00:27) para que el manifiesto del lab pueda
+    # atar .20 a su MAC (tools/argus-infra/plantillas/hospital-lab.json): el antispoofing por MAC caza a quien, desde
+    # la misma LAN, falsifique el origen de la VM etcd. Si se cambia aquí, cambiarla también en la plantilla.
     etcd.vm.network "private_network",
       ip: "192.168.100.20",
+      mac: "080027A20020",
       virtualbox__intnet: "ml_defender_gateway_lan"
 
     etcd.vm.synced_folder ".", "/vagrant", type: "virtualbox",

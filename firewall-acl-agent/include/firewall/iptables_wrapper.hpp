@@ -267,6 +267,22 @@ public:
     /// Creates chains and links them to INPUT with ipset matches
     IPTablesResult<void> setup_base_rules(const FirewallConfig& config);
 
+    /// [PROTEGIDOS-ANTISPOOF-D320] ADR-060 8e.4b: carga 'contenido' (formato iptables-save, una o más tablas) con
+    /// 'iptables-restore -w --noflush': cada tabla en una sola transacción; las cadenas declaradas (":C - [0:0]") se
+    /// vacían y se rellenan, las demás no se tocan. En dry_run solo imprime.
+    IPTablesResult<void> restaurar_sin_vaciar(const std::string& contenido);
+
+    /// [PROTEGIDOS-ANTISPOOF-D320] un único salto 'base -> destino' en la posición 1 de la tabla (retira los anteriores).
+    IPTablesResult<void> salto_en_primera(IPTablesTable tabla, const std::string& base, const std::string& destino);
+
+    /// [PROTEGIDOS-ANTISPOOF-D320] contador de paquetes de cada regla de una cadena, en orden ('iptables -L -v -x -n').
+    /// Vacío si la cadena no existe o no se pudo leer.
+    std::vector<uint64_t> contadores(const std::string& chain_name, IPTablesTable tabla) const;
+
+    /// [PROTEGIDOS-ANTISPOOF-D320] H-D: interfaz por la que el kernel enruta hacia una IPv4 ('ip -o route get', sin
+    /// shell). "" si la IP no es una IPv4 o no hay ruta.
+    static std::string interfaz_de_ruta(const std::string& ipv4);
+
     /// Cleanup all ML Defender rules
     IPTablesResult<void> cleanup_rules(const FirewallConfig& config);
 

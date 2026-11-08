@@ -41,6 +41,7 @@ enum class IPSetType {
     HASH_NET,     ///< CIDR blocks (1.2.3.0/24)
     HASH_IP_PORT, ///< IP + Port tuples
     HASH_NET_IFACE, ///< CIDR + interfaz de entrada (192.168.100.20/32,eth2) [PROTEGIDOS-MANIFIESTO-D318]
+    HASH_IP_MAC,    ///< IP + MAC de origen (192.168.100.20,08:00:27:a2:00:20) [PROTEGIDOS-ANTISPOOF-D320]
 };
 
 /// Address family
@@ -401,6 +402,12 @@ public:
                                         const std::vector<std::pair<std::string, std::string>>& entradas,
                                         uint32_t maxelem);
 
+    /// [PROTEGIDOS-ANTISPOOF-D320] ADR-060 8e.4b: la misma sustitución atómica (temporal <set>_n, restore, swap) para
+    /// los sets del antispoofing: HASH_NET (cidr IPv4), HASH_IP (IPv4) y HASH_IP_MAC ("ip,xx:xx:xx:xx:xx:xx"). Cada
+    /// entrada se valida según el tipo; una mala y no se toca nada. Otros tipos: error.
+    IPSetResult<void> replace_set(const std::string& set_name, IPSetType tipo, const std::vector<std::string>& entradas,
+                                  uint32_t maxelem);
+
     /// Save all sets to file
     /// @param filepath Path to save file
     /// @return Success or error
@@ -428,6 +435,10 @@ private:
     /// Internal version of set_exists without mutex lock
     /// MUST be called while holding mutex_
     bool set_exists_unlocked(const std::string& set_name) const;
+
+    /// [PROTEGIDOS-ANTISPOOF-D320] cuerpo común de replace_net_iface y replace_set (ya validadas las entradas).
+    IPSetResult<void> reemplazar_unlocked(const std::string& set_name, const char* tipo,
+                                          const std::vector<std::string>& lineas, uint32_t maxelem);
 
     /// Validate IP address format
 

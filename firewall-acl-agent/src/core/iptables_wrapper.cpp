@@ -13,13 +13,15 @@
 // Performance: iptables-restore is THE optimal way for batch operations
 //===----------------------------------------------------------------------===//
 
-#include <sstream>  // [ARGUS-CADENA-D301]
+#include <sstream>
+#include <cstdio>  // [ARGUS-CADENA-D301]
 #include "firewall/iptables_wrapper.hpp"
 #include "safe_exec.hpp"   // CWE-78: execv() sin shell (Consejo 8/8 DAY 128)
 
 #include <cstring>
 #include <sstream>
 #include <fstream>
+#include <arpa/inet.h>
 #include <regex>
 #include <algorithm>
 #include <iostream>
@@ -552,6 +554,89 @@ IPTablesResult<void> IPTablesWrapper::setup_base_rules(const FirewallConfig& con
               << ", " << (config.blacklist_ipset.empty() ? "sin blacklist" : config.blacklist_ipset + " DROP")
               << (m_dry_run ? " (DRY-RUN: nada aplicado)" : "") << std::endl;
     return IPTablesResult<void>();
+}
+
+// [PROTEGIDOS-ANTISPOOF-D320] ADR-060 8e.4b (ver la cabecera).
+IPTablesResult<void> IPTablesWrapper::restaurar_sin_vaciar(const std::string& contenido) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] iptables-restore -w --noflush <<" << std::endl;
+        std::istringstream o(contenido);
+        std::string l;
+        while (std::getline(o, l)) std::cout << "[DRY-RUN]   " << l << std::endl;
+        return IPTablesResult<void>();
+    }
+    const char* fichero = "/run/argus/irp/iptables_noflush.tmp";  // como ipset (DEBT-IRP-IPSET-TMP-001)
+    {
+        std::ofstream f(fichero);
+        if (!f) {
+            return IPTablesResult<void>(IPTablesError{IPTablesErrorCode::KERNEL_ERROR,
+                                                      std::string("no se pudo escribir ") + fichero});
+        }
+        f << contenido;
+    }
+    const int r = safe_exec_with_file_in({"/usr/sbin/iptables-restore", "-w", "--noflush"}, fichero);
+    std::remove(fichero);
+    if (r != 0) {
+        return IPTablesResult<void>(IPTablesError{IPTablesErrorCode::KERNEL_ERROR,
+                                                  "iptables-restore --noflush exit=" + std::to_string(r)});
+    }
+    return IPTablesResult<void>();
+}
+
+IPTablesResult<void> IPTablesWrapper::salto_en_primera(IPTablesTable tabla, const std::string& base,
+                                                       const std::string& destino) {
+    std::lock_guard<std::mutex> lock(mutex_);
+    const std::string t = table_to_string(tabla);
+    if (!validate_table_name(t) || !validate_chain_name(base) || !validate_chain_name(destino)) {
+        return IPTablesResult<void>(IPTablesError{IPTablesErrorCode::INVALID_RULE, "Invalid table or chain name"});
+    }
+    if (m_dry_run) {
+        std::cout << "[DRY-RUN] /usr/sbin/iptables -w -t " << t << " -D " << base << " -j " << destino
+                  << " (repetido) && -I " << base << " 1 -j " << destino << std::endl;
+        return IPTablesResult<void>();
+    }
+    for (int i = 0; i < 16; ++i) {
+        if (safe_exec({"/usr/sbin/iptables", "-w", "-t", t, "-D", base, "-j", destino}) != 0) break;
+    }
+    if (safe_exec({"/usr/sbin/iptables", "-w", "-t", t, "-I", base, "1", "-j", destino}) != 0) {
+        return IPTablesResult<void>(IPTablesError{IPTablesErrorCode::KERNEL_ERROR,
+                                                  "no se pudo poner " + base + " -> " + destino + " en la posicion 1"});
+    }
+    return IPTablesResult<void>();
+}
+
+std::vector<uint64_t> IPTablesWrapper::contadores(const std::string& chain_name, IPTablesTable tabla) const {
+    std::lock_guard<std::mutex> lock(mutex_);
+    std::vector<uint64_t> v;
+    const std::string t = table_to_string(tabla);
+    if (!validate_table_name(t) || !validate_chain_name(chain_name)) return v;
+    auto [ret, out] = safe_exec_with_output({"/usr/sbin/iptables", "-w", "-t", t, "-L", chain_name, "-v", "-x", "-n"});
+    if (ret != 0) return v;
+    std::istringstream is(out);
+    std::string l;
+    int n = 0;
+    while (std::getline(is, l)) {
+        if (++n <= 2) continue;  // "Chain ..." y la cabecera de columnas
+        std::istringstream ls(l);
+        std::string pk;
+        if (!(ls >> pk) || pk.empty() || pk.find_first_not_of("0123456789") != std::string::npos) continue;
+        v.push_back(std::stoull(pk));
+    }
+    return v;
+}
+
+std::string IPTablesWrapper::interfaz_de_ruta(const std::string& ipv4) {
+    in_addr a{};
+    if (ipv4.find('/') != std::string::npos || inet_pton(AF_INET, ipv4.c_str(), &a) != 1) return "";
+    auto [ret, out] = safe_exec_with_output({"/usr/sbin/ip", "-o", "route", "get", ipv4});
+    if (ret != 0) return "";
+    std::istringstream is(out);
+    std::string tok;
+    while (is >> tok) {
+        if (tok == "dev" && (is >> tok)) return tok;
+    }
+    return "";
 }
 
 IPTablesResult<void> IPTablesWrapper::cleanup_rules(const FirewallConfig& config) {

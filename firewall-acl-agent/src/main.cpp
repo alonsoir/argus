@@ -23,6 +23,7 @@
 #include "firewall/batch_processor.hpp"
 #include "protegidos/manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
 #include "firewall/protegidos_vigia.hpp"  // [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a
+#include "firewall/protegidos_antispoof.hpp"  // [PROTEGIDOS-ANTISPOOF-D320] ADR-060 D8, 8e.4b
 #include <fstream>
 #include <filesystem>  // [PROTEGIDOS-MANIFIESTO-D318] directorio de la caché
 #include <nlohmann/json.hpp>
@@ -491,6 +492,113 @@ static void protegidos_vigia(const ProtegidosVigentes& v, IPSetWrapper& ipset, I
     }
 }
 
+// ═══════════════════════════════════════════════════════════════════════
+// [PROTEGIDOS-ANTISPOOF-D320] ADR-060 D8, 8e.4b: antispoofing en raw PREROUTING (solo lo toca el bucle principal)
+// ═══════════════════════════════════════════════════════════════════════
+struct EstadoAntispoof {
+    bool activo = false;                 // dry_run=false, configuración válida y set de protegidos utilizable
+    mldefender::firewall::NombresAntispoof n;
+    bool aplicado = false;
+    uint64_t version = 0;                // versión del manifiesto aplicada (0 = ninguno)
+    bool descarta = false;               // modo aplicado
+    mldefender::firewall::RepartoAntispoof reparto;
+    uint64_t ult_if = 0, ult_mac = 0, total_if = 0, total_mac = 0;
+};
+
+static std::vector<mldefender::firewall::EntradaAntispoof> antispoof_entradas(const ManifiestoVerificado* m) {
+    std::vector<mldefender::firewall::EntradaAntispoof> v;
+    if (m == nullptr) return v;
+    for (const auto& en : m->entradas) {
+        if (en.rango.v6) continue;  // IPv6: solo la barrera (D-I)
+        v.push_back({en.rango.texto, en.interfaz, en.mac});
+    }
+    return v;
+}
+
+static mldefender::firewall::RepartoAntispoof antispoof_reparto(const ManifiestoVerificado* m) {
+    return mldefender::firewall::repartir_antispoof(
+        antispoof_entradas(m), [](const std::string& ip) { return IPTablesWrapper::interfaz_de_ruta(ip); });
+}
+
+// Modo descarta solo con la mitigación real: dry_run=false, habilitada=true y candado abierto (manifiesto verificado).
+static bool antispoof_descarta(const ProtegidosVigentes& v, const FirewallAgentConfig& config) {
+    return !config.operation.dry_run && config.ddos_mitigacion.habilitada &&
+           !candado_cerrado(config.ddos_mitigacion.habilitada, &v) && v.vigente() != nullptr;
+}
+
+static void antispoof_aplicar(EstadoAntispoof& e, IPSetWrapper& ipset, IPTablesWrapper& iptables,
+                              const ProtegidosVigentes& v, const FirewallAgentConfig& config, const std::string& por) {
+    const auto m = v.vigente();
+    e.reparto = antispoof_reparto(m.get());
+    e.descarta = antispoof_descarta(v, config);
+    e.version = m ? m->version : 0;
+    const auto r = mldefender::firewall::antispoof_paso(ipset, iptables, e.n, e.reparto, e.descarta,
+                                                       static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas),
+                                                       false);
+    e.aplicado = true;
+    e.ult_if = e.ult_mac = 0;  // la cadena se rehace con los contadores a cero
+    if (r.reconciliado) {
+        std::cout << "[PROTEGIDOS-ANTISPOOF] aplicado (" << por << "): manifiesto version "
+                  << (m ? std::to_string(m->version) : std::string("ninguna")) << " modo="
+                  << (e.descarta ? "descarta" : "cuenta") << " redes=" << e.reparto.redes.size()
+                  << " ips_mac=" << e.reparto.ips_mac.size() << " mac=" << e.reparto.mac.size()
+                  << (e.n.con_mac ? "" : " (sin hash:ip,mac en el kernel: SIN comprobación de MAC)")
+                  << " cadena raw " << e.n.cadena << std::endl;
+    } else {
+        std::cerr << "[PROTEGIDOS-ANTISPOOF] ERROR al aplicar (" << por << "): " << r.error
+                  << " (la barrera del agente sigue protegiendo por IP; el vigía reintenta)" << std::endl;
+    }
+    for (const auto& x : e.reparto.sin_ruta) {
+        std::cerr << "[PROTEGIDOS-RUTA] " << ::argus::protegidos::detalle_protegidos::saneado(x)
+                  << ": esa red no se cuenta ni se descarta (un DROP por la interfaz equivocada sería un DoS "
+                     "autoinfligido); corrija la interfaz en el manifiesto con argus-infra" << std::endl;
+    }
+}
+
+// Vuelta del vigía (cada comprobacion_kernel_sec): rutas, K4/K5 y contadores de spoofing.
+static void antispoof_vigia(EstadoAntispoof& e, IPSetWrapper& ipset, IPTablesWrapper& iptables,
+                            const ProtegidosVigentes& v, const FirewallAgentConfig& config, ContadoresVigia& cv) {
+    const auto m = v.vigente();
+    const auto rep = antispoof_reparto(m.get());
+    if (rep.redes != e.reparto.redes || rep.ips_mac != e.reparto.ips_mac || rep.mac != e.reparto.mac ||
+        rep.sin_ruta != e.reparto.sin_ruta) {
+        antispoof_aplicar(e, ipset, iptables, v, config, "las rutas del kernel han cambiado");
+    }
+    const auto r = mldefender::firewall::antispoof_paso(ipset, iptables, e.n, e.reparto, e.descarta,
+                                                       static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas),
+                                                       true);
+    ++cv.comprobaciones;
+    if (r.divergente) {
+        ++cv.divergencias;
+        std::ostringstream o;
+        for (std::size_t i = 0; i < r.motivos.size(); ++i) o << (i ? "; " : "") << r.motivos[i];
+        std::cerr << "[PROTEGIDOS-DIVERGENCIA] antispoof: " << o.str() << std::endl;
+        if (r.reconciliado) {
+            ++cv.reconciliaciones;
+            e.ult_if = e.ult_mac = 0;
+            std::cout << "[PROTEGIDOS-RECONCILIADO] antispoof: sets y cadenas raw de " << e.n.cadena
+                      << " como dice el manifiesto (modo " << (e.descarta ? "descarta" : "cuenta") << ")" << std::endl;
+        }
+    }
+    if (!r.error.empty() && !r.reconciliado) {
+        ++cv.fallos;
+        std::cerr << "[PROTEGIDOS-VIGIA] ERROR antispoof: " << r.error << std::endl;
+    }
+    const auto ci = iptables.contadores(e.n.cadena + "_IF", IPTablesTable::RAW);
+    const auto cm = iptables.contadores(e.n.cadena + "_MAC", IPTablesTable::RAW);
+    const uint64_t vi = ci.size() >= 2 ? ci[1] : 0, vm = cm.size() >= 2 ? cm[1] : 0;
+    const uint64_t di = vi >= e.ult_if ? vi - e.ult_if : vi, dm = vm >= e.ult_mac ? vm - e.ult_mac : vm;
+    e.ult_if = vi;
+    e.ult_mac = vm;
+    if (di > 0 || dm > 0) {
+        e.total_if += di;
+        e.total_mac += dm;
+        std::cerr << "[PROTEGIDOS-SPOOFING] origen protegido falsificado: interfaz=+" << di << " mac=+" << dm
+                  << " (total interfaz=" << e.total_if << " mac=" << e.total_mac << ") modo="
+                  << (e.descarta ? "descarta" : "cuenta") << "; evidencia: journalctl -k | grep ARGUS-SPOOF" << std::endl;
+    }
+}
+
 int main(int argc, char** argv) {
 #ifdef PLUGIN_LOADER_ENABLED
     std::unique_ptr<ml_defender::PluginLoader> plugin_loader;
@@ -925,6 +1033,36 @@ int main(int argc, char** argv) {
 
         FIREWALL_LOG_INFO("IPTables rules configured successfully");
 
+        // [PROTEGIDOS-ANTISPOOF-D320] ADR-060 D8, 8e.4b: antispoofing en raw PREROUTING desde el manifiesto vigente
+        EstadoAntispoof antispoof;
+        {
+            const auto& ac = config.protegidos.antispoof;
+            if (config.operation.dry_run) {
+                std::cerr << "[PROTEGIDOS-ANTISPOOF] operation.dry_run=true: no se instala (el agente no toca el kernel)"
+                          << std::endl;
+            } else if (!ac.valido) {
+                std::cerr << "[PROTEGIDOS-ANTISPOOF] NO se instala: " << ac.motivo_invalido << std::endl;
+            } else if (!protegidos_set_ok) {
+                std::cerr << "[PROTEGIDOS-ANTISPOOF] NO se instala: el set " << config.protegidos.set_name
+                          << " no es utilizable (ver [PROTEGIDOS-SET-TIPO])" << std::endl;
+            } else {
+                antispoof.activo = true;
+                antispoof.n = {ac.cadena, ac.set_redes, config.protegidos.set_name, ac.set_ips_mac, ac.set_mac,
+                               ac.log_por_minuto, ac.log_rafaga, true};
+                const auto t = ipset.set_type(ac.set_mac);
+                if (!t) {
+                    antispoof.n.con_mac = static_cast<bool>(ipset.create_set(mldefender::firewall::config_set_antispoof(
+                        ac.set_mac, IPSetType::HASH_IP_MAC,
+                        static_cast<uint32_t>(::argus::protegidos::kProtegidosMaxEntradas))));
+                }
+                if (!antispoof.n.con_mac) {
+                    std::cerr << "[PROTEGIDOS-ANTISPOOF] el kernel no admite hash:ip,mac: sin comprobación de MAC (la de "
+                                 "interfaz sí)" << std::endl;
+                }
+                antispoof_aplicar(antispoof, ipset, iptables, *protegidos, config, "arranque");
+            }
+        }
+
         // ───────────────────────────────────────────────────────────────────
         // Batch Processor Configuration (Day 52: IPSet names from ipsets)
         // ───────────────────────────────────────────────────────────────────
@@ -1148,6 +1286,7 @@ int main(int argc, char** argv) {
         auto last_protegidos = std::chrono::steady_clock::now();  // [PROTEGIDOS-MANIFIESTO-D318] D6/D7/D-C
         auto last_consulta = std::chrono::steady_clock::now();    // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c (F-E)
         auto last_vigia = std::chrono::steady_clock::now();       // [PROTEGIDOS-VIGIA-D320] 8e.4a (D8)
+        // (antispoofing: estado en 'antispoof', declarado al configurar iptables) [PROTEGIDOS-ANTISPOOF-D320]
         ContadoresVigia vigia_cv;
         if (config.operation.dry_run) {
             std::cerr << "[PROTEGIDOS-VIGIA] operation.dry_run=true: el agente no toca el kernel y el vigía no compara "
@@ -1182,6 +1321,19 @@ int main(int argc, char** argv) {
                                   << " reconciliaciones=" << vigia_cv.reconciliaciones << " fallos=" << vigia_cv.fallos
                                   << std::endl;
                     }
+                    if (antispoof.activo) {  // [PROTEGIDOS-ANTISPOOF-D320]
+                        std::cout << "[PROTEGIDOS-ANTISPOOF] modo=" << (antispoof.descarta ? "descarta" : "cuenta")
+                                  << " version=" << antispoof.version << " redes=" << antispoof.reparto.redes.size()
+                                  << " spoofing_interfaz=" << antispoof.total_if << " spoofing_mac=" << antispoof.total_mac
+                                  << " sin_ruta=" << antispoof.reparto.sin_ruta.size() << std::endl;
+                        for (const auto& x : antispoof.reparto.sin_ruta) {
+                            std::cerr << "[PROTEGIDOS-RUTA] " << ::argus::protegidos::detalle_protegidos::saneado(x)
+                                      << ": esa red no se cuenta ni se descarta (periódico)" << std::endl;
+                        }
+                    } else if (!config.operation.dry_run && !config.protegidos.antispoof.valido) {
+                        std::cerr << "[PROTEGIDOS-ANTISPOOF] NO instalado: " << config.protegidos.antispoof.motivo_invalido
+                                  << " (periódico)" << std::endl;
+                    }
                     last_protegidos = now;
                 }
                 if (!config.protegidos.hospital_id.empty() && !config.protegidos.despliegue_id.empty() &&
@@ -1202,10 +1354,27 @@ int main(int argc, char** argv) {
                     last_consulta = now;
                 }
 
+                if (antispoof.activo) {  // [PROTEGIDOS-ANTISPOOF-D320] manifiesto o modo nuevos: se aplican enseguida
+                    const auto mv = protegidos->vigente();
+                    const uint64_t ver = mv ? mv->version : 0;
+                    const bool desc = antispoof_descarta(*protegidos, config);
+                    if (ver != antispoof.version || desc != antispoof.descarta) {
+                        antispoof_aplicar(antispoof, ipset, iptables, *protegidos, config,
+                                          ver != antispoof.version
+                                              ? "manifiesto version " + std::to_string(antispoof.version) + " -> " +
+                                                    std::to_string(ver)
+                                              : std::string("modo ") + (antispoof.descarta ? "descarta" : "cuenta") +
+                                                    " -> " + (desc ? "descarta" : "cuenta"));
+                    }
+                }
+
                 if (!config.operation.dry_run &&  // [PROTEGIDOS-VIGIA-D320] 8e.4a (D8)
                     std::chrono::duration_cast<std::chrono::seconds>(now - last_vigia).count() >=
                         config.protegidos.comprobacion_kernel_sec) {
                     protegidos_vigia(*protegidos, ipset, iptables, firewall_config, config, protegidos_set_ok, vigia_cv);
+                    if (antispoof.activo) {  // [PROTEGIDOS-ANTISPOOF-D320] 8e.4b
+                        antispoof_vigia(antispoof, ipset, iptables, *protegidos, config, vigia_cv);
+                    }
                     last_vigia = now;
                 }
 
