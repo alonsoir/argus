@@ -15,7 +15,7 @@ CLI=/tmp/$N.client.txt
 FIL='dst host 192.168.100.1'
 JSON=firewall-acl-agent/config/firewall.json
 BAK=/tmp/$N.firewall.json.orig
-CHAIN=ML_DEFENDER_TEST
+CHAIN=""   # [PROTEGIDOS-LIMPIEZA-D320] de iptables.chain_name (paso 1), antes escrita aquí
 F=logs/lab/firewall-agent.log
 BL=""
 WL=""
@@ -31,8 +31,10 @@ restaurar() {
   vagrant ssh defender -c "touch $D/parar_muestreo" > /dev/null 2>&1
   make pipeline-stop > "/tmp/${N}_stop_trap.txt" 2>&1
   echo "    pipeline-stop rc=$?"
-  if [ -n "$BL" ]; then
-    vagrant ssh defender -c "while sudo iptables -D INPUT -j $CHAIN 2>/dev/null; do :; done; sudo iptables -F $CHAIN 2>/dev/null; sudo iptables -X $CHAIN 2>/dev/null; sudo ipset destroy $BL 2>/dev/null; sudo ipset destroy $WL 2>/dev/null; echo \"    quedan reglas=\$(sudo iptables -S | grep -c $CHAIN) sets=\$(sudo ipset list -n | grep -c -x -e $BL -e $WL)\"" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]'
+  if [ -n "$BL" ] && [ -n "$CHAIN" ]; then
+    # [PROTEGIDOS-LIMPIEZA-D320] también la cadena raw del antispoofing y sus sets (usa el de protegidos: si no se
+    # quita antes, 'ipset destroy' de éste falla; medido DAY320, quedaban sets=1).
+    vagrant ssh defender -c "sudo bash /vagrant/scripts/etcd_ha/d320_limpia_kernel.sh $CHAIN ${AS:--} $SR $SI $SM $BL $WL" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]'
   fi
   if [ "$JSON_TOCADO" = 1 ] && [ -f "$BAK" ]; then
     cp "$BAK" "$JSON"
@@ -51,7 +53,11 @@ vagrant ssh client -c "ip -4 addr show dev eth1 | grep -q 192.168.100.51" || fal
 git diff --quiet -- "$JSON" || falla "$JSON tiene cambios sin commit: no se toca"
 BL=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["ipsets"]["blacklist"]["set_name"])' "$JSON") || falla "no leo ipsets.blacklist.set_name"
 WL=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1])).get("protegidos", {}).get("set_name", "ml_defender_protegidos"))' "$JSON") || falla "no leo protegidos.set_name"  # [PROTEGIDOS-MANIFIESTO-D318]
-echo "    blacklist=$BL whitelist=$WL cadena=$CHAIN"
+CHAIN=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["iptables"]["chain_name"])' "$JSON") || falla "no leo iptables.chain_name"
+[ -n "$CHAIN" ] || falla "iptables.chain_name vacío"
+# [PROTEGIDOS-LIMPIEZA-D320] nombres del antispoofing (ADR-060 D8), con los mismos valores por defecto que el agente.
+read -r AS SR SI SM < <(python3 -c 'import json,sys; a = json.load(open(sys.argv[1])).get("protegidos", {}).get("antispoof", {}); print(a.get("cadena", "ARGUS_ANTISPOOF"), a.get("set_redes", "ml_defender_prot_redes"), a.get("set_ips_mac", "ml_defender_prot_ipmac"), a.get("set_mac", "ml_defender_prot_mac"))' "$JSON") || falla "no leo protegidos.antispoof"
+echo "    blacklist=$BL whitelist=$WL cadena=$CHAIN antispoof=$AS sets=$SR,$SI,$SM"
 # [PROTEGIDOS-C7-D320] C7 (ADR-060, el escenario del DAY317): la VM etcd tiene que estar arriba, con su chrony
 # contra el defender durante el ataque NTP; sin ella la prueba de que .20 nunca entra en el blacklist no vale nada.
 vagrant status etcd 2>/dev/null | grep -qE '^etcd +running' || falla "la VM etcd no esta arriba (vagrant up etcd): C7 necesita su trafico"

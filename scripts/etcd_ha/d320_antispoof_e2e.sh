@@ -51,7 +51,7 @@ restaurar() {
   echo "    pipeline-stop rc=$?"
   vm defender "sudo ip netns del $NS 2>/dev/null; sudo ip link del $VA 2>/dev/null; sudo iptables -w -t mangle -D PREROUTING -i eth2 -s $IP62 -m comment --comment d320as-62 2>/dev/null; sudo iptables -w -t mangle -D PREROUTING -i $VA -s 192.168.100.20 -m comment --comment d320as-20 2>/dev/null; true" > /dev/null
   if [ -n "$AS" ]; then
-    vm defender "while sudo iptables -w -t raw -D PREROUTING -j $AS 2>/dev/null; do :; done; for c in $AS ${AS}_IF ${AS}_MAC; do sudo iptables -w -t raw -F \$c 2>/dev/null; done; for c in $AS ${AS}_IF ${AS}_MAC; do sudo iptables -w -t raw -X \$c 2>/dev/null; done; while sudo iptables -D INPUT -j $CHAIN 2>/dev/null; do :; done; sudo iptables -F $CHAIN 2>/dev/null; sudo iptables -X $CHAIN 2>/dev/null; for s in $SR $SI $SM $BL $WL; do sudo ipset destroy \$s 2>/dev/null; done; echo \"    quedan raw=\$(sudo iptables -w -t raw -S | grep -c $AS) filter=\$(sudo iptables -S | grep -c $CHAIN) sets=\$(sudo ipset list -n | grep -c -x -e $SR -e $SI -e $SM -e $BL -e $WL)\""
+    vm defender "sudo bash /vagrant/scripts/etcd_ha/d320_limpia_kernel.sh $CHAIN $AS $SR $SI $SM $BL $WL"   # [PROTEGIDOS-LIMPIEZA-D320] un solo sitio
   fi
   if [ "$JSON_TOCADO" = 1 ] && [ -f "$BAK" ]; then
     cp "$BAK" "$JSON"

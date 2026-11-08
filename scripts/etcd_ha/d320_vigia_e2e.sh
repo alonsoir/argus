@@ -23,7 +23,7 @@ DM=logs/lab/$DIA/$N
 JSON=firewall-acl-agent/config/firewall.json
 BAK=/tmp/$N.firewall.json.orig
 F=logs/lab/firewall-agent.log
-WL=""; CHAIN=""; BL=""; K=0
+WL=""; CHAIN=""; BL=""; AS=""; SR=""; SI=""; SM=""; K=0
 JSON_TOCADO=0; RESTAURADO=0; FALLOS=0
 paso()  { echo; echo "=== [$(date +%T)] $*"; }
 falla() { echo; echo "PARADA [$(date +%T)]: $*"; exit 1; }
@@ -38,7 +38,8 @@ restaurar() {
   echo "    pipeline-stop rc=$?"
   def "sudo iptables -D INPUT -m comment --comment d320-vigia-extra 2>/dev/null; true" > /dev/null
   if [ -n "$WL" ]; then
-    def "while sudo iptables -D INPUT -j $CHAIN 2>/dev/null; do :; done; sudo iptables -F $CHAIN 2>/dev/null; sudo iptables -X $CHAIN 2>/dev/null; sudo ipset destroy $BL 2>/dev/null; sudo ipset destroy $WL 2>/dev/null; echo \"    quedan reglas=\$(sudo iptables -S | grep -c -e $CHAIN -e d320-vigia-extra) sets=\$(sudo ipset list -n | grep -c -x -e $BL -e $WL)\""
+    # [PROTEGIDOS-LIMPIEZA-D320] también la cadena raw del antispoofing y sus sets (medido DAY320: quedaban sets=1).
+    def "sudo bash /vagrant/scripts/etcd_ha/d320_limpia_kernel.sh $CHAIN $AS $SR $SI $SM $BL $WL; echo \"    quedan reglas d320-vigia-extra=\$(sudo iptables -S | grep -c d320-vigia-extra)\""
   fi
   if [ "$JSON_TOCADO" = 1 ] && [ -f "$BAK" ]; then
     cp "$BAK" "$JSON"
@@ -51,12 +52,13 @@ trap 'exit 130' INT TERM
 
 paso "1 JSON de serie, nombres y periodo del vigía"
 git diff --quiet -- "$JSON" || falla "$JSON tiene cambios sin commit: no se toca"
-read -r WL CHAIN BL K < <(python3 - "$JSON" <<'PYEOF'
+read -r WL CHAIN BL K AS SR SI SM < <(python3 - "$JSON" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding="utf-8"))
-p = d.get("protegidos", {})
+p = d.get("protegidos", {}); a = p.get("antispoof", {})
 print(p.get("set_name", "ml_defender_protegidos"), d["iptables"]["chain_name"], d["ipsets"]["blacklist"]["set_name"],
-      p.get("comprobacion_kernel_sec", 30))
+      p.get("comprobacion_kernel_sec", 30), a.get("cadena", "ARGUS_ANTISPOOF"), a.get("set_redes", "ml_defender_prot_redes"),
+      a.get("set_ips_mac", "ml_defender_prot_ipmac"), a.get("set_mac", "ml_defender_prot_mac"))
 PYEOF
 ) || falla "no leo el JSON"
 [ -n "$WL" ] && [ -n "$CHAIN" ] && [ "$K" -ge 5 ] 2>/dev/null || falla "JSON sin protegidos.set_name / iptables.chain_name / comprobacion_kernel_sec"
