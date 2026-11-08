@@ -272,7 +272,12 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
   alertas de spoofing por interfaz y MAC, versión en el latido y en
   `pipeline-status`, reglas Falco (en la VM hardened-x86, `check-prod-falco`) y Wazuh. Falco y Wazuh avisan también
   cuando la partición del audit de Vault (`/var/log/vault`) pasa de un umbral (p. ej. 75 %), con prioridad en el log,
-  y cuando falla uno de los dos audit devices (Alonso DAY318: es su trabajo avisarnos).
+  y cuando falla uno de los dos audit devices (Alonso DAY318: es su trabajo avisarnos). Diseño fino cerrado DAY320
+  (sección 7), en cuatro commits:
+  - **8e.4a** (hecho, fe4c94d3) el vigía kernel ↔ manifiesto y C7 en el E2E de la mitigación real.
+  - **8e.4b** antispoofing por interfaz y MAC en `raw PREROUTING` (H-B a H-G).
+  - **8e.4c** versión del manifiesto en el latido y en `pipeline-status` (H-H).
+  - **8e.4d** Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J).
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
 
 ## 6. Diseño fino de 8e.1 (cerrado DAY318)
@@ -381,7 +386,7 @@ guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.
 | `protegidos.set_name` | `[A-Za-z0-9_-]`, de 1 a 29 (el temporal `<set>_n` del swap añade dos y tiene que caber en los 31 de `is_valid_set_name`) | `ml_defender_protegidos` | set `hash:net,iface` del kernel |
 | `protegidos.manifiesto_cache` | ruta absoluta | `/var/lib/ml-defender/firewall/protegidos.manifiesto` | último manifiesto verificado |
 | `protegidos.aviso_sec` | [30, 86400] | 300 | aviso periódico y nueva verificación de la caché |
-| `protegidos.comprobacion_kernel_sec` | [5, 3600] | 30 | comprobación kernel ↔ manifiesto (8e.4) |
+| `protegidos.comprobacion_kernel_sec` | [5, 3600] | 30 | vigía kernel ↔ manifiesto (8e.4a, hecho DAY320) |
 | `protegidos.consulta_sec` | [5, 3600] | 30 | cada cuánto se pide el manifiesto al etcd-server (8e.3) |
 
 **Mensajes de log** (etiquetas para buscar):
@@ -391,7 +396,11 @@ guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.
 - `[PROTEGIDOS-INFRA-INCOMPLETA] etcd.endpoints sin entrada infraestructura: ...` (periódico)
 - `[PROTEGIDOS-SET-TIPO] el set <nombre> existe con tipo <tipo> (se espera hash:net,iface): ...`
 - `[INFRA-CAMBIO] version A -> B firmante=... altas=... bajas=...`
-- `[PROTEGIDOS-DIVERGENCIA] kernel != manifiesto: ...` / `[PROTEGIDOS-SPOOFING] origen=... interfaz|mac ...` (8e.4)
+- `[PROTEGIDOS-DIVERGENCIA] set <set> != manifiesto version N: sobran=[...] faltan=[...]` y
+  `[PROTEGIDOS-DIVERGENCIA] reglas: <motivo>`; `[PROTEGIDOS-RECONCILIADO] ...` (comprobado tras volver a leer);
+  `[PROTEGIDOS-VIGIA]` (arranque, resumen `comprobaciones= divergencias= reconciliaciones= fallos=` cada `aviso_sec`,
+  aviso de `dry_run` y `ERROR` si no se pudo reconciliar) (8e.4a, DAY320)
+- `[PROTEGIDOS-SPOOFING] origen=... interfaz|mac ...` (8e.4b)
 - `protegidos:` gana `infraestructura=N`.
 
 Implementados en 8e.1b, además: `[PROTEGIDOS-CLAVE]` (huellas de las dos ranuras compiladas: los 16 primeros hex
@@ -406,3 +415,76 @@ versión igual y menor; otro `hospital_id`; planta ausente; prefijo más amplio 
 `habilitada=true` y sin manifiesto; último verificado conservado tras un rechazo en caliente; aviso
 `INFRA-INCOMPLETA`; set existente de otro tipo y órdenes del `swap` (en dry_run); barrera por IP con un origen
 protegido que llega por otra interfaz.
+
+## 7. Diseño fino de 8e.4 (cerrado DAY320)
+
+Decisiones de Alonso DAY320 (H-A a H-J), medidas antes de decidir donde se podía. Reglas que lo cruzan todo: el JSON es
+la ley (cada campo nuevo se lee de ahí y, si falta o está mal formado, defecto del código con aviso; todo al log); toda
+operación nueva o modificada lleva un test que pruebe que hace su trabajo; coste por paquete O(1), como mucho
+O(log n); las reglas, ficheros y procesos que vigilan Wazuh y Falco van en su configuración, no en el código; si algo
+no cuadra, se reconcilia.
+
+**Medido antes de decidir (DAY320, en el código):** nada de 8e.4 existía; el latido solo lleva `{timestamp, status}` y
+el etcd-server ignora su cuerpo; Falco solo está en `hardened-x86` y sus reglas van en un heredoc de `setup-falco.sh`;
+de Wazuh no hay reglas de aRGus; la VM etcd no tiene agente Wazuh ni MAC fija; `/var/log/vault` está en la raíz.
+
+**`dry_run` (precisado DAY320).** Con `operation.dry_run=true` el agente no escribe nada en el kernel (regla de
+DAY302): ni set ni cadena. El vigía no compara y lo dice al arrancar y cada `aviso_sec`. Con `dry_run=false` y el
+candado cerrado o la mitigación deshabilitada, el vigía compara y reconcilia y el antispoofing (8e.4b) solo cuenta; con
+`dry_run=false`, mitigación habilitada y manifiesto verificado, el antispoofing descarta. La hipótesis de este ADR (con
+la mitigación real, ningún protegido entra en el blacklist) solo se prueba con `dry_run=false` y `habilitada=true`
+(Alonso DAY320): se mide así en EMECAS (C7, abajo) y el lab sigue arrancando en sombra de serie hasta que EMECAS+++ pase
+entero ("si la mitigación real bloquea a clientes legítimos que no estén en el manifiesto, estamos haciendo algo mal:
+midamos primero").
+
+- **H-A** El vigía reconcilia (no solo avisa): lo no firmado pierde la protección y lo que falta se repone.
+- **H-B** Antispoofing con coste constante por paquete: seis reglas fijas en `raw PREROUTING` sobre sets (`hash:net`
+  de las redes protegidas, `hash:net,iface`, `hash:ip` de las IPs con MAC y `hash:ip,mac`), no una regla por entrada.
+  Medido DAY320 en el defender (`scripts/etcd_ha/d320_medir_antispoof.sh`, v2: 19/19): el no protegido sale en la
+  segunda regla con un solo lookup; spoofing por interfaz y por MAC contados exactos; un paquete con interfaz y MAC
+  malas cuenta una sola vez; el DROP en raw no deja pasar nada a mangle; `iptables-restore --noflush` rehace las
+  cadenas de golpe; lectura del vigía 2-3 ms; ipset 7.17 tiene `hash:ip,mac`. Las reglas 3 y 5 saltan con `-g`
+  (goto): con `-j`, en modo solo contar, el paquete volvía y seguía por la cadena (medido en la v1). Los contadores por
+  entrada de ipset suben con cualquier coincidencia, también las negadas: los totales salen de las reglas y la
+  identidad del paquete del LOG.
+- **H-C** Las reglas del antispoofing solo cuentan mientras la mitigación no sea real (ver `dry_run` arriba); con ella,
+  DROP.
+- **H-D** Si la interfaz de una entrada no casa con la ruta del kernel (`ip route get`), no se instala su DROP y
+  `[PROTEGIDOS-RUTA]` es alarma periódica: un DROP por interfaz equivocada sería el DoS autoinfligido otra vez. `-i lo`
+  siempre exento (un `intranet /24` suele contener la IP del propio firewall).
+- **H-E** Evidencia de spoofing: `LOG` con límite (medido: 5 líneas con `--limit-burst 5`, con la MAC de origen) al
+  journal; lo recoge Wazuh. Sin NFLOG ni hilo nuevo.
+- **H-F** `rp_filter` se lee y se informa, no se cambia (medido DAY320: 0 en todas las interfaces del defender).
+- **H-G** MAC fija de la VM etcd en el Vagrantfile y en la plantilla del lab, para probar en EMECAS los dos casos: el
+  client falsificando .20 (entra por `eth2`: lo caza la MAC) y un veth en un netns del defender (lo caza la interfaz).
+- **H-H** Datos de latido genéricos y validados en el etcd-client; el firewall manda `protegidos_version`; el
+  etcd-server lo guarda en el registro y `pipeline-status` marca el firewall desfasado.
+- **H-I** Agente Wazuh en la VM etcd (disco de `/var/log/vault` al 75 % y fallos de los audit devices).
+- **H-J** 8e.4d dentro del PR1.
+
+**8e.4a, el vigía (hecho DAY320, fe4c94d3).** Cada `comprobacion_kernel_sec`, en el bucle principal (fuera del camino
+del paquete), `vigia_protegidos_paso` (`firewall/protegidos_vigia.hpp`) compara con lo vigente:
+- K1 el set existe y es `hash:net,iface` (si falta, se crea con la misma configuración que al arrancar);
+- K2 su contenido (`IPSetWrapper::list_entries_opciones`: entradas con sus opciones, sin contadores) es exactamente el
+  de las entradas IPv4 del vigente, en forma canónica (red con los bits de host a cero y prefijo explícito: el kernel
+  normaliza y omite `/32`). Una entrada de más, de menos, por otra interfaz o con opciones (`nomatch` anularía la
+  exención) es divergencia. Sin vigente, el set tiene que estar vacío. O(n) con conjuntos hash;
+- K3 la cadena: un único salto INPUT → cadena en la posición 1 y dentro exactamente protegidos `src,src` RETURN y
+  blacklist DROP, en ese orden (`setup_base_rules`).
+Si no cuadra, se reconcilia (sustitución atómica del set; `setup_base_rules` para la cadena) y se vuelve a leer: solo
+cuenta como reconciliado lo que se comprueba. **Set ajeno**: si existe con otro tipo, no se destruye y la cadena se
+rehace sin el RETURN. Medido DAY320: iptables acepta `--match-set <set hash:ip> src,src` e ignora la dimensión de más,
+así que el RETURN eximiría un contenido que nadie ha firmado; quitarlo no pone en riesgo a nadie (el agente nunca mete a
+un protegido en el blacklist; la barrera de usuario protege por IP) y vuelve en cuanto el set está bien.
+
+Medido DAY320: banco (Debian 12, GCC 12.2, native y skylake, dos pasadas) 119/119 y 0 avisos del código;
+`test_protegidos_vigia` 42/42 (con wrappers falsos que dicen "hecho" sin hacerlo); `test_protegidos_vigia_root` 34/34
+(kernel real, S1-S9); 7 mutaciones cazadas. Lab: `pipeline-build` rc 0; `test-firewall` 95/95; `test-firewall-e2e`
+PASA (24, 0 saltados); `lab-e2e-vigia` PASA (E1 6 s, E2-E4 25-26 s, límite 35; kernel igual que al empezar; 0 errores).
+
+**C7 (la hipótesis del DoS autoinfligido, medida con la mitigación real).** `lab-e2e-mitigacion` (`dry_run=false`,
+`habilitada=true`, ataque NTP de .50 y .61) exige la VM etcd arriba y .20 en el set de protegidos, y muestrea cada
+segundo el blacklist y los contadores por entrada del set. DAY320: C1-C5 y **C7 PASA**: .20 en 0 de 459 muestras del
+blacklist; su entrada del set de protegidos de 223 a 529 paquetes durante los ataques. En la misma corrida `ddos_v2`
+volvió a marcar DROP a la VM etcd (`[SOMBRA-DDOS] protegidos: ... infraestructura=2`, DEBT-DDOS-V2-NTP-CLIENTE-001):
+el DoS autoinfligido del DAY317 se produjo y la barrera lo paró.

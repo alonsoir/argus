@@ -9020,3 +9020,50 @@ quitada, vuelve a fallar alguna (el instrumento detecta).
 8e.4 (vigilancia: kernel <-> manifiesto, antispoofing en raw PREROUTING, MAC, rp_filter, versión en latido y
 pipeline-status, Falco/Wazuh, alarma de disco del audit de Vault al 75 %), 8e.5 (bootstrap con `argus-infra init --si`,
 `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1.
+
+---
+
+## DAY320 — paso 8e.4a hecho y diseño fino de 8e.4 [PROTEGIDOS-VIGIA-D320]
+
+Commit fe4c94d3 (8e.4a). Diseño fino de 8e.4 (H-A..H-J, decisiones de Alonso DAY320) y precisión de `dry_run`:
+ADR-060, sección 7. Cuatro commits: 8e.4a vigía (hecho), 8e.4b antispoofing, 8e.4c versión en el latido, 8e.4d
+Wazuh/Falco (dentro del PR1).
+
+### Medida previa de 8e.4b (H-B), en el defender
+`scripts/etcd_ha/d320_medir_antispoof.sh` (solo mide, lo deja todo como estaba; entra en el commit de 8e.4b): v1 16/17,
+v2 19/19. ipset 7.17 con `hash:ip,mac`; seis reglas fijas en raw PREROUTING clasifican no protegido / spoofing por
+interfaz / por MAC / bueno con coste constante; DROP en raw efectivo; `iptables-restore --noflush` atómico; 2-3 ms por
+lectura; `rp_filter` 0 en todas las interfaces. Fallo de la v1 = fallo de predicción: con `-j` en modo solo contar el
+paquete seguía por la cadena (doble cuenta posible en sombra); la v2 usa `-g`.
+
+### Medido en el banco (Debian 12, GCC 12.2, banco del firewall rehecho DAY320)
+- Base 117/117. 8e.4a: native y skylake, dos pasadas, 119/119; 0 avisos del código (los 3 avisos de siempre son del
+  enlazador por libsodium .so.23/.so.26).
+- `test_protegidos_vigia` 42/42 (puro; wrappers falsos); `test_protegidos_vigia_root` 34/34 (kernel real, S1-S9).
+- Mutaciones: m1 ignorar lo que sobra, m2 ignorar la interfaz, m3 ignorar las opciones, m4 no mirar el orden de la
+  cadena, m5 no releer el set, m6 no releer las reglas, m7 no quitar el RETURN con un set ajeno: 7/7 cazadas.
+- Fallos de predicción, parados y corregidos antes del lab: (1) con un set ajeno de tipo `hash:ip`, iptables acepta
+  `--match-set ... src,src` y el RETURN seguía eximiendo su contenido: el vigía rehace la cadena sin RETURN; (2) m5
+  sobrevivía (la sustitución real nunca "miente"): el paso pasó a plantilla para probarlo con wrappers falsos.
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0; `test-firewall` 95/95 (con `test_protegidos_vigia`); `test-firewall-e2e` PASA (24 tests, 0
+saltados; `test_protegidos_vigia_root` 34/34). `lab-e2e-vigia` PASA: V0 sin divergencias; E1 (entrada de más) 6 s,
+E2 (RETURN borrado) 26 s, E3 (`nomatch`) 25 s, E4 (regla ajena delante del salto) 25 s, límite 35; set y cadena iguales
+que al empezar; 0 `[PROTEGIDOS-VIGIA] ERROR`; JSON restaurado (cmp 0). `lab-e2e-mitigacion` PASA con C7: .20 en 0 de
+459 muestras del blacklist y su entrada del set de protegidos 223 -> 529 paquetes durante los ataques; en la misma
+corrida `[SOMBRA-DDOS] protegidos: ... infraestructura=2`: `ddos_v2` volvió a marcar DROP a la VM etcd (el DoS
+autoinfligido del DAY317) y la barrera lo paró con la mitigación real.
+
+### Hallazgos DAY320 (8e.4a)
+- Las guardas de `d302_mitigacion_e2e.sh` y `d320_vigia_e2e.sh` exigen `firewall.json` sin cambios pendientes (lo
+  modifican durante la prueba y lo restauran con cmp): los E2E que tocan el JSON se lanzan después del commit.
+- `LAB_E2E_DIA` vale `day303` por defecto: las corridas de hoy quedaron en `logs/lab/day303/`. Funciona, pero confunde;
+  sin decidir.
+- `make test-firewall-e2e` va por la etiqueta `e2e`: un test de root nuevo entra solo en el gate.
+
+### Pendiente (por orden)
+8e.4b (antispoofing; H-B a H-G, con `d320_medir_antispoof.sh`), 8e.4c (versión en el latido y `pipeline-status`),
+8e.4d (Wazuh y Falco, con su configuración en ficheros propios), docs de cada uno, 8e.5 (bootstrap con
+`argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++
+PROFILE=production y cierre del PR1.
