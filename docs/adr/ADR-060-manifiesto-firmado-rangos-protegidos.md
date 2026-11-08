@@ -275,7 +275,7 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
   y cuando falla uno de los dos audit devices (Alonso DAY318: es su trabajo avisarnos). Diseño fino cerrado DAY320
   (sección 7), en cuatro commits:
   - **8e.4a** (hecho, fe4c94d3) el vigía kernel ↔ manifiesto y C7 en el E2E de la mitigación real.
-  - **8e.4b** antispoofing por interfaz y MAC en `raw PREROUTING` (H-B a H-G).
+  - **8e.4b** (hecho, 345f8607) antispoofing por interfaz y MAC en `raw PREROUTING` (H-B a H-E, H-G; H-F pendiente).
   - **8e.4c** versión del manifiesto en el latido y en `pipeline-status` (H-H).
   - **8e.4d** Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J).
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
@@ -387,6 +387,12 @@ guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.
 | `protegidos.manifiesto_cache` | ruta absoluta | `/var/lib/ml-defender/firewall/protegidos.manifiesto` | último manifiesto verificado |
 | `protegidos.aviso_sec` | [30, 86400] | 300 | aviso periódico y nueva verificación de la caché |
 | `protegidos.comprobacion_kernel_sec` | [5, 3600] | 30 | vigía kernel ↔ manifiesto (8e.4a, hecho DAY320) |
+| `protegidos.antispoof.cadena` | `[A-Za-z0-9_-]`, de 1 a 24 | `ARGUS_ANTISPOOF` | cadena de `raw PREROUTING`; las de spoofing son `<cadena>_IF` y `<cadena>_MAC` (8e.4b) |
+| `protegidos.antispoof.set_redes` | `[A-Za-z0-9_-]`, de 1 a 29 | `ml_defender_prot_redes` | `hash:net` de las redes protegidas (8e.4b) |
+| `protegidos.antispoof.set_ips_mac` | `[A-Za-z0-9_-]`, de 1 a 29 | `ml_defender_prot_ipmac` | `hash:ip` de las IPs que llevan MAC (8e.4b) |
+| `protegidos.antispoof.set_mac` | `[A-Za-z0-9_-]`, de 1 a 29 | `ml_defender_prot_mac` | `hash:ip,mac` (8e.4b) |
+| `protegidos.antispoof.log_por_minuto` | [1, 600] | 5 | muestras `LOG` por minuto y cadena (8e.4b) |
+| `protegidos.antispoof.log_rafaga` | [1, 100] | 5 | ráfaga inicial del `LOG` (8e.4b) |
 | `protegidos.consulta_sec` | [5, 3600] | 30 | cada cuánto se pide el manifiesto al etcd-server (8e.3) |
 
 **Mensajes de log** (etiquetas para buscar):
@@ -400,7 +406,13 @@ guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.
   `[PROTEGIDOS-DIVERGENCIA] reglas: <motivo>`; `[PROTEGIDOS-RECONCILIADO] ...` (comprobado tras volver a leer);
   `[PROTEGIDOS-VIGIA]` (arranque, resumen `comprobaciones= divergencias= reconciliaciones= fallos=` cada `aviso_sec`,
   aviso de `dry_run` y `ERROR` si no se pudo reconciliar) (8e.4a, DAY320)
-- `[PROTEGIDOS-SPOOFING] origen=... interfaz|mac ...` (8e.4b)
+- `[PROTEGIDOS-ANTISPOOF] aplicado (<por qué>): manifiesto version N modo=cuenta|descarta redes= ips_mac= mac= cadena raw <cadena>`,
+  `ERROR al aplicar`, `NO se instala: <motivo>` (nombres que chocan, `dry_run=true`) y aviso si el kernel no admite
+  `hash:ip,mac` (sin comprobación de MAC); `[PROTEGIDOS-RUTA] <entrada>: esa red no se cuenta ni se descarta`
+  (periódico); `[PROTEGIDOS-DIVERGENCIA] antispoof: ...` / `[PROTEGIDOS-RECONCILIADO] antispoof: ...`;
+  `[PROTEGIDOS-SPOOFING] origen protegido falsificado: interfaz=+N mac=+N (total interfaz=N mac=N) modo=...;
+  evidencia: journalctl -k | grep ARGUS-SPOOF`. En el journal del kernel, `ARGUS-SPOOF-IF` y `ARGUS-SPOOF-MAC`, con
+  la MAC de origen (8e.4b, DAY320)
 - `protegidos:` gana `infraestructura=N`.
 
 Implementados en 8e.1b, además: `[PROTEGIDOS-CLAVE]` (huellas de las dos ranuras compiladas: los 16 primeros hex
@@ -488,3 +500,41 @@ segundo el blacklist y los contadores por entrada del set. DAY320: C1-C5 y **C7 
 blacklist; su entrada del set de protegidos de 223 a 529 paquetes durante los ataques. En la misma corrida `ddos_v2`
 volvió a marcar DROP a la VM etcd (`[SOMBRA-DDOS] protegidos: ... infraestructura=2`, DEBT-DDOS-V2-NTP-CLIENTE-001):
 el DoS autoinfligido del DAY317 se produjo y la barrera lo paró.
+
+**8e.4b, el antispoofing (hecho DAY320, 345f8607; arreglos del lab 6479804f y 3c67ca40).**
+`firewall/protegidos_antispoof.hpp`. `repartir_antispoof` reparte las entradas IPv4 del vigente en tres sets (redes,
+IPs con MAC, pares IP-MAC); las que tienen una interfaz que no casa con la ruta del kernel (`ip -o route get`, H-D) se
+quedan fuera de `set_redes`, y salen en `[PROTEGIDOS-RUTA]`. `texto_restore_antispoof` genera las cadenas y se cargan
+de golpe con `iptables-restore -w --noflush`. En `raw PREROUTING`, una regla de salto y seis reglas fijas:
+1. `lo` RETURN;
+2. origen fuera de `set_redes` RETURN (lo no protegido sale aquí, con un solo lookup);
+3. `(origen, interfaz)` fuera del set de protegidos `-g <cadena>_IF`;
+4. origen fuera de `set_ips_mac` RETURN;
+5. `(origen, MAC)` fuera de `set_mac` `-g <cadena>_MAC`;
+6. RETURN.
+
+`_IF` y `_MAC` llevan `LOG` con límite y una regla de cuenta, que lleva `DROP` solo con la mitigación real (H-C). La
+aplicación es inmediata al arrancar y en cuanto cambia la versión del manifiesto o el modo. En cada vuelta del vigía,
+`antispoof_paso` comprueba los sets y las cadenas raw y reconcilia (K4 y K5), vuelve a mirar las rutas y suma los
+contadores de las reglas de cuenta en `[PROTEGIDOS-SPOOFING]`. Si el kernel no tiene `hash:ip,mac`, el antispoofing
+queda sin la parte de MAC y lo avisa.
+
+Medido DAY320: banco (sin `hash:ip,mac` en su kernel) native y skylake, dos pasadas, 121/121 (el test de root sale
+Skipped 77) y 0 avisos del código; `test_protegidos_antispoof` 41/41; `test_protegidos_antispoof_root` 15/15 en el
+banco (`ARGUS_TEST_SIN_IPMAC=1`) y 16/16 en el defender; 8 mutaciones cazadas. Lab: `test-firewall` 96/96;
+`test-firewall-e2e` PASA (25, 0 saltados); `lab-e2e-antispoof` con la mitigación real PASA: el client falsifica .62
+(entrada de prueba con una MAC que no es de nadie, firmada al empezar y quitada en el trap) y el kernel cuenta
+`SPOOF-MAC` +20 y deja pasar 0 a mangle; un netns del defender falsifica .20 por un veth, `SPOOF-IF` +20 y 0 a mangle;
+el tráfico legítimo de .20 suma 0 al spoofing (su entrada del set de protegidos de 209 a 531 paquetes) y la VM etcd
+sigue sana; 5 líneas `ARGUS-SPOOF-IF` y 5 `ARGUS-SPOOF-MAC` en el journal. `lab-e2e-vigia` y `lab-e2e-mitigacion`
+(C7) siguen PASA con el antispoofing instalado.
+
+**H-F no está hecho.** `rp_filter` solo lo lee `scripts/etcd_ha/d320_medir_antispoof.sh` (0 en todas las interfaces
+del defender); el agente no lo lee ni lo informa. Pendiente, como DEBT-FW-ANTISPOOF-RP-FILTER-001.
+
+**El kernel después de los E2E (3c67ca40).** Con la mitigación real, el agente instala también el antispoofing durante
+`lab-e2e-vigia` y `lab-e2e-mitigacion`, y sus traps no lo conocían: la cadena raw usa el set de protegidos, así que el
+`ipset destroy` de ese set fallaba sin decir nada y quedaban en el defender las tres cadenas raw (en modo descarta) y
+cuatro sets. Ahora los tres traps llaman a `scripts/etcd_ha/d320_limpia_kernel.sh` (primero los saltos y las cadenas,
+raw y filtro; después los sets; los nombres, del JSON), y `lab-e2e` comprueba con `make lab-kernel-limpio` (solo
+cuenta) que tras cada uno no queda nada.

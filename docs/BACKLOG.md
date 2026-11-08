@@ -9067,3 +9067,74 @@ autoinfligido del DAY317) y la barrera lo paró con la mitigación real.
 8e.4d (Wazuh y Falco, con su configuración en ficheros propios), docs de cada uno, 8e.5 (bootstrap con
 `argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++
 PROFILE=production y cierre del PR1.
+
+---
+
+## DAY320 — paso 8e.4b hecho: antispoofing en raw PREROUTING [PROTEGIDOS-ANTISPOOF-D320]
+
+Commits 345f8607 (8e.4b), 6479804f (`vm()` del E2E) y 3c67ca40 (limpieza del kernel tras los E2E). Diseño y medidas:
+ADR-060, sección 7 (8e.4b). Manifiesto del lab: la entrada de prueba .62 se firma y se quita en cada corrida de
+`lab-e2e-antispoof` (dos versiones por corrida; v9 al acabar el DAY320).
+
+### Medido en el banco (Debian 12, GCC 12.2)
+- native y skylake, dos pasadas: 121/121, 0 avisos del código (los 3 del enlazador por libsodium, como siempre).
+  `test_protegidos_antispoof_root` sale Skipped (77): el kernel del banco no tiene `hash:ip,mac`; con
+  `ARGUS_TEST_SIN_IPMAC=1`, 15/15. `test_protegidos_antispoof` 41/41.
+- Mutaciones, 8/8 cazadas: a1 `-j` en vez de `-g`; a2 sin la regla de `lo`; a3 `DROP` en modo cuenta; a4 una red sin
+  ruta en `set_redes`; a5 el paso no vuelve a leer; a6 `set_cuadra` no normaliza; a7 `--limit-burst 5` siempre escrito;
+  a8 MAC comparada distinguiendo mayúsculas. Las primeras versiones de a5 y a6 eran equivalentes al original (no
+  cambiaban nada observable): se rehicieron, y se quitó una comprobación de opciones redundante. a2 hacía caer el test
+  puro con un segfault: el test lleva ahora guardas y falla limpio.
+- `d320_limpia_kernel.sh`: `test_d320_limpia_kernel.sh` 9/9 en el banco y 9/9 en el defender (con `hash:ip,mac`);
+  T1 reproduce el defecto (con la limpieza antigua quedan 14 líneas raw y el set de protegidos); mutaciones k1-k7
+  cazadas.
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0; `test-firewall` 96/96; `test-firewall-e2e` PASA (25 tests, 0 saltados;
+`test_protegidos_antispoof_root` 16/16). `lab-e2e-antispoof` PASA:
+- S1, spoofing por MAC: `SPOOF-MAC` +20 y 0 a mangle;
+- S2, spoofing por interfaz: `SPOOF-IF` +20 y 0 a mangle;
+- S3, el tráfico legítimo de .20 suma 0 al spoofing (su entrada del set de protegidos de 209 a 531 paquetes);
+- S4, 5 `ARGUS-SPOOF-IF` y 5 `ARGUS-SPOOF-MAC` en el journal, 0 `[PROTEGIDOS-RUTA]` y 0 `ERROR`.
+
+`lab-e2e-vigia` y `lab-e2e-mitigacion` siguen PASA con el antispoofing instalado. Tras el arreglo del kernel,
+repetidos los tres: trap `quedan raw=0 filter=0 sets=0` y `lab-kernel-limpio` PASA en cada uno; C7 .20 en 0 muestras
+del blacklist, su entrada del set de protegidos de 398 a 1026 paquetes.
+
+### Hallazgos DAY320 (8e.4b)
+- `iptables -S` no imprime `--limit-burst 5` (es el valor por defecto): las reglas esperadas lo omiten cuando
+  `log_rafaga` vale 5, o el vigía vería una divergencia que no existe.
+- El kernel imprime las MAC en mayúsculas: se comparan sin distinguir.
+- El kernel del banco no tiene `hash:ip,mac`. El test de root sale con 77, o corre sin MAC con
+  `ARGUS_TEST_SIN_IPMAC=1`; la prueba con MAC es la del defender.
+- El banco, para `ip netns exec`, necesita `/run/argus/irp`, un `proc` montado de nuevo y la raíz del chroot montada
+  sobre sí misma.
+- `vm()` de `d320_antispoof_e2e.sh` devolvía el código del filtro, no el del comando remoto: un `grep -q` remoto que
+  casaba daba 1. Arreglado en 6479804f.
+- Con la mitigación real, el agente instala el antispoofing en todos los E2E que la usan, y los traps de vigía y
+  mitigación no lo retiraban: quedaban en el defender las tres cadenas raw en modo descarta y cuatro sets. Arreglado en
+  3c67ca40 (ayudante único, `make lab-test-limpia-kernel` y `make lab-kernel-limpio` en `lab-e2e`).
+- `d302_mitigacion_e2e.sh` tenía `CHAIN=ML_DEFENDER_TEST` escrito en el script; ahora lo lee de `iptables.chain_name`
+  (3c67ca40).
+- `LAB_E2E_DIA` sigue valiendo `day303`: las corridas de hoy están en `logs/lab/day303/`. Sin decidir.
+- Sin medir: si `vagrant reload etcd` aplica la MAC fija del Vagrantfile a una VM ya creada.
+
+### DEBT-FW-ANTISPOOF-RP-FILTER-001 — ABIERTA (nueva DAY320)
+H-F (ADR-060, sección 7) dice que el agente lee `rp_filter` y lo informa, sin cambiarlo. 8e.4b no lo hace: solo lo lee
+el script de medida. Arreglo: al arrancar y cada `aviso_sec`, leer `/proc/sys/net/ipv4/conf/{all,<interfaz>}/rp_filter`
+de las interfaces del manifiesto y escribir el valor efectivo (el máximo de `all` y el de la interfaz) en el log.
+**Test de cierre:** un test que lee un árbol `/proc` falso con valores 0, 1 y 2 y comprueba el valor efectivo y la línea
+del log; en el defender, la línea aparece con `rp_filter` 0 en todas.
+
+### DEBT-ARGUS-INFRA-MOD-001 — ABIERTA (nueva DAY320)
+`argus-infra` no tiene `mod`: cambiar la interfaz o la MAC de una entrada son dos versiones firmadas (`del` y luego
+`add`), y entre una y otra la entrada no está en el manifiesto vigente. Sin medir cuánto dura esa ventana en el agente.
+Arreglo: `mod`, que firma una sola versión con la baja y el alta, y `[INFRA-CAMBIO]` que lo muestra como un cambio.
+**Test de cierre:** en `test_argus_infra.py`, `mod` deja una única versión nueva cuyo `diff` con la anterior es solo el
+campo cambiado; en el lab, el agente pasa de la entrada vieja a la nueva sin ninguna vuelta del vigía en la que falte.
+
+### Pendiente (por orden)
+8e.4c (versión del manifiesto en el latido y en `pipeline-status`, H-H), 8e.4d (Wazuh y Falco, con su configuración en
+ficheros propios), docs de cada uno, 8e.5 (bootstrap con `argus-infra init --si`, `d303_veredicto_protegidos.sh`
+P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1. Sin orden decidido:
+DEBT-FW-ANTISPOOF-RP-FILTER-001 y DEBT-ARGUS-INFRA-MOD-001.
