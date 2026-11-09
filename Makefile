@@ -3100,11 +3100,13 @@ correlation-v1-rebuild: correlation-v1-clean correlation-v1-build correlation-v1
 .PHONY: test-firewall test-firewall-e2e
 # No-root: tests puros del firewall (validacion/parsing). Entra en make test-all.
 # Los tests que tocan ipset real hacen GTEST_SKIP sin root -> 'Skipped', no 'Failed'.
+# [ARGUS-GATE-PERF-D321] sin root: fuera e2e, root y perf, como test-components (medido DAY321: con -LE "e2e" los dos
+# IPSetWrapperPerfTest salían Skipped por falta de root). Los perf corren en test-firewall-perf, con root y su puerta.
 test-firewall:
-	@echo "🧪 firewall tests (perfil=$(PROFILE), sin root)"
+	@echo "🧪 firewall tests (perfil=$(PROFILE), sin root; e2e/root en test-firewall-e2e, perf en test-firewall-perf)"
 	@vagrant ssh -c 'cd $(FIREWALL_BUILD_DIR) && \
 		LD_LIBRARY_PATH=/usr/local/lib \
-		ctest -LE "e2e" --output-on-failure'
+		ctest -LE "e2e|root|perf" --output-on-failure'
 
 # e2e/root: integracion contra ipset real (canario de inyeccion H-2). Solo VM, con sudo.
 test-firewall-e2e:
