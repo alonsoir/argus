@@ -24,6 +24,8 @@
 #include "protegidos/manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
 #include "firewall/protegidos_vigia.hpp"  // [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a
 #include "firewall/protegidos_antispoof.hpp"  // [PROTEGIDOS-ANTISPOOF-D320] ADR-060 D8, 8e.4b
+#include "firewall/protegidos_rp_filter.hpp"  // [PROTEGIDOS-RP-FILTER-D321] ADR-060 H-F, 8e.4c
+#include <cstdint>                            // [LATIDO-DATOS-D321] INT64_MAX
 #include <fstream>
 #include <filesystem>  // [PROTEGIDOS-MANIFIESTO-D318] directorio de la caché
 #include <nlohmann/json.hpp>
@@ -403,6 +405,31 @@ static void protegidos_cargar_cache(ProtegidosVigentes& v, IPSetWrapper& ipset, 
         return;
     }
     protegidos_aplicado(p, ipset, config, set_ok, "caché", false);
+}
+
+// [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): la versión vigente (0 = sin manifiesto) viaja en cada latido; el etcd-server
+// la guarda en latido/<CN> y pipeline-status la compara con la publicada. Se llama al arrancar y tras cada consulta: la
+// librería solo escribe en el log cuando cambia. Una versión fuera de [0, 2^53 - 1] la rechaza la librería (con aviso).
+static void protegidos_latido(const ProtegidosVigentes& v, mldefender::firewall::EtcdClient* etcd) {
+    if (etcd == nullptr) return;
+    const auto m = v.vigente();
+    const uint64_t ver = m ? m->version : 0;
+    const int64_t valor = ver > static_cast<uint64_t>(INT64_MAX) ? INT64_MAX : static_cast<int64_t>(ver);
+    etcd->poner_dato_latido("protegidos_version", valor);
+}
+
+// [PROTEGIDOS-RP-FILTER-D321] ADR-060 H-F: rp_filter de las interfaces de las entradas IPv4 del vigente; solo se lee y
+// se informa. Al arrancar y cada aviso_sec.
+static void protegidos_rp_filter(const ProtegidosVigentes& v) {
+    const auto m = v.vigente();
+    std::vector<std::string> interfaces;
+    if (m) {
+        for (const auto& e : m->entradas) {
+            if (!e.rango.v6) interfaces.push_back(e.interfaz);
+        }
+    }
+    std::cout << mldefender::firewall::linea_rp_filter(mldefender::firewall::leer_rp_filter(interfaces), m != nullptr)
+              << std::endl;
 }
 
 // Cada aviso_sec: sin manifiesto, aviso (D6); con él, la caché tiene que seguir verificando (D7) y el plano de
@@ -1000,6 +1027,8 @@ int main(int argc, char** argv) {
                                                                config.protegidos.hospital_id, config.protegidos.despliegue_id);
         const bool protegidos_set_ok = protegidos_preparar_set(ipset, config);
         protegidos_cargar_cache(*protegidos, ipset, config, protegidos_set_ok, etcd_client.get());
+        protegidos_latido(*protegidos, etcd_client.get());  // [LATIDO-DATOS-D321]
+        protegidos_rp_filter(*protegidos);                  // [PROTEGIDOS-RP-FILTER-D321]
         const auto& blacklist_ipset = config.ipsets.at("blacklist");
 
         FIREWALL_LOG_INFO("Configuring IPTables",
@@ -1313,6 +1342,7 @@ int main(int argc, char** argv) {
                 if (std::chrono::duration_cast<std::chrono::seconds>(now - last_protegidos).count() >=
                     config.protegidos.aviso_sec) {
                     protegidos_vigilar(*protegidos, config);  // [PROTEGIDOS-MANIFIESTO-D318]
+                    protegidos_rp_filter(*protegidos);        // [PROTEGIDOS-RP-FILTER-D321]
                     if (config.operation.dry_run) {  // [PROTEGIDOS-VIGIA-D320]
                         std::cerr << "[PROTEGIDOS-VIGIA] dry_run: no se compara el kernel con el manifiesto" << std::endl;
                     } else {
@@ -1342,6 +1372,7 @@ int main(int argc, char** argv) {
                     std::string fallo;  // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c: un aviso cada aviso_sec, no uno por consulta
                     const bool respondio =
                         protegidos_consultar(*protegidos, etcd_client.get(), ipset, config, protegidos_set_ok, fallo);
+                    protegidos_latido(*protegidos, etcd_client.get());  // [LATIDO-DATOS-D321]
                     if (!fallo.empty()) {
                         if (!respondio) ++consultas_fallidas;
                         if (std::chrono::duration_cast<std::chrono::seconds>(now - last_aviso_consulta).count() >=

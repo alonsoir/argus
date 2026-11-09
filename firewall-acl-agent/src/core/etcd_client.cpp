@@ -86,4 +86,10 @@ int EtcdClient::get_protegidos(std::string& cuerpo) {
     return pImpl->client_->get_protegidos(cuerpo);
 }
 
+// [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H)
+bool EtcdClient::poner_dato_latido(const std::string& clave, int64_t valor) {
+    if (!pImpl->client_) return false;
+    return pImpl->client_->poner_dato_latido(clave, valor);
+}
+
 } // namespace mldefender::firewall

@@ -540,6 +540,15 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     )
     add_test(NAME test_protegidos_antispoof COMMAND test_protegidos_antispoof)
 
+    # [PROTEGIDOS-RP-FILTER-D321] ADR-060 H-F (8e.4c): rp_filter leído e informado, con un /proc falso
+    add_executable(test_protegidos_rp_filter
+        tests/unit/test_protegidos_rp_filter.cpp
+    )
+    target_include_directories(test_protegidos_rp_filter PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_protegidos_rp_filter COMMAND test_protegidos_rp_filter)
+
     add_executable(test_protegidos_antispoof_root
         tests/unit/test_protegidos_antispoof_root.cpp
     )

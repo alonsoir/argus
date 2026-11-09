@@ -77,19 +77,26 @@ struct Falso {
     std::mutex m;
     std::map<std::string, int> cuentas;   // ruta -> peticiones recibidas
     std::map<std::string, int> estado;    // ruta -> status que responde (defecto 200)
+    std::map<std::string, std::string> cuerpos;     // [LATIDO-DATOS-D321] ruta -> último cuerpo recibido
+    std::map<std::string, std::string> respuestas;  // [LATIDO-DATOS-D321] ruta -> cuerpo que responde (si no, el de siempre)
     // [ETCD-CLIENTE-B1-D316] puerto_fijo > 0: escucha en ese puerto (un servidor que "aparece" o "vuelve" donde ya
     // apunta el cliente)
     Falso(const Pki& p, const std::string& cert, const std::string& key, int puerto_fijo = 0) {
         srv = std::make_unique<httplib::SSLServer>(p.f(cert).c_str(), p.f(key).c_str(), p.f("ca.crt").c_str());
         auto h = [this](const httplib::Request& req, httplib::Response& res) {
             int st = 200;
+            std::string resp;
             {
                 std::lock_guard<std::mutex> lk(m);
                 ++cuentas[req.path];
                 if (estado.count(req.path)) st = estado[req.path];
+                cuerpos[req.path] = req.body;
+                if (respuestas.count(req.path)) resp = respuestas[req.path];
             }
             res.status = st;
-            if (req.path.rfind("/secrets/", 0) == 0)
+            if (!resp.empty())
+                res.set_content(resp, "application/json");
+            else if (req.path.rfind("/secrets/", 0) == 0)
                 res.set_content(json{{"key", std::string(64, puerto % 2 ? 'b' : 'a')}}.dump(), "application/json");
             else
                 res.set_content(R"({"status":"ok"})", "application/json");
@@ -116,6 +123,14 @@ struct Falso {
     int cuenta(const std::string& r) {
         std::lock_guard<std::mutex> lk(m);
         return cuentas[r];
+    }
+    std::string cuerpo(const std::string& r) {
+        std::lock_guard<std::mutex> lk(m);
+        return cuerpos[r];
+    }
+    void pon_respuesta(const std::string& r, const std::string& b) {
+        std::lock_guard<std::mutex> lk(m);
+        if (b.empty()) respuestas.erase(r); else respuestas[r] = b;
     }
     std::string url() const { return "https://127.0.0.1:" + std::to_string(puerto); }
 };
@@ -409,6 +424,87 @@ int main() {
         const auto ms = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - t1).count();
         COMPRUEBA("R8 AvisoBloqueFatal: avisa al momento y para enseguida",
                   ms < 1000 && cap.str().find("[ETCD-CLIENTE-FATAL] sniffer: bloque etcd con 2 campos fatales") != std::string::npos);
+    }
+
+    // ── [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): datos genéricos del latido ───────────────────────────────────────
+    {
+        const std::string HB = "/v1/heartbeat/sniffer";
+        auto datos_de = [&](const std::string& body) -> json {
+            try {
+                const auto j = json::parse(body);
+                return j.contains("datos") ? j["datos"] : json();
+            } catch (...) {
+                return json("ilegible");
+            }
+        };
+        Config c = base(p, {a.url()});
+        {
+            EtcdClient cl(c);
+            COMPRUEBA("L1 sin datos puestos: el latido no lleva 'datos'",
+                      cl.heartbeat() && datos_de(a.cuerpo(HB)).is_null() &&
+                          json::parse(a.cuerpo(HB)).contains("timestamp"));
+        }
+        {
+            CapturaTodo cap;
+            EtcdClient cl(c);
+            const bool puesto = cl.poner_dato_latido("protegidos_version", 5);
+            const bool hb = cl.heartbeat();
+            COMPRUEBA("L2 protegidos_version=5 viaja en el latido y sale en el log una vez",
+                      puesto && hb && datos_de(a.cuerpo(HB)) == json({{"protegidos_version", 5}}) &&
+                          cap.veces("[ETCD-CLIENTE-LATIDO-DATO] sniffer: protegidos_version=5 (nuevo)") == 1);
+            cl.poner_dato_latido("protegidos_version", 5);  // el mismo valor: nada en el log
+            cl.poner_dato_latido("protegidos_version", 6);
+            cl.heartbeat();
+            COMPRUEBA("L3 cambio de valor: una línea con el anterior; el mismo valor, ninguna",
+                      cap.veces("[ETCD-CLIENTE-LATIDO-DATO] sniffer: protegidos_version=") == 2 &&
+                          cap.veces("protegidos_version=6 (antes 5)") == 1 &&
+                          datos_de(a.cuerpo(HB))["protegidos_version"] == 6);
+            const bool r1 = cl.poner_dato_latido("Mal", 1);
+            const bool r2 = cl.poner_dato_latido("x", -1);
+            const bool r3 = cl.poner_dato_latido("x", (static_cast<std::int64_t>(1) << 53));
+            const bool r4 = cl.poner_dato_latido("", 1);
+            const bool r5 = cl.poner_dato_latido(std::string(33, 'a'), 1);
+            const bool b1 = cl.poner_dato_latido("x", (static_cast<std::int64_t>(1) << 53) - 1);
+            cl.heartbeat();
+            const json d = datos_de(a.cuerpo(HB));
+            COMPRUEBA("L4 claves y valores fuera de la regla: false, aviso con el formato y no viajan",
+                      !r1 && !r2 && !r3 && !r4 && !r5 && b1 && d.size() == 2 && d["x"] == 9007199254740991LL &&
+                          cap.veces("no se guarda (datos del latido: objeto de 0 a 8 claves") == 5);
+            for (int i = 0; i < 6; ++i) cl.poner_dato_latido("d" + std::to_string(i), i);  // 8 en total
+            const bool noveno = cl.poner_dato_latido("d6", 6);
+            const bool repite = cl.poner_dato_latido("d0", 10);  // con 8, cambiar uno que ya está sí vale
+            cl.heartbeat();
+            COMPRUEBA("L5 como mucho 8 datos: el noveno se rechaza, cambiar uno existente no",
+                      !noveno && repite && datos_de(a.cuerpo(HB)).size() == 8 && datos_de(a.cuerpo(HB))["d0"] == 10 &&
+                          cap.str().find("ya hay 8 datos; 'd6' sería uno más") != std::string::npos);
+        }
+        {
+            CapturaTodo cap;
+            EtcdClient cl(c);
+            cl.poner_dato_latido("protegidos_version", 3);
+            a.pon_respuesta(HB, json{{"status", "ok"}, {"datos_rechazados", "valor de 'protegidos_version' (x)"}}.dump());
+            const bool h1 = cl.heartbeat(), h2 = cl.heartbeat(), h3 = cl.heartbeat();
+            const size_t rech = cap.veces("[ETCD-CLIENTE-LATIDO-DATOS-RECHAZADOS] sniffer: el etcd-server guarda el latido sin los datos");
+            a.pon_respuesta(HB, "");
+            const bool h4 = cl.heartbeat(), h5 = cl.heartbeat();
+            COMPRUEBA("L6 datos_rechazados: el latido cuenta (2xx), aviso una sola vez y otra al volver a aceptarlos",
+                      h1 && h2 && h3 && h4 && h5 && rech == 1 &&
+                          cap.veces("[ETCD-CLIENTE-LATIDO-DATOS-RECHAZADOS]") == 1 &&
+                          cap.veces("[ETCD-CLIENTE-LATIDO-DATOS-ACEPTADOS] sniffer") == 1);
+        }
+        {
+            Config cm = c;
+            cm.heartbeat_enabled = true;
+            cm.heartbeat_interval_seconds = 30;
+            const int antes = a.cuenta(HB);
+            auto cl = std::make_unique<EtcdClient>(cm);
+            cl->poner_dato_latido("protegidos_version", 9);
+            const bool r = cl->register_component();
+            const bool latio = espera([&] { return a.cuenta(HB) - antes >= 1; }, 2000);
+            COMPRUEBA("L7 el mantenedor lleva los datos en su latido",
+                      r && latio && datos_de(a.cuerpo(HB)) == json({{"protegidos_version", 9}}));
+            cl.reset();
+        }
     }
 
     std::cout << "test_etcd_cliente_tls: " << (total - fallos) << "/" << total << std::endl;

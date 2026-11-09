@@ -23,6 +23,8 @@
 #include <seed_client/seed_client.hpp>
 #include <crypto_transport/transport.hpp>
 #include <lz4.h>
+#include <map>
+#include "latido/datos_latido.hpp"  // [LATIDO-DATOS-D321]
 
 using json = nlohmann::json;
 
@@ -33,7 +35,7 @@ namespace etcd_client {
 
 namespace component {
     std::string build_registration_payload(const Config& config);
-    std::string build_heartbeat_payload(const Config& config);
+    std::string build_heartbeat_payload(const Config& config, const std::map<std::string, std::int64_t>& datos);
     std::string build_unregister_payload(const Config& config);
     ComponentInfo parse_component_info(const std::string& json_str);
     std::vector<ComponentInfo> parse_component_list(const std::string& json_str);
@@ -69,6 +71,10 @@ struct EtcdClient::Impl {
     std::atomic<bool> en_marcha_{false};
     std::mutex hb_mtx_;                // [PARADA-INMEDIATA-D300] espera interrumpible
     std::condition_variable hb_cv_;
+    // [LATIDO-DATOS-D321] datos genéricos del latido (H-H): los pone el componente, los lee el mantenedor
+    std::mutex datos_m_;
+    std::map<std::string, std::int64_t> datos_latido_;
+    std::string ultimo_rechazo_;       // lo último que dijo el etcd-server de los datos ("" = los aceptó)
 
     // Constructor — ADR-013 PHASE 2 (DAY 98)
     explicit Impl(const Config& config)
@@ -145,9 +151,68 @@ struct EtcdClient::Impl {
         if (mantenedor_.joinable() && mantenedor_.get_id() != std::this_thread::get_id()) mantenedor_.join();
     }
 
+    // [LATIDO-DATOS-D321] H-H: valida con la regla única y guarda; el siguiente latido lo lleva
+    bool poner_dato(const std::string& clave, std::int64_t valor) {
+        namespace L = argus::latido;
+        std::lock_guard<std::mutex> lk(datos_m_);
+        std::string motivo;
+        if (!L::clave_valida(clave)) {
+            motivo = "clave '" + L::para_log(clave) + "' mal formada";
+        } else if (!L::valor_valido(valor)) {
+            motivo = "valor " + std::to_string(valor) + " de '" + clave + "' fuera de [0, " + std::to_string(L::kMaxValor) + "]";
+        } else if (datos_latido_.size() >= L::kMaxDatos && datos_latido_.find(clave) == datos_latido_.end()) {
+            motivo = "ya hay " + std::to_string(L::kMaxDatos) + " datos; '" + clave + "' sería uno más";
+        }
+        if (!motivo.empty()) {
+            std::cerr << "[ETCD-CLIENTE-LATIDO-DATO] " << config_.component_name << ": " << motivo
+                      << "; no se guarda (datos del latido: " << L::formato() << ")" << std::endl;
+            return false;
+        }
+        auto it = datos_latido_.find(clave);
+        if (it == datos_latido_.end() || it->second != valor) {
+            std::cout << "[ETCD-CLIENTE-LATIDO-DATO] " << config_.component_name << ": " << clave << "=" << valor
+                      << (it == datos_latido_.end() ? std::string(" (nuevo)") : " (antes " + std::to_string(it->second) + ")")
+                      << "; va en el siguiente latido" << std::endl;
+            datos_latido_[clave] = valor;
+        }
+        return true;
+    }
+
     Respuesta latido(bool callado) {
-        return transporte_.peticion("POST", "/v1/heartbeat/" + config_.component_name,
-                                    component::build_heartbeat_payload(config_), "application/json", 0, 1, callado);
+        std::map<std::string, std::int64_t> datos;
+        {
+            std::lock_guard<std::mutex> lk(datos_m_);
+            datos = datos_latido_;
+        }
+        auto r = transporte_.peticion("POST", "/v1/heartbeat/" + config_.component_name,
+                                      component::build_heartbeat_payload(config_, datos), "application/json", 0, 1,
+                                      callado);
+        if (r.exito) anotar_respuesta_datos(r.body);
+        return r;
+    }
+
+    // [LATIDO-DATOS-D321] el etcd-server guarda el latido aunque rechace los datos (decisión DAY321) y lo dice en
+    // "datos_rechazados"; aquí se registra solo cuando cambia (no en cada latido)
+    void anotar_respuesta_datos(const std::string& body) {
+        std::string rechazo;
+        try {
+            const auto j = json::parse(body);
+            if (j.contains("datos_rechazados") && j["datos_rechazados"].is_string())
+                rechazo = j["datos_rechazados"].get<std::string>();
+        } catch (...) {
+            return;
+        }
+        std::lock_guard<std::mutex> lk(datos_m_);
+        if (rechazo == ultimo_rechazo_) return;
+        if (rechazo.empty()) {
+            std::cout << "[ETCD-CLIENTE-LATIDO-DATOS-ACEPTADOS] " << config_.component_name
+                      << ": el etcd-server vuelve a aceptar los datos del latido" << std::endl;
+        } else {
+            std::cerr << "[ETCD-CLIENTE-LATIDO-DATOS-RECHAZADOS] " << config_.component_name
+                      << ": el etcd-server guarda el latido sin los datos: " << argus::latido::para_log(rechazo)
+                      << std::endl;
+        }
+        ultimo_rechazo_ = rechazo;
     }
 
     // POST /register; con éxito guarda las rutas de la respuesta y marca registrado
@@ -492,6 +557,10 @@ bool EtcdClient::unregister_component() {
 
 bool EtcdClient::heartbeat() {
     return pImpl->latido(false).exito;
+}
+
+bool EtcdClient::poner_dato_latido(const std::string& clave, std::int64_t valor) {
+    return pImpl->poner_dato(clave, valor);
 }
 
 ComponentInfo EtcdClient::get_component_info(const std::string& name) {

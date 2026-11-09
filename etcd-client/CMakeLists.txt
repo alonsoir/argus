@@ -93,6 +93,7 @@ target_include_directories(etcd_client
         $<INSTALL_INTERFACE:include>
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/../libs/latido/include   # [LATIDO-DATOS-D321] regla única de los datos del latido
         ${CRYPTO_TRANSPORT_INCLUDE}
         ${SEED_CLIENT_INCLUDE_DIR}
         ${LZ4_INCLUDE_DIRS}

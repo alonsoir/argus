@@ -13,6 +13,7 @@
 #include <openssl/ssl.h>
 #include <openssl/x509.h>
 #include <openssl/x509_vfy.h>
+#include "latido/datos_latido.hpp"  // [LATIDO-DATOS-D321] la misma regla que el etcd-client
 
 // ============================================================================
 // Day 62: Contextual request logging helper
@@ -440,8 +441,16 @@ void EtcdServer::configurar_rutas() {
             return;
         }
         const std::time_t client_timestamp = body["timestamp"];
+        // [LATIDO-DATOS-D321] H-H: "datos" opcional, validado con la misma regla que el etcd-client (libs/latido). Si no
+        // vale, el latido se guarda sin datos y la respuesta lo dice en "datos_rechazados" (decisión de Alonso, DAY321)
+        std::string rechazo;
+        const json* datos = nullptr;
+        if (body.contains("datos")) {
+            rechazo = argus::latido::validar_datos(body["datos"]);
+            if (rechazo.empty()) datos = &body["datos"];
+        }
         std::time_t last_hb = 0;
-        const auto r = component_registry_->registro().latir(component_name, last_hb);
+        const auto r = component_registry_->registro().latir(component_name, last_hb, datos, rechazo);
         if (r != argus::registro::Resultado::Ok) {
             fallo(res, r, component_name);
             return;
@@ -455,6 +464,7 @@ void EtcdServer::configurar_rutas() {
             {"client_timestamp", client_timestamp},
             {"next_heartbeat_expected", server_time + heartbeat_interval_seconds_}  // heartbeat.interval_seconds
         };
+        if (!rechazo.empty()) response["datos_rechazados"] = rechazo;
         res.set_content(response.dump(), "application/json");
     });
 

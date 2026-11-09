@@ -138,8 +138,13 @@ public:
         return leer_locked(nombre, out, /*permitir_cache=*/true);
     }
 
-    // POST /v1/heartbeat/{c}: NoEncontrado si no está registrado (404); revive si estaba muerto
-    Resultado latir(const std::string& nombre, std::time_t& ultimo) {
+    // POST /v1/heartbeat/{c}: NoEncontrado si no está registrado (404); revive si estaba muerto.
+    // [LATIDO-DATOS-D321] H-H: datos = el objeto "datos" ya validado (libs/latido) o nullptr si no vino o se rechazó;
+    // rechazo = el motivo si se rechazó. El latido se guarda igual (un 4xx dejaría al componente sin latir): con datos,
+    // latido/<CN> = {"ultimo","estado","datos"}; sin ellos, sin la clave "datos". El rechazo sale en el log solo cuando
+    // cambia para ese componente ([ETCD-LATIDO-DATOS-RECHAZADOS] / [ETCD-LATIDO-DATOS-ACEPTADOS]).
+    Resultado latir(const std::string& nombre, std::time_t& ultimo, const nlohmann::json* datos = nullptr,
+                    const std::string& rechazo = "") {
         if (!nombre_valido(nombre)) return Resultado::NombreInvalido;
         std::lock_guard<std::mutex> lk(m_);
         std::string v;
@@ -157,10 +162,22 @@ public:
             }
         }
         const auto t = reloj_();
-        const nlohmann::json lat = {{"ultimo", t}, {"estado", "activo"}};
+        nlohmann::json lat = {{"ultimo", t}, {"estado", "activo"}};
+        if (datos != nullptr) lat["datos"] = *datos;
         if (anotar(almacen_->poner("latido/" + nombre, lat.dump())) == Estado::NoDisponible)
             return Resultado::NoDisponible;
         latidos_[nombre] = lat;
+        auto& rp = rechazos_[nombre];
+        if (rechazo != rp) {
+            if (rechazo.empty()) {
+                log_ << "[ETCD-LATIDO-DATOS-ACEPTADOS] " << nombre << ": vuelve a mandar datos válidos en el latido"
+                     << std::endl;
+            } else {
+                log_ << "[ETCD-LATIDO-DATOS-RECHAZADOS] " << nombre << ": " << rechazo
+                     << "; el latido se guarda sin datos" << std::endl;
+            }
+            rp = rechazo;
+        }
         if (previo == "muerto") {
             log_ << "[ETCD-COMPONENTE-REVIVIDO] " << nombre << " vuelve a latir tras " << (t - previo_t)
                  << " s sin latido" << std::endl;
@@ -196,6 +213,14 @@ public:
         std::lock_guard<std::mutex> lk(m_);
         auto it = latidos_.find(nombre);
         return it == latidos_.end() ? "" : it->second.value("estado", "");
+    }
+
+    // [LATIDO-DATOS-D321] datos del último latido (objeto vacío si no hay); para los tests
+    nlohmann::json datos_latido(const std::string& nombre) {
+        std::lock_guard<std::mutex> lk(m_);
+        auto it = latidos_.find(nombre);
+        if (it == latidos_.end() || !it->second.contains("datos")) return nlohmann::json::object();
+        return it->second["datos"];
     }
 
     std::time_t ultimo_latido(const std::string& nombre) {
@@ -346,6 +371,7 @@ private:
     std::mutex m_;
     std::map<std::string, nlohmann::json> docs_;
     std::map<std::string, nlohmann::json> latidos_;
+    std::map<std::string, std::string> rechazos_;  // [LATIDO-DATOS-D321] último motivo de rechazo por componente
     bool disponible_ = true;
     bool recargar_ = false;
     std::time_t caida_desde_ = 0, ultimo_aviso_caida_ = 0, ultimo_aviso_memoria_ = 0;

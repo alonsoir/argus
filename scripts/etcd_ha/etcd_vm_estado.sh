@@ -4,6 +4,11 @@
 #   - etcd-server: unidad systemd activa y GET /health por mTLS (certificado del propio etcd-server, regla «cualquiera»)
 #   - etcd: por cada miembro (etcdctl member list: con el PR2 salen todos), sano o no, líder, term y retraso respecto al líder
 #   - vault-hmac: por cada dirección de almacen_claves.vault_addrs, /v1/sys/health (200 activo, 429 en espera, 503 sellado)
+#   - protegidos ([LATIDO-DATOS-D321] ADR-060 8e.4c, H-H): la versión publicada (<prefijo>protegidos/vigente, que el
+#     etcd-server solo escribe tras verificar la firma) frente a la protegidos_version que cada componente manda en su
+#     latido (<prefijo>latido/<CN>). Un desfase es normal hasta protegidos.consulta_sec + un latido tras publicar.
+#     Solo informa (⚠️): no cuenta en SANO, porque etcd-vm-check/-aviso corren también con el firewall parado (deploy,
+#     etcd-server-start, pipeline-start antes de arrancarlo) y el veredicto es el de la VM etcd.
 # Direcciones y certificados salen del JSON del etcd-server (el que escribe Ansible): el JSON es la ley.
 # Opciones: --estricto        rc 1 si algo no está sano (EMECAS); sin ella, rc 0 siempre (pipeline-status informa)
 #           --esperar S       reintenta hasta S segundos a que todo esté sano, entero [0, 300], defecto 0
@@ -44,11 +49,11 @@ j = json.load(open(sys.argv[1]))
 a, c, t, s = j["almacen"], j["almacen_claves"], j["tls"], j["server"]
 print(",".join(a["endpoints"])); print(a["ca_file"]); print(a["cert_file"]); print(a["key_file"])
 print(" ".join(c["vault_addrs"])); print(c["ca_file"]); print(c["cert_file"]); print(c["key_file"])
-print(t["ca_file"]); print(t["cert_file"]); print(t["key_file"]); print(s["port"])
+print(t["ca_file"]); print(t["cert_file"]); print(t["key_file"]); print(s["port"]); print(a["prefijo"])
 PY
 ) || { echo "  ❌ etcd-server:   STOPPED [VM etcd: $JSON ilegible o sin almacen/almacen_claves/tls/server]"; [ "$ESTRICTO" = si ] && exit 1 || exit 0; }
 { read -r A_EP; read -r A_CA; read -r A_CRT; read -r A_KEY; read -r V_ADDRS; read -r V_CA; read -r V_CRT; read -r V_KEY
-  read -r T_CA; read -r T_CRT; read -r T_KEY; read -r PUERTO; } <<< "$CFG"
+  read -r T_CA; read -r T_CRT; read -r T_KEY; read -r PUERTO; read -r PREFIJO; } <<< "$CFG"
 
 evaluar() {  # deja el informe en INFORME y SANO=si|no
   local ok=si l
@@ -129,6 +134,58 @@ PY
   else
     INFORME+="  ❌ vault-hmac:    $nodos nodos, $activos activos, $malos con problemas:$det"$'\n'; ok=no
   fi
+  # [LATIDO-DATOS-D321] protegidos: versión publicada frente a la de cada latido (solo informa: no toca ok)
+  local pv lt
+  pv=$($E get "${PREFIJO}protegidos/vigente" 2>/dev/null); lt=$($E get "${PREFIJO}latido/" --prefix 2>/dev/null)
+  INFORME+="$(python3 - "$(date +%s)" "$PREFIJO" "$pv" "$lt" <<'PY'
+import base64, json, sys
+ahora, pref = int(sys.argv[1]), sys.argv[2]
+def carga(x):
+    try: return json.loads(x)
+    except Exception: return None
+pv, lt = carga(sys.argv[3]), carga(sys.argv[4])
+if pv is None or lt is None:
+    print("  ⚠️  protegidos:     etcd no responde a la lectura de %sprotegidos/vigente o %slatido/" % (pref, pref)); sys.exit()
+kvs = pv.get("kvs") or []
+if not kvs:
+    print("  ⚠️  protegidos:     sin manifiesto publicado (%sprotegidos/vigente): candado de la mitigación real cerrado" % pref)
+    sys.exit()
+try:
+    sobre = json.loads(base64.b64decode(kvs[0]["value"]))
+    pub = json.loads(base64.b64decode(sobre["carga_b64"]))["version"]
+    if not isinstance(pub, int) or isinstance(pub, bool) or pub < 1: raise ValueError("version %r" % (pub,))
+except Exception as e:
+    print("  ❌ protegidos:     %sprotegidos/vigente ilegible: %s" % (pref, str(e)[:120])); sys.exit()
+filas = []
+for kv in lt.get("kvs") or []:
+    try:
+        nombre = base64.b64decode(kv["key"]).decode()[len(pref) + len("latido/"):]
+        j = json.loads(base64.b64decode(kv["value"]))
+    except Exception:
+        continue
+    d = j.get("datos") or {}
+    v = d.get("protegidos_version") if isinstance(d, dict) else None
+    if not isinstance(v, int) or isinstance(v, bool): continue  # solo los que la informan (los firewalls)
+    hace = ahora - int(j.get("ultimo", 0) or 0)
+    filas.append((nombre, v, j.get("estado", "?"), hace))
+if not filas:
+    print("  ⚠️  protegidos:     v%d publicada; ningún componente informa protegidos_version en su latido" % pub); sys.exit()
+filas.sort()
+desf = [f for f in filas if f[1] < pub]
+dela = [f for f in filas if f[1] > pub]
+if desf or dela:
+    partes = []
+    if desf: partes.append("%d DESFASADO%s" % (len(desf), "S" if len(desf) > 1 else ""))
+    if dela: partes.append("%d POR DELANTE (¿etcd restaurado de una copia vieja?)" % len(dela))
+    print("  ⚠️  protegidos:     v%d publicada; %d componente%s: %s" % (pub, len(filas), "s" if len(filas) > 1 else "",
+                                                                     ", ".join(partes)))
+else:
+    print("  ✅ protegidos:     v%d publicada; %d componente%s al día" % (pub, len(filas), "s" if len(filas) > 1 else ""))
+for n, v, e, h in filas:
+    marca = "DESFASADO" if v < pub else ("POR DELANTE" if v > pub else "al día")
+    print("       - %s v%d %s (%s, latido hace %d s)" % (n, v, marca, e, h))
+PY
+)"$'\n'
   SANO=$ok
 }
 

@@ -46,6 +46,10 @@ namespace mldefender::firewall {
 
         /// [PROTEGIDOS-MANIFIESTO-D318] GET /v1/protegidos: status HTTP (0 = nadie respondió, -1 = sin cliente) y cuerpo
         int get_protegidos(std::string& cuerpo);
+
+        /// [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): dato que viaja en cada latido (p. ej. protegidos_version); false si
+        /// no hay cliente o no cumple la regla de libs/latido (la librería lo dice en el log)
+        bool poner_dato_latido(const std::string& clave, int64_t valor);
     private:
         struct Impl;
         std::unique_ptr<Impl> pImpl;

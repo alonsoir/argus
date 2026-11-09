@@ -140,6 +140,12 @@ public:
     // Send heartbeat (called automatically if heartbeat_enabled)
     bool heartbeat();
 
+    // [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): dato genérico que viaja en cada latido ("datos": {clave: valor}) y el
+    // etcd-server guarda en latido/<CN>. Regla única (libs/latido/datos_latido.hpp): clave ^[a-z][a-z0-9_]{0,31}$,
+    // valor entero en [0, 2^53 - 1], como mucho 8 claves. Si no vale, no se guarda, devuelve false y lo dice
+    // [ETCD-CLIENTE-LATIDO-DATO]. Seguro entre hilos; O(datos). Un cambio de valor sale en el log una vez.
+    bool poner_dato_latido(const std::string& clave, std::int64_t valor);
+
     // Get info about a component
     ComponentInfo get_component_info(const std::string& name);
 

@@ -235,6 +235,7 @@ target_include_directories(etcd-server
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../libs/latido/include   # [LATIDO-DATOS-D321] regla única de los datos del latido
         ${CRYPTO_TRANSPORT_INCLUDE_DIR}
         ${SEED_CLIENT_INCLUDE_DIR}
         ${CRYPTO_PROVIDER_INCLUDE_DIR}
@@ -398,6 +399,14 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
             ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
     target_link_libraries(test_registro_componentes PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
     add_test(NAME test_registro_componentes COMMAND test_registro_componentes)
+
+    # [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): la regla única de los datos del latido (libs/latido) y lo que hace el
+    # registro con ellos (guardar, conservar al marcar muerto, rechazo sin perder el latido)
+    add_executable(test_latido_datos tests/test_latido_datos.cpp)
+    target_include_directories(test_latido_datos PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/../libs/latido/include)
+    target_link_libraries(test_latido_datos PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_latido_datos COMMAND test_latido_datos)
     # [ETCD-CLAVES-D314] almacen_claves de etcd-server.json (fatales en modo vault, rangos, JSON del repo) y ventana de
     # dos del SecretsManager sobre MemoriaSecretStore con reloj inyectado (sin red): reinicio, rotación, caducidad,
     # enfriamiento, almacén caído, CAS entre dos instancias, huella repetida, log sin claves

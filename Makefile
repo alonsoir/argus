@@ -1314,7 +1314,7 @@ emecas-frescura:
 # Corridas en logs/lab/$(LAB_E2E_DIA)/lab_*/. Duracion total de lab-e2e: ~60 min.
 # lab_corrida_defender.sh exige DIA con formato dayNNN (medido DAY303)
 LAB_E2E_DIA ?= day303
-.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion lab-e2e-vigia lab-e2e-antispoof lab-e2e-reinicio-etcd lab-test-limpia-kernel lab-kernel-limpio
+.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion lab-e2e-vigia lab-e2e-antispoof lab-e2e-reinicio-etcd lab-test-limpia-kernel lab-kernel-limpio lab-e2e-latido
 lab-e2e-prep:
 	@echo "[LAB-E2E] client: alias 192.168.100.51 en eth1 y MAC de 192.168.100.1 en la tabla de vecinos"
 	@vagrant ssh client -c "ip -4 addr show dev eth1 | grep -q 192.168.100.51 || sudo ip addr add 192.168.100.51/24 dev eth1; ping -c 3 -W 1 -I eth1 192.168.100.1 > /dev/null 2>&1; ip -4 addr show dev eth1 | grep -q 192.168.100.51 && ip neigh show 192.168.100.1 dev eth1 | grep -q lladdr && ip neigh show 192.168.100.1 dev eth1" || { echo "[LAB-E2E] FALLA: client sin alias .51 o sin MAC de .1"; exit 1; }
@@ -1377,8 +1377,15 @@ lab-e2e-reinicio-etcd:
 	@$(MAKE) lab-e2e-prep
 	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d317_reinicio_vm.sh lab_reinicio_etcd_$$(date -u +%Y%m%dT%H%M%SZ)
 
+# [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H y H-F): la versión del manifiesto que el firewall manda en su latido frente a la
+# publicada, como la enseña pipeline-status (etcd_vm_estado.sh), y la línea [PROTEGIDOS-RP-FILTER] del agente. Desfase
+# de verdad con protegidos.consulta_sec=3600 SOLO durante la prueba (el JSON se restaura con cmp); publica y retira una
+# entrada de prueba con argus-infra. No toca dry_run ni la mitigación. Necesita la VM etcd. Deja el pipeline parado. ~8 min.
+lab-e2e-latido:
+	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d321_latido_e2e.sh lab_latido_$$(date -u +%Y%m%dT%H%M%SZ)
+
 lab-e2e:
-	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion, vigia, antispoof, reinicio del etcd-server"
+	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion, vigia, antispoof, latido, reinicio del etcd-server"
 	$(MAKE) lab-test-limpia-kernel
 	$(MAKE) lab-e2e-reinicio-antes
 	$(MAKE) lab-e2e-reinicio-ordenada
@@ -1390,13 +1397,14 @@ lab-e2e:
 	$(MAKE) lab-kernel-limpio
 	$(MAKE) lab-e2e-antispoof
 	$(MAKE) lab-kernel-limpio
+	$(MAKE) lab-e2e-latido
 	@echo "[LAB-E2E] [ARGUS-LAB-RESTORE-D303] los E2E paran el pipeline: se deja arrancado, como se encontro"
 	$(MAKE) pipeline-start > /tmp/argus_lab_e2e_restore.txt 2>&1 || { tail -n 20 /tmp/argus_lab_e2e_restore.txt; echo "[LAB-E2E] FALLA: pipeline-start al restaurar"; exit 1; }
 	@# [ARGUS-LAB-RESTORE-D303] patron estricto: pgrep -a -f se imprime a si mismo y su linea contiene STOPPED
 	@if grep -E '^[[:space:]]*❌.*STOPPED' /tmp/argus_lab_e2e_restore.txt; then echo "[LAB-E2E] FALLA: componente STOPPED al restaurar"; exit 1; fi
 	@n=$$(grep -c -E '^[[:space:]]+✅ (etcd-server|ml-detector|sniffer|firewall):' /tmp/argus_lab_e2e_restore.txt); if [ "$$n" -lt 4 ]; then echo "[LAB-E2E] FALLA: solo $$n de 4 componentes RUNNING al restaurar"; exit 1; fi; echo "[LAB-E2E] restaurado: $$n de 4 componentes RUNNING"
 	$(MAKE) lab-e2e-reinicio-etcd
-	@echo "[LAB-E2E] PASA los seis E2E del lab $$(date '+%F %T')"
+	@echo "[LAB-E2E] PASA todos los E2E del lab $$(date '+%F %T')"
 
 
 emecas++: emecas
