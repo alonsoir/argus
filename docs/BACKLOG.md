@@ -9193,3 +9193,102 @@ Diseño y decisiones en ADR-060, sección 7 («8e.4c»). Cierra DEBT-FW-ANTISPOO
 8e.4d (Wazuh y Falco, con su configuración en ficheros propios, H-I y H-J), sus docs, 8e.5 (bootstrap con
 `argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++
 PROFILE=production y cierre del PR1. Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001.
+
+## DAY321 — pasos 8e.4d-1 y 8e.4d-2 hechos: Wazuh y Falco vigilan a aRGus [VIGILANCIA-D321]
+
+Commits: `464c733bc` (8e.4d-1, el manager), el de 8e.4d-2 (los sensores, `feat(vigilancia): 8e.4d-2 …`) y este de
+documentación. Diseño y decisiones en ADR-060, sección 7 («8e.4d»). Queda 8e.4d-3 (el E2E).
+
+### Decisiones de Alonso (DAY321)
+- Los sensores van en la máquina que vigilan (Falco ve las syscalls del kernel donde corre; el FIM y el journal son
+  locales); el manager de Wazuh queda en su VM. Falco en la VM etcd y en el defender; la VM etcd pasa a 1536 MB.
+- Falco no habla con Wazuh: escribe JSON en un fichero y el agente de Wazuh lo lee.
+- Configuración de los agentes centralizada en el manager, un grupo por máquina (`argus-etcd`, `argus-defender`).
+- El E2E de la vigilancia, dentro de `lab-e2e`.
+- Versión del manager fijada (`provisioning/wazuh/VERSION`), la misma para los agentes.
+- **Todo el software de terceros sale de su mantenedor oficial, con su firma** («un admin de un hospital lo va a
+  exigir sí o sí»): fuera el `.deb` del agente guardado en el repo; agente y Falco desde el apt firmado de cada uno,
+  con la versión fija y la clave comprobada por huella. Claude no pasa binarios de terceros.
+- `std::system` del sniffer: deuda aparte (DEBT-SNIFFER-SYSTEM-SYSCTL-001); mientras, la regla de Falco permite
+  exactamente esas dos órdenes.
+- Hora de las VMs: la zona del despliegue, como deuda en un commit aparte (DEBT-LAB-ZONA-HORARIA-001). Hasta entonces,
+  los scripts dicen «UTC» cuando muestran horas de las VMs.
+
+### Medido en el banco
+- Manager 4.14.10 en un chroot: decoders y reglas con `wazuh-logtest`, 27/27 casos (`casos_reglas.tsv`);
+  `verify-agent-conf` y `wazuh-analysisd -t` de los dos grupos; el despliegue restaura lo anterior si algo no valida.
+- Falco 0.43.1 extraído del `.deb` oficial (sha256 `7b89e294…`, el que da el índice `Packages` del repositorio):
+  `--dry-run` con las reglas de aRGus, 3 reglas activas que piden 5 syscalls (64 con las del motor de estado).
+  `falco_instalar.sh` con stubs y el binario real: restaura lo anterior con la configuración que duplica la carga y con
+  una regla rota.
+- `lib_apt_oficial.sh` contra las claves reales: las dos buenas pasan; clave ajena, descarga que no es clave, otra
+  lista al mismo repositorio y huellas vacías se rechazan sin tocar nada; idempotente.
+- `test_argus_disco.py` 16/16; 9 mutaciones cazadas. `argus_disco_instalar.sh` con stubs: restaura con `umbral_pct=0`.
+
+### Medido en el lab
+- `vagrant reload etcd`: Falco 0.43.1, argus-disco (`uso=4 umbral=75 estado=OK`) y el agente 4.14.10-1 conectado.
+  Defender: agente de 4.14.7-1 a 4.14.10-1 y Falco. client, suricata y zeek: agente de 4.14.7-1 a 4.14.10-1.
+- `vigilancia-manager-deploy`: etcd (005) en `argus-etcd`, defender (002) en `argus-defender`; 27 PASA.
+- `test-vigilancia-disco` 16/16. `d321_comprobar_sensores.sh` (v2): los cinco agentes 4.14.10-1 en hold y conectados,
+  0 errores en el `ossec.log` de etcd y defender desde su arranque; RSS de Falco 101 MB (etcd) y 160 MB (defender);
+  MemTotal de la VM etcd 1463 MB; vault en `/usr/bin/vault` en las dos VMs y etcd en `/usr/local/bin/etcd` (lo que
+  suponen las reglas); pipeline-status en ✅.
+
+### Hallazgos DAY321
+- `agent_groups` devuelve rc 0 aunque falle (Error 1017): se comprueba por el resultado.
+- `verify-agent-conf` no ve una opción desconocida dentro de `<syscheck>`; solo el agente al recibirla.
+- El decoder de iptables de serie (regla 4100) se queda con las líneas del kernel: las de `ARGUS-SPOOF-*` cuelgan de
+  4100 (`if_sid`) y el campo `action` es estático (se compara con `<action>`).
+- Actualizar el manager dejó a los agentes ~80 s desconectados.
+- Falco: `proc.name`/`proc.pname` son el `comm` del kernel, 15 caracteres; las reglas van por ruta del ejecutable
+  (DEBT-HARDENED-FALCO-RUTAS-001 para las de la hardened). `config.d` se funde en modo `append`: un `rules_files` ahí se
+  suma al del paquete (cargaba las reglas dos veces); se apagan todas y se encienden las `argus_*`. El postinst deja
+  `config.d/engine-kind-falcoctl.yaml` (`engine.kind: modern_ebpf`, el mismo valor).
+- Con dos grupos (`default` y el de aRGus) el agente recibe los dos fundidos: su `agent.conf` no tiene el sha256 del
+  del grupo.
+- El client no tiene salida a Internet después de `client-setup` (ruta por el defender, sin NAT): una subida de
+  versión del agente se hace con `vagrant reload client` (al arrancar sale por la NAT de VirtualBox y el agente se
+  aprovisiona antes de `client-setup`). Con la versión ya puesta, el script no usa la red.
+- En la VM etcd, 17 eventos `argus_lab_clave_leida_admin` (NOTICE, nivel 4 en Wazuh) a las 12:03 UTC, la hora del
+  primer `pipeline-status` (que lee `etcd-server.key` con sudo): es el rastro que la regla quiere dejar, pero 17 por
+  cada `pipeline-status` es ruido. Por confirmar (DAY322) que salen de ahí y cuántos da cada `pipeline-status`.
+- Falco publicado va por la 0.45.2; nos quedamos en la 0.43.1 (la medida en las VMs). La configuración de aRGus pasa
+  `--dry-run` en 0.45.2.
+
+### DEBT-SNIFFER-SYSTEM-SYSCTL-001 — ABIERTA (nueva DAY321)
+El sniffer activa el reenvío con `std::system("sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1")` (y lo mismo para
+IPv6): un shell por arrancar, y la regla de Falco tiene que permitir a `dash` hijo del sniffer con esas dos órdenes
+exactas. `autonomy_reactor` también usa `std::system`. Arreglo: escribir `1` en `/proc/sys/net/ipv4/ip_forward` y en
+`/proc/sys/net/ipv6/conf/all/forwarding` sin shell, y quitar la excepción de `provisioning/falco/argus_lab.yaml`.
+**Test de cierre:** test unitario de la escritura contra un `/proc` falso; en el lab, el sniffer arranca sin hijos y
+`argus_lab_hijo_inesperado` no salta sin la excepción.
+
+### DEBT-LAB-ZONA-HORARIA-001 — ABIERTA (nueva DAY321, Alonso)
+Las VMs están en UTC y el reloj de Alonso en Europe/Madrid: las horas de los logs confunden. Arreglo: la zona del
+despliegue en su `group_vars` y `timedatectl set-timezone` en cada VM (commit aparte). Sin hacer, los scripts dicen
+«UTC» al mostrar horas de las VMs.
+**Test de cierre:** `timedatectl` en cada VM da la zona del `group_vars`, y una línea nueva del journal sale en esa hora.
+
+### DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001 — ABIERTA (nueva DAY321, Alonso)
+Todo software de terceros tiene que venir de su mantenedor, verificado con su firma o su sha256 oficial. Hecho en
+8e.4d: agente de Wazuh, manager y Falco (apt firmado, versión fija, clave por huella; la descarga de Falco para la
+hardened, fijada). Queda: libsodium se descarga en el Vagrantfile sin comprobar sha256 ni firma; etcd tiene sha256
+fijo pero no consta de dónde sale; la huella de la clave de Wazuh (`0DCFCA55…29111145`) está medida en la descarga pero
+Wazuh no la publica en su documentación (contrastarla con Wazuh); el resto del Vagrantfile y de `provisioning/`, por
+inventariar.
+**Test de cierre:** un script que recorre lo que se descarga en el Vagrantfile y en `provisioning/` y falla si algo no
+se comprueba contra la firma o el sha256 publicado por su mantenedor.
+
+### DEBT-HARDENED-FALCO-RUTAS-001 — ABIERTA (nueva DAY321)
+Las reglas de Falco de la hardened comparan `proc.name`/`proc.pname` con nombres de más de 15 caracteres
+(`firewall-acl-agent`…): el kernel los guarda truncados y la condición no casa nunca. Arreglo: por ruta del ejecutable
+(`proc.exepath`, `proc.pexepath`), como `provisioning/falco/argus_lab.yaml`.
+**Test de cierre:** en la hardened (`check-prod-falco`), un evento que tiene que saltar por el firewall salta.
+
+### Pendiente (por orden)
+Commit de 8e.4d-2 (con `git add` de sus 19 ficheros), 8e.4d-3 (`lab-e2e-vigilancia` dentro de `lab-e2e`: FIM en
+`/etc/argus-pki`, umbral del disco bajado, audit de Vault roto con `chattr`, divergencia del vigía y lectura ajena de
+una clave por Falco, comprobados en el `alerts.json` del manager), sus docs, 8e.5 (bootstrap con `argus-infra init
+--si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del
+PR1. Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001,
+DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001, DEBT-HARDENED-FALCO-RUTAS-001.

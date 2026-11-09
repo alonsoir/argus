@@ -278,7 +278,8 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
   - **8e.4b** (hecho, 345f8607) antispoofing por interfaz y MAC en `raw PREROUTING` (H-B a H-E, H-G; H-F pasó a 8e.4c).
   - **8e.4c** (hecho, 1818f4ec) versión del manifiesto en el latido y en `pipeline-status` (H-H) y `rp_filter`
     informado (H-F).
-  - **8e.4d** Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J).
+  - **8e.4d** Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J), en
+    tres commits: **8e.4d-1** (hecho, 464c733bc) el manager; **8e.4d-2** (hecho DAY321) los sensores; **8e.4d-3** el E2E.
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
 
 ## 6. Diseño fino de 8e.1 (cerrado DAY318)
@@ -594,3 +595,52 @@ Medido DAY321:
 cuatro sets. Ahora los tres traps llaman a `scripts/etcd_ha/d320_limpia_kernel.sh` (primero los saltos y las cadenas,
 raw y filtro; después los sets; los nombres, del JSON), y `lab-e2e` comprueba con `make lab-kernel-limpio` (solo
 cuenta) que tras cada uno no queda nada.
+
+**8e.4d, la vigilancia con Wazuh y Falco (8e.4d-1 y 8e.4d-2 hechos DAY321; 8e.4d-3, el E2E, pendiente).** Decisiones
+de Alonso (DAY321):
+- **Cada sensor en la máquina que vigila**: Falco ve las syscalls del kernel donde corre, y el FIM y el journal son
+  locales. Falco en la VM etcd y en el defender; agente de Wazuh en las dos; el manager sigue en la VM wazuh. La VM
+  etcd pasa de 1024 a 1536 MB (medido: Falco 114-149 MB de RSS con las reglas de serie, 101 MB con las de aRGus).
+- **Falco → fichero → Wazuh**: Falco escribe JSON en `/var/log/falco/eventos.json` y el agente lo lee; Falco no
+  conoce al manager.
+- **Configuración centralizada**: un grupo del manager por máquina (`argus-etcd`, `argus-defender`), con su
+  `agent.conf`, en el repo (`provisioning/wazuh/argus/`). Sin `<command>` en los agentes: exigiría
+  `remote_commands=1` y un manager comprometido podría ejecutar órdenes en ellos; el disco lo mide un servicio propio.
+- **Origen oficial**: manager, agentes y Falco desde el apt firmado de su mantenedor, con versión fija
+  (`provisioning/{wazuh,falco}/VERSION` y `apt-mark hold`) y la clave del repositorio comprobada por huella antes de
+  instalarla (`provisioning/{wazuh,falco}/CLAVE`, `scripts/vigilancia/lib_apt_oficial.sh`). Una clave que no está en el
+  fichero de huellas para la instalación. Sin `.deb` de terceros en el repo.
+- **E2E dentro de `lab-e2e`**.
+
+Cómo queda:
+- **Manager** (`scripts/vigilancia/wazuh_manager_desplegar.sh`, aprovisionador `argus-vigilancia` y
+  `make vigilancia-manager-deploy`): comprueba la versión; pone decoders, reglas y `agent.conf` con copia de lo
+  anterior; valida (`verify-agent-conf` por grupo, `wazuh-analysisd -t`) y, si no valida, restaura; reinicia solo si
+  algo cambió; asigna cada agente a su grupo (`grupos.tsv`) comprobando el resultado, no el código de salida; y pasa
+  el test de las reglas (`test_reglas_wazuh.sh`, 27 casos con `wazuh-logtest`). Reglas: 100510-100518 firewall
+  (`[PROTEGIDOS-*]`: divergencia, reconciliado, spoofing, manifiesto rechazado o ausente, rutas, errores del vigía y
+  del antispoofing), 100520 errores del audit de Vault, 100530 `ARGUS-SPOOF-IF|MAC` del kernel, 100540-100542 disco,
+  100550-100553 eventos de Falco cuya regla empieza por `argus_` (CRITICAL 12, WARNING 8, NOTICE 4).
+- **Agentes** (`wazuh_agente_instalar.sh`, `run: always` en cada VM): versión de `VERSION`, manager de `MANAGER`;
+  con todo ya puesto no hace nada ni usa la red. FIM en tiempo real de la configuración y la PKI
+  (`/etc/argus-pki`, `/etc/vault.d`, `/etc/etcd`, `/etc/falco`, `/etc/argus-vigilancia`…) y periódico de los binarios;
+  journald filtrado (vault `[ERROR]`, `argus-disco`, `ARGUS-SPOOF-*`), `firewall-agent.log` en el defender y los
+  eventos de Falco.
+- **Falco 0.43.1** (`falco_instalar.sh`, `modern_ebpf`, sin falcoctl-artifact-follow): `config.d/argus_salida.yaml`
+  apaga todas las reglas y enciende las `argus_*` (`config.d` se funde en `append`: un `rules_files` ahí se sumaba al
+  del paquete y cargaba las reglas dos veces); `rules.d/argus_lab.yaml`, tres reglas por ruta del ejecutable (el
+  `comm` del kernel son 15 caracteres): hijo inesperado de un componente (CRITICAL; permitidos: ipset, ip e iptables
+  del firewall y las dos órdenes `sysctl` del sniffer, DEBT-SNIFFER-SYSTEM-SYSCTL-001), clave leída por quien no es su
+  dueño (CRITICAL) y lectura administrativa de una clave (NOTICE, rastro de `pipeline-status` y `provision.sh
+  verify`). Instalación todo o nada: `--dry-run` tiene que cargar `argus_lab.yaml` una vez y dejar activas
+  exactamente sus reglas.
+- **argus-disco** (`scripts/vigilancia/argus_disco.py`, VM etcd, sin privilegios): cada `periodo_s` mide la partición
+  de `ruta` como `df` y escribe `ARGUS-DISCO ruta=… uso=… umbral=… estado=OK|ALTO` al journal; ALTO es la regla 100541.
+  `/etc/argus-vigilancia/disco.json` (`ruta`, `umbral_pct` [1, 99] = 75, `periodo_s` [10, 3600] = 60) se relee en
+  cada ciclo; un campo malo, desconocido o un fichero ilegible da `ARGUS-DISCO-ERROR` (regla 100542) y ese campo toma
+  su defecto; la configuración efectiva sale con su origen al arrancar y cuando cambia.
+
+Medido DAY321 (detalle en BACKLOG, «DAY321 — pasos 8e.4d-1 y 8e.4d-2»): banco 27/27 reglas, `test_argus_disco` 16/16
+con 9 mutaciones cazadas, los instaladores restauran con configuraciones rotas y `lib_apt_oficial.sh` rechaza claves
+ajenas. Lab: los cinco agentes en 4.14.10-1 desde el apt de Wazuh y conectados, etcd y defender en su grupo, Falco
+0.43.1 en las dos VMs con 3 reglas activas, argus-disco `uso=4 estado=OK`, `pipeline-status` en ✅.
