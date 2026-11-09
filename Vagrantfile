@@ -71,27 +71,12 @@ ADAPTER_TOOLCHAIN = <<-'ADAPTER_TOOLCHAIN_SHELL'
   echo "✅ ADAPTER_TOOLCHAIN verificado"
 ADAPTER_TOOLCHAIN_SHELL
 
-# WAZUH_AGENT_INSTALL — instala el agente Wazuh por dpkg del .deb cacheado en /vagrant.
-# dpkg NO necesita repo/apt/DNS/gnupg (a diferencia de la via apt). El nombre del agente
-# llega por env AGENT_NAME (fijado en cada provision). Version clavada = la del manager.
-WAZUH_AGENT_INSTALL = <<-'WAZUH_AGENT_INSTALL_SHELL'
-  set -e
-  MANAGER_IP="192.168.100.12"
-  DEB="/vagrant/provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb"
-  echo "🛡️  WAZUH_AGENT_INSTALL — agente '${AGENT_NAME}' -> manager ${MANAGER_IP}"
-  if /var/ossec/bin/wazuh-control info >/dev/null 2>&1; then
-    echo "✅ agente ya instalado, nada que hacer"; exit 0
-  fi
-  if [ ! -f "$DEB" ]; then
-    echo "❌ no encuentro el .deb en $DEB"
-    echo "   cachealo antes del up:  mkdir -p provisioning/wazuh && cp logs/wazuh-agent_4.14.7-1_amd64.deb provisioning/wazuh/"
-    exit 1
-  fi
-  WAZUH_MANAGER="$MANAGER_IP" WAZUH_AGENT_NAME="$AGENT_NAME" dpkg -i "$DEB"
-  systemctl daemon-reload
-  systemctl enable --now wazuh-agent
-  echo "✅ WAZUH_AGENT_INSTALL — '${AGENT_NAME}' instalado y arrancado"
-WAZUH_AGENT_INSTALL_SHELL
+# WAZUH_AGENT_INSTALL — [VIGILANCIA-D321] el agente de Wazuh desde el repositorio apt firmado de Wazuh (clave comprobada
+# por huella, provisioning/wazuh/CLAVE), en la versión de provisioning/wazuh/VERSION (la del manager) y apuntando a
+# provisioning/wazuh/MANAGER: scripts/vigilancia/wazuh_agente_instalar.sh. Sustituye al dpkg de un .deb guardado en el
+# repo, de origen no documentado. run: always en cada VM: con la versión ya puesta no hace nada; si VERSION cambia,
+# actualiza el agente en el siguiente vagrant provision. El nombre del agente llega por env AGENT_NAME.
+WAZUH_AGENT_INSTALL = "bash /vagrant/scripts/vigilancia/wazuh_agente_instalar.sh"
 
 # ══════════════════════════════════════════════════════════════════════════════
 # VAULT_INSTALL — [VAULT-INSTALL-D312] un único sitio donde se instala Vault, con la versión FIJADA (determinismo de
@@ -163,7 +148,8 @@ Vagrant.configure("2") do |config|
   # DEFENDER VM - Full ML Pipeline (Primary)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "defender", primary: true do |defender|
-    defender.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "defender"}, inline: WAZUH_AGENT_INSTALL
+    defender.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "defender"},
+      inline: WAZUH_AGENT_INSTALL
     defender.vm.box = "debian/bookworm64"
     defender.vm.box_version = "12.20240905.1"
 
@@ -640,18 +626,21 @@ BASHRC_EOF
       echo "✅ PROVISIONING COMPLETED SUCCESSFULLY!"
       # Falco .deb — descargado en dev VM → dist/vendor/ para instalar offline en hardened VM (ADR-030 BSR)
       # dist/vendor/ es la fuente de verdad. CHECKSUMS generado aquí y committeado. .deb gitignored.
+      # [VIGILANCIA-D321] la versión de provisioning/falco/VERSION (la misma que instala falco_instalar.sh) y el repositorio
+      # con la clave comprobada por huella (provisioning/falco/CLAVE); un .deb de otra versión se borra.
       mkdir -p /vagrant/dist/vendor
-      if ls /vagrant/dist/vendor/falco_*.deb 1>/dev/null 2>&1; then
-        echo "✅ Falco .deb ya presente en /vagrant/dist/vendor/"
+      FV=$(tr -d '[:space:]' < /vagrant/provisioning/falco/VERSION)
+      find /vagrant/dist/vendor -maxdepth 1 -name 'falco_*.deb' ! -name "falco_${FV}_amd64.deb" -print -delete
+      if [ -f "/vagrant/dist/vendor/falco_${FV}_amd64.deb" ]; then
+        echo "✅ Falco ${FV} .deb ya presente en /vagrant/dist/vendor/"
       else
-        echo "📦 Descargando Falco .deb → dist/vendor/..."
-        curl -fsSL https://falco.org/repo/falcosecurity-packages.asc | \
-          gpg --dearmor -o /usr/share/keyrings/falco-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/falco-archive-keyring.gpg] https://download.falco.org/packages/deb stable main" | \
-          tee /etc/apt/sources.list.d/falcosecurity.list
+        echo "📦 Descargando Falco ${FV} .deb → dist/vendor/..."
+        . /vagrant/scripts/vigilancia/lib_apt_oficial.sh
+        repo_oficial falcosecurity https://falco.org/repo/falcosecurity-packages.asc /vagrant/provisioning/falco/CLAVE \
+          https://download.falco.org/packages/deb "stable main" || { echo "❌ repositorio de Falco"; exit 1; }
         apt-get update -qq
-        cd /vagrant/dist/vendor && apt-get download falco
-        echo "✅ Falco .deb descargado en /vagrant/dist/vendor/"
+        (cd /vagrant/dist/vendor && apt-get download "falco=${FV}") || { echo "❌ apt-get download falco=${FV}"; exit 1; }
+        echo "✅ Falco ${FV} .deb descargado en /vagrant/dist/vendor/"
       fi
       sha256sum /vagrant/dist/vendor/falco_*.deb > /vagrant/dist/vendor/CHECKSUMS
       echo "✅ dist/vendor/CHECKSUMS actualizado"
@@ -1208,6 +1197,10 @@ BASHRC_EOF
       done
     PKI_DEFENDER
 
+    # [VIGILANCIA-D321] ADR-060 8e.4d (H-I): Falco desde su apt firmado (provisioning/falco/VERSION) con las reglas de
+    # aRGus; todo o nada y run: always (con todo ya puesto no cambia nada). El agente de Wazuh es el primer aprovisionador.
+    defender.vm.provision "shell", name: "falco", run: "always", inline: "bash /vagrant/scripts/vigilancia/falco_instalar.sh"
+
   end  # End defender VM
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -1215,7 +1208,8 @@ BASHRC_EOF
   # ════════════════════════════════════════════════════════════════════════════
 
   config.vm.define "client", autostart: false do |client|
-    client.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "client"}, inline: WAZUH_AGENT_INSTALL
+    client.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "client"},
+      inline: WAZUH_AGENT_INSTALL
     client.vm.box = "debian/bookworm64"
     client.vm.box_version = "12.20240905.1"
     client.vm.hostname = "ml-client"
@@ -1295,7 +1289,8 @@ BASHRC_EOF
   # SURICATA VM — IDS signatures (ADR-048 F2)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "suricata", autostart: false do |suricata|
-    suricata.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "suricata"}, inline: WAZUH_AGENT_INSTALL
+    suricata.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "suricata"},
+      inline: WAZUH_AGENT_INSTALL
     suricata.vm.box         = "debian/bookworm64"
     suricata.vm.box_version = "12.20240905.1"
     suricata.vm.hostname    = "argus-suricata"
@@ -1375,7 +1370,8 @@ BASHRC_EOF
   # ZEEK VM — protocol analysis / observability layer (ADR-048 F3)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "zeek", autostart: false do |zeek|
-    zeek.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "zeek"}, inline: WAZUH_AGENT_INSTALL
+    zeek.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "zeek"},
+      inline: WAZUH_AGENT_INSTALL
     zeek.vm.box         = "debian/bookworm64"
     zeek.vm.box_version = "12.20240905.1"
     zeek.vm.hostname    = "argus-zeek"
@@ -1504,10 +1500,11 @@ BASHRC_EOF
       echo "nameserver 1.1.1.1" >> /etc/resolv.conf
       chattr +i /etc/resolv.conf
 
-      curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH \
-        | gpg --dearmor > /usr/share/keyrings/wazuh.gpg
-      echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
-        > /etc/apt/sources.list.d/wazuh.list
+      # [VIGILANCIA-D321] repositorio de Wazuh con su clave comprobada por huella (provisioning/wazuh/CLAVE); el mismo
+      # código que los agentes (scripts/vigilancia/lib_apt_oficial.sh)
+      . /vagrant/scripts/vigilancia/lib_apt_oficial.sh
+      repo_oficial wazuh https://packages.wazuh.com/key/GPG-KEY-WAZUH /vagrant/provisioning/wazuh/CLAVE \
+        https://packages.wazuh.com/4.x/apt/ "stable main" || { echo "❌ repositorio de Wazuh"; exit 1; }
       apt-get update -qq
       # [VIGILANCIA-D321] versión FIJA (provisioning/wazuh/VERSION, la misma para manager y agentes): sin fijar, apt
       # instalaba la última del día (medido DAY321: el lab tenía 4.14.9-1 y apt daba ya 4.14.10-1).
@@ -1579,7 +1576,7 @@ BASHRC_EOF
 
     etcd.vm.provider "virtualbox" do |vb|
       vb.name   = "argus-etcd"
-      vb.memory = "1024"
+      vb.memory = "1536"  # [VIGILANCIA-D321] +512: Falco (medido DAY321: 114-149 MB de RSS) y el agente de Wazuh
       vb.cpus   = 2
       vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
       vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
@@ -2091,6 +2088,16 @@ UNIT
         || { cat /tmp/argus_infra_check.txt; echo "❌ argus-infra: --check-config (arriba)"; exit 1; }
       echo "✅ argus-infra: /usr/local/sbin/argus-infra (sha256 $(sha256sum /usr/local/sbin/argus-infra | cut -c1-16)), /etc/argus-infra/argus-infra.json, --check-config OK, $("$PY" --version 2>&1)"
     ARGUS_INFRA
+
+    # [VIGILANCIA-D321] ADR-060 8e.4d (H-I): los sensores de la VM etcd, todo o nada cada uno y run: always (con todo ya
+    # puesto no cambian nada). Falco desde su apt firmado (provisioning/falco/VERSION) con las reglas de aRGus;
+    # argus-disco (uso del disco del audit de Vault); el agente de Wazuh (grupo argus-etcd: lo asigna el manager en
+    # make vigilancia-manager-deploy, provisioning/wazuh/argus/grupos.tsv).
+    etcd.vm.provision "shell", name: "falco", run: "always", inline: "bash /vagrant/scripts/vigilancia/falco_instalar.sh"
+    etcd.vm.provision "shell", name: "argus-disco", run: "always",
+      inline: "bash /vagrant/scripts/vigilancia/argus_disco_instalar.sh"
+    etcd.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "etcd"},
+      inline: WAZUH_AGENT_INSTALL
 
   end  # End etcd VM
 

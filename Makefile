@@ -2208,7 +2208,7 @@ ETCD_VM_ESPERA_S ?= 30
 ETCD_VM_UNIDAD := ml-defender-etcd-server.service
 ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
 .PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey test-argus-infra
-.PHONY: vigilancia-manager-deploy test-vigilancia-reglas
+.PHONY: vigilancia-manager-deploy test-vigilancia-reglas test-vigilancia-disco
 
 # [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2 (Mac): clave PÚBLICA del manifiesto de protegidos (Vault transit de la VM etcd)
 # al defender, donde CMake la compila en el firewall-acl-agent (patrón ADR-025). Lee con el certificado de argus-infra.
@@ -2230,6 +2230,11 @@ vigilancia-manager-deploy:
 # Cada regla de aRGus contra su línea de provisioning/wazuh/argus/tests/casos_reglas.tsv, con wazuh-logtest en el manager
 test-vigilancia-reglas:
 	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/test_reglas_wazuh.sh"
+
+# [VIGILANCIA-D321] tests de argus-disco (unittest, biblioteca estándar) con el Python de la VM etcd, donde corre:
+# configuración (rangos, tipos, defectos), medida como df y las líneas que leen el decoder y las reglas de Wazuh
+test-vigilancia-disco:
+	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/scripts/vigilancia/test_argus_disco.py"
 
 # Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
 etcd-vm-deploy:

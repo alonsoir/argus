@@ -1,0 +1,5 @@
+{
+  "ruta": "/var/log/vault",
+  "umbral_pct": 75,
+  "periodo_s": 60
+}

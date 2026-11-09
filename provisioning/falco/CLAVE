@@ -1,0 +1,6 @@
+# provisioning/falco/CLAVE — [VIGILANCIA-D321] huella de la clave con la que Falco firma sus paquetes
+# (https://falco.org/repo/falcosecurity-packages.asc, "Falcosecurity Package Signing <cncf-falco-dev@lists.cncf.io>").
+# scripts/vigilancia/lib_apt_oficial.sh descarga la clave y SOLO la instala si todas sus claves principales están aquí.
+# Publicada por Falco: https://falco.org/blog/gpg-key-rotation-2026/ (clave nueva B35B1B1F desde la rotación de enero
+# de 2026; la anterior, 14CB7A8D, está revocada). Medida DAY321 en la descarga: coincide.
+478B2FBBC75F4237B731DA4365106822B35B1B1F

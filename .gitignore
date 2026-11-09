@@ -291,10 +291,8 @@ temporal.md
 tools/temporal.md
 tools/scratch/
 
-# El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global
-!provisioning/wazuh/*.deb
-
-# El .deb del agente Wazuh va al repo (provisioning reproducible), pese al *.deb global
+# [VIGILANCIA-D321] el agente de Wazuh ya no va al repo como .deb: se instala del apt firmado de Wazuh con la versión
+# de provisioning/wazuh/VERSION (scripts/vigilancia/wazuh_agente_instalar.sh)
 scripts/__pycache__/
 
 docs/latex/*.pdf
