@@ -2208,6 +2208,7 @@ ETCD_VM_ESPERA_S ?= 30
 ETCD_VM_UNIDAD := ml-defender-etcd-server.service
 ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
 .PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey test-argus-infra
+.PHONY: vigilancia-manager-deploy test-vigilancia-reglas
 
 # [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2 (Mac): clave PÚBLICA del manifiesto de protegidos (Vault transit de la VM etcd)
 # al defender, donde CMake la compila en el firewall-acl-agent (patrón ADR-025). Lee con el certificado de argus-infra.
@@ -2219,6 +2220,16 @@ protegidos-pubkey:
 # configuración, la plantilla del laboratorio, el diff y la política.
 test-argus-infra:
 	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
+
+# [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
+# agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el
+# aprovisionador argus-vigilancia del Vagrantfile. La versión del manager sale de provisioning/wazuh/VERSION.
+vigilancia-manager-deploy:
+	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/wazuh_manager_desplegar.sh"
+
+# Cada regla de aRGus contra su línea de provisioning/wazuh/argus/tests/casos_reglas.tsv, con wazuh-logtest en el manager
+test-vigilancia-reglas:
+	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/test_reglas_wazuh.sh"
 
 # Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
 etcd-vm-deploy:

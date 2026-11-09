@@ -1,0 +1,117 @@
+<!--
+  provisioning/wazuh/argus/rules/argus_rules.xml — [VIGILANCIA-D321] ADR-060 8e.4d (H-I, H-J).
+  Reglas de aRGus para el wazuh-manager (/var/ossec/etc/rules/). IDs 100500-100599. Niveles: 12 = compromiso o pérdida
+  de una garantía (spoofing, manifiesto rechazado, audit de Vault roto, Falco CRITICAL); 10 = algo que el agente arregla
+  solo pero alguien debe mirar (divergencia del vigía, disco por encima del umbral); 8 = estado degradado periódico;
+  3-4 = traza (reconciliado, lecturas administrativas de claves); 0 = decodificado sin alerta.
+  Cada regla tiene un caso en ../tests/casos_reglas.tsv. FIM (syscheck) usa las reglas de serie 550/553/554.
+-->
+<group name="argus,protegidos,">
+  <rule id="100510" level="0">
+    <decoded_as>argus-protegidos</decoded_as>
+    <description>aRGus firewall: línea [PROTEGIDOS-*] sin alerta</description>
+  </rule>
+  <rule id="100511" level="10">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-DIVERGENCIA$</field>
+    <description>aRGus firewall: el kernel no cuadra con el manifiesto firmado (el vigía lo reconcilia)</description>
+  </rule>
+  <rule id="100512" level="3">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-RECONCILIADO$</field>
+    <description>aRGus firewall: kernel reconciliado con el manifiesto</description>
+  </rule>
+  <rule id="100513" level="12">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-SPOOFING$</field>
+    <description>aRGus firewall: origen protegido falsificado (spoofing por interfaz o MAC)</description>
+  </rule>
+  <rule id="100514" level="12">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-MANIFIESTO-RECHAZADO$</field>
+    <description>aRGus firewall: manifiesto de protegidos rechazado (firma, versión, hospital, planta, límite o formato)</description>
+  </rule>
+  <rule id="100515" level="8">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-SIN-MANIFIESTO$</field>
+    <description>aRGus firewall: sin manifiesto verificado (candado de la mitigación real cerrado)</description>
+  </rule>
+  <rule id="100516" level="8">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-RUTA$</field>
+    <description>aRGus firewall: una red protegida no casa con la ruta del kernel (ni se cuenta ni se descarta)</description>
+  </rule>
+  <rule id="100517" level="12">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-VIGIA$</field>
+    <match>ERROR</match>
+    <description>aRGus firewall: el vigía no pudo reconciliar el kernel con el manifiesto</description>
+  </rule>
+  <rule id="100518" level="10">
+    <if_sid>100510</if_sid>
+    <field name="argus_etiqueta">^PROTEGIDOS-ANTISPOOF$</field>
+    <match>ERROR al aplicar|NO instalado</match>
+    <description>aRGus firewall: el antispoofing no está instalado o falló al aplicarse</description>
+  </rule>
+</group>
+
+<group name="argus,vault,">
+  <rule id="100520" level="12">
+    <program_name>^vault$</program_name>
+    <match>[ERROR] audit: log </match>
+    <regex>underlying pipeline error</regex>
+    <description>aRGus Vault: un audit device no escribe (Vault sigue con el otro; si fallan los dos, bloquea)</description>
+    <group>audit_failure,</group>
+  </rule>
+</group>
+
+<group name="argus,spoofing,">
+  <!-- Medido DAY321 (wazuh-logtest 4.14.10): el decoder de serie de iptables se queda la línea del kernel (regla 4100,
+       nivel 0) y decodifica action=ARGUS-SPOOF-IF|MAC, srcip y dstip; por eso cuelga de la 4100 y no de program_name. -->
+  <rule id="100530" level="12">
+    <if_sid>4100</if_sid>
+    <action type="pcre2">^ARGUS-SPOOF-(IF|MAC)$</action>
+    <description>aRGus kernel: origen protegido $(srcip) falsificado ($(action)) hacia $(dstip)</description>
+  </rule>
+</group>
+
+<group name="argus,disco,">
+  <rule id="100540" level="0">
+    <decoded_as>argus-disco</decoded_as>
+    <description>aRGus disco: medida periódica sin alerta</description>
+  </rule>
+  <rule id="100541" level="10">
+    <if_sid>100540</if_sid>
+    <field name="argus_estado">^ALTO$</field>
+    <description>aRGus disco: $(argus_ruta) al $(argus_uso) % (umbral $(argus_umbral) %): hay que ampliar la partición</description>
+  </rule>
+  <rule id="100542" level="8">
+    <if_sid>100540</if_sid>
+    <match>ARGUS-DISCO-ERROR</match>
+    <description>aRGus disco: la medida no se pudo hacer (ver el journal de argus-disco)</description>
+  </rule>
+</group>
+
+<group name="argus,falco,">
+  <rule id="100550" level="0">
+    <decoded_as>json</decoded_as>
+    <field name="source">^syscall$</field>
+    <field name="rule">^argus_</field>
+    <description>aRGus Falco: evento de una regla de aRGus</description>
+  </rule>
+  <rule id="100551" level="12">
+    <if_sid>100550</if_sid>
+    <field name="priority">^Critical$|^Alert$|^Emergency$</field>
+    <description>aRGus Falco CRITICAL: $(rule)</description>
+  </rule>
+  <rule id="100552" level="8">
+    <if_sid>100550</if_sid>
+    <field name="priority">^Warning$|^Error$</field>
+    <description>aRGus Falco WARNING: $(rule)</description>
+  </rule>
+  <rule id="100553" level="4">
+    <if_sid>100550</if_sid>
+    <field name="priority">^Notice$</field>
+    <description>aRGus Falco NOTICE: $(rule)</description>
+  </rule>
+</group>

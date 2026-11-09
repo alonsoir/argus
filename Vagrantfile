@@ -1509,7 +1509,13 @@ BASHRC_EOF
       echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
         > /etc/apt/sources.list.d/wazuh.list
       apt-get update -qq
-      apt-get install -y wazuh-manager || { echo "❌ wazuh-manager install failed"; exit 1; }
+      # [VIGILANCIA-D321] versión FIJA (provisioning/wazuh/VERSION, la misma para manager y agentes): sin fijar, apt
+      # instalaba la última del día (medido DAY321: el lab tenía 4.14.9-1 y apt daba ya 4.14.10-1).
+      WV=$(tr -d '[:space:]' < /vagrant/provisioning/wazuh/VERSION)
+      apt-mark unhold wazuh-manager >/dev/null 2>&1 || true
+      apt-get install -y --allow-downgrades "wazuh-manager=$WV" || { echo "❌ wazuh-manager $WV install failed"; exit 1; }
+      apt-mark hold wazuh-manager >/dev/null
+      echo "✅ wazuh-manager $(dpkg-query -W -f='${Version}' wazuh-manager) (fijado en provisioning/wazuh/VERSION, apt-mark hold)"
 
       systemctl daemon-reload
       systemctl enable wazuh-manager
@@ -1554,6 +1560,10 @@ BASHRC_EOF
       echo "=== authd-force OK (force codificada; el enroll de zeek lo prueba E2E) ==="
     AUTHD_FORCE_SHELL
 
+    # [VIGILANCIA-D321] ADR-060 8e.4d: decoders, reglas y agent.conf por grupo de aRGus (provisioning/wazuh/argus),
+    # agentes a su grupo y test de las reglas. Todo o nada; mismo script que make vigilancia-manager-deploy.
+    wazuh.vm.provision "shell", name: "argus-vigilancia", run: "always",
+      inline: "bash /vagrant/scripts/vigilancia/wazuh_manager_desplegar.sh"
   end  # End wazuh VM
 
 
