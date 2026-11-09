@@ -9119,7 +9119,10 @@ del blacklist, su entrada del set de protegidos de 398 a 1026 paquetes.
 - `LAB_E2E_DIA` sigue valiendo `day303`: las corridas de hoy están en `logs/lab/day303/`. Sin decidir.
 - Sin medir: si `vagrant reload etcd` aplica la MAC fija del Vagrantfile a una VM ya creada.
 
-### DEBT-FW-ANTISPOOF-RP-FILTER-001 — ABIERTA (nueva DAY320)
+### DEBT-FW-ANTISPOOF-RP-FILTER-001 — CERRADA DAY321 (1818f4ec, 8e.4c)
+Cerrada con el test de cierre: `test_protegidos_rp_filter` (33/33) lee un árbol `/proc` falso con 0, 1 y 2, valores
+ilegibles y nombres que saldrían de la raíz, y en el defender sale `[PROTEGIDOS-RP-FILTER] eth2=0 (all=0 if=0, sin
+filtro)`. Texto original:
 H-F (ADR-060, sección 7) dice que el agente lee `rp_filter` y lo informa, sin cambiarlo. 8e.4b no lo hace: solo lo lee
 el script de medida. Arreglo: al arrancar y cada `aviso_sec`, leer `/proc/sys/net/ipv4/conf/{all,<interfaz>}/rp_filter`
 de las interfaces del manifiesto y escribir el valor efectivo (el máximo de `all` y el de la interfaz) en el log.
@@ -9138,3 +9141,55 @@ campo cambiado; en el lab, el agente pasa de la entrada vieja a la nueva sin nin
 ficheros propios), docs de cada uno, 8e.5 (bootstrap con `argus-infra init --si`, `d303_veredicto_protegidos.sh`
 P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1. Sin orden decidido:
 DEBT-FW-ANTISPOOF-RP-FILTER-001 y DEBT-ARGUS-INFRA-MOD-001.
+
+## DAY321 — paso 8e.4c hecho: versión del manifiesto en el latido y en pipeline-status [LATIDO-DATOS-D321]
+
+Commits: `1818f4ec` (8e.4c), el arreglo de `test-firewall` (`[ARGUS-GATE-PERF-D321]`) y este de documentación.
+Diseño y decisiones en ADR-060, sección 7 («8e.4c»). Cierra DEBT-FW-ANTISPOOF-RP-FILTER-001.
+
+### Decisiones de Alonso (DAY321)
+- Datos del latido: solo enteros. Regla única en `libs/latido/datos_latido.hpp` para el etcd-client y el etcd-server.
+- Datos mal formados: el etcd-server guarda el latido sin ellos, responde 200 y lo dice en `datos_rechazados`.
+- `pipeline-status` lee de etcd con `etcdctl`, sin ruta nueva.
+- E2E del desfase con `protegidos.consulta_sec=3600` solo durante la prueba (`lab-e2e-latido`, dentro de `lab-e2e`).
+- `rp_filter` (H-F) dentro de 8e.4c.
+- `test-firewall` excluye también `perf` (los dos `IPSetWrapperPerfTest` corren en `test-firewall-perf`).
+
+### Medido en el banco (Debian 12, GCC 12.2, banco rehecho DAY321)
+- native y skylake, dos pasadas cada uno: etcd-client 5/5, etcd-server 9/9, firewall 122/122, 0 avisos del código.
+- `test_latido_datos` 8 tests; L1-L7 en `test_etcd_cliente_tls` (35/35); `test_protegidos_rp_filter` 33/33.
+- etcd 3.6.16 real (TLS y RBAC como el Vagrantfile) con el etcd-server compilado y latidos por curl con el certificado
+  de cada componente: 16/16 en las cuatro compilaciones (datos en `latido/<CN>`, desfase, por delante, ilegible,
+  rechazo sin perder el latido, todo o nada, muerto con su versión, revivido, regla `propio` con 403, filtro de
+  `pipeline-status`).
+- 16 mutaciones cazadas, todas compilando (la primera pasada contaba un fallo de compilación como cazada: corregido el
+  script y repetidas las 16).
+- `ctest -N`: con `-LE "e2e"` entraban 97 tests en `test-firewall`; con `-LE "e2e|root|perf"`, 95, y salen exactamente
+  los dos `IPSetWrapperPerfTest`.
+
+### Medido en el lab (PROFILE=production)
+- `pipeline-build` rc 0; `test-firewall` 97/97 (los dos perf salían Skipped, sin root); etcd-server 9/9; etcd-client
+  5/5 (R2 no saltó); `test-firewall-e2e` PASA (25, 0 saltados).
+- `etcd-vm-deploy` SANO, con `⚠️ protegidos: v9 publicada; ningún componente informa protegidos_version` (el firewall
+  aún con el binario viejo). Tras `pipeline-start`: `✅ protegidos: v9 publicada; 1 componente al día` y
+  `- firewall-acl-agent v9 al día (activo, latido hace 7 s)`; en el log `protegidos_version=9 (nuevo)` y
+  `[PROTEGIDOS-RP-FILTER] eth2=0 (all=0 if=0, sin filtro)`.
+- `lab-e2e-latido` PASA (7 min 49 s): L0 al día con v9 en 5 s; L1 v10 publicada, firewall en v9 DESFASADO a los 4 s y
+  veredicto SANO; L2 al día con v10 a los 4 s del rearranque; L3 v11 por la consulta periódica en 37 s (límite 75);
+  L4 0 rechazos en el firewall y en el journal del etcd-server. Lab vigente: v11.
+
+### Hallazgos DAY321
+- Un 4xx al latido deja al etcd-client desregistrado y «sin servicio»: por eso los datos malos no pueden rechazar el
+  latido entero.
+- `--estricto` de `etcd_vm_estado.sh` lo usan también `etcd-vm-deploy`, `etcd-server-start` y `etcd-vm-aviso`, con el
+  firewall parado: la línea de protegidos solo informa.
+- La baja ordenada (`/unregister`) borra `latido/<CN>`: un firewall parado deja de salir en `pipeline-status`; solo
+  sale como muerto si cae sin darse de baja.
+- `test-firewall` lanzaba sin root los tests `perf`, que salían Skipped desde DAY303.
+- El banco necesita `/run/argus/irp` (lo crea `provision.sh`) para los tests de ipset del firewall.
+- `LAB_E2E_DIA` sigue valiendo `day303`: la corrida de hoy está en `logs/lab/day303/`. Sin decidir.
+
+### Pendiente (por orden)
+8e.4d (Wazuh y Falco, con su configuración en ficheros propios, H-I y H-J), sus docs, 8e.5 (bootstrap con
+`argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++
+PROFILE=production y cierre del PR1. Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001.

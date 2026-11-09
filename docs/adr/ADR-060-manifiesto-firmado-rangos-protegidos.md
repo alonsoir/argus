@@ -275,8 +275,9 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
   y cuando falla uno de los dos audit devices (Alonso DAY318: es su trabajo avisarnos). Diseño fino cerrado DAY320
   (sección 7), en cuatro commits:
   - **8e.4a** (hecho, fe4c94d3) el vigía kernel ↔ manifiesto y C7 en el E2E de la mitigación real.
-  - **8e.4b** (hecho, 345f8607) antispoofing por interfaz y MAC en `raw PREROUTING` (H-B a H-E, H-G; H-F pendiente).
-  - **8e.4c** versión del manifiesto en el latido y en `pipeline-status` (H-H).
+  - **8e.4b** (hecho, 345f8607) antispoofing por interfaz y MAC en `raw PREROUTING` (H-B a H-E, H-G; H-F pasó a 8e.4c).
+  - **8e.4c** (hecho, 1818f4ec) versión del manifiesto en el latido y en `pipeline-status` (H-H) y `rp_filter`
+    informado (H-F).
   - **8e.4d** Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J).
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
 
@@ -413,6 +414,16 @@ guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.
   `[PROTEGIDOS-SPOOFING] origen protegido falsificado: interfaz=+N mac=+N (total interfaz=N mac=N) modo=...;
   evidencia: journalctl -k | grep ARGUS-SPOOF`. En el journal del kernel, `ARGUS-SPOOF-IF` y `ARGUS-SPOOF-MAC`, con
   la MAC de origen (8e.4b, DAY320)
+- `[ETCD-CLIENTE-LATIDO-DATO] <CN>: <clave>=N (nuevo|antes M); va en el siguiente latido` (una línea por cambio, no
+  por latido) o `<motivo>; no se guarda (datos del latido: <formato>)`; `[ETCD-CLIENTE-LATIDO-DATOS-RECHAZADOS]` y
+  `[ETCD-CLIENTE-LATIDO-DATOS-ACEPTADOS]` cuando cambia lo que responde el etcd-server. En el etcd-server,
+  `[ETCD-LATIDO-DATOS-RECHAZADOS] <CN>: <motivo>; el latido se guarda sin datos` y `[ETCD-LATIDO-DATOS-ACEPTADOS]`,
+  también solo al cambiar. `[PROTEGIDOS-RP-FILTER] <interfaz>=<efectivo> (all=a if=b, sin filtro|estricto|laxo) ...;
+  solo se informa, no se cambia (H-F)`, al arrancar y cada `aviso_sec` (8e.4c, DAY321)
+- En `pipeline-status` (`etcd_vm_estado.sh`): `✅ protegidos: vN publicada; K componentes al día`, `⚠️ ... K DESFASADOS`,
+  `⚠️ ... POR DELANTE`, `⚠️ ... sin manifiesto publicado`, `⚠️ ... ningún componente informa protegidos_version` o
+  `❌ ... vigente ilegible`, y debajo una línea por componente (`- <CN> vN al día|DESFASADO|POR DELANTE (activo|muerto,
+  latido hace S s)`) (8e.4c, DAY321)
 - `protegidos:` gana `infraestructura=N`.
 
 Implementados en 8e.1b, además: `[PROTEGIDOS-CLAVE]` (huellas de las dos ranuras compiladas: los 16 primeros hex
@@ -529,8 +540,53 @@ el tráfico legítimo de .20 suma 0 al spoofing (su entrada del set de protegido
 sigue sana; 5 líneas `ARGUS-SPOOF-IF` y 5 `ARGUS-SPOOF-MAC` en el journal. `lab-e2e-vigia` y `lab-e2e-mitigacion`
 (C7) siguen PASA con el antispoofing instalado.
 
-**H-F no está hecho.** `rp_filter` solo lo lee `scripts/etcd_ha/d320_medir_antispoof.sh` (0 en todas las interfaces
-del defender); el agente no lo lee ni lo informa. Pendiente, como DEBT-FW-ANTISPOOF-RP-FILTER-001.
+**H-F se hizo en 8e.4c** (DAY321, 1818f4ec), que cierra DEBT-FW-ANTISPOOF-RP-FILTER-001; 8e.4b solo lo leía en el
+script de medida.
+
+**8e.4c, la versión del manifiesto en el latido y `rp_filter` (hecho DAY321, 1818f4ec).** Decisiones de Alonso
+(DAY321), las cuatro como se recomendaron:
+- **Tipo de los datos del latido: solo enteros.** Regla única en `libs/latido/include/latido/datos_latido.hpp`, que
+  aplican el etcd-client antes de enviar y el etcd-server al recibir: `"datos"` es un objeto de 0 a 8 claves
+  `^[a-z][a-z0-9_]{0,31}$` con enteros en [0, 2^53 − 1] (el mayor entero que cualquier lector JSON representa sin perder
+  precisión). Es contrato del protocolo, no configuración, como el tamaño máximo de la carga del manifiesto. Con una
+  clave mala se rechazan todos los datos de ese latido. O(datos).
+- **Datos mal formados en el etcd-server: 200 sin los datos.** El latido se guarda igual, sin la clave `"datos"`, y la
+  respuesta lo dice en `"datos_rechazados"`. Medido en el código antes de decidir: un 4xx al latido hace que el cliente
+  se dé por desregistrado y quede «sin servicio», así que un dato malo dejaría al componente sin latir y lo acabaría
+  marcando muerto.
+- **Origen de `pipeline-status`: etcd con `etcdctl`**, sin ruta nueva ni reglas de authz nuevas.
+- **E2E del desfase: `protegidos.consulta_sec=3600` solo durante la prueba**, dentro de `lab-e2e`.
+
+Cómo queda:
+- `EtcdClient::poner_dato_latido(clave, valor)`, seguro entre hilos; el mantenedor y `heartbeat()` añaden `"datos"`
+  cuando hay alguno. El firewall pone `protegidos_version` (0 sin manifiesto) al arrancar y tras cada consulta.
+- El etcd-server guarda `latido/<CN> = {"ultimo", "estado", "datos"}`. Al marcar un componente muerto se conservan
+  los datos, así que se ve la versión que tenía al morir; el siguiente latido los renueva.
+- `scripts/etcd_ha/etcd_vm_estado.sh` lee `<prefijo>latido/` y `<prefijo>protegidos/vigente` con los certificados que
+  ya usa. La versión publicada sale de la carga del sobre sin verificar la firma, porque el etcd-server solo escribe
+  `vigente` después de verificarla y el firewall la verifica otra vez. Solo lista los componentes que mandan
+  `protegidos_version`. Un desfase es normal hasta `consulta_sec` más un latido después de publicar.
+- **La línea de protegidos solo informa (⚠️): no cuenta en el veredicto de la VM etcd.** Cambio sobre lo que se
+  propuso antes de medir: `--estricto` no lo usa solo EMECAS, también `etcd-vm-check` (dentro de `etcd-vm-deploy` y
+  `etcd-server-start`, con el firewall parado) y `etcd-vm-aviso` (en `pipeline-start`, antes de arrancarlo). Con el
+  desfase contando, un despliegue fallaría solo por haber publicado una versión con el firewall parado.
+- **H-F:** `[PROTEGIDOS-RP-FILTER]` al arrancar y cada `aviso_sec` (`firewall/protegidos_rp_filter.hpp`): por cada
+  interfaz de las entradas IPv4 del vigente, `max(conf/all/rp_filter, conf/<interfaz>/rp_filter)`, que es lo que usa
+  el kernel. Solo se lee. Un nombre que pudiera salir de la raíz (`.`, `..`, `/`) no se lee.
+
+Medido DAY321:
+- Banco (Debian 12, GCC 12.2, native y skylake, dos pasadas cada uno): etcd-client 5/5, etcd-server 9/9, firewall
+  122/122 y 0 avisos del código. `test_latido_datos` 8 tests; L1-L7 en `test_etcd_cliente_tls` (35/35);
+  `test_protegidos_rp_filter` 33/33. Con etcd 3.6.16 real (TLS y RBAC como en el Vagrantfile) y el etcd-server
+  compilado, 16/16 en las cuatro compilaciones. 16 mutaciones cazadas, todas compilando.
+- Lab (`PROFILE=production`): `pipeline-build` rc 0; `test-firewall` 97/97; etcd-server 9/9; etcd-client 5/5;
+  `test-firewall-e2e` PASA (25, 0 saltados); `etcd-vm-deploy` SANO. Tras arrancar, `✅ protegidos: v9 publicada; 1
+  componente al día` y `[PROTEGIDOS-RP-FILTER] eth2=0 (all=0 if=0, sin filtro)`. `lab-e2e-latido` PASA en 7 min 49 s:
+  L0 al día con v9 en 5 s; L1 v10 publicada y el firewall en v9 DESFASADO a los 4 s, con el veredicto en SANO; L2 al día
+  con v10 a los 4 s del rearranque; L3 v11 por la consulta periódica en 37 s (límite 75); L4 0 rechazos en los dos lados.
+  El lab queda en v11, con el contenido de antes de la prueba.
+- Al parar el firewall de forma ordenada, su baja (`/unregister`) borra `latido/<CN>` y deja de salir en la línea; solo
+  sale como muerto si cae sin darse de baja.
 
 **El kernel después de los E2E (3c67ca40).** Con la mitigación real, el agente instala también el antispoofing durante
 `lab-e2e-vigia` y `lab-e2e-mitigacion`, y sus traps no lo conocían: la cadena raw usa el set de protegidos, así que el
