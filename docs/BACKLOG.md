@@ -9292,3 +9292,76 @@ una clave por Falco, comprobados en el `alerts.json` del manager), sus docs, 8e.
 --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del
 PR1. Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001,
 DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001, DEBT-HARDENED-FALCO-RUTAS-001.
+
+## DAY322 — el arranque de Vault sin Vagrant, destapado por Falco [VAULT-ARRANQUE-D322]
+
+Commits: `886515c78` (medidor de eventos de Falco, `scripts/etcd_ha/d322_medir_falco_admin.sh`), `31ae20e62` (Vault
+arranca y se dessella sin Vagrant; desellado con identidad propia), `3cb29fee0` (Falco solo cuenta lecturas con éxito;
+`vault-arranque` no reinstala una identidad sin cambios) y este de documentación. Diseño y decisiones en ADR-060,
+sección 7 («8e.4d, DAY322»).
+
+### Decisiones de Alonso (DAY322)
+- Las 17 trazas NOTICE `argus_lab_clave_leida_admin` por cada `pipeline-status` se aceptan; se mide en 8e.4d-3 cuántas
+  deja un `etcd-vm-check` con etcd caído y, si pasa de un límite, se agrupan en Wazuh.
+- El desellado del lab tiene identidad propia (opción b): `CN=OU=argus-vault-unseal`, sin políticas en Vault.
+- El test del reinicio de Vault entra en `lab-e2e-vigilancia`.
+- Regla de Falco aparte para los intentos fallidos de leer una clave (EACCES/EPERM, WARNING), en 8e.4d-3 con su E2E.
+
+### Medido en el lab (horas UTC)
+- Falco en la VM etcd: 17 eventos por `pipeline-status` (2 `curl` + 15 `etcdctl`, padre `/usr/bin/sudo`,
+  `etcd-server.key`) en las cuatro pasadas medidas (DAY321 12:03, 12:57 y 13:00; DAY322 06:30). Y 7 CRITICAL a las
+  06:26 y 06:28: `curl` con padre `bash` y `etcd-server.key`, de `argus-vault-unseal`.
+- Arranque del DAY322 (06:25:57): `logrotate.service` 06:25:59-06:26:00 rota `audit.log`; su `postrotate` manda SIGHUP a
+  Vault (PID 459) en arranque: `Failed with result 'protocol'`; `argus-vault-unseal`: «Dependency failed»;
+  `Restart=on-failure` levanta Vault a las 06:26:07, sellado. El etcd-server (PID 540, sin reinicio) avisa
+  `[ETCD-VAULT-NO-DISPONIBLE]` y `[ETCD-VAULT-RECUPERADO]` a los 16 s, cuando el `systemctl start` del aprovisionador
+  `etcd-server-unit` de `make up` arrastra el desellado por `Wants=` (06:26:13; otra vez con `vagrant up etcd`, 06:28:46).
+- Tras el arreglo, `d322_reinicio_vault.sh`: R1 logrotate rota en el arranque, R2 Vault a la primera (NRestarts=0),
+  R3 desellado por su unidad sin aprovisionadores, R4 Vault y etcd-server sanos, R5 tras SIGKILL vuelve desellado en
+  7 s (NRestarts 0 -> 1), R6 0 CRITICAL (34 NOTICE de los `etcd_vm_estado.sh` del propio test). VM de vuelta en 40 s.
+- `install` de una clave en `/etc/argus-pki`: 0 eventos; `install` de `argus-vault-unseal.key` a `/tmp`: 1 CRITICAL
+  (`proc=/usr/bin/install padre=/usr/bin/sudo`).
+
+### Medido en el banco
+- Vault 2.2.1 (releases.hashicorp.com, SHA256SUMS con firma de HashiCorp) con el listener del lab (mTLS obligatorio):
+  el desellado nuevo en 6 casos (sin inicializar rc 0; sellado; ya desellado; sin `unseal.key`; certificado de otra
+  CA, curl rc 56; Vault parado, curl rc 7). Sin certificado de cliente, `sys/seal-status` no responde (rc 56): la
+  identidad hace falta.
+- Falco 0.43.1 (tarball oficial, firma con la huella de `provisioning/falco/CLAVE`): `--dry-run` con las reglas nuevas,
+  3 activas. En el contenedor no hay eBPF: el linaje (`proc.apid[2] = 1`) se midió en el lab (R5 + R6).
+- `vault_arranque_instalar.sh` con `systemctl` simulado: otra CA, CN ajeno, clave que no casa y sin PKI fallan; bueno,
+  idempotente, rotación e identidad sin cambios (no reescribe la clave). `postrotate` con estados simulados: activo,
+  arrancando->activo, parado, fallido, arrancando siempre (60 esperas). `logrotate -d` acepta el fichero.
+  `d312_pki.sh init` (9 hojas) y `cliente` sobre una PKI vieja. `d322_reinicio_vault.sh` con `vagrant` simulado: pasa,
+  falla un criterio, falla la previa y la VM no vuelve (el trap deshace la rotación pendiente).
+- `strace` de GNU install 9.4: `openat(destino, O_RDONLY|O_PATH|O_DIRECTORY)` antes de crear el destino.
+
+### Hallazgos DAY322
+- Dos predicciones fallidas, y las dos se pararon a medir: la caída de Vault no era la red (la unidad ya tiene
+  `After=network-online.target`) sino el SIGHUP de logrotate; y quien desellaba no era un reinicio del etcd-server sino
+  el `start` de su unidad activa, que arranca sus `Wants=` inactivos.
+- La macro de lectura de Falco contaba `open` fallidos: el sondeo `O_PATH|O_DIRECTORY` de `install` daba un CRITICAL
+  en cada `vagrant up` (los aprovisionadores `file` de la identidad son `run: always`).
+- Las unidades que escribía `vault-server` con `umask 077` salían 0600 («marked world-inaccessible» en el journal); las
+  de `vault-arranque` van 0644.
+- Por vigilar: el aprovisionador `vault-server` (solo al crear la VM) usa `vault status` con la clave del etcd-server;
+  si alguna vez corre con Falco instalado, dará CRITICAL. En un lab desde cero Falco se instala después.
+- Sin probar en el lab: el camino desde cero (`vault-arranque` antes de `vault-server`, Vault sin inicializar: el
+  desellado da rc 0 en el banco). Lo cubre el EMECAS+++.
+
+### DEBT-VAULT-SELLADO-ALERTA-001 — ABIERTA (nueva DAY322, propuesta de Claude, por decidir)
+En producción no hay clave de desellado en disco: tras un reinicio o una caída, Vault queda sellado hasta que alguien
+lo desselle (procedimiento manual, o auto-unseal con HSM/KMS). El etcd-server sigue (`[ETCD-VAULT-NO-DISPONIBLE]`,
+última ventana conocida; sin ella `/secrets` da 503) y el pipeline sigue protegiendo sin firmar. Falta que Wazuh lo
+convierta en una alerta que el admin vea, y el procedimiento de desellado documentado.
+**Test de cierre:** con Vault sellado a mano, el `alerts.json` del manager tiene la alerta en menos de un minuto y el
+procedimiento lo deja desellado.
+
+### Pendiente (por orden)
+8e.4d-3 (`lab-e2e-vigilancia` dentro de `lab-e2e`: FIM en `/etc/argus-pki`, umbral del disco bajado, audit de Vault
+roto con `chattr`, divergencia del vigía, lectura ajena de una clave, intento fallido de leer una clave (regla nueva),
+el reinicio de Vault de `d322_reinicio_vault.sh` y las trazas de un `etcd-vm-check` con etcd caído, comprobados en el
+`alerts.json` del manager), sus docs, 8e.5 (bootstrap con `argus-infra init --si`, `d303_veredicto_protegidos.sh`
+P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1. Sin orden decidido:
+DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001, DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001,
+DEBT-HARDENED-FALCO-RUTAS-001, DEBT-VAULT-SELLADO-ALERTA-001.

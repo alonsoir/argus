@@ -280,6 +280,8 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
     informado (H-F).
   - **8e.4d** Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J), en
     tres commits: **8e.4d-1** (hecho, 464c733bc) el manager; **8e.4d-2** (hecho DAY321) los sensores; **8e.4d-3** el E2E.
+    Antes de 8e.4d-3, lo que la vigilancia destapó el DAY322: el arranque de Vault sin Vagrant (31ae20e62, 3cb29fee0;
+    ver «8e.4d, DAY322» en la sección 7).
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
 
 ## 6. Diseño fino de 8e.1 (cerrado DAY318)
@@ -644,3 +646,36 @@ Medido DAY321 (detalle en BACKLOG, «DAY321 — pasos 8e.4d-1 y 8e.4d-2»): banc
 con 9 mutaciones cazadas, los instaladores restauran con configuraciones rotas y `lib_apt_oficial.sh` rechaza claves
 ajenas. Lab: los cinco agentes en 4.14.10-1 desde el apt de Wazuh y conectados, etcd y defender en su grupo, Falco
 0.43.1 en las dos VMs con 3 reglas activas, argus-disco `uso=4 estado=OK`, `pipeline-status` en ✅.
+
+**8e.4d, DAY322: lo que la vigilancia destapó en el arranque de Vault [VAULT-ARRANQUE-D322].** Falco dio 7 CRITICAL
+`argus_lab_clave_leida_ajeno` en la VM etcd al arrancar el lab: `curl` desde `bash` leyendo `etcd-server.key`. Era el
+desellado del lab, y midiendo por qué corría se vio que **Vault no volvía solo de un arranque**:
+`logrotate.timer` (`Persistent=true`) corre al arrancar tras una noche apagada, el `postrotate` del audit mandaba
+SIGHUP a un Vault que aún arrancaba (`Failed with result 'protocol'`), `Restart=on-failure` lo levantaba **sellado** y
+el desellado, ligado a `multi-user.target`, ya se había descartado («Dependency failed»). Solo lo desellaba, de
+rebote, el `systemctl start` del aprovisionador `etcd-server-unit` (con `Wants=` del desellado: un `start` de una
+unidad activa arranca sus `Wants=` inactivos). En un hospital, tras un corte de luz, Vault se habría quedado sellado y
+el etcd-server sin claves HMAC; y en 24x7, cada caída de Vault. Decisiones de Alonso:
+- **Identidad propia del desellado** (opción b): `CN=OU=argus-vault-unseal`, sin ninguna política en Vault
+  (`sys/seal-status` y `sys/unseal` no la piden; el listener exige certificado de cliente solo para el TLS). Descartada
+  (a), que Falco lo tratara como herramienta de administración: un desellado comprometido seguiría teniendo la
+  identidad que lee y escribe las claves HMAC.
+- **Las 17 trazas NOTICE por `pipeline-status` se aceptan** (2 `curl` + 15 `etcdctl`, padre `sudo`, constantes en
+  cuatro pasadas): dejan rastro de quién leyó la clave y cuándo. Se mide en 8e.4d-3 cuántas deja un `etcd-vm-check`
+  con etcd caído (reevalúa cada 2 s); si pasa de un límite, se agrupa en Wazuh.
+- **Regla aparte para los intentos fallidos de leer una clave** (EACCES/EPERM, WARNING), en 8e.4d-3 con su E2E.
+
+Cómo queda: `provisioning/vault/` (script, unidad y logrotate) y `scripts/etcd_ha/vault_arranque_instalar.sh`
+(aprovisionador `vault-arranque`, `run: always`, antes de `vault-server`): el desellado va `WantedBy=vault.service`
+(cada arranque de Vault, también un `Restart`, lo dessella); el `postrotate` solo manda SIGHUP con Vault activo (si
+arranca, espera hasta 60 s); la identidad se comprueba (CA, CN, OU, clave que casa) y no se reescribe si el
+certificado no cambia. El etcd-server pasa a `After=` (no `Wants=`) del desellado. Falco: el desellado es dueño de su
+clave (`curl` hijo de `bash` hijo de pid 1) y la lectura de una clave cuenta solo si el `open` tuvo éxito
+(`fd.num>=0`, como `open_read` del reglamento oficial: GNU `install` hace `openat(destino, O_RDONLY|O_PATH|O_DIRECTORY)`,
+que falla sin leer). **Solo laboratorio**: en producción no hay clave de desellado en disco; ahí la protección es
+avisar de Vault sellado (DEBT-VAULT-SELLADO-ALERTA-001).
+
+Medido DAY322 (detalle en BACKLOG, «DAY322»): banco con Vault 2.2.1 y Falco 0.43.1 oficiales (firma comprobada); lab,
+`d322_reinicio_vault.sh` R1-R6 en ✅ (`sudo systemctl reboot` sin Vagrant con una rotación pendiente: logrotate rota,
+Vault arranca a la primera, lo dessella su unidad sin aprovisionadores; SIGKILL: vuelve desellado en 7 s; 0 CRITICAL);
+instalar una clave en `/etc/argus-pki` no da evento y copiarla fuera da 1 CRITICAL.
