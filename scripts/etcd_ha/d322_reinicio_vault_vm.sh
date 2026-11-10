@@ -36,16 +36,25 @@ previa)
   systemctl is-enabled --quiet logrotate.timer && ok "logrotate.timer habilitado" || falla "logrotate.timer no está habilitado"
   ;;
 preparar)
-  sudo grep -q '^"/var/log/vault/audit.log" ' "$ST" || { falla "$ST sin entrada de /var/log/vault/audit.log (sin ella logrotate no rota la primera vez)"; exit 1; }
+  # [VIGILANCIA-GRUPO-D322] medido DAY322 en EMECAS+++ desde cero: en una VM nueva logrotate aún no ha rotado nunca
+  # audit.log y su estado no tiene la entrada; se crea con fecha vieja (la copia de $BK la deshace con restaurar).
   sudo test -s /var/log/vault/audit.log || { falla "/var/log/vault/audit.log vacío (notifempty: no rotaría)"; exit 1; }
-  sudo install -d -m 0700 "$BK"; sudo cp -p "$ST" "$BK/status"; sudo cp -p "$SELLO" "$BK/sello" 2>/dev/null || sudo touch "$BK/sin_sello"
-  sudo sed -i 's#^"/var/log/vault/audit.log" .*#"/var/log/vault/audit.log" 2000-1-1-0:0:0#' "$ST"
+  sudo install -d -m 0700 "$BK"
+  if sudo test -f "$ST"; then sudo cp -p "$ST" "$BK/status"; else sudo touch "$BK/sin_status"; fi
+  sudo cp -p "$SELLO" "$BK/sello" 2>/dev/null || sudo touch "$BK/sin_sello"
+  if sudo grep -q '^"/var/log/vault/audit.log" ' "$ST" 2>/dev/null; then
+    sudo sed -i 's#^"/var/log/vault/audit.log" .*#"/var/log/vault/audit.log" 2000-1-1-0:0:0#' "$ST"
+  else
+    sudo test -f "$ST" || echo "logrotate state -- version 2" | sudo tee "$ST" > /dev/null
+    echo '"/var/log/vault/audit.log" 2000-1-1-0:0:0' | sudo tee -a "$ST" > /dev/null
+    ok "sin entrada previa de audit.log en $ST (VM nueva): creada con fecha 2000-1-1"
+  fi
   sudo touch -d '2 days ago' "$SELLO"
   ok "rotación pendiente: audit.log con última rotación 2000-1-1 y sello de logrotate.timer de hace 2 días (copia en $BK)"
   ;;
 restaurar)
   sudo test -d "$BK" || { ok "nada que restaurar"; exit 0; }
-  sudo cp -p "$BK/status" "$ST"
+  if sudo test -f "$BK/status"; then sudo cp -p "$BK/status" "$ST"; else sudo rm -f "$ST"; fi
   if sudo test -f "$BK/sello"; then sudo cp -p "$BK/sello" "$SELLO"; else sudo rm -f "$SELLO"; fi
   sudo rm -rf "$BK"; ok "restaurado el estado de logrotate y el sello del timer"
   ;;

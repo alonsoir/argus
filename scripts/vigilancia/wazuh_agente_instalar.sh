@@ -15,6 +15,12 @@
 # tardaron ~80 s en volver). Que no conecte se avisa pero no es fallo: la VM wazuh es autostart: false y puede estar
 # parada; el agente se conecta solo cuando el manager vuelve.
 # Una actualización conserva client.keys y ossec.conf (el registro sigue siendo el mismo agente).
+# [VIGILANCIA-GRUPO-D322] (decisión de Alonso) el agente PIDE su grupo al registrarse: lo busca por AGENT_NAME en
+# provisioning/wazuh/argus/grupos.tsv (la única fuente, la misma que lee el manager) y se instala con la variable
+# oficial WAZUH_AGENT_GROUP (el postinst del paquete la pone en <enrollment><groups> de ossec.conf). Medido DAY322 en
+# EMECAS+++ desde cero: la VM etcd se crea después que la wazuh, el manager asignaba los grupos al aprovisionarse y el
+# agente etcd se quedaba en "default" (sin FIM de /etc/argus-pki ni eventos de Falco). Un agente que no está en
+# grupos.tsv va a "default". Conectado al manager, su agent.conf tiene que ser el de su grupo; si no, FALLA.
 set -u
 LC_ALL=C; export LC_ALL
 SRC=${VIGILANCIA_SRC:-/vagrant/provisioning/wazuh}
@@ -33,18 +39,26 @@ V=$(tr -d '[:space:]' < "$SRC/VERSION")
 [[ "$V" =~ ^[0-9]+\.[0-9]+\.[0-9]+-[0-9]+$ ]] || fallo "$SRC/VERSION mal formado ('$V'; formato X.Y.Z-N)"
 M=$(tr -d '[:space:]' < "$SRC/MANAGER")
 [[ "$M" =~ ^([0-9]{1,3}\.){3}[0-9]{1,3}$ ]] || fallo "$SRC/MANAGER mal formado ('$M'; una IPv4)"
+GT=$SRC/argus/grupos.tsv
+[ -r "$GT" ] || fallo "no leo $GT"
+GRUPO=$(awk -F'\t' -v n="$NOMBRE" '!/^#/ && NF == 2 && $1 == n {print $2; exit}' "$GT")
+[ -z "$GRUPO" ] || [[ "$GRUPO" =~ ^[a-z0-9-]{1,64}$ ]] || fallo "grupo '$GRUPO' de '$NOMBRE' mal formado en $GT ([a-z0-9-], de 1 a 64)"
 # shellcheck source=lib_apt_oficial.sh
 . "$LIB" || fallo "no cargo $LIB"
-log "agente '$NOMBRE', versión $V ($SRC/VERSION), manager $M ($SRC/MANAGER)"
+log "agente '$NOMBRE', versión $V ($SRC/VERSION), manager $M ($SRC/MANAGER), grupo ${GRUPO:-default (no está en $GT)}"
 
 apunta() { grep -q "<address>$M</address>" "$O/etc/ossec.conf" 2>/dev/null; }
 en_marcha() { systemctl is-active --quiet wazuh-agent; }
+pide_grupo() { [ -z "$GRUPO" ] || grep -q "<groups>$GRUPO</groups>" "$O/etc/ossec.conf" 2>/dev/null; }
+tiene_grupo() { [ -z "$GRUPO" ] || grep -qF "Configuración centralizada del grupo $GRUPO" "$O/etc/shared/agent.conf" 2>/dev/null; }
 
 # 1 nada que hacer
 TENGO=$(dpkg-query -W -f='${Version}' wazuh-agent 2>/dev/null || true)
 FIJADO=$(apt-mark showhold wazuh-agent 2>/dev/null)
 if [ "$TENGO" = "$V" ] && [ "$FIJADO" = wazuh-agent ] && apunta && en_marcha; then
   log "OK: wazuh-agent $V ya instalado, fijado, apuntando a $M y en marcha; nada que hacer"
+  pide_grupo || log "AVISO: registrado antes de [VIGILANCIA-GRUPO-D322], sin pedir el grupo $GRUPO: lo asigna make vigilancia-manager-deploy"
+  tiene_grupo || log "AVISO: su agent.conf aún no es el del grupo $GRUPO (¿manager parado o sin asignar? make vigilancia-manager-deploy)"
   exit 0
 fi
 log "estado: instalado '${TENGO:-ninguno}', hold '${FIJADO:-no}'"
@@ -53,8 +67,15 @@ log "estado: instalado '${TENGO:-ninguno}', hold '${FIJADO:-no}'"
 repo_oficial wazuh https://packages.wazuh.com/key/GPG-KEY-WAZUH "$SRC/CLAVE" \
   https://packages.wazuh.com/4.x/apt/ "stable main" || fallo "repositorio de Wazuh"
 apt-get update -qq || fallo "apt-get update"
-# WAZUH_MANAGER/WAZUH_AGENT_NAME solo los usa una instalación nueva; una actualización conserva ossec.conf.
-WAZUH_MANAGER="$M" WAZUH_AGENT_NAME="$NOMBRE" instalar_fijado wazuh-agent "$V" || fallo "instalación de wazuh-agent $V"
+# WAZUH_MANAGER/WAZUH_AGENT_NAME/WAZUH_AGENT_GROUP solo los usa una instalación nueva; una actualización conserva
+# ossec.conf (vacía, WAZUH_AGENT_GROUP no pide grupo).
+WAZUH_MANAGER="$M" WAZUH_AGENT_NAME="$NOMBRE" WAZUH_AGENT_GROUP="$GRUPO" instalar_fijado wazuh-agent "$V" \
+  || fallo "instalación de wazuh-agent $V"
+if [ -z "$TENGO" ]; then
+  pide_grupo || fallo "instalación nueva sin <groups>$GRUPO</groups> en $O/etc/ossec.conf (WAZUH_AGENT_GROUP no llegó)"
+else
+  pide_grupo || log "AVISO: actualización de un agente registrado sin pedir el grupo $GRUPO: lo asigna make vigilancia-manager-deploy"
+fi
 
 # 4 apunta a MANAGER y en marcha
 apunta || fallo "$O/etc/ossec.conf no apunta a $M (¿agente registrado antes con otro manager? revisar <client><server>)"
@@ -71,6 +92,10 @@ for ((i = 0; i < ESPERA_S; i += 5)); do
 done
 if grep -q "^status='connected'" "$EST" 2>/dev/null; then
   log "OK: wazuh-agent $V en marcha y conectado a $M"
+  # el manager manda el agent.conf del grupo tras conectar (medido DAY321: el reparto tarda unos segundos)
+  for ((i = 0; i < ESPERA_S; i += 5)); do tiene_grupo && break; sleep 5; done
+  tiene_grupo || fallo "conectado a $M pero su agent.conf no es el del grupo $GRUPO en ${ESPERA_S} s (manager: agent_groups -s -i <id>)"
+  [ -z "$GRUPO" ] || log "OK: agent.conf del grupo $GRUPO recibido del manager"
 else
   log "AVISO: wazuh-agent $V en marcha pero sin conectar con $M en ${ESPERA_S} s ($(grep '^status=' "$EST" 2>/dev/null || echo "sin $EST")); ¿VM wazuh parada?"
 fi
