@@ -16,6 +16,10 @@
 #
 # PREDICCIÓN (escrita antes de la corrida): S1-S4 PASA; el antispoofing se aplica en modo descarta con redes=3
 # (.20, .61, .62), ips_mac=1, mac=1 y sin_ruta=0.
+# [PROTEGIDOS-BOOTSTRAP-D322] lo esperado (redes, ips_mac, mac) ya no va escrito aquí: sale del manifiesto publicado
+# tras dar de alta .62 (argus-infra list), contado como el firewall (protegidos_antispoof.hpp: redes distintas, IPs /32
+# distintas con MAC, pares IP,MAC distintos). Medido DAY322 en EMECAS+++: con la v1 de la plantilla, .20 lleva su MAC
+# (08:00:27:a2:00:20) y el firewall dio redes=3 ips_mac=2 mac=2; el 1 y 1 escritos aquí eran de la v11 del lab.
 set -u
 N=${1:?nombre de la corrida}
 export DIA=${DIA:-day320}
@@ -82,7 +86,17 @@ vm client "ip neigh show 192.168.100.1 dev eth1 | grep -q lladdr" || falla "el c
 
 paso "2 entrada de prueba $IP62 por eth2 con MAC $MAL (argus-infra, VM etcd)"
 infra "add --planta lab-vagrant --categoria intranet --cidr $IP62/32 --interfaz eth2 --mac $MAL --motivo-entrada 'prueba antispoof DAY320' --motivo 'prueba antispoof DAY320 (se quita al acabar)' --si" | tail -n 4
-infra "list" | grep -q "$IP62/32" || falla "argus-infra no publicó $IP62"
+infra "list" > "/tmp/${N}_lista.txt"
+grep -q "$IP62/32" "/tmp/${N}_lista.txt" || falla "argus-infra no publicó $IP62"
+read -r ER EI EM < <(awk '$1 ~ /^(infraestructura|intranet|dmz|externos_criticos)$/ && $2 ~ /\// {
+    if (!($2 in vred)) { vred[$2] = 1; r++ }
+    m = ""; for (i = 4; i <= NF; i++) if ($i ~ /^mac=/) m = substr($i, 5)
+    if (m != "" && m != "-" && $2 ~ /\/32$/) { ip = substr($2, 1, length($2) - 3)
+      if (!(ip in vip)) { vip[ip] = 1; ni++ }; if (!((ip "," m) in vpar)) { vpar[ip "," m] = 1; nm++ } } }
+  END { printf "%d %d %d\n", r, ni, nm }' "/tmp/${N}_lista.txt")
+[[ "$ER" =~ ^[1-9][0-9]*$ ]] && [[ "$EI" =~ ^[0-9]+$ ]] && [[ "$EM" =~ ^[0-9]+$ ]] \
+  || falla "no leo del manifiesto publicado cuántas redes e IPs con MAC esperar (/tmp/${N}_lista.txt)"
+echo "    esperado del manifiesto publicado: redes=$ER ips_mac=$EI mac=$EM"
 ENTRADA62=1
 
 paso "3 pipeline-stop y conmutador SOLO para la prueba (copia exacta en $BAK)"
@@ -109,12 +123,12 @@ make pipeline-start PROFILE=production > "/tmp/${N}_start.txt" 2>&1 || { tail -n
 paso "5 antispoofing en modo descarta con la entrada de prueba (máximo 120 s)"
 ok=0
 for i in $(seq 1 120); do
-  if grep -E "\[PROTEGIDOS-ANTISPOOF\] aplicado .*modo=descarta redes=3 ips_mac=1 mac=1" "$F" > /dev/null 2>&1 && \
+  if grep -E "\[PROTEGIDOS-ANTISPOOF\] aplicado .*modo=descarta redes=$ER ips_mac=$EI mac=$EM( |$)" "$F" > /dev/null 2>&1 && \
      vm defender "sudo ipset save $SM | grep -qi '$IP62,$MAL'"; then ok=1; break; fi
   sleep 1
 done
 grep "\[PROTEGIDOS-ANTISPOOF\]" "$F" | tail -n 3
-[ "$ok" = 1 ] || falla "no aparece el antispoofing en modo descarta con redes=3 ips_mac=1 mac=1 y $IP62 en $SM"
+[ "$ok" = 1 ] || falla "no aparece el antispoofing en modo descarta con redes=$ER ips_mac=$EI mac=$EM y $IP62 en $SM"
 vm defender "sudo iptables -w -t raw -S PREROUTING | sed -n 2p; sudo iptables -w -t raw -S $AS; sudo iptables -w -t raw -S ${AS}_MAC" | sed 's/^/    /'
 I0=$(cuenta "${AS}_IF"); M0=$(cuenta "${AS}_MAC")
 P0=$(vm defender "sudo ipset save $WL | awk '\$3 ~ /^192\\.168\\.100\\.20,/ {for (i = 4; i < NF; i++) if (\$i == \"packets\") print \$(i + 1)}'")
