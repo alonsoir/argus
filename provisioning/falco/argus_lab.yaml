@@ -121,3 +121,19 @@
     cmd_padre=%proc.pcmdline pid_abuelo=%proc.apid[2])
   priority: NOTICE
   tags: [argus, secretos, admin, adr-060]
+
+# ── 3. Intento fallido de leer una clave ───────────────────────────────────────────────────────────────────────────
+# [VIGILANCIA-E2E-D322] (decisión de Alonso, DAY322) root lee cualquier clave: un EACCES o un EPERM solo lo da un proceso
+# SIN privilegios que intenta llegar a una (un servicio comprometido, una web shell) antes de escalar. Solo esos dos
+# errores: ENOENT o ENOTDIR (como el sondeo O_PATH de GNU install) no son un intento de leer. /etc/argus-pki es 0700
+# root: el open falla al atravesar el directorio; fd.name es la ruta pedida (lab-e2e-vigilancia, caso C6).
+- rule: argus_lab_clave_intento_fallido
+  desc: Un proceso intenta leer una clave o una semilla de aRGus y el kernel se lo niega (EACCES o EPERM)
+  condition: >
+    evt.type in (open, openat, openat2) and evt.is_open_read=true and fd.num=-1 and evt.res in (EACCES, EPERM) and
+    argus_lab_fichero_secreto
+  output: >
+    aRGus intento fallido de leer una clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name
+    usuario=%user.name res=%evt.res cmd=%proc.cmdline)
+  priority: WARNING
+  tags: [argus, secretos, intento, adr-060]

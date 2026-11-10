@@ -8,6 +8,8 @@
 #   E2 la regla RETURN de protegidos borrada           E4 una regla ajena delante del salto INPUT -> cadena
 # trap: para el pipeline, retira la regla ajena, la cadena y los sets, y restaura el JSON byte a byte (cmp).
 # Uso (raiz del repo, Mac): DIA=day320 bash scripts/etcd_ha/d320_vigia_e2e.sh NOMBRE
+# [VIGILANCIA-E2E-D322] D320_EVENTOS (entorno): los eventos a provocar, de E1 E2 E3 E4 (defecto: los cuatro). Lo usa
+# lab-e2e-vigilancia (solo E1) para comprobar que la divergencia llega como alerta al manager de Wazuh.
 #
 # PREDICCIÓN (escrita antes de la corrida):
 #  V0 al arrancar: [PROTEGIDOS-VIGIA] kernel <-> manifiesto cada K s (K = protegidos.comprobacion_kernel_sec del JSON)
@@ -25,6 +27,9 @@ BAK=/tmp/$N.firewall.json.orig
 F=logs/lab/firewall-agent.log
 WL=""; CHAIN=""; BL=""; AS=""; SR=""; SI=""; SM=""; K=0
 JSON_TOCADO=0; RESTAURADO=0; FALLOS=0
+EVENTOS=${D320_EVENTOS:-E1 E2 E3 E4}
+for e in $EVENTOS; do case "$e" in E1|E2|E3|E4) ;; *) echo "D320_EVENTOS='$EVENTOS': cada uno de E1 E2 E3 E4"; exit 2;; esac; done
+quiero() { case " $EVENTOS " in *" $1 "*) return 0;; *) return 1;; esac; }
 paso()  { echo; echo "=== [$(date +%T)] $*"; }
 falla() { echo; echo "PARADA [$(date +%T)]: $*"; exit 1; }
 pasa()  { echo "PASA  $*"; }
@@ -127,17 +132,25 @@ evento() {  # nombre, orden que estropea (en el defender), comprobación de que 
   echo "$nom $((t1 - t0)) ok=$ok div=$div rec=$rec" >> "$DM/eventos.txt"
 }
 
+if quiero E1; then
 paso "5 E1 una entrada de más (10.66.6.6/32,eth2)"
 evento "E1" "sudo ipset add $WL 10.66.6.6/32,eth2" "! sudo ipset save $WL | grep -q '10\\.66\\.6\\.6'"
+fi
+if quiero E2; then
 paso "6 E2 la regla RETURN de protegidos borrada"
 evento "E2" "sudo iptables -D $CHAIN -m set --match-set $WL src,src -m comment --comment argus-protegidos -j RETURN" \
   "sudo iptables -S $CHAIN | sed -n 2p | grep -q -- '--match-set $WL src,src .*-j RETURN'"
+fi
+if quiero E3; then
 paso "7 E3 la entrada de .20 cambiada a nomatch"
 E20=$(echo "$ANTES_SET" | awk '$1 ~ /^192\.168\.100\.20,/ {print $1}')
 [ -n "$E20" ] || falla "el vigente no tiene 192.168.100.20 (P1): no se puede probar E3"
 evento "E3" "sudo ipset del $WL $E20 && sudo ipset add $WL $E20 nomatch" "! sudo ipset save $WL | grep -q nomatch && sudo ipset save $WL | grep -q '^add $WL $E20 '"
+fi
+if quiero E4; then
 paso "8 E4 una regla ajena delante del salto INPUT -> $CHAIN"
 evento "E4" "sudo iptables -I INPUT 1 -m comment --comment d320-vigia-extra" "sudo iptables -S INPUT | sed -n 2p | grep -qx -- '-A INPUT -j $CHAIN'"
+fi
 def "sudo iptables -D INPUT -m comment --comment d320-vigia-extra 2>/dev/null; true" > /dev/null
 
 paso "9 el kernel queda como al principio y sin errores del vigía"
