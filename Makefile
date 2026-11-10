@@ -1285,30 +1285,50 @@ test: test-all
 # cualquier test saltado o una ejecucion de gtest de 0 tests) y test-firewall-perf (da numeros del
 # entorno; falla solo si la medida es invalida). Heredan el PROFILE de la corrida: make emecas+++ PROFILE=production
 emecas:
+	@$(EMECAS_PY) inicio $(EMECAS_META_O)  # [EMECAS-PROGRESO-D322] avance: make emecas-progreso
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🏛️  EMECAS — OSS gate (destroy → up → bootstrap → test)  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
-	vagrant destroy -f
-	$(MAKE) clean-host-builds
+	@$(EMECAS_PASO) vagrant-destroy -- vagrant destroy -f
+	@$(EMECAS_PASO) clean-host-builds -- $(MAKE) clean-host-builds
 	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
-	vagrant up defender client suricata zeek wazuh etcd
-	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
-	$(MAKE) bootstrap
-	$(MAKE) emecas-frescura
-	$(MAKE) test-all
+	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh etcd
+	@$(EMECAS_PASO) sello-inicio -- vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
+	@$(EMECAS_PASO) bootstrap -- $(MAKE) bootstrap
+	@$(EMECAS_PASO) emecas-frescura -- $(MAKE) emecas-frescura
+	@$(EMECAS_PASO) test-all -- $(MAKE) test-all
 	@# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: argus-infra (VM etcd) y la vigilancia de 8e.4d (manager y argus-disco)
-	$(MAKE) test-argus-infra
-	$(MAKE) test-vigilancia-reglas
-	$(MAKE) test-vigilancia-disco
-	$(MAKE) test-firewall-e2e
-	$(MAKE) test-firewall-perf
-	$(MAKE) test-e2e-synthetic
-	$(MAKE) lab-e2e
+	@$(EMECAS_PASO) test-argus-infra -- $(MAKE) test-argus-infra
+	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
+	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
+	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
+	@$(EMECAS_PASO) test-firewall-perf -- $(MAKE) test-firewall-perf
+	@$(EMECAS_PASO) test-e2e-synthetic -- $(MAKE) test-e2e-synthetic
+	@$(EMECAS_PASO) lab-e2e -- $(MAKE) lab-e2e
+	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS PASSED                                        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
+
+# [EMECAS-PROGRESO-D322] avance de EMECAS (petición de Alonso DAY322): cada paso de emecas, emecas++ y emecas+++ va
+# envuelto por scripts/emecas/emecas_paso.py, que lo ejecuta igual (misma salida y código de salida) y apunta en
+# logs/lab/emecas_progreso.txt cuándo empieza y acaba. Porcentaje y hora de fin, de los tiempos MEDIDOS en la última
+# corrida buena de la misma meta (logs/lab/emecas_tiempos_<meta>.tsv). Desde otra terminal: make emecas-progreso.
+# [EMECAS-RESUMEN-D322] cada corrida deja en logs/lab/emecas/<fecha>_<meta>/ la salida de cada paso (NN_<paso>.log) y
+# resumen.md (al final y también si un paso falla); se guardan todas (decisiones de Alonso DAY322).
+EMECAS_META := $(firstword $(filter emecas+++ emecas++ emecas,$(MAKECMDGOALS)))
+EMECAS_META_O = $(or $(EMECAS_META),emecas)
+EMECAS_PY := python3 scripts/emecas/emecas_paso.py
+EMECAS_PASO = $(EMECAS_PY) paso $(EMECAS_META_O)
+.PHONY: emecas-progreso test-emecas-paso
+emecas-progreso:
+	@$(EMECAS_PY) ver
+
+# Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
+test-emecas-paso:
+	@python3 scripts/emecas/test_emecas_paso.py
 
 # [ARGUS-CLEAN-D303] emecas-frescura: cada binario del pipeline existe en build-$(PROFILE), build-active
 # apunta ahi y es mas nuevo que el sello escrito tras clean-all. Fuera de EMECAS, sin sello:
@@ -1433,14 +1453,15 @@ emecas++: emecas
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "══ Acto I — Arranque nominal con Vault ══"
-	$(MAKE) test-e2e-vault
+	@$(EMECAS_PASO) test-e2e-vault -- $(MAKE) test-e2e-vault
 	@echo ""
 	@echo "══ Acto II — Rotación controlada (pipeline sintético) ══"
-	$(MAKE) test-e2e-synthetic-full
-	$(MAKE) test-e2e-synthetic-firewall
+	@$(EMECAS_PASO) test-e2e-synthetic-full -- $(MAKE) test-e2e-synthetic-full
+	@$(EMECAS_PASO) test-e2e-synthetic-firewall -- $(MAKE) test-e2e-synthetic-firewall
 	@echo ""
 	@echo "══ Acto III — Fallo Vault controlado (token revocation) ══"
-	$(MAKE) vault-fault-inject
+	@$(EMECAS_PASO) vault-fault-inject -- $(MAKE) vault-fault-inject
+	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas++
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS++ PASSED — 3 Actos verdes                     ║"
@@ -3191,10 +3212,11 @@ mitre-check:
 emecas+++: emecas++
 	@echo ""
 	@echo "══ Acto IV — río abajo: adapters desde cero y MITRE -> grafo con veredicto ══"
-	$(MAKE) suricata-adapter-test
-	$(MAKE) zeek-adapter-test
-	$(MAKE) wazuh-adapter-test
-	$(MAKE) mitre-check
+	@$(EMECAS_PASO) suricata-adapter-test -- $(MAKE) suricata-adapter-test
+	@$(EMECAS_PASO) zeek-adapter-test -- $(MAKE) zeek-adapter-test
+	@$(EMECAS_PASO) wazuh-adapter-test -- $(MAKE) wazuh-adapter-test
+	@$(EMECAS_PASO) mitre-check -- $(MAKE) mitre-check
+	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas+++
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS+++ PASSED — Acto IV: aRGus, Suricata y Zeek     ║"
