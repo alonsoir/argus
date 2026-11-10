@@ -1,0 +1,34 @@
+#!/bin/bash
+# provisioning/vault/argus-vault-unseal — [VAULT-ARRANQUE-D322] desellado del Vault del lab (opción c: la clave de
+# desellado vive en disco, /etc/vault.d/unseal.key, root 0600; sale por stdin, nunca por argv). SOLO laboratorio: en
+# producción no hay clave en disco (ADR-060, sección 7 «8e.4d»). Lo pone scripts/etcd_ha/vault_arranque_instalar.sh en
+# /usr/local/sbin/ y lo lanza argus-vault-unseal.service, ligada a vault.service: cada arranque de Vault, también el de un
+# Restart=on-failure, lo dessella (medido DAY322: ligada a multi-user.target, un Vault caído en el arranque se quedaba
+# sellado y solo lo desellaba, de rebote, el `systemctl start` del aprovisionador etcd-server-unit).
+# Identidad propia (DAY322, decisión b de Alonso): CN=argus-vault-unseal, OU=argus-vault-unseal, SIN ninguna política
+# en Vault: sys/seal-status y sys/unseal no la piden; el listener exige certificado de cliente solo para el TLS. Antes
+# usaba el del etcd-server, la identidad que lee y escribe las claves HMAC.
+# Cada curl es hijo directo de este script (nada de curl en tuberías dentro de $(...), que añadiría un subshell): la
+# regla de Falco del dueño de la clave (provisioning/falco/argus_lab.yaml) pide padre bash e hijo de pid 1 (systemd).
+# Vault sin inicializar (primer aprovisionamiento, antes de que vault-server haga el init): nada que desellar, rc 0.
+set -u
+LC_ALL=C; export LC_ALL
+C="--cacert /etc/vault.d/tls/ca.crt --cert /etc/argus-pki/argus-vault-unseal.crt --key /etc/argus-pki/argus-vault-unseal.key"
+U=https://127.0.0.1:8200
+ESTADO=""; RC=0
+estado() { ESTADO=$(curl -s --max-time 3 $C "$U/v1/sys/seal-status"); RC=$?; [ "$RC" = 0 ] || ESTADO=""; }
+campo() { python3 -c 'import json,sys; print(json.loads(sys.argv[1]).get(sys.argv[2]))' "$ESTADO" "$1" 2>/dev/null; }
+for _ in $(seq 1 30); do estado; [ -n "$ESTADO" ] && break; sleep 1; done
+[ -n "$ESTADO" ] || { echo "[VAULT-UNSEAL] FALLA: Vault no responde en 30 s en $U (sys/seal-status); último curl rc=$RC" \
+  "(7: nadie escucha; 35 o 56: el TLS rechaza el certificado, ¿/etc/argus-pki/argus-vault-unseal.crt de otra CA?)"; exit 1; }
+if [ "$(campo initialized)" = False ]; then
+  echo "[VAULT-UNSEAL] Vault sin inicializar: nada que desellar (lo inicializa el aprovisionador vault-server)"; exit 0
+fi
+if [ "$(campo sealed)" = True ]; then
+  [ -s /etc/vault.d/unseal.key ] || { echo "[VAULT-UNSEAL] FALLA: sellado y sin /etc/vault.d/unseal.key"; exit 1; }
+  python3 -c 'import json; print(json.dumps({"key": open("/etc/vault.d/unseal.key").read().strip()}))' \
+    | curl -s --max-time 5 $C -X PUT --data-binary @- -o /dev/null "$U/v1/sys/unseal"
+  estado
+fi
+[ "$(campo sealed)" = False ] || { echo "[VAULT-UNSEAL] FALLA: sigue sellado"; exit 1; }
+echo "[VAULT-UNSEAL] Vault desellado"

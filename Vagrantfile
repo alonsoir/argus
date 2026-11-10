@@ -1649,6 +1649,20 @@ NFT
     end
     etcd.vm.provision "shell", name: "vault-install", inline: VAULT_INSTALL
 
+    # [VAULT-ARRANQUE-D322] arranque de Vault (scripts/etcd_ha/vault_arranque_instalar.sh, ficheros en provisioning/vault/):
+    # desellado ligado a vault.service (cada arranque de Vault, también un Restart=on-failure, lo dessella) con identidad
+    # propia (CN=argus-vault-unseal, sin políticas en Vault) y rotación del audit sin SIGHUP a un Vault que arranca.
+    # run: always, antes de vault-server. PKI creada antes de DAY322: bash scripts/etcd_ha/d312_pki.sh cliente
+    # $ARGUS_PKI_DIR argus-vault-unseal
+    etcd.vm.provision "shell", name: "pki-unseal-dir", run: "always",
+      inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-unseal"
+    %w[ca.crt argus-vault-unseal.crt argus-vault-unseal.key].each do |f|
+      etcd.vm.provision "pki-unseal-#{f}", type: "file", run: "always", source: File.join(ARGUS_PKI_DIR, f),
+        destination: "/tmp/argus-pki-unseal/#{f}"
+    end
+    etcd.vm.provision "shell", name: "vault-arranque", run: "always",
+      inline: "bash /vagrant/scripts/etcd_ha/vault_arranque_instalar.sh"
+
     # [VAULT-SERVER-D312] Vault en modo servidor: raft 1 nodo, solo 127.0.0.1, mTLS obligatorio, desellado c (SOLO lab),
     # kv v2 argus-hmac/ (sin borrado), auth cert para CN=etcd-server, root revocado. docs/ml-heads/day312_diseno.md
     # [VAULT-CAS-D314] el montaje lleva cas_required=true (decisión V2 de Alonso, DAY314): ninguna escritura sin CAS puede
@@ -1707,60 +1721,14 @@ listener "tcp" {
 HCL
       chown root:vault /etc/vault.d/vault.hcl; chmod 0640 /etc/vault.d/vault.hcl
 
-      # [PROTEGIDOS-PUBKEY-D318] directorio del audit device de fichero y su rotación (sin ella el disco se llena seguro).
-      # Vault reabre el fichero con SIGHUP. Retención del lab: 30 días (en producción la fija la ley de cada hospital).
-      install -d -m 0750 -o vault -g vault /var/log/vault
-      command -v logrotate >/dev/null || apt-get install -y logrotate
-      cat > /etc/logrotate.d/argus-vault-audit <<'LOGROTATE'
-# [PROTEGIDOS-PUBKEY-D318] generado por el Vagrantfile; no editar a mano
-/var/log/vault/audit.log {
-  daily
-  rotate 30
-  missingok
-  notifempty
-  compress
-  delaycompress
-  create 0640 vault vault
-  postrotate
-    systemctl kill -s HUP vault.service > /dev/null 2>&1 || true
-  endscript
-}
-LOGROTATE
-      logrotate -d /etc/logrotate.d/argus-vault-audit > /dev/null 2>&1 \
-        || { echo "❌ vault-server: logrotate rechaza /etc/logrotate.d/argus-vault-audit"; exit 1; }
-
-      # 3. Desellado c (SOLO laboratorio): la clave vive en /etc/vault.d/unseal.key (root 0600); sale por stdin, nunca por argv
-      cat > /usr/local/sbin/argus-vault-unseal <<'UNSEAL'
-#!/bin/bash
-# [VAULT-SERVER-D312] desellado del Vault del lab (opción c: clave en disco). No apto para producción.
-set -u
-C="--cacert /etc/vault.d/tls/ca.crt --cert /etc/argus-pki/etcd-server.crt --key /etc/argus-pki/etcd-server.key"
-U=https://127.0.0.1:8200
-for i in $(seq 1 30); do curl -s $C -o /dev/null "$U/v1/sys/seal-status" && break; sleep 1; done
-SELLADO=$(curl -s $C "$U/v1/sys/seal-status" | python3 -c 'import sys,json; print(json.load(sys.stdin)["sealed"])') || { echo "[VAULT-UNSEAL] FALLA: Vault no responde"; exit 1; }
-if [ "$SELLADO" = "True" ]; then
-  [ -s /etc/vault.d/unseal.key ] || { echo "[VAULT-UNSEAL] FALLA: sellado y sin /etc/vault.d/unseal.key"; exit 1; }
-  python3 -c 'import json; print(json.dumps({"key": open("/etc/vault.d/unseal.key").read().strip()}))' \
-    | curl -s $C -X PUT -d @- -o /dev/null "$U/v1/sys/unseal"
-fi
-SELLADO=$(curl -s $C "$U/v1/sys/seal-status" | python3 -c 'import sys,json; print(json.load(sys.stdin)["sealed"])')
-[ "$SELLADO" = "False" ] || { echo "[VAULT-UNSEAL] FALLA: sigue sellado"; exit 1; }
-echo "[VAULT-UNSEAL] Vault desellado"
-UNSEAL
-      chmod 0755 /usr/local/sbin/argus-vault-unseal
-      cat > /etc/systemd/system/argus-vault-unseal.service <<'UNIT'
-[Unit]
-Description=Desellado del Vault del lab (opcion c, solo laboratorio) [VAULT-SERVER-D312]
-After=vault.service
-Requires=vault.service
-[Service]
-Type=oneshot
-ExecStart=/usr/local/sbin/argus-vault-unseal
-[Install]
-WantedBy=multi-user.target
-UNIT
+      # 3. [VAULT-ARRANQUE-D322] /var/log/vault, la rotación del audit y el desellado c (SOLO laboratorio; la clave vive en
+      # /etc/vault.d/unseal.key, root 0600) los pone el aprovisionador vault-arranque, que corre antes que este
+      # (provisioning/vault/, scripts/etcd_ha/vault_arranque_instalar.sh). argus-vault-unseal.service va ligada a
+      # vault.service: el restart de abajo ya lo dessella (si Vault está inicializado).
+      [ -x /usr/local/sbin/argus-vault-unseal ] && [ -d /var/log/vault ] \
+        || { echo "❌ vault-server: falta el desellado o /var/log/vault (¿corrió el aprovisionador vault-arranque?)"; exit 1; }
       systemctl daemon-reload
-      systemctl enable vault argus-vault-unseal
+      systemctl enable vault
       systemctl restart vault
 
       export VAULT_ADDR=https://127.0.0.1:8200 VAULT_CACERT=/etc/vault.d/tls/ca.crt
@@ -2006,8 +1974,10 @@ UNIT
 # [ETCD-SERVER-UNIT-D317] generado por el Vagrantfile; no editar a mano. docs/ml-heads/day312_diseno.md, paso 6
 [Unit]
 Description=aRGus etcd-server (fachada HTTPS + mTLS; registro en etcd, claves HMAC en Vault) [ETCD-SERVER-UNIT-D317]
+# [VAULT-ARRANQUE-D322] After (no Wants) del desellado: va ligado a vault.service. Con Wants, cada `systemctl start` del
+# aprovisionador lo arrastraba y tapaba que un Vault caído en el arranque se quedaba sellado (medido DAY322)
 After=network-online.target etcd.service vault.service argus-vault-unseal.service
-Wants=network-online.target etcd.service vault.service argus-vault-unseal.service
+Wants=network-online.target etcd.service vault.service
 ConditionPathExists=/opt/argus/etcd-server/bin/etcd-server
 ConditionPathExists=/etc/ml-defender/etcd-server/etcd-server.json
 # Nunca se rinde: el pipeline necesita su etcd-server en cuanto pueda volver (sin límite de reinicios)

@@ -1,0 +1,20 @@
+# provisioning/vault/argus-vault-audit.logrotate — [VAULT-ARRANQUE-D322] rotación del audit device de fichero de Vault
+# (sin ella el disco se llena seguro). La pone scripts/etcd_ha/vault_arranque_instalar.sh en /etc/logrotate.d/. Retención
+# del lab: 30 días (en producción la fija la ley de cada hospital).
+# Vault reabre el fichero con SIGHUP, pero un SIGHUP mientras ARRANCA lo mata (medido DAY322: logrotate.timer, con
+# Persistent=true, corre al arrancar la VM tras una noche apagada; vault.service "Failed with result 'protocol'"). El
+# postrotate solo manda el SIGHUP con Vault activo; si está arrancando, espera a que lo esté, como mucho 60 s (1 s cada
+# vez; Vault tarda ~1 s, medido DAY322). Parado o fallido: no se manda nada (al arrancar abrirá el fichero nuevo).
+/var/log/vault/audit.log {
+  daily
+  rotate 30
+  missingok
+  notifempty
+  compress
+  delaycompress
+  create 0640 vault vault
+  postrotate
+    for i in $(seq 1 60); do e=$(systemctl is-active vault.service); [ "$e" = activating ] || break; sleep 1; done
+    if systemctl is-active --quiet vault.service; then systemctl kill -s HUP vault.service > /dev/null 2>&1 || true; fi
+  endscript
+}

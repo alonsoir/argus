@@ -32,6 +32,14 @@
 - macro: argus_lab_es_fim_wazuh
   condition: proc.exepath = /var/ossec/bin/wazuh-syscheckd
 
+# [VAULT-ARRANQUE-D322] el desellado del Vault del lab (provisioning/vault/argus-vault-unseal, identidad propia
+# CN=argus-vault-unseal sin políticas en Vault): lo lanza systemd (argus-vault-unseal.service), así que el bash del script
+# es hijo de pid 1 y cada curl es hijo directo del script. Solo su clave: la del etcd-server ya no la usa.
+- macro: argus_lab_es_desellado
+  condition: >
+    (proc.exepath = /usr/bin/curl and proc.pexepath = /usr/bin/bash and proc.apid[2] = 1 and
+     fd.name = /etc/argus-pki/argus-vault-unseal.key)
+
 - macro: argus_lab_padre_vigilado
   condition: >
     (proc.pexepath glob "/vagrant/firewall-acl-agent/build-*/firewall-acl-agent" or
@@ -83,7 +91,8 @@
                                           /etc/ml-defender/sniffer/private.pem)) or
     (argus_lab_es_ml_detector and fd.name in (/etc/argus-pki/ml-detector.key, /etc/ml-defender/ml-detector/seed.bin,
                                               /etc/ml-defender/ml-detector/private.pem)) or
-    argus_lab_es_fim_wazuh
+    argus_lab_es_fim_wazuh or
+    argus_lab_es_desellado
 
 # Herramientas de administración medidas (trazas de bajo nivel, no alertas)
 - macro: argus_lab_lectura_admin
@@ -97,7 +106,7 @@
   condition: argus_lab_lee_fichero and argus_lab_fichero_secreto and not argus_lab_lectura_del_dueno and not argus_lab_lectura_admin
   output: >
     aRGus lectura de clave por un proceso ajeno (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name
-    usuario=%user.name cmd=%proc.cmdline)
+    usuario=%user.name cmd=%proc.cmdline cmd_padre=%proc.pcmdline pid_abuelo=%proc.apid[2])
   priority: CRITICAL
   tags: [argus, secretos, adr-060]
 
@@ -105,6 +114,7 @@
   desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify)
   condition: argus_lab_lee_fichero and argus_lab_fichero_secreto and argus_lab_lectura_admin
   output: >
-    aRGus lectura administrativa de clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name usuario=%user.name)
+    aRGus lectura administrativa de clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name usuario=%user.name
+    cmd_padre=%proc.pcmdline pid_abuelo=%proc.apid[2])
   priority: NOTICE
   tags: [argus, secretos, admin, adr-060]

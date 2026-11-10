@@ -12,6 +12,10 @@
 #                                  la máquina del admin. Firmar da inmunidad frente a todo bloqueo de aRGus: si se
 #                                  compromete el certificado de uso diario, el manifiesto sigue a salvo.
 #   PKI creada antes de DAY318: bash d312_pki.sh cliente DIR argus-infra
+#   argus-vault-unseal (OU=argus-vault-unseal) [VAULT-ARRANQUE-D322] SOLO el TLS del desellado del Vault del lab
+#                                  (sys/seal-status y sys/unseal): NINGUNA política en Vault. Antes usaba la del
+#                                  etcd-server, la que lee y escribe las claves HMAC.
+#   PKI creada antes de DAY322: bash d312_pki.sh cliente DIR argus-vault-unseal
 # Parámetros (entorno): PKI_DIAS_CA (defecto 3650, rango 365-7300), PKI_DIAS_HOJA (defecto 397, rango 30-825).
 # Por la terminal solo salen huellas SHA-256 de certificados; nunca una clave.
 set -euo pipefail
@@ -105,7 +109,7 @@ case "$MODO" in
     # etcd necesita también clientAuth: su pasarela interna se conecta a su propio puerto (medido DAY312) y, en el PR2, los peers
     firmar etcd          etcd          etcd        "serverAuth,clientAuth" "DNS:localhost,IP:127.0.0.1"
     # Clientes: una instancia por rol en el PR1 (CN = OU = nombre con el que cada componente se registra hoy)
-    for r in sniffer ml-detector firewall-acl-agent admin argus-infra; do firmar "$r" "$r" "$r" clientAuth ""; done
+    for r in sniffer ml-detector firewall-acl-agent admin argus-infra argus-vault-unseal; do firmar "$r" "$r" "$r" clientAuth ""; done
     comprobar
     ;;
   cliente)
