@@ -10,7 +10,14 @@
 #     kill9:    1 x "sin estado previo", 1 x "restauradas ... (1 bajo presion)", y NINGUN "volcado de parada"
 #               antes de ella (restaura del volcado periodico; el volcado del pipeline-stop final va despues)
 #  R3 marcado tras el reinicio:
-#     antes:    0 marcados despues del corte (70 pps < abs_pps=200: en frio el ataque se aprende como base)
+#     antes:    0 marcados DEL ATAQUE despues del corte (70 pps < abs_pps=200: en frio el ataque se aprende como
+#               base). [REINICIO-R3-FLUJO-D322] Medido DAY322 en EMECAS+++: 3 marcas tras el reinicio que no eran del
+#               ataque sino dos AISLADO de 192.168.100.12 (manager de Wazuh) -> .1 por TCP (ratio 3,19 >= k_in), sin
+#               episodio ni bloqueo; el R3 viejo contaba TODAS las marcas y fallo. Ahora, en el log del firewall tras
+#               linea_fw_parado: 0 INICIO y 0 eventos AISLADO del flujo del ataque (victima 192.168.100.1 proto 17),
+#               y las marcas del ml-detector tras el corte = eventos AISLADO de los demas flujos (todas explicadas).
+#               Los demas flujos salen como dato (no decide). Los FIN no cuentan: el del episodio del ataque, empezado
+#               antes del reinicio, puede imprimirse despues del corte con los eventos de antes.
 #     ordenada/kill9: marcados_despues >= 0,5 x marcados_antes. Frontera entre los dos regimenes posibles:
 #               con estado ~1,2-1,3 (DAY300: 1,305 y 1,236), sin estado 0. La banda 1,15-1,40 se imprime
 #               como dato y NO decide (depende de lo que tarde vagrant ssh en parar el sniffer).
@@ -36,6 +43,9 @@ if [ -z "$L" ]; then
 fi
 [ -n "$L" ] || { echo "[VEREDICTO] FALLA: sin linea de corte en $T"; exit 1; }
 echo "[VEREDICTO] modo=$MODO corrida=$D corte_ml=$L"
+# [REINICIO-R3-FLUJO-D322] flujo del ataque de d300_reinicio_client.sh (reflexion NTP y base DNS/NTP: UDP a .1)
+VICT=192.168.100.1; PROTO=17
+LF=$(awk '$1=="linea_fw_parado"{print $2}' "$T" | tail -n 1)
 
 set -- $(awk -v L="$L" '/\[DDOS-V2\] bajo_presion=/ {
     t = 0
@@ -70,8 +80,30 @@ esac
 # R3
 RAZON=$(awk -v a="$MA" -v d="$MD" 'BEGIN { if (a > 0) printf "%.3f", d / a; else print "n/a" }')
 case "$MODO" in
-  antes) if [ "$MD" -eq 0 ]; then ok "R3 marcado: antes=$MA despues=$MD (en frio, 0 tras el reinicio)"
-         else ko "R3 marcado: $MD marcados tras el reinicio con el CSV borrado (esperado 0); antes=$MA"; fi ;;
+  antes)
+    if ! [[ "$LF" =~ ^[0-9]+$ ]]; then
+      ko "R3 marcado: sin linea_fw_parado en $T (corrida anterior a DAY322: no se puede separar el ataque de los demas flujos)"
+    else
+      set -- $(awk -v L="$LF" -v V="$VICT" -v P="$PROTO" 'NR > L && /\[SOMBRA-DDOS\] (INICIO|AISLADO) / {
+          v = ""; p = ""; e = 0
+          for (i = 1; i <= NF; i++) { split($i, a, "=")
+            if (a[1] == "victima") v = a[2]; if (a[1] == "proto") p = a[2]; if (a[1] == "eventos_drop") e = a[2] + 0 }
+          ini = ($0 ~ /\[SOMBRA-DDOS\] INICIO /)
+          if (v == V && p == P) { if (ini) ai++; else aa += e } else if (!ini) aj += e }
+        END { printf "%d %d %d\n", ai, aa, aj }' "$F")
+      AI=${1:-0}; AA=${2:-0}; AJ=${3:-0}
+      if [ "$AI" -eq 0 ] && [ "$AA" -eq 0 ] && [ "$MD" -eq "$AJ" ]; then
+        ok "R3 marcado: antes=$MA; tras el reinicio 0 del ataque ($VICT proto $PROTO, en frio) y $MD marcas, todas aislados de otros flujos ($AJ)"
+      else
+        ko "R3 marcado: tras el reinicio el ataque ($VICT proto $PROTO) tiene $AI INICIO y $AA eventos aislados (esperado 0 y 0); marcas del ml-detector $MD, aislados de otros flujos $AJ (tienen que ser iguales); antes=$MA"
+      fi
+      awk -v L="$LF" -v V="$VICT" -v P="$PROTO" 'NR > L && /\[SOMBRA-DDOS\] AISLADO / {
+          v = ""; p = ""; e = ""; o = ""
+          for (i = 1; i <= NF; i++) { split($i, a, "=")
+            if (a[1] == "victima") v = a[2]; if (a[1] == "proto") p = a[2]; if (a[1] == "eventos_drop") e = a[2]
+            if (a[1] == "origenes") o = substr($i, 10) }
+          if (!(v == V && p == P)) printf "[VEREDICTO] dato (no decide): tras el reinicio, aislado de otro flujo victima=%s proto=%s eventos_drop=%s origenes=%s\n", v, p, e, o }' "$F"
+    fi ;;
   *)     if [ "$MA" -gt 0 ] && [ $((2 * MD)) -ge "$MA" ]; then ok "R3 marcado: antes=$MA despues=$MD razon=$RAZON (frontera 0,5)"
          else ko "R3 marcado: antes=$MA despues=$MD razon=$RAZON (frontera 0,5: el estado no se restauro)"; fi ;;
 esac
