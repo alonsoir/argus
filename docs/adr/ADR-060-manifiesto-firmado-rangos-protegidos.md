@@ -279,7 +279,7 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
   - **8e.4c** (hecho, 1818f4ec) versión del manifiesto en el latido y en `pipeline-status` (H-H) y `rp_filter`
     informado (H-F).
   - **8e.4d** Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J), en
-    tres commits: **8e.4d-1** (hecho, 464c733bc) el manager; **8e.4d-2** (hecho DAY321) los sensores; **8e.4d-3** el E2E.
+    tres commits: **8e.4d-1** (hecho, 464c733bc) el manager; **8e.4d-2** (hecho DAY321) los sensores; **8e.4d-3** (hecho DAY322, 9aea549ba) el E2E.
     Antes de 8e.4d-3, lo que la vigilancia destapó el DAY322: el arranque de Vault sin Vagrant (31ae20e62, 3cb29fee0;
     ver «8e.4d, DAY322» en la sección 7).
 - **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
@@ -598,7 +598,7 @@ cuatro sets. Ahora los tres traps llaman a `scripts/etcd_ha/d320_limpia_kernel.s
 raw y filtro; después los sets; los nombres, del JSON), y `lab-e2e` comprueba con `make lab-kernel-limpio` (solo
 cuenta) que tras cada uno no queda nada.
 
-**8e.4d, la vigilancia con Wazuh y Falco (8e.4d-1 y 8e.4d-2 hechos DAY321; 8e.4d-3, el E2E, pendiente).** Decisiones
+**8e.4d, la vigilancia con Wazuh y Falco (8e.4d-1 y 8e.4d-2 hechos DAY321; 8e.4d-3, el E2E, hecho DAY322).** Decisiones
 de Alonso (DAY321):
 - **Cada sensor en la máquina que vigila**: Falco ve las syscalls del kernel donde corre, y el FIM y el journal son
   locales. Falco en la VM etcd y en el defender; agente de Wazuh en las dos; el manager sigue en la VM wazuh. La VM
@@ -679,3 +679,16 @@ Medido DAY322 (detalle en BACKLOG, «DAY322»): banco con Vault 2.2.1 y Falco 0.
 `d322_reinicio_vault.sh` R1-R6 en ✅ (`sudo systemctl reboot` sin Vagrant con una rotación pendiente: logrotate rota,
 Vault arranca a la primera, lo dessella su unidad sin aprovisionadores; SIGKILL: vuelve desellado en 7 s; 0 CRITICAL);
 instalar una clave en `/etc/argus-pki` no da evento y copiarla fuera da 1 CRITICAL.
+
+**8e.4d-3, DAY322: `lab-e2e-vigilancia` [VIGILANCIA-E2E-D322].** Cada caso provoca algo en el lab y exige su alerta en
+el `alerts.json` del manager de Wazuh, escrita después del inicio del caso (`scripts/vigilancia/alertas_wazuh.sh` lee
+solo lo nuevo, por byte, y detecta la rotación): C1 FIM en `/etc/argus-pki` (554 y 553), C2 umbral del disco bajado
+(100541), C3 audit de fichero de Vault con `chattr +i` (100520; Vault reabre el fichero, ese `open` falla y sigue con el
+device de syslog), C5 lectura ajena de una clave (100551), C6 intento fallido de leerla (100552, regla nueva
+`argus_lab_clave_intento_fallido`, EACCES/EPERM; con `fd.num=-1`, `fd.name` es la ruta pedida), C8 trazas de un
+`etcd-vm-check` con etcd parado, C7 el reinicio de Vault sin Vagrant (`d322_reinicio_vault.sh`) y C4 una divergencia del
+vigía (`d320_vigia_e2e.sh` con `D320_EVENTOS=E1`; 100511 y 100512). Dentro de `lab-e2e`, tras `lab-e2e-latido`. Decisiones
+de Alonso: C4 provoca su propia divergencia; C8 midió primero y después es criterio: trazas de Falco <=
+`VIG_C8_MAX_TRAZAS` (defecto 60, parámetro porque otro despliegue puede necesitar más) y todas llegan al manager.
+Medido: 14 trazas y 14 alertas (se predijeron ~255: cada `etcdctl` espera su timeout y en 36 s caben un par de vueltas),
+menos que un `pipeline-status` sano (17): no hace falta agruparlas. Dos corridas en PASA.

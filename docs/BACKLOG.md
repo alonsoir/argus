@@ -9349,11 +9349,12 @@ sección 7 («8e.4d, DAY322»).
 - Sin probar en el lab: el camino desde cero (`vault-arranque` antes de `vault-server`, Vault sin inicializar: el
   desellado da rc 0 en el banco). Lo cubre el EMECAS+++.
 
-### DEBT-VAULT-SELLADO-ALERTA-001 — ABIERTA (nueva DAY322, propuesta de Claude, por decidir)
+### DEBT-VAULT-SELLADO-ALERTA-001 — ABIERTA (nueva DAY322, aceptada por Alonso)
 En producción no hay clave de desellado en disco: tras un reinicio o una caída, Vault queda sellado hasta que alguien
 lo desselle (procedimiento manual, o auto-unseal con HSM/KMS). El etcd-server sigue (`[ETCD-VAULT-NO-DISPONIBLE]`,
 última ventana conocida; sin ella `/secrets` da 503) y el pipeline sigue protegiendo sin firmar. Falta que Wazuh lo
-convierta en una alerta que el admin vea, y el procedimiento de desellado documentado.
+convierta en una alerta que el admin vea, y el procedimiento de desellado escrito y disponible para el admin (Alonso:
+«con el tiempo se lo aprenderá de memoria»).
 **Test de cierre:** con Vault sellado a mano, el `alerts.json` del manager tiene la alerta en menos de un minuto y el
 procedimiento lo deja desellado.
 
@@ -9365,3 +9366,44 @@ el reinicio de Vault de `d322_reinicio_vault.sh` y las trazas de un `etcd-vm-che
 P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1. Sin orden decidido:
 DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001, DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001,
 DEBT-HARDENED-FALCO-RUTAS-001, DEBT-VAULT-SELLADO-ALERTA-001.
+
+## DAY322 — paso 8e.4d-3 hecho: `lab-e2e-vigilancia` [VIGILANCIA-E2E-D322]
+
+Commit `9aea549ba` y este de documentación. Diseño en ADR-060, sección 7 («8e.4d-3, DAY322»).
+
+### Decisiones de Alonso (DAY322)
+- C4 (divergencia del vigía) la provoca el propio test: `d320_vigia_e2e.sh` con `D320_EVENTOS=E1`.
+- C8 midió primero (sin PASA ni FALLA) y, con el dato, es criterio con `VIG_C8_MAX_TRAZAS` = 60 por defecto, como
+  parámetro: otro despliegue puede necesitar un número mayor.
+- Regla de Falco para los intentos fallidos de leer una clave (EACCES/EPERM, WARNING).
+- DEBT-VAULT-SELLADO-ALERTA-001 aceptada.
+
+### Medido en el lab (horas UTC; suricata y zeek apagadas: 32 GB en el Mac, las seis VMs ocupaban 19,2 GB de RSS)
+- Sonda de C3 (08:35): con `audit.log` en `chattr +i`, el login da HTTP 200, Vault escribe dos `[ERROR] audit: log …
+  underlying pipeline error` (petición y respuesta: reabre el fichero y ese `open` falla) y la 100520 llega al manager
+  en 1 s.
+- Falco con la regla nueva: 4 reglas activas en la VM etcd y en el defender (las mismas 5 syscalls).
+- Corrida 1 (08:41-08:49) y corrida 2 (09:06-09:14), las dos PASA: C1 554 en 8-12 s y 553 en 11-12 s; C2 100541 en
+  45-69 s; C3 100520 en 10 s; C5 100551 en 10 s; C6 100552 en 10 s (`usuario=nobody res=EACCES`, `fichero=` la ruta
+  pedida); C8 14 trazas en Falco (4 `curl` + 10 `etcdctl`) y 14 alertas 100553, `etcd-vm-check` de 36 s; C7 R1-R6;
+  C4 E1 reconciliado en 3-11 s y la 100511 y la 100512 del defender con 3 ms de diferencia.
+
+### Medido en el banco
+- `alertas_wazuh.sh` con un `alerts.json` falso (espera, agente, texto, argumentos mal formados); copia y restauración
+  de `disco.json` (una segunda bajada no pisa la copia); `--dry-run` de Falco con 4 reglas; el driver con `vagrant`
+  falso: todo bien, una alerta que falta, C8 con trazas de más, con alertas de menos y sin línea de partida.
+
+### Hallazgos DAY322 (8e.4d-3)
+- C8: predicción fallida, de ~255 a 14 trazas: el bucle de 2 s de `etcd_vm_estado.sh` lo frena el timeout de cada
+  `etcdctl` con etcd parado. Menos ruido que un `pipeline-status` sano: no se agrupa.
+- Dos errores míos cazados antes de dar nada por bueno: `alerta()` cruzaba agente y espera (lo vio el ensayo con
+  `vagrant` falso) y `sudo wc -l < fichero` (la redirección la abre `vagrant`: salía vacío; lo vio la primera corrida,
+  donde C8 resumió el fichero entero).
+- Wazuh no agrupa ni descarta las trazas NOTICE de Falco: 14 en el agente, 14 en el manager.
+
+### Pendiente (por orden)
+8e.5 (bootstrap con `argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS),
+EMECAS+++ PROFILE=production (cubre el lab desde cero: `vault-arranque` antes de `vault-server`) y cierre del PR1
+(README del etcd-server, push, PR). Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001,
+DEBT-LAB-ZONA-HORARIA-001, DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001, DEBT-HARDENED-FALCO-RUTAS-001,
+DEBT-VAULT-SELLADO-ALERTA-001.
