@@ -68,8 +68,11 @@
   tags: [argus, exec, adr-060]
 
 # ── 2. Lectura de una clave o una semilla ──────────────────────────────────────────────────────────────────────────
+# [VAULT-ARRANQUE-D322] fd.num>=0: solo un open que TUVO ÉXITO (como la macro open_read del reglamento oficial de Falco).
+# Medido DAY322: GNU install hace openat(destino, O_RDONLY|O_PATH|O_DIRECTORY) para saber si es un directorio; falla
+# (ENOENT/ENOTDIR), no lee nada y daba un CRITICAL al instalar una clave.
 - macro: argus_lab_lee_fichero
-  condition: evt.type in (open, openat, openat2) and evt.is_open_read=true and fd.typechar=f
+  condition: evt.type in (open, openat, openat2) and evt.is_open_read=true and fd.typechar=f and fd.num>=0
 
 - macro: argus_lab_fichero_secreto
   condition: >

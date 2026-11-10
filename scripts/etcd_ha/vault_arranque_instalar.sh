@@ -54,8 +54,15 @@ if [ -d "$PKI_IN" ]; then
   P_CRT=$(openssl x509 -in "$PKI_IN/argus-vault-unseal.crt" -noout -pubkey | openssl sha256 | awk '{print $NF}')
   P_KEY=$(openssl pkey -in "$PKI_IN/argus-vault-unseal.key" -pubout | openssl sha256 | awk '{print $NF}')
   [ "$P_CRT" = "$P_KEY" ] || fallo "argus-vault-unseal.key no casa con argus-vault-unseal.crt"
-  install -m 0644 -o root -g root "$PKI_IN/argus-vault-unseal.crt" "$CRT"
-  install -m 0600 -o root -g root "$PKI_IN/argus-vault-unseal.key" "$KEY"
+  # Mismo certificado (público) ya puesto y clave presente: no se reescribe nada. La clave instalada no se lee para
+  # compararla (sería una lectura ajena para Falco) y reescribirla en cada `vagrant up` dispararía el FIM de Wazuh.
+  if [ -s "$KEY" ] && [ -f "$CRT" ] && cmp -s "$PKI_IN/argus-vault-unseal.crt" "$CRT"; then
+    log "identidad sin cambios (mismo certificado): no se reinstala"
+  else
+    install -m 0644 -o root -g root "$PKI_IN/argus-vault-unseal.crt" "$CRT"
+    install -m 0600 -o root -g root "$PKI_IN/argus-vault-unseal.key" "$KEY"
+    log "identidad instalada en $PKI"
+  fi
   rm -rf "$PKI_IN"
 fi
 [ -s "$CRT" ] && [ -s "$KEY" ] || fallo "faltan $CRT o $KEY; en el Mac: bash scripts/etcd_ha/d312_pki.sh cliente \$ARGUS_PKI_DIR argus-vault-unseal"

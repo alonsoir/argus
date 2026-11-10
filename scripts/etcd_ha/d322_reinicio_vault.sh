@@ -72,7 +72,7 @@ done
 REINICIADO=si
 log "   VM de vuelta en $(( SECONDS - T0 )) s (boot_id $B); systemd: $(V "timeout 120 systemctl is-system-running --wait" | tail -n 1)"
 V "systemctl --failed --no-legend --plain" > "$T"
-[ -s "$T" ] && { log "   unidades fallidas:"; sed 's/^/     /' "$T"; }
+grep -q '[^[:space:]]' "$T" && { log "   unidades fallidas:"; grep '[^[:space:]]' "$T" | sed 's/^/     /'; }
 
 log "4 arranque (R1-R4)"
 V "bash $H arranque" > "$T"; pinta
