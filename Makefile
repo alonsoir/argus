@@ -252,6 +252,8 @@ bootstrap-x86-ebpf:
 	@$(MAKE) sign-plugins
 	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
 	@$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] antes de pipeline-start: los componentes encuentran el etcd-server sano
+	@echo "[6d/8] Manifiesto de protegidos: versión 1 desde la plantilla del lab, si no hay ninguno publicado..."
+	@$(MAKE) protegidos-bootstrap  # [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: antes de pipeline-start (el candado lo pide)
 	@echo "[7/8] Verificando provisioning..."
 	@$(MAKE) test-provision-1
 	@echo "[8/8] Arrancando pipeline (Variant A — eBPF/XDP)..."
@@ -290,6 +292,8 @@ bootstrap-x86-libpcap:
 	@$(MAKE) sign-plugins
 	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
 	@$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] antes de pipeline-start: los componentes encuentran el etcd-server sano
+	@echo "[6d/8] Manifiesto de protegidos: versión 1 desde la plantilla del lab, si no hay ninguno publicado..."
+	@$(MAKE) protegidos-bootstrap  # [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: antes de pipeline-start (el candado lo pide)
 	@echo "[7/8] Verificando provisioning..."
 	@$(MAKE) test-provision-1
 	@echo "[8/8] Arrancando pipeline (Variant B — libpcap)..."
@@ -1293,6 +1297,10 @@ emecas:
 	$(MAKE) bootstrap
 	$(MAKE) emecas-frescura
 	$(MAKE) test-all
+	@# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: argus-infra (VM etcd) y la vigilancia de 8e.4d (manager y argus-disco)
+	$(MAKE) test-argus-infra
+	$(MAKE) test-vigilancia-reglas
+	$(MAKE) test-vigilancia-disco
 	$(MAKE) test-firewall-e2e
 	$(MAKE) test-firewall-perf
 	$(MAKE) test-e2e-synthetic
@@ -2218,13 +2226,27 @@ dev-setup-tools:
 ETCD_VM_ESPERA_S ?= 30
 ETCD_VM_UNIDAD := ml-defender-etcd-server.service
 ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
-.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey test-argus-infra
+.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey protegidos-bootstrap test-argus-infra
 .PHONY: vigilancia-manager-deploy test-vigilancia-reglas test-vigilancia-disco
 
 # [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2 (Mac): clave PÚBLICA del manifiesto de protegidos (Vault transit de la VM etcd)
 # al defender, donde CMake la compila en el firewall-acl-agent (patrón ADR-025). Lee con el certificado de argus-infra.
 protegidos-pubkey:
 	@bash scripts/etcd_ha/protegidos_pubkey.sh
+
+# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5 (Mac): el bootstrap firma la versión 1 del manifiesto de protegidos con la
+# propia herramienta del admin (argus-infra init, VM etcd) desde la plantilla del lab (tools/argus-infra/plantillas/
+# hospital-lab.json: .20 en infraestructura con su MAC, .61 en intranet). Idempotente (decisión de Alonso DAY322): rc 0
+# firmada; rc 4 ya había un manifiesto publicado y no se toca; cualquier otro código para el bootstrap.
+protegidos-bootstrap:
+	@vagrant ssh etcd -c "sudo /usr/local/sbin/argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json --si; echo ARGUS_INFRA_RC=\$$?" > /tmp/argus_protegidos_bootstrap.txt 2>&1; \
+	grep -v -e '^\[argus\]' -e '^ARGUS_INFRA_RC=' /tmp/argus_protegidos_bootstrap.txt; \
+	rc=$$(tr -d '\r' < /tmp/argus_protegidos_bootstrap.txt | sed -n 's/^ARGUS_INFRA_RC=\([0-9]*\)$$/\1/p' | tail -n 1); \
+	case "$$rc" in \
+	  0) echo "[PROTEGIDOS-BOOTSTRAP] versión 1 firmada desde la plantilla del lab";; \
+	  4) echo "[PROTEGIDOS-BOOTSTRAP] ya había un manifiesto publicado: no se toca";; \
+	  *) echo "[PROTEGIDOS-BOOTSTRAP] FALLA: argus-infra init rc=$${rc:-sin respuesta de la VM etcd} (/tmp/argus_protegidos_bootstrap.txt)"; exit 1;; \
+	esac
 
 # [PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (Mac): tests de argus-infra (unittest, biblioteca estándar, sin red ni
 # Vault) con el Python de la VM etcd, donde vive la herramienta: el validador portado de libs/protegidos, la

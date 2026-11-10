@@ -28,7 +28,8 @@
 #      certificado; 8. GET final: lo vigente tiene que ser, byte a byte, lo publicado; 9. el token se revoca siempre.
 #
 # Salida: 0 bien; 1 error (red, Vault, verificación, cancelado); 2 uso o configuración; 3 el etcd-server rechazó el PUT
-# (con su motivo). Todo va a la salida estándar y las acciones también a syslog (ident argus-infra, facility auth).
+# (con su motivo); 4 init sin nada que hacer: ya hay un manifiesto publicado ([PROTEGIDOS-BOOTSTRAP-D322], decisión de
+# Alonso: el bootstrap de 8e.5 da por buenos 0 y 4, y para con cualquier otro). Todo va a la salida estándar y las acciones también a syslog (ident argus-infra, facility auth).
 #
 # Configuración (G-A, el JSON es la ley): /etc/argus-infra/argus-infra.json, ver el _doc del fichero del repo
 # tools/argus-infra/argus-infra.lab.json. La identidad (hospital, plantas, límites, URLs, rutas) no tiene defecto
@@ -62,7 +63,7 @@ CAMPOS_CARGA = ("esquema", "hospital_id", "version", "emitido_utc", "firmante", 
 MAX_U64 = 2 ** 64 - 1
 TIMEOUT_DEFECTO, TIMEOUT_MIN, TIMEOUT_MAX = 10, 1, 120
 
-SALIDA_OK, SALIDA_ERROR, SALIDA_USO, SALIDA_RECHAZO = 0, 1, 2, 3
+SALIDA_OK, SALIDA_ERROR, SALIDA_USO, SALIDA_RECHAZO, SALIDA_YA_HAY = 0, 1, 2, 3, 4
 
 
 class Fallo(Exception):
@@ -943,7 +944,7 @@ def orden_init(ses, a):
     p = leer_plantilla(a.desde, ses.cfg)
     if ses.etcd.vigente() is not None:
         raise Fallo("[ARGUS-INFRA] ya hay un manifiesto publicado: init solo firma la versión 1 (use add, del o "
-                    "deshacer)")
+                    "deshacer); nada que hacer", SALIDA_YA_HAY)
     return cambiar(ses, None, p["comun"], p["plantas"], p["motivo"], a.si, f"init desde {a.desde}")
 
 
@@ -1176,7 +1177,8 @@ def main(argv=None):
         ses.vault.login()
         return ORDENES[a.orden](ses, a)
     except Fallo as e:
-        registrar(str(e), a_syslog=a.orden in ("init", "add", "del", "deshacer"), prioridad=syslog.LOG_ERR)
+        registrar(str(e), a_syslog=a.orden in ("init", "add", "del", "deshacer"),
+                  prioridad=syslog.LOG_NOTICE if e.codigo == SALIDA_YA_HAY else syslog.LOG_ERR)
         return e.codigo
     finally:
         ses.vault.revocar()

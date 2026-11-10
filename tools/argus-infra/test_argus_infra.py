@@ -345,5 +345,57 @@ class Configuracion(unittest.TestCase):
             ai.leer_plantilla(self.escribir(j), cfg)
 
 
+class Init(unittest.TestCase):
+    """[PROTEGIDOS-BOOTSTRAP-D322] init es idempotente para el bootstrap: con un manifiesto ya publicado sale con
+    SALIDA_YA_HAY (4) sin firmar nada; sin manifiesto, firma la versión 1 desde la plantilla."""
+    PL = os.path.join(AQUI, "plantillas", "hospital-lab.json")
+
+    def ses(self, vigente):
+        import types
+        return types.SimpleNamespace(cfg=_cfg(), etcd=types.SimpleNamespace(vigente=lambda: vigente))
+
+    def args(self, desde=None):
+        import types
+        return types.SimpleNamespace(desde=desde or self.PL, si=True)
+
+    def test_ya_hay_manifiesto_sale_con_4_sin_firmar(self):
+        llamadas = []
+        antes, ai.cambiar = ai.cambiar, lambda *x: llamadas.append(x) or 0
+        try:
+            with self.assertRaises(ai.Fallo) as c:
+                ai.orden_init(self.ses({"carga": {"version": 11}}), self.args())
+        finally:
+            ai.cambiar = antes
+        self.assertEqual(c.exception.codigo, ai.SALIDA_YA_HAY)
+        self.assertEqual(ai.SALIDA_YA_HAY, 4)
+        self.assertIn("nada que hacer", str(c.exception))
+        self.assertEqual(llamadas, [])
+
+    def test_sin_manifiesto_firma_la_version_1_de_la_plantilla(self):
+        llamadas = []
+        antes, ai.cambiar = ai.cambiar, lambda *x: llamadas.append(x) or 0
+        try:
+            rc = ai.orden_init(self.ses(None), self.args())
+        finally:
+            ai.cambiar = antes
+        self.assertEqual(rc, 0)
+        self.assertEqual(len(llamadas), 1)
+        ses, vigente, comun, plantas, motivo, si, _ = llamadas[0]
+        self.assertIsNone(vigente)
+        self.assertTrue(si)
+        self.assertEqual([e["cidr"] for e in plantas["lab-vagrant"]], ["192.168.100.20/32", "192.168.100.61/32"])
+
+    def test_plantilla_mala_es_uso_aunque_haya_manifiesto(self):
+        j = leer_json(self.PL)
+        j["hospital_id"] = "otro"
+        d = tempfile.mkdtemp()
+        r = os.path.join(d, "mala.json")
+        with open(r, "w", encoding="utf-8") as f:
+            json.dump(j, f)
+        with self.assertRaises(ai.Fallo) as c:
+            ai.orden_init(self.ses({"carga": {"version": 11}}), self.args(r))
+        self.assertEqual(c.exception.codigo, ai.SALIDA_USO)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)
