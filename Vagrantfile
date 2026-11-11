@@ -721,34 +721,13 @@ BASHRC_EOF
       fi
 
       # ── Jenkins (DEBT-VAULT-PROVISION-PROD-001) ───────────────────────────
-      # Fix DAY 160: key via keyserver (jenkins.io-2023.key rotada — NO usar)
-      # Fix DAY 160: Jenkins 2.555+ requiere Java 21 — JAVA_HOME en defaults
-      # Fix DAY 160: Jenkins como root en dev (Java 21 en /root/.sdkman)
-      if ! command -v jenkins &>/dev/null && [ ! -f /etc/init.d/jenkins ]; then
-        echo "📦 Instalando Jenkins 2.555+..."
-        gpg --keyserver keyserver.ubuntu.com --recv-keys 7198F4B714ABFC68 2>/dev/null
-        gpg --export 7198F4B714ABFC68 \
-          | tee /usr/share/keyrings/jenkins-keyring.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/" \
-          | tee /etc/apt/sources.list.d/jenkins.list
-        apt-get update -qq
-        apt-get install -y jenkins
-        echo "JAVA_HOME=/root/.sdkman/candidates/java/21.0.7-tem" >> /etc/default/jenkins
-        echo "JAVA=/root/.sdkman/candidates/java/21.0.7-tem/bin/java" >> /etc/default/jenkins
-        sed -i 's/^JENKINS_USER=.*/JENKINS_USER=root/' /etc/default/jenkins
-        sed -i 's/^JENKINS_GROUP=.*/JENKINS_GROUP=root/' /etc/default/jenkins
-        mkdir -p /etc/systemd/system/jenkins.service.d
-        printf '[Service]\nUser=root\nGroup=root\nEnvironment="JAVA_HOME=/root/.sdkman/candidates/java/21.0.7-tem"\nEnvironment="PATH=/root/.sdkman/candidates/java/21.0.7-tem/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"\n' \
-          > /etc/systemd/system/jenkins.service.d/java21.conf
-        systemctl daemon-reload
-        systemctl enable jenkins
-        systemctl start jenkins
-        echo "✅ Jenkins instalado (puerto 8080)"
-        echo "⚠️  Password inicial: sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
-      else
-        echo "✅ Jenkins ya instalado — asegurando arranque..."
-        systemctl start jenkins 2>/dev/null || true
-      fi
+      # [JENKINS-CLAVE-D323] scripts/jenkins/jenkins_instalar.sh: el repositorio de pkg.jenkins.io con la clave comprobada
+      # por huella (provisioning/jenkins/CLAVE), como Wazuh y Falco; antes, un keyserver de terceros sin comprobar nada
+      # (medido DAY323: no respondió y el bloque dijo «✅ Jenkins instalado» sin Jenkins). rc 3 = Jenkins no instalado,
+      # avisado y con el repositorio retirado: el up sigue (decisión de Alonso DAY323: EMECAS no usa Jenkins). Otro rc
+      # distinto de 0 para el up.
+      bash /vagrant/scripts/jenkins/jenkins_instalar.sh; JK_RC=$?
+      [ "$JK_RC" = 0 ] || [ "$JK_RC" = 3 ] || { echo "❌ [JENKINS-INSTALAR] rc=$JK_RC"; exit 1; }
 
       # Vault autostart movido a vault-enterprise-bootstrap (run: always) — DAY 163
 
