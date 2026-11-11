@@ -89,7 +89,12 @@ def estado(ahora=None):
     malo = next((p for p in hechos if p[3] != 0), None)
     n = len(hechos) + (1 if curso else 0)
     tot = ("/%d" % len(orden)) if orden else ""
-    lin = ["[EMECAS-PROGRESO] %s desde las %s (%s)" % (meta, hora(t0), dur(ahora - t0))]
+    # [EMECAS-PROGRESO-D323] con un paso fallido el reloj de la cabecera se para en el fallo: antes seguía contando hasta
+    # ahora («desde las 18:09 (4h09m)» horas después de parar, medido DAY322)
+    if malo:
+        lin = ["[EMECAS-PROGRESO] %s desde las %s hasta las %s (%s)" % (meta, hora(t0), hora(malo[2]), dur(malo[2] - t0))]
+    else:
+        lin = ["[EMECAS-PROGRESO] %s desde las %s (%s)" % (meta, hora(t0), dur(ahora - t0))]
     c = carpeta()
     if c:
         lin.append("  logs y resumen: %s/" % c)

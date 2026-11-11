@@ -80,6 +80,21 @@ class EmecasPaso(unittest.TestCase):
         self.assertIn(" 40 %", t)
         self.assertIn("quedan ~10m00s", t)
 
+    def test_con_un_paso_fallido_la_cabecera_se_para_en_el_fallo(self):
+        # [EMECAS-PROGRESO-D323] cuatro horas después de parar, la cabecera sigue diciendo lo que duró hasta el fallo
+        with open(os.path.join(self.d, "emecas_progreso.txt"), "w", encoding="utf-8") as f:
+            f.write("META emecas 1000\nINICIO uno 1000\nFIN uno 1100 0\nINICIO dos 1100\nFIN dos 1400 2\n")
+        m = self.modulo()
+        t = m.estado(ahora=1400 + 4 * 3600)
+        cab = t.splitlines()[0]
+        self.assertIn("hasta las %s (6m40s)" % m.hora(1400), cab)
+        self.assertNotIn("4h", cab)
+        self.assertIn("paso dos FALLÓ (rc=2) tras 5m00s", t)
+        # sin fallo, la cabecera cuenta hasta ahora, como antes
+        with open(os.path.join(self.d, "emecas_progreso.txt"), "w", encoding="utf-8") as f:
+            f.write("META emecas 1000\nINICIO uno 1000\n")
+        self.assertIn("(4m10s)", m.estado(ahora=1250).splitlines()[0])
+
     def test_carpeta_y_log_por_paso_con_la_salida_de_siempre(self):
         self.h("inicio", "emecas")
         rc, out = self.h("paso", "emecas", "test-all", "--", "sh", "-c", "echo por stdout; echo por stderr >&2")
