@@ -203,7 +203,9 @@ class Construccion(unittest.TestCase):
         c.decode("ascii")
         m = ai.validar_carga(c, "hospital-lab", "lab-vagrant", 0)
         self.assertEqual([(e["categoria"], e["cidr"], e["interfaz"]) for e in m["entradas"]],
-                         [("infraestructura", "192.168.100.20/32", "eth2"), ("intranet", "192.168.100.61/32", "eth2")])
+                         [("infraestructura", "192.168.100.20/32", "eth2"), ("infraestructura", "192.168.100.10/32", "eth2"),
+                          ("infraestructura", "192.168.100.11/32", "eth2"), ("infraestructura", "192.168.100.12/32", "eth2"),
+                          ("intranet", "192.168.100.61/32", "eth2")])
         self.assertEqual(m["carga"]["emitido_utc"], "2026-11-06T07:00:00Z")
         self.assertEqual(m["carga"]["limites"], cfg["limites"])
         s = ai.construir_sobre(c, FIRMA)
@@ -330,7 +332,7 @@ class Configuracion(unittest.TestCase):
     def test_plantilla_del_repo(self):
         cfg = _cfg()
         p = ai.leer_plantilla(os.path.join(AQUI, "plantillas", "hospital-lab.json"), cfg)
-        self.assertEqual(len(p["plantas"]["lab-vagrant"]), 2)
+        self.assertEqual(len(p["plantas"]["lab-vagrant"]), 5)   # .20 + los sensores .10 .11 .12 [PROTEGIDOS-SENSORES-D323] + .61
         cfg2 = _cfg()
         cfg2["hospital_id"] = "otro"
         with self.assertRaises(ai.Fallo):
@@ -383,7 +385,9 @@ class Init(unittest.TestCase):
         ses, vigente, comun, plantas, motivo, si, _ = llamadas[0]
         self.assertIsNone(vigente)
         self.assertTrue(si)
-        self.assertEqual([e["cidr"] for e in plantas["lab-vagrant"]], ["192.168.100.20/32", "192.168.100.61/32"])
+        self.assertEqual([e["cidr"] for e in plantas["lab-vagrant"]],
+                         ["192.168.100.20/32", "192.168.100.10/32", "192.168.100.11/32", "192.168.100.12/32",
+                          "192.168.100.61/32"])
 
     def test_plantilla_mala_es_uso_aunque_haya_manifiesto(self):
         j = leer_json(self.PL)
