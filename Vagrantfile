@@ -78,6 +78,28 @@ ADAPTER_TOOLCHAIN_SHELL
 # actualiza el agente en el siguiente vagrant provision. El nombre del agente llega por env AGENT_NAME.
 WAZUH_AGENT_INSTALL = "bash /vagrant/scripts/vigilancia/wazuh_agente_instalar.sh"
 
+# LAB_NTP — [LAB-NTP-SENSORES-D323] los sensores (suricata, zeek, wazuh) toman la hora del defender (192.168.100.1),
+# como el client [ARGUS-LAB-NTP-D294] y la VM etcd: un solo reloj para el lab, con o sin Internet (el defender sirve
+# hora con local stratum 10 aunque pierda sus fuentes). Medido DAY323: los tres iban al pool de Debian por la NAT
+# (162.159.200.1 y 195.95.153.59), cada uno con su referencia, y el reloj de las VMs de VirtualBox deriva de 2000 a
+# 5000 ppm (de 3 a 7 minutos al día sin NTP). Si no sincroniza con el defender en 30 s, la provisión FALLA.
+# run: always: cada vagrant up vuelve a sincronizar (tras suspender el Mac, el reloj de la VM se queda atrás).
+LAB_NTP = <<-'LAB_NTP_SHELL'
+  CHRONY_CONF=/etc/chrony/chrony.conf
+  command -v chronyc >/dev/null || { apt-get update -qq; apt-get install -y chrony; }
+  sed -i 's/^pool /#pool /' "$CHRONY_CONF"
+  sed -i 's/^makestep 1 3$/makestep 1 -1/' "$CHRONY_CONF"
+  grep -q '^server 192.168.100.1 iburst' "$CHRONY_CONF" || echo 'server 192.168.100.1 iburst' >> "$CHRONY_CONF"
+  systemctl restart chrony
+  if ! chronyc waitsync 30 0.1 0 1; then
+    echo "❌ [LAB-NTP] $(hostname): sin sincronizar con 192.168.100.1 en 30 s"; chronyc -n sources; exit 1
+  fi
+  if ! chronyc -n tracking | grep -qF '(192.168.100.1)'; then
+    echo "❌ [LAB-NTP] $(hostname): su fuente no es el defender 192.168.100.1"; chronyc -n tracking; exit 1
+  fi
+  echo "✅ [LAB-NTP] $(hostname): $(chronyc -n tracking | grep -E 'Reference ID|System time' | tr -s ' ' | paste -sd ';' -)"
+LAB_NTP_SHELL
+
 # ══════════════════════════════════════════════════════════════════════════════
 # VAULT_INSTALL — [VAULT-INSTALL-D312] un único sitio donde se instala Vault, con la versión FIJADA (determinismo de
 # EMECAS: dos up separados por una publicación de HashiCorp no deben dar versiones distintas). Lo usan el defender y la
@@ -1389,6 +1411,7 @@ BASHRC_EOF
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
 
+    suricata.vm.provision "shell", name: "lab-ntp", run: "always", inline: LAB_NTP
     suricata.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
 
   end  # End suricata VM
@@ -1481,6 +1504,7 @@ BASHRC_EOF
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
 
+    zeek.vm.provision "shell", name: "lab-ntp", run: "always", inline: LAB_NTP
     zeek.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
 
   end  # End zeek VM
@@ -1549,6 +1573,7 @@ BASHRC_EOF
       /var/ossec/bin/wazuh-control status | head -5 || true
     SHELL
 
+    wazuh.vm.provision "shell", name: "lab-ntp", run: "always", inline: LAB_NTP
     wazuh.vm.provision "shell", name: "host-adapter-perms", inline: <<-'PERMS_SHELL'
           set -eu
           echo "=== host-adapter-perms: vagrant lee alerts.json + buzon host (DEBT-HOST-ADAPTER-ALERTS-PERMS-001) ==="
