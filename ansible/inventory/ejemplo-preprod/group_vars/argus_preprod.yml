@@ -1,0 +1,13 @@
+# aRGus NDR -- group_vars del EJEMPLO de preproducción [INVENTARIO-FUERA-D315] (datos ficticios, RFC 5737)
+argus_env: preprod
+
+# etcd-server: TODOS los miembros etcd del clúster de este despliegue (el líder lo elige Raft, nunca Jenkins). Sin defecto.
+etcd_almacen_endpoints:
+  - "https://192.0.2.11:2381"
+  - "https://192.0.2.12:2381"
+  - "https://192.0.2.13:2381"
+# Prefijo de este despliegue: dos plantas en el mismo clúster sin prefijo propio se pisarían en silencio. El rol RBAC
+# del etcd-server en etcd tiene que cubrirlo. Formato: empieza y acaba en /, [a-z0-9/-], sin //, hasta 64.
+argus_prefijo: "/argus/hospital-ejemplo/planta-1/"
+# Hospital de este despliegue (ADR-060): nombra su clave transit del manifiesto de protegidos. Formato: [a-z0-9-], 1-64.
+argus_hospital_id: "hospital-ejemplo"

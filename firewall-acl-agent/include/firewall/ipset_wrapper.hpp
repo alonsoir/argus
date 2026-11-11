@@ -40,6 +40,8 @@ enum class IPSetType {
     HASH_IP,      ///< Individual IPs (1.2.3.4)
     HASH_NET,     ///< CIDR blocks (1.2.3.0/24)
     HASH_IP_PORT, ///< IP + Port tuples
+    HASH_NET_IFACE, ///< CIDR + interfaz de entrada (192.168.100.20/32,eth2) [PROTEGIDOS-MANIFIESTO-D318]
+    HASH_IP_MAC,    ///< IP + MAC de origen (192.168.100.20,08:00:27:a2:00:20) [PROTEGIDOS-ANTISPOOF-D320]
 };
 
 /// Address family
@@ -362,6 +364,11 @@ public:
     /// @note Thread-safe
     std::vector<std::string> list_entries(const std::string& set_name) const;
 
+    /// [PROTEGIDOS-VIGIA-D320] ADR-060 D8: cada entrada con sus opciones ('ipset save'), sin los contadores
+    /// (packets N bytes N): "192.168.100.20,eth2", "10.9.0.0/24,eth2 nomatch"... Lo usa el vigía para que una entrada
+    /// cambiada a nomatch (que anularía la exención) cuente como divergencia. Vacío si el set no existe.
+    std::vector<std::string> list_entries_opciones(const std::string& set_name) const;
+
     //===------------------------------------------------------------------===//
     // Advanced Operations
     //===------------------------------------------------------------------===//
@@ -384,6 +391,22 @@ public:
         const std::string& set1,
         const std::string& set2
     );
+
+    /// [PROTEGIDOS-MANIFIESTO-D318] tipo de un set existente ('ipset list -t'); nullopt si no existe
+    std::optional<std::string> set_type(const std::string& set_name) const;
+
+    /// [PROTEGIDOS-MANIFIESTO-D318] ADR-060 D-A: sustituye de forma ATÓMICA el contenido de un set hash:net,iface
+    /// existente: temporal <set>_n con las entradas (cidr, interfaz), ipset swap y borrado del temporal. Nunca deja
+    /// un instante sin entradas; si algo falla el set queda como estaba. En dry_run solo imprime las órdenes.
+    IPSetResult<void> replace_net_iface(const std::string& set_name,
+                                        const std::vector<std::pair<std::string, std::string>>& entradas,
+                                        uint32_t maxelem);
+
+    /// [PROTEGIDOS-ANTISPOOF-D320] ADR-060 8e.4b: la misma sustitución atómica (temporal <set>_n, restore, swap) para
+    /// los sets del antispoofing: HASH_NET (cidr IPv4), HASH_IP (IPv4) y HASH_IP_MAC ("ip,xx:xx:xx:xx:xx:xx"). Cada
+    /// entrada se valida según el tipo; una mala y no se toca nada. Otros tipos: error.
+    IPSetResult<void> replace_set(const std::string& set_name, IPSetType tipo, const std::vector<std::string>& entradas,
+                                  uint32_t maxelem);
 
     /// Save all sets to file
     /// @param filepath Path to save file
@@ -412,6 +435,10 @@ private:
     /// Internal version of set_exists without mutex lock
     /// MUST be called while holding mutex_
     bool set_exists_unlocked(const std::string& set_name) const;
+
+    /// [PROTEGIDOS-ANTISPOOF-D320] cuerpo común de replace_net_iface y replace_set (ya validadas las entradas).
+    IPSetResult<void> reemplazar_unlocked(const std::string& set_name, const char* tipo,
+                                          const std::vector<std::string>& lineas, uint32_t maxelem);
 
     /// Validate IP address format
 

@@ -365,7 +365,7 @@ size_t BatchProcessor::flush_internal() {
     entries.reserve(batch_size);
 
     for (const auto& ip : pending_ips_) {
-        if (rangos_protegidos_.categoria_de(ip) != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+        if (rangos_protegidos_.categoria_de(ip) != ::argus::protegidos::CategoriaProtegida::NINGUNA) {
             // [DDOS-MITIGACION-B2-D302] 2.a puerta de la barrera: NINGUN camino mete un protegido en el ipset
             ++rechazos_protegidos_;
             FIREWALL_LOG_ERROR("[DDOS-MITIGACION] origen protegido en la cola de bloqueo: NO entra en el ipset",
@@ -847,11 +847,11 @@ ResultadoEpisodio BatchProcessor::encolar_episodio(const std::string& ip, bool n
         std::lock_guard<std::mutex> lock(mutex_);
         bool v6 = false;
         std::array<uint8_t, 16> b{};
-        if (!::mldefender::firewall::detalle_protegidos::a_bytes(ip, v6, b)) {
+        if (!::argus::protegidos::detalle_protegidos::a_bytes(ip, v6, b)) {
             r.estado = ResultadoEpisodio::Estado::IP_INVALIDA;
             return r;
         }
-        if (rangos_protegidos_.categoria_de(ip) != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+        if (rangos_protegidos_.categoria_de(ip) != ::argus::protegidos::CategoriaProtegida::NINGUNA) {
             ++rechazos_protegidos_;
             r.estado = ResultadoEpisodio::Estado::PROTEGIDO;
             return r;
@@ -898,7 +898,7 @@ ResultadoEpisodio BatchProcessor::renovar_episodio(const std::string& ip) {
     return encolar_episodio(ip, false);
 }
 
-void BatchProcessor::set_rangos_protegidos(const RangosProtegidos& rangos) {
+void BatchProcessor::set_rangos_protegidos(const ::argus::protegidos::RangosProtegidos& rangos) {
     std::lock_guard<std::mutex> lock(mutex_);
     rangos_protegidos_ = rangos;
 }

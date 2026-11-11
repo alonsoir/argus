@@ -44,7 +44,6 @@ ZMQSubscriber::ZMQSubscriber(BatchProcessor& processor,
         , running_(false)
         , current_reconnect_interval_ms_(config.reconnect_interval_ms)
         , etcd_client_(etcd_client)  // ✅ Day 59: Store etcd client
-        , hmac_key_(std::nullopt)     // ✅ Day 59: Initialize as empty
     {
     FIREWALL_LOG_INFO("Initializing ZMQ Subscriber",
         "endpoint", config.endpoint,
@@ -70,40 +69,18 @@ ZMQSubscriber::ZMQSubscriber(BatchProcessor& processor,
         );
         logger_->start();
 
-        // ✅ Day 59: Retrieve HMAC key from etcd if available
-        // ✅ Day 59: Retrieve HMAC key from etcd if available
-        if (etcd_client_) {
-            try {
-                // Get service discovery paths from etcd-server
-                auto paths = etcd_client_->get_service_paths();
-
-                if (!paths.is_valid()) {
-                    FIREWALL_LOG_ERROR("Service discovery paths not available from etcd-server");
-                    throw std::runtime_error("Missing service discovery paths");
-                }
-
-                FIREWALL_LOG_INFO("Using service discovery path for HMAC key",
-                    "path", paths.hmac_key);
-
-                auto key_result = etcd_client_->get_hmac_key(paths.hmac_key);
-
-                if (key_result.has_value()) {
-                    hmac_key_ = key_result;
-                    FIREWALL_LOG_INFO("HMAC key retrieved from etcd",
-                        "key_path", paths.hmac_key,
-                        "key_size_bytes", hmac_key_->size());
-                } else {
-                    FIREWALL_LOG_WARN("HMAC key not found in etcd, CSV signing disabled",
-                        "key_path", paths.hmac_key);
-                }
-
-            } catch (const std::exception& e) {
-                FIREWALL_LOG_ERROR("Failed to retrieve HMAC key from etcd",
-                    "error", e.what());
-            }
-        } else {
-            FIREWALL_LOG_WARN("No etcd client provided, CSV signing disabled");
-        }
+        // [FW-CSV-CLAVE-B2-D316] G4: la clave del CSV se pide cada hmac_key.check_interval_seconds en un hilo propio
+        // (ClaveCsv), como la del bronce en el ml-detector. /secrets/<CN> solo exige el certificado con ese CN, no el
+        // registro. Sin cliente etcd (bloque con fatales): sin clave, avisado en cada intento.
+        EtcdClient* etcd = etcd_client_;
+        clave_csv_ = std::make_unique<ClaveCsv>(
+            [etcd]() -> std::optional<Clave> {
+                if (!etcd) return std::nullopt;
+                return etcd->get_hmac_key("/secrets/firewall-acl-agent");
+            },
+            config_.hmac_key_check_interval_seconds,
+            [](const std::string& linea) { std::cerr << linea << std::endl; });
+        clave_csv_->arrancar();
 
         FIREWALL_LOG_INFO("Firewall logger initialized",
             "log_directory", config_.log_directory,
@@ -620,14 +597,11 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                           << " victimas_activas=" << ddos_shadow_.victims() << std::endl;
                 {   // [PROTEGIDOS-D300] linea propia (no altera [SOMBRA-DDOS] resumen); alertas acumuladas
                     const uint64_t* pa = prot_alertas_;
-                    std::cout << "[SOMBRA-DDOS] protegidos: alertas=" << (pa[1] + pa[2] + pa[3]) << " dmz=" << pa[1]
-                              << " intranet=" << pa[2] << " externos_criticos=" << pa[3]
-                              << " por_defecto=" << (config_.ddos_protegidos.por_defecto ? 1 : 0) << std::endl;
-                    if (config_.ddos_protegidos.por_defecto) {
-                        std::cerr << "[CONFIG-DEFAULT] ddos_protegidos: rigen los rangos privados por defecto (RFC 1918 + "
-                                     "fc00::/7 como intranet); configure los de ESTE despliegue (GUIA_OPERACIONES, "
-                                     "seccion DDOS-PROTEGIDOS)" << std::endl;
-                    }
+                    const auto vig = config_.protegidos ? config_.protegidos->vigente() : nullptr;
+                    std::cout << "[SOMBRA-DDOS] protegidos: alertas=" << (pa[1] + pa[2] + pa[3] + pa[4]) << " dmz=" << pa[1]
+                              << " intranet=" << pa[2] << " externos_criticos=" << pa[3] << " infraestructura=" << pa[4]
+                              << " manifiesto=" << (vig ? "version " + std::to_string(vig->version) : std::string("ninguno"))
+                              << std::endl;
                     prot_detalle_ = 0;
                 }
                 {   // [SOMBRA-AISLADO-D311] linea propia: DROP de victimas que no llegaron a episodio (cerrados en el
@@ -648,7 +622,9 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                     mit_renovar_total_ += mit_renovar_;
                     std::cout << "[DDOS-MITIGACION] resumen: modo="
                               << (!config_.ddos_mitigacion.habilitada ? "deshabilitada"
-                                  : (config_.dry_run ? "dry_run" : "ACTIVA"))
+                                  : (::argus::protegidos::candado_cerrado(true, config_.protegidos.get())
+                                         ? "CANDADO" : (config_.dry_run ? "dry_run" : "ACTIVA")))
+                              << " candado=" << mit_candado_
                               << " bloquear=" << mit_bloquear_ << " renovar=" << mit_renovar_
                               << " esperar=" << mit_esperar_ << " rechazo_protegido=" << mit_protegido_
                               << " rechazo_ip_invalida=" << mit_invalida_
@@ -671,6 +647,7 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                     mit_esperar_ = 0;
                     mit_protegido_ = 0;
                     mit_invalida_ = 0;
+                    mit_candado_ = 0;
                 }
                 {  // [TIMEBASE-D295] retraso sniffer->firewall y anomalias de tiempo del periodo
                     uint64_t total = 0;
@@ -754,13 +731,15 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
         }
         const double ratio = nf2.has_ddos_embedded() ? static_cast<double>(nf2.ddos_embedded().victim_rate_ratio()) : 0.0;
         {   // [PROTEGIDOS-D300] origen protegido: ALERTA_PROTEGIDO; no entra en el episodio ni se bloquea nunca
-            const auto cat = config_.ddos_protegidos.categoria_de(nf2.source_ip());
-            if (cat != ::mldefender::firewall::CategoriaProtegida::NINGUNA) {
+            // [PROTEGIDOS-MANIFIESTO-D318] lo vigente del manifiesto; por IP siempre, venga por donde venga (D-G)
+            const auto rg = config_.protegidos ? config_.protegidos->rangos() : nullptr;
+            const auto cat = rg ? rg->categoria_de(nf2.source_ip()) : ::argus::protegidos::CategoriaProtegida::NINGUNA;
+            if (cat != ::argus::protegidos::CategoriaProtegida::NINGUNA) {
                 ++prot_alertas_[static_cast<std::size_t>(cat)];
                 if (prot_detalle_ < static_cast<uint64_t>(config_.ddos_shadow.anomalias_detalle_max)) {
                     ++prot_detalle_;
                     std::cout << "[SOMBRA-DDOS] ALERTA_PROTEGIDO origen=" << nf2.source_ip()
-                              << " categoria=" << ::mldefender::firewall::nombre_categoria(cat)
+                              << " categoria=" << ::argus::protegidos::nombre_categoria(cat)
                               << " victima=" << nf2.destination_ip() << " proto=" << nf2.protocol_number()
                               << " ts_s=" << ts_s << " ratio=" << ratio << " p1=" << p1 << " modelo=" << modelo
                               << " evento=" << event.event_id() << " (no se bloquea)" << std::endl;
@@ -785,6 +764,10 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
             const std::string& src = nf2.source_ip();
             using Accion = ::mldefender::firewall::AccionMitigacion;
             using Estado = ::mldefender::firewall::ResultadoEpisodio::Estado;
+            if (::argus::protegidos::candado_cerrado(config_.ddos_mitigacion.habilitada, config_.protegidos.get())) {
+                ++mit_candado_;  // [PROTEGIDOS-MANIFIESTO-D318] D6: sin manifiesto verificado, la mitigación no actúa
+                return;
+            }
             const Accion accion = ddos_mitigacion_.decidir(dst, proto, src, ddos_shadow_.en_episodio(dst, proto));
             if (accion == Accion::ESPERAR) {
                 ++mit_esperar_;
@@ -813,8 +796,11 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                             if (logger_ && logger_->log_blocked_event(ev)) {
                                 stats_.events_logged++;
                             }
-                            if (logger_ && hmac_key_.has_value()) {
-                                logger_->append_csv_log(ev, hmac_key_.value());
+                            const auto k = clave_csv_ ? clave_csv_->clave() : std::nullopt;  // [FW-CSV-CLAVE-B2-D316]
+                            if (logger_ && k.has_value()) {
+                                logger_->append_csv_log(ev, *k);
+                            } else if (clave_csv_) {
+                                clave_csv_->fila_sin_clave();
                             }
                         } catch (const std::exception& e) {
                             FIREWALL_LOG_ERROR("[DDOS-MITIGACION] fallo al registrar la accion", "error", e.what(),
@@ -959,7 +945,9 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
     // STEP 8 - Append to CSV log with HMAC signature (Day 59)
     // ═══════════════════════════════════════════════════════════════════
 
-    if (hmac_key_.has_value()) {
+    const auto clave_fila = clave_csv_ ? clave_csv_->clave() : std::nullopt;  // [FW-CSV-CLAVE-B2-D316]
+    if (!clave_fila.has_value() && clave_csv_) clave_csv_->fila_sin_clave();
+    if (clave_fila.has_value()) {
         try {
             TRACK_OPERATION("append_csv_log");
 
@@ -970,7 +958,7 @@ void ZMQSubscriber::handle_message(const void* msg_data, size_t msg_size) {
                 timeout_sec
             );
 
-            logger_->append_csv_log(log_event, hmac_key_.value());
+            logger_->append_csv_log(log_event, *clave_fila);
 
             FIREWALL_LOG_DEBUG("CSV log entry appended with HMAC",
                 "source_ip", nf.source_ip());

@@ -5,9 +5,9 @@
 [Unit]
 Description=ML Defender — sniffer (eBPF/XDP packet capture)
 Documentation=https://github.com/alonsoir/argus
-After=network-online.target ml-defender-etcd-server.service ml-defender-ml-detector.service
+# [ETCD-VM-D317] G2 (DAY316): ningún componente depende del etcd-server (vive en la VM etcd; arranca sin él)
+After=network-online.target ml-defender-ml-detector.service
 Wants=network-online.target
-Requires=ml-defender-etcd-server.service
 
 [Service]
 Type=simple

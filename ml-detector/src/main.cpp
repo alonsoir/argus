@@ -9,6 +9,7 @@
 #include "onnx_model.hpp"
 #include "feature_extractor.hpp"
 #include "zmq_handler.hpp"
+#include <etcd_client/etcd_client.hpp>  // [ETCD-CLIENTE-D316] leer_bloque_etcd
 #include "etcd_client.hpp"
 #include "ml_defender/ransomware_detector.hpp"
 #include "ml_defender/traffic_detector.hpp"
@@ -143,30 +144,20 @@ int main(int argc, char* argv[]) {
         // ETCD INTEGRATION - Register component and upload config
         // ═══════════════════════════════════════════════════════════════════════
         std::unique_ptr<ml_detector::EtcdClient> etcd_client;
+        std::unique_ptr<etcd_client::AvisoBloqueFatal> aviso_etcd_fatal;
 
-        if (config.etcd.enabled) {
-            std::string etcd_endpoint = config.etcd.endpoints[0];
-
-            std::cout << "🔗 [etcd] Initializing connection to " << etcd_endpoint << std::endl;
-
-            etcd_client = std::make_unique<ml_detector::EtcdClient>(etcd_endpoint, "ml-detector");
-
-            if (!etcd_client->initialize()) {
-                std::cerr << "❌ [etcd] Failed to initialize - REQUIRED for ml-detector" << std::endl;
-                return 1;
-            }
-
-            if (!etcd_client->registerService()) {
-                std::cerr << "❌ [etcd] Failed to register service - REQUIRED for ml-detector" << std::endl;
-                return 1;
-            }
-
-            std::cout << "✅ [etcd] ml-detector registered and config uploaded" << std::endl;
-
+        // [ETCD-CLIENTE-D316] F1: el bloque etcd lo lee y valida la librería; D2: fuera etcd.enabled.
+        // [ETCD-CLIENTE-B1-D316] G2: el ml-detector nunca sale ni espera por etcd (deja atrás F1 de DAY310: el cifrado de
+        // ZMQ sale de seed.bin, no del registro). Sin fatales, el mantenedor se registra en segundo plano y sube este
+        // JSON (G3); la clave del bronce la recoge el sondeo de ZMQHandler cuando haya etcd-server ([BRONCE-SIN-CLAVE]
+        // mientras tanto). Con fatales, sigue sin etcd y lo repite en el log cada 30 s.
+        std::cout << "🔗 [etcd] Leyendo el bloque etcd del JSON..." << std::endl;
+        auto lectura_etcd = etcd_client::leer_bloque_etcd(config.etcd.bloque, std::cout);
+        if (lectura_etcd.fatales.empty()) {
+            etcd_client = std::make_unique<ml_detector::EtcdClient>(lectura_etcd.config, "ml-detector");
+            etcd_client->arrancar(config_path);
         } else {
-            std::cerr << "❌ [etcd] etcd integration is REQUIRED for ml-detector" << std::endl;
-            std::cerr << "   Enable etcd in config: ml_detector_config.json" << std::endl;
-            return 1;
+            aviso_etcd_fatal = std::make_unique<etcd_client::AvisoBloqueFatal>("ml-detector", lectura_etcd.fatales.size());
         }
 
         // ADR-013 PHASE 2 — DAY 98: CryptoTransport inicializado internamente por ZMQHandler
@@ -430,7 +421,8 @@ int main(int argc, char* argv[]) {
             // [BRONCE-CLAVE-D310] ZMQHandler pide la clave del bronce al construirse y cada
             // bronze_key.check_interval_seconds (hilo propio). etcd_client vive mas que zmq_handler: mismo ambito,
             // declarado antes.
-            [etcd = etcd_client.get()]() { return etcd->get_hmac_key(); }
+            // [ETCD-CLIENTE-B1-D316] sin cliente (bloque etcd con fatales): sin clave, como con el etcd-server caído
+            [etcd = etcd_client.get()]() { return etcd ? etcd->get_hmac_key() : std::string(); }
         );
 
         zmq_handler.set_force_all_heads(force_all_heads);   // DEBUG DAY271

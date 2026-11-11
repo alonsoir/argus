@@ -1,5 +1,7 @@
 // etcd-client/src/etcd_client.cpp
 #include "etcd_client/etcd_client.hpp"
+#include "transporte.hpp"  // [ETCD-CLIENTE-D316] HTTPS + lista de endpoints
+#include <cstring>
 #include <crypto_transport/contexts.hpp>
 #include <nlohmann/json.hpp>
 #include <iostream>
@@ -12,11 +14,17 @@
 #include <sstream>
 #include <iomanip>
 #include <atomic>
+#include <chrono>
+#include <ctime>
+#include <filesystem>
+#include <fstream>
 // ADR-013 PHASE 2 — DAY 98: CryptoTransport via SeedClient (sustituye CryptoManager)
 // DEPRECATED DAY 98 — crypto_manager.hpp: #include "crypto_transport/crypto_manager.hpp"
 #include <seed_client/seed_client.hpp>
 #include <crypto_transport/transport.hpp>
 #include <lz4.h>
+#include <map>
+#include "latido/datos_latido.hpp"  // [LATIDO-DATOS-D321]
 
 using json = nlohmann::json;
 
@@ -27,7 +35,7 @@ namespace etcd_client {
 
 namespace component {
     std::string build_registration_payload(const Config& config);
-    std::string build_heartbeat_payload(const Config& config);
+    std::string build_heartbeat_payload(const Config& config, const std::map<std::string, std::int64_t>& datos);
     std::string build_unregister_payload(const Config& config);
     ComponentInfo parse_component_info(const std::string& json_str);
     std::vector<ComponentInfo> parse_component_list(const std::string& json_str);
@@ -40,25 +48,37 @@ namespace etcd_client {
 
 struct EtcdClient::Impl {
     Config config_;
-    // DEPRECATED DAY 98 — encryption_key_ sustituido por SeedClient + CryptoTransport
-    // std::string encryption_key_;
-    bool connected_ = false;
-    mutable std::mutex mutex_;
+    mutable std::mutex mutex_;  // service_paths_ y el cifrado de salida
     // ADR-013 PHASE 2 — DAY 98
     std::unique_ptr<ml_defender::SeedClient>           seed_client_;
     std::unique_ptr<crypto_transport::CryptoTransport> tx_;
     std::unique_ptr<crypto_transport::CryptoTransport> rx_;
     // Day 59: Service discovery paths from etcd-server
     ServicePaths service_paths_;
-    // Heartbeat thread
-    std::thread heartbeat_thread_;
-    std::atomic<bool> heartbeat_running_{false};
-    std::mutex hb_mtx_;               // [PARADA-INMEDIATA-D300] espera interrumpible del heartbeat
-    std::condition_variable hb_cv_;   // [PARADA-INMEDIATA-D300]
+    Transporte transporte_;  // [ETCD-CLIENTE-D316]
+    // [ETCD-CLIENTE-B1-D316] mantenedor: un hilo, un ritmo (heartbeat_interval_seconds, G1). Registrado: latido. Sin
+    // servicio: intenta registrarse (o reanudar el latido si ya lo estaba). El proceso nunca espera ni sale por esto (G2).
+    std::recursive_mutex est_m_;       // estado del mantenedor; lo usan el hilo y register/unregister_component
+    std::atomic<bool> registrado_{false};
+    bool registrado_antes_ = false;    // el etcd-server lo tuvo registrado: al volver se prueba el latido primero
+    bool sin_servicio_ = false;
+    std::time_t sin_servicio_desde_ = 0;
+    int intentos_ = 0;
+    std::string ruta_config_;          // G3: JSON con el que arrancó el proceso; se sube al (re)registrarse
+    std::string tipo_;
+    bool config_pendiente_ = false;
+    std::thread mantenedor_;
+    std::atomic<bool> en_marcha_{false};
+    std::mutex hb_mtx_;                // [PARADA-INMEDIATA-D300] espera interrumpible
+    std::condition_variable hb_cv_;
+    // [LATIDO-DATOS-D321] datos genéricos del latido (H-H): los pone el componente, los lee el mantenedor
+    std::mutex datos_m_;
+    std::map<std::string, std::int64_t> datos_latido_;
+    std::string ultimo_rechazo_;       // lo último que dijo el etcd-server de los datos ("" = los aceptó)
 
     // Constructor — ADR-013 PHASE 2 (DAY 98)
     explicit Impl(const Config& config)
-        : config_(config) {
+        : config_(config), transporte_(config) {
         try {
             if (!config_.component_config_path.empty()) {
                 seed_client_ = std::make_unique<ml_defender::SeedClient>(
@@ -82,72 +102,301 @@ struct EtcdClient::Impl {
         }
     }
 
-    // Destructor
     ~Impl() {
-        stop_heartbeat_thread();
+        parar_mantenedor();
+        // Parada ordenada: se da de baja una vez si estaba registrado (un intento por dirección, sin esperar más)
+        if (registrado_.exchange(false)) {
+            auto r = transporte_.peticion("POST", "/unregister", component::build_unregister_payload(config_),
+                                          "application/json", 0, 1, true);
+            std::cout << "[ETCD-CLIENTE-BAJA] " << config_.component_name
+                      << (r.exito ? ": dado de baja en el etcd-server" : ": no se pudo dar de baja (" + baja_error(r) + ")")
+                      << std::endl;
+        }
     }
 
-    // Start heartbeat thread
-    void start_heartbeat_thread() {
-        if (!config_.heartbeat_enabled) {
-            return;
-        }
+    static std::string baja_error(const Respuesta& r) {
+        return r.status ? "HTTP " + std::to_string(r.status) : "sin respuesta:" + r.error;
+    }
 
-        if (heartbeat_running_.exchange(true)) {
-            return; // Already running
-        }
+    static std::string hora_utc(std::time_t t) {
+        std::tm tm{};
+        gmtime_r(&t, &tm);
+        char b[32];
+        std::strftime(b, sizeof b, "%Y-%m-%dT%H:%M:%SZ", &tm);
+        return b;
+    }
 
-        heartbeat_thread_ = std::thread([this]() {
-            std::cout << "💓 Heartbeat thread started (interval: "
-                      << config_.heartbeat_interval_seconds << "s)" << std::endl;
-
-            while (heartbeat_running_) {
-                {   // [PARADA-INMEDIATA-D300] espera interrumpible: la parada no espera al intervalo
-                    std::unique_lock<std::mutex> lk(hb_mtx_);
-                    if (hb_cv_.wait_for(lk, std::chrono::seconds(config_.heartbeat_interval_seconds),
-                                        [this] { return !heartbeat_running_.load(); })) break;
-                }
-
-                if (!heartbeat_running_) break;
-
+    void arrancar_mantenedor() {
+        if (en_marcha_.exchange(true)) return;
+        mantenedor_ = std::thread([this]() {
+            while (en_marcha_) {
                 try {
-                    send_heartbeat();
+                    ciclo();
                 } catch (const std::exception& e) {
-                    std::cerr << "⚠️  Heartbeat failed: " << e.what() << std::endl;
+                    std::cerr << "[ETCD-CLIENTE] " << config_.component_name << ": excepción en el mantenedor: "
+                              << e.what() << std::endl;
                 }
+                std::unique_lock<std::mutex> lk(hb_mtx_);  // [PARADA-INMEDIATA-D300]
+                if (hb_cv_.wait_for(lk, std::chrono::seconds(config_.heartbeat_interval_seconds),
+                                    [this] { return !en_marcha_.load(); })) break;
             }
-
-            std::cout << "💓 Heartbeat thread stopped" << std::endl;
         });
     }
 
-    // Stop heartbeat thread
-    void stop_heartbeat_thread() {
-        if (heartbeat_running_.exchange(false)) {
+    void parar_mantenedor() {
+        if (en_marcha_.exchange(false)) {
             { std::lock_guard<std::mutex> lk(hb_mtx_); }  // [PARADA-INMEDIATA-D300] sin despertar perdido
             hb_cv_.notify_all();
-            if (heartbeat_thread_.joinable()) {
-                heartbeat_thread_.join();
-            }
         }
+        if (mantenedor_.joinable() && mantenedor_.get_id() != std::this_thread::get_id()) mantenedor_.join();
     }
 
-    // Send heartbeat
-    bool send_heartbeat() {
-        std::string payload = component::build_heartbeat_payload(config_);
+    // [LATIDO-DATOS-D321] H-H: valida con la regla única y guarda; el siguiente latido lo lleva
+    bool poner_dato(const std::string& clave, std::int64_t valor) {
+        namespace L = argus::latido;
+        std::lock_guard<std::mutex> lk(datos_m_);
+        std::string motivo;
+        if (!L::clave_valida(clave)) {
+            motivo = "clave '" + L::para_log(clave) + "' mal formada";
+        } else if (!L::valor_valido(valor)) {
+            motivo = "valor " + std::to_string(valor) + " de '" + clave + "' fuera de [0, " + std::to_string(L::kMaxValor) + "]";
+        } else if (datos_latido_.size() >= L::kMaxDatos && datos_latido_.find(clave) == datos_latido_.end()) {
+            motivo = "ya hay " + std::to_string(L::kMaxDatos) + " datos; '" + clave + "' sería uno más";
+        }
+        if (!motivo.empty()) {
+            std::cerr << "[ETCD-CLIENTE-LATIDO-DATO] " << config_.component_name << ": " << motivo
+                      << "; no se guarda (datos del latido: " << L::formato() << ")" << std::endl;
+            return false;
+        }
+        auto it = datos_latido_.find(clave);
+        if (it == datos_latido_.end() || it->second != valor) {
+            std::cout << "[ETCD-CLIENTE-LATIDO-DATO] " << config_.component_name << ": " << clave << "=" << valor
+                      << (it == datos_latido_.end() ? std::string(" (nuevo)") : " (antes " + std::to_string(it->second) + ")")
+                      << "; va en el siguiente latido" << std::endl;
+            datos_latido_[clave] = valor;
+        }
+        return true;
+    }
 
-        auto response = http::post(
-            config_.host,
-            config_.port,
-            "/v1/heartbeat/" + config_.component_name,
-            payload,
-            config_.timeout_seconds,
-            1, // Single attempt for heartbeat
-            0,
-            config_.component_name
-        );
+    Respuesta latido(bool callado) {
+        std::map<std::string, std::int64_t> datos;
+        {
+            std::lock_guard<std::mutex> lk(datos_m_);
+            datos = datos_latido_;
+        }
+        auto r = transporte_.peticion("POST", "/v1/heartbeat/" + config_.component_name,
+                                      component::build_heartbeat_payload(config_, datos), "application/json", 0, 1,
+                                      callado);
+        if (r.exito) anotar_respuesta_datos(r.body);
+        return r;
+    }
 
-        return response.success;
+    // [LATIDO-DATOS-D321] el etcd-server guarda el latido aunque rechace los datos (decisión DAY321) y lo dice en
+    // "datos_rechazados"; aquí se registra solo cuando cambia (no en cada latido)
+    void anotar_respuesta_datos(const std::string& body) {
+        std::string rechazo;
+        try {
+            const auto j = json::parse(body);
+            if (j.contains("datos_rechazados") && j["datos_rechazados"].is_string())
+                rechazo = j["datos_rechazados"].get<std::string>();
+        } catch (...) {
+            return;
+        }
+        std::lock_guard<std::mutex> lk(datos_m_);
+        if (rechazo == ultimo_rechazo_) return;
+        if (rechazo.empty()) {
+            std::cout << "[ETCD-CLIENTE-LATIDO-DATOS-ACEPTADOS] " << config_.component_name
+                      << ": el etcd-server vuelve a aceptar los datos del latido" << std::endl;
+        } else {
+            std::cerr << "[ETCD-CLIENTE-LATIDO-DATOS-RECHAZADOS] " << config_.component_name
+                      << ": el etcd-server guarda el latido sin los datos: " << argus::latido::para_log(rechazo)
+                      << std::endl;
+        }
+        ultimo_rechazo_ = rechazo;
+    }
+
+    // POST /register; con éxito guarda las rutas de la respuesta y marca registrado
+    Respuesta registrar(int intentos, bool callado) {
+        auto r = transporte_.peticion("POST", "/register", component::build_registration_payload(config_),
+                                      "application/json", 0, intentos, callado);
+        if (!r.exito) return r;
+        try {
+            auto j = json::parse(r.body);
+            if (j.contains("paths") && j["paths"].is_object()) {
+                std::lock_guard<std::mutex> lk(mutex_);
+                service_paths_.hmac_key = j["paths"].value("hmac_key", "");
+                service_paths_.config = j["paths"].value("config", "");
+            }
+        } catch (const std::exception& e) {
+            std::cerr << "[ETCD-CLIENTE] " << config_.component_name << ": respuesta de /register ilegible: " << e.what()
+                      << std::endl;
+        }
+        registrado_ = true;
+        registrado_antes_ = true;
+        return r;
+    }
+
+    // G3: sube el JSON con el que arrancó el proceso; devuelve la descripción para el log
+    std::string subir_config() {
+        if (ruta_config_.empty()) { config_pendiente_ = false; return "sin config que subir"; }
+        std::string motivo;
+        nlohmann::json j;
+        std::ifstream f(ruta_config_);
+        if (!f.is_open()) {
+            motivo = "no se puede abrir";
+        } else {
+            j = json::parse(f, nullptr, false);
+            if (j.is_discarded() || !j.is_object()) motivo = "JSON ilegible";
+        }
+        if (motivo.empty()) {
+            j["_registration"] = {{"timestamp", std::time(nullptr)}, {"component", config_.component_name},
+                                  {"type", tipo_}, {"status", "active"}};
+            const std::string texto = j.dump(2);
+            if (put_config_impl(texto)) {
+                config_pendiente_ = false;
+                return "config subida: " + ruta_config_ + " (" + std::to_string(texto.size()) + " bytes)";
+            }
+            motivo = "PUT /v1/config/" + config_.component_name + " falló";
+        }
+        config_pendiente_ = true;
+        std::cerr << "[ETCD-CLIENTE-CONFIG-NO-SUBIDA] " << config_.component_name << ": " << ruta_config_ << ": " << motivo
+                  << "; se reintenta en el siguiente latido (" << config_.heartbeat_interval_seconds << " s)" << std::endl;
+        return "config NO subida: " + ruta_config_ + " (" + motivo + ")";
+    }
+
+    void anotar_sin_servicio(const std::string& error) {
+        const std::time_t ahora = std::time(nullptr);
+        if (!sin_servicio_) {
+            sin_servicio_ = true;
+            sin_servicio_desde_ = ahora;
+            intentos_ = 0;
+        }
+        ++intentos_;
+        std::cerr << "[ETCD-CLIENTE-SIN-SERVICIO] " << config_.component_name << " sin etcd-server desde "
+                  << hora_utc(sin_servicio_desde_) << " (" << (ahora - sin_servicio_desde_) << " s, intento " << intentos_
+                  << "):" << error << " el componente sigue protegiendo; próximo intento en "
+                  << config_.heartbeat_interval_seconds << " s" << std::endl;
+    }
+
+    std::string tras_sin_servicio() {
+        if (!sin_servicio_) return "al primer intento";
+        std::string t = "tras " + std::to_string(std::time(nullptr) - sin_servicio_desde_) + " s sin servicio (" +
+                        std::to_string(intentos_) + " intentos)";
+        sin_servicio_ = false;
+        intentos_ = 0;
+        return t;
+    }
+
+    void intentar_registro() {
+        auto r = registrar(1, true);
+        if (r.exito) {
+            const std::string tras = tras_sin_servicio();
+            const std::string cfg = subir_config();
+            std::cout << "[ETCD-CLIENTE-REGISTRADO] " << config_.component_name << " en " << transporte_.direccion_actual()
+                      << " " << tras << "; " << cfg << "; latido cada " << config_.heartbeat_interval_seconds << " s"
+                      << std::endl;
+            return;
+        }
+        anotar_sin_servicio(r.status ? " /register rechazado: HTTP " + std::to_string(r.status) + " " + r.body + ";"
+                                     : r.error);
+    }
+
+    // Un paso del mantenedor (G1)
+    void ciclo() {
+        std::lock_guard<std::recursive_mutex> lk(est_m_);
+        if (registrado_) {
+            auto r = latido(true);
+            if (r.exito) {
+                if (config_pendiente_) subir_config();
+                return;
+            }
+            registrado_ = false;
+            if (r.status == 404) {
+                std::cerr << "[ETCD-CLIENTE-REGISTRO-PERDIDO] " << config_.component_name
+                          << ": el etcd-server no lo tiene registrado (404 al latido); se vuelve a registrar" << std::endl;
+                registrado_antes_ = false;
+                intentar_registro();
+                return;
+            }
+            anotar_sin_servicio(r.status ? " latido: HTTP " + std::to_string(r.status) + ";" : r.error);
+            return;
+        }
+        if (registrado_antes_) {  // el registro vive en el etcd real: al volver basta con latir
+            auto r = latido(true);
+            if (r.exito) {
+                registrado_ = true;
+                std::cout << "[ETCD-CLIENTE-REANUDADO] " << config_.component_name << " en "
+                          << transporte_.direccion_actual() << " " << tras_sin_servicio()
+                          << "; el registro se conservó: latido sin nuevo /register" << std::endl;
+                if (config_pendiente_) subir_config();
+                return;
+            }
+            if (r.status != 404) {
+                anotar_sin_servicio(r.status ? " latido: HTTP " + std::to_string(r.status) + ";" : r.error);
+                return;
+            }
+            std::cerr << "[ETCD-CLIENTE-REGISTRO-PERDIDO] " << config_.component_name
+                      << ": el etcd-server vuelve sin su registro (404 al latido); se vuelve a registrar" << std::endl;
+            registrado_antes_ = false;
+        }
+        intentar_registro();
+    }
+
+    // [ETCD-CLIENTE-B1-D316] cuerpo de put_config(); lo usa también el mantenedor al (re)registrarse (G3)
+    bool put_config_impl(const std::string& json_config) {
+        std::lock_guard<std::mutex> lock(mutex_);
+
+        // 1. Validate JSON
+        try {
+            auto parsed = nlohmann::json::parse(json_config);
+            std::cout << "✅ [etcd-client] JSON validated (" << json_config.size() << " bytes)" << std::endl;
+            (void)parsed;
+        } catch (const std::exception& e) {
+            std::cerr << "❌ [etcd-client] Invalid JSON: " << e.what() << std::endl;
+            return false;
+        }
+
+        try {
+            // 2. Process data (compress + encrypt)
+            size_t original_size = json_config.size();
+            std::string processed_config = process_outgoing_data(json_config);
+
+            // 3. Determine Content-Type
+            std::string content_type = "application/json";
+            if (config_.encryption_enabled || config_.compression_enabled) {
+                content_type = "application/octet-stream";
+            }
+
+            // 3. Build path
+            std::string path = "/v1/config/" + config_.component_name;
+
+            std::cout << "📤 [etcd-client] Uploading config to "
+                      << transporte_.direccion_actual() << path << std::endl;
+            std::cout << "   Original: " << json_config.size()
+                      << " -> Processed: " << processed_config.size() << " bytes" << std::endl;
+
+            // 4. Send PUT request (9 parameters - original_size will use default = 0)
+            auto response = transporte_.peticion("PUT", path, processed_config, content_type, original_size);
+
+            // 5. Check response
+            if (!response.exito) {
+                std::cerr << "❌ [etcd-client] PUT request failed" << std::endl;
+                return false;
+            }
+
+            if (response.status != 200 && response.status != 201) {
+                std::cerr << "❌ [etcd-client] Server returned "
+                          << response.status << ": " << response.body << std::endl;
+                return false;
+            }
+
+            std::cout << "✅ [etcd-client] Config uploaded successfully!" << std::endl;
+            return true;
+
+        } catch (const std::exception& e) {
+            std::cerr << "❌ [etcd-client] Exception in put_config(): " << e.what() << std::endl;
+            return false;
+        }
     }
 
 	// Day 60: Apply encryption and compression to outgoing data
@@ -209,9 +458,6 @@ std::string process_outgoing_data(const std::string& data) {
 EtcdClient::EtcdClient(const Config& config)
     : pImpl(std::make_unique<Impl>(config)) {}
 
-EtcdClient::EtcdClient(const std::string& config_json_path)
-    : pImpl(std::make_unique<Impl>(Config::from_json_file(config_json_path))) {}
-
 // Destructor
 EtcdClient::~EtcdClient() = default;
 
@@ -219,325 +465,102 @@ EtcdClient::~EtcdClient() = default;
 EtcdClient::EtcdClient(EtcdClient&&) noexcept = default;
 EtcdClient& EtcdClient::operator=(EtcdClient&&) noexcept = default;
 
-// Connection management
+// Connection management. [ETCD-CLIENTE-B1-D316] connect() solo comprueba si algún etcd-server responde (/health);
+// ya no condiciona las demás llamadas: cada petición va al transporte y falla como cualquiera sin respuesta.
 bool EtcdClient::connect() {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    if (pImpl->connected_) {
-        std::cout << "✅ Already connected" << std::endl;
-        return true;
+    if (pImpl->config_.endpoints.empty() || pImpl->config_.ca_file.empty() || pImpl->config_.cert_file.empty() ||
+        pImpl->config_.key_file.empty()) {
+        std::cerr << "[ETCD-CLIENTE-FATAL] " << pImpl->config_.component_name
+                  << ": faltan endpoints o rutas TLS (ver [ETCD-CLIENTE-FATAL] del bloque etcd del JSON)" << std::endl;
+        return false;
     }
-
-    std::cout << "🔗 Connecting to etcd-server: "
-              << pImpl->config_.host << ":" << pImpl->config_.port << std::endl;
-
-    // Test connection with a simple GET request
-    auto response = http::get(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/health",
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
-
-    pImpl->connected_ = response.success;
-
-    if (pImpl->connected_) {
-        std::cout << "✅ Connected to etcd-server" << std::endl;
+    std::cout << "🔗 Connecting to etcd-server (" << pImpl->config_.endpoints.size() << " direcciones, TLS): "
+              << pImpl->config_.endpoints.front() << (pImpl->config_.endpoints.size() > 1 ? " ..." : "")
+              << std::endl;
+    auto response = pImpl->transporte_.peticion("GET", "/health");
+    if (response.exito) {
+        std::cout << "✅ Connected to etcd-server " << pImpl->transporte_.direccion_actual() << std::endl;
     } else {
         std::cerr << "❌ Failed to connect to etcd-server" << std::endl;
     }
-
-    return pImpl->connected_;
+    return response.exito;
 }
 
+// true = registrado y latiendo
 bool EtcdClient::is_connected() const {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-    return pImpl->connected_;
+    return pImpl->registrado_.load();
 }
 
+// Para el mantenedor (sin darse de baja)
 void EtcdClient::disconnect() {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    if (!pImpl->connected_) {
-        return;
-    }
-
-    pImpl->stop_heartbeat_thread();
-    pImpl->connected_ = false;
-
-    std::cout << "🔌 Disconnected from etcd-server" << std::endl;
+    pImpl->parar_mantenedor();
+    std::cout << "🔌 Mantenedor parado: " << pImpl->config_.component_name << std::endl;
 }
 
-// Key-value operations
-bool EtcdClient::set(const std::string& key, const std::string& value) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    if (!pImpl->connected_) {
-        std::cerr << "❌ Not connected to etcd-server" << std::endl;
-        return false;
+// G1-G3: arranca el mantenedor sin esperar al etcd-server. ruta_config: el JSON con el que arrancó el proceso (se
+// sube en cada registro); tipo: el campo _registration.type.
+void EtcdClient::iniciar(const std::string& ruta_config_arranque, const std::string& tipo) {
+    // [FW-CSV-CLAVE-B2-D316] ruta absoluta en el log y en la subida (el ml-detector arranca con ../config/... por defecto)
+    std::string ruta_config = ruta_config_arranque;
+    if (!ruta_config.empty()) {
+        std::error_code ec;
+        const auto abs = std::filesystem::weakly_canonical(std::filesystem::absolute(ruta_config, ec), ec);
+        if (!ec) ruta_config = abs.string();
     }
-
-    try {
-        // Process data (compress + encrypt)
-        std::string processed_value = value;
-
-        // Build JSON payload
-        json payload = {
-            {"key", key},
-            {"value", processed_value},
-            {"original_size", value.size()}
-        };
-
-        // Send to etcd-server
-        auto response = http::post(
-            pImpl->config_.host,
-            pImpl->config_.port,
-            "/kv/set",
-            payload.dump(),
-            pImpl->config_.timeout_seconds,
-            pImpl->config_.max_retry_attempts,
-            pImpl->config_.retry_backoff_seconds,
-            pImpl->config_.component_name
-        );
-
-        if (response.success) {
-            std::cout << "✅ Key set: " << key << std::endl;
-            return true;
-        }
-
-        std::cerr << "❌ Failed to set key: " << key << std::endl;
-        return false;
-
-    } catch (const std::exception& e) {
-        std::cerr << "❌ Exception in set(): " << e.what() << std::endl;
-        return false;
+    {
+        std::lock_guard<std::recursive_mutex> lk(pImpl->est_m_);
+        pImpl->ruta_config_ = ruta_config;
+        pImpl->tipo_ = tipo;
     }
-}
-
-std::string EtcdClient::get(const std::string& key) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    if (!pImpl->connected_) {
-        std::cerr << "❌ Not connected to etcd-server" << std::endl;
-        return "";
-    }
-
-    try {
-        // Request from etcd-server
-        auto response = http::get(
-            pImpl->config_.host,
-            pImpl->config_.port,
-            "/kv/get?key=" + key,
-            pImpl->config_.timeout_seconds,
-            pImpl->config_.max_retry_attempts,
-            pImpl->config_.retry_backoff_seconds,
-            pImpl->config_.component_name
-        );
-
-        if (!response.success) {
-            std::cerr << "❌ Failed to get key: " << key << std::endl;
-            return "";
-        }
-
-        // Parse response
-        json j = json::parse(response.body);
-        std::string value = j.value("value", "");
-        // original_size = j.value("original_size", 0);
-
-        // Process data (decrypt + decompress)
-        std::string processed_value = value;
-
-        std::cout << "✅ Key retrieved: " << key << std::endl;
-        return processed_value;
-
-    } catch (const std::exception& e) {
-        std::cerr << "❌ Exception in get(): " << e.what() << std::endl;
-        return "";
-    }
-}
-
-bool EtcdClient::del(const std::string& key) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    if (!pImpl->connected_) {
-        std::cerr << "❌ Not connected to etcd-server" << std::endl;
-        return false;
-    }
-
-    auto response = http::del(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/kv/delete?key=" + key,
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
-
-    if (response.success) {
-        std::cout << "✅ Key deleted: " << key << std::endl;
-        return true;
-    }
-
-    std::cerr << "❌ Failed to delete key: " << key << std::endl;
-    return false;
-}
-
-std::vector<std::string> EtcdClient::list_keys(const std::string& prefix) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    std::vector<std::string> keys;
-
-    if (!pImpl->connected_) {
-        std::cerr << "❌ Not connected to etcd-server" << std::endl;
-        return keys;
-    }
-
-    try {
-        std::string path = "/kv/list";
-        if (!prefix.empty()) {
-            path += "?prefix=" + prefix;
-        }
-
-        auto response = http::get(
-            pImpl->config_.host,
-            pImpl->config_.port,
-            path,
-            pImpl->config_.timeout_seconds,
-            pImpl->config_.max_retry_attempts,
-            pImpl->config_.retry_backoff_seconds,
-            pImpl->config_.component_name
-        );
-
-        if (response.success) {
-            json j = json::parse(response.body);
-            if (j.contains("keys") && j["keys"].is_array()) {
-                for (const auto& key : j["keys"]) {
-                    keys.push_back(key.get<std::string>());
-                }
-            }
-        }
-
-    } catch (const std::exception& e) {
-        std::cerr << "❌ Exception in list_keys(): " << e.what() << std::endl;
-    }
-
-    return keys;
+    std::cout << "[ETCD-CLIENTE-MANTENEDOR] " << pImpl->config_.component_name << ": registro y latido cada "
+              << pImpl->config_.heartbeat_interval_seconds << " s contra " << pImpl->config_.endpoints.size()
+              << " direcciones; config que se sube al registrarse: "
+              << (ruta_config.empty() ? std::string("(ninguna)") : ruta_config)
+              << ". Sin etcd-server el componente arranca y sigue protegiendo" << std::endl;
+    pImpl->arrancar_mantenedor();
 }
 
 // Component discovery
+// Registro inmediato (lo usan los inyectores y los tests): con éxito arranca el mantenedor (latidos), si heartbeat_enabled
 bool EtcdClient::register_component() {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    if (!pImpl->connected_) {
-        std::cerr << "❌ Not connected, attempting to connect..." << std::endl;
-        pImpl->mutex_.unlock(); // Unlock before calling connect()
-        bool conn = connect();
-        pImpl->mutex_.lock();   // Re-lock after connect()
-
-        if (!conn) {
-            std::cerr << "❌ Failed to connect for registration" << std::endl;
-            return false;
-        }
+    Respuesta r;
+    {
+        std::lock_guard<std::recursive_mutex> lk(pImpl->est_m_);
+        r = pImpl->registrar(0, false);
     }
-
-    std::string payload = component::build_registration_payload(pImpl->config_);
-
-    auto response = http::post(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/register",
-        payload,
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
-
-    if (response.success) {
-        std::cout << "✅ Component registered: " << pImpl->config_.component_name << std::endl;
-
-        // Day 59: Parse service discovery paths from registration response
-        try {
-            auto j = json::parse(response.body);
-
-            if (j.contains("paths") && j["paths"].is_object()) {
-                const auto& paths = j["paths"];
-                pImpl->service_paths_.hmac_key = paths.value("hmac_key", "");
-                pImpl->service_paths_.crypto_token = paths.value("crypto_token", "");
-                pImpl->service_paths_.config = paths.value("config", "");
-
-                std::cout << "🗺️  Service discovery paths received:" << std::endl;
-                std::cout << "   - HMAC key: " << pImpl->service_paths_.hmac_key << std::endl;
-                std::cout << "   - Crypto token: " << pImpl->service_paths_.crypto_token << std::endl;
-                std::cout << "   - Config: " << pImpl->service_paths_.config << std::endl;
-            } else {
-                std::cerr << "⚠️  No service paths in registration response" << std::endl;
-            }
-
-            // DEPRECATED DAY 98 — encryption_key del servidor ya no se usa
-            // CryptoTransport deriva la clave desde seed.bin via HKDF (ADR-013)
-            if (j.contains("encryption_key")) {
-                std::cerr << "⚠️  DEPRECATED: encryption_key ignorado — usando CryptoTransport" << std::endl;
-            }
-
-        } catch (const std::exception& e) {
-            std::cerr << "⚠️  Failed to parse registration response: " << e.what() << std::endl;
-        }
-
-        // Start heartbeat thread
-        pImpl->mutex_.unlock();
-        pImpl->start_heartbeat_thread();
-        pImpl->mutex_.lock();
-
-        return true;
+    if (!r.exito) {
+        std::cerr << "❌ Component registration failed" << std::endl;
+        return false;
     }
-
-    std::cerr << "❌ Component registration failed" << std::endl;
-    return false;
+    std::cout << "✅ Component registered: " << pImpl->config_.component_name << std::endl;
+    if (pImpl->config_.heartbeat_enabled) pImpl->arrancar_mantenedor();
+    return true;
 }
 
 bool EtcdClient::unregister_component() {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    // Stop heartbeat first
-    pImpl->mutex_.unlock();
-    pImpl->stop_heartbeat_thread();
-    pImpl->mutex_.lock();
-
-    if (!pImpl->connected_) {
-        std::cerr << "⚠️  Not connected, skipping unregister" << std::endl;
+    pImpl->parar_mantenedor();
+    std::lock_guard<std::recursive_mutex> lk(pImpl->est_m_);
+    if (!pImpl->registrado_.exchange(false)) {
+        std::cerr << "⚠️  Not registered, skipping unregister" << std::endl;
         return false;
     }
-
-    std::string payload = component::build_unregister_payload(pImpl->config_);
-
-    auto response = http::post(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/unregister",
-        payload,
-        pImpl->config_.timeout_seconds,
-        1, // Single attempt
-        0,
-        pImpl->config_.component_name
-    );
-
-    if (response.success) {
+    pImpl->registrado_antes_ = false;
+    auto response = pImpl->transporte_.peticion("POST", "/unregister", component::build_unregister_payload(pImpl->config_),
+                                                "application/json", 0, 1);
+    if (response.exito) {
         std::cout << "✅ Component unregistered: " << pImpl->config_.component_name << std::endl;
         return true;
     }
-
     std::cerr << "⚠️  Component unregister failed (non-critical)" << std::endl;
     return false;
 }
 
 bool EtcdClient::heartbeat() {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-    return pImpl->send_heartbeat();
+    return pImpl->latido(false).exito;
+}
+
+bool EtcdClient::poner_dato_latido(const std::string& clave, std::int64_t valor) {
+    return pImpl->poner_dato(clave, valor);
 }
 
 ComponentInfo EtcdClient::get_component_info(const std::string& name) {
@@ -545,22 +568,9 @@ ComponentInfo EtcdClient::get_component_info(const std::string& name) {
 
     ComponentInfo info;
 
-    if (!pImpl->connected_) {
-        std::cerr << "❌ Not connected to etcd-server" << std::endl;
-        return info;
-    }
+    auto response = pImpl->transporte_.peticion("GET", "/component?name=" + name);
 
-    auto response = http::get(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/component?name=" + name,
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
-
-    if (response.success) {
+    if (response.exito) {
         return component::parse_component_info(response.body);
     }
 
@@ -572,22 +582,9 @@ std::vector<ComponentInfo> EtcdClient::list_components() {
 
     std::vector<ComponentInfo> components;
 
-    if (!pImpl->connected_) {
-        std::cerr << "❌ Not connected to etcd-server" << std::endl;
-        return components;
-    }
+    auto response = pImpl->transporte_.peticion("GET", "/components");
 
-    auto response = http::get(
-        pImpl->config_.host,
-        pImpl->config_.port,
-        "/components",
-        pImpl->config_.timeout_seconds,
-        pImpl->config_.max_retry_attempts,
-        pImpl->config_.retry_backoff_seconds,
-        pImpl->config_.component_name
-    );
-
-    if (response.success) {
+    if (response.exito) {
         return component::parse_component_list(response.body);
     }
 
@@ -595,106 +592,8 @@ std::vector<ComponentInfo> EtcdClient::list_components() {
 }
 
 // Config management
-bool EtcdClient::save_config_master(const std::string& config_json) {
-    return set("/config/" + pImpl->config_.component_name + "/master", config_json);
-}
-
-bool EtcdClient::save_config_active(const std::string& config_json) {
-    return set("/config/" + pImpl->config_.component_name + "/active", config_json);
-}
-
-std::string EtcdClient::get_config_master() {
-    return get("/config/" + pImpl->config_.component_name + "/master");
-}
-
-std::string EtcdClient::get_config_active() {
-    return get("/config/" + pImpl->config_.component_name + "/active");
-}
-
 bool EtcdClient::put_config(const std::string& json_config) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-
-    if (!pImpl->connected_) {
-        std::cerr << "❌ [etcd-client] Not connected to etcd-server" << std::endl;
-        return false;
-    }
-
-    // 1. Validate JSON
-    try {
-        auto parsed = nlohmann::json::parse(json_config);
-        std::cout << "✅ [etcd-client] JSON validated (" << json_config.size() << " bytes)" << std::endl;
-        (void)parsed;
-    } catch (const std::exception& e) {
-        std::cerr << "❌ [etcd-client] Invalid JSON: " << e.what() << std::endl;
-        return false;
-    }
-
-    try {
-    	// 2. Process data (compress + encrypt)
-    	size_t original_size = json_config.size();
-    	std::string processed_config = pImpl->process_outgoing_data(json_config);
-
-    	// 3. Determine Content-Type
-    	std::string content_type = "application/json";
-    	if (pImpl->config_.encryption_enabled || pImpl->config_.compression_enabled) {
-        	content_type = "application/octet-stream";
-    	}
-
-        // 3. Build path
-        std::string path = "/v1/config/" + pImpl->config_.component_name;
-
-        std::cout << "📤 [etcd-client] Uploading config to "
-                  << pImpl->config_.host << ":" << pImpl->config_.port << path << std::endl;
-        std::cout << "   Original: " << json_config.size()
-                  << " -> Processed: " << processed_config.size() << " bytes" << std::endl;
-
-        // 4. Send PUT request (9 parameters - original_size will use default = 0)
-        auto response = http::put(
-    		pImpl->config_.host,
-    		pImpl->config_.port,
-    		path,
-    		processed_config,
-    		content_type,  // ← Ya no hardcoded
-    		pImpl->config_.timeout_seconds,
-    		pImpl->config_.max_retry_attempts,
-    		pImpl->config_.retry_backoff_seconds,
-    		original_size  // ← Añadir este parámetro
-			);
-
-        // 5. Check response
-        if (!response.success) {
-            std::cerr << "❌ [etcd-client] PUT request failed" << std::endl;
-            return false;
-        }
-
-        if (response.status_code != 200 && response.status_code != 201) {
-            std::cerr << "❌ [etcd-client] Server returned "
-                      << response.status_code << ": " << response.body << std::endl;
-            return false;
-        }
-
-        std::cout << "✅ [etcd-client] Config uploaded successfully!" << std::endl;
-        return true;
-
-    } catch (const std::exception& e) {
-        std::cerr << "❌ [etcd-client] Exception in put_config(): " << e.what() << std::endl;
-        return false;
-    }
-}
-
-bool EtcdClient::rollback_config() {
-    std::string master = get_config_master();
-    if (master.empty()) {
-        std::cerr << "❌ No master config found for rollback" << std::endl;
-        return false;
-    }
-
-    bool result = save_config_active(master);
-    if (result) {
-        std::cout << "✅ Config rolled back to master" << std::endl;
-    }
-
-    return result;
+    return pImpl->put_config_impl(json_config);
 }
 
 // Encryption key management
@@ -709,26 +608,10 @@ bool EtcdClient::has_encryption_key() const {
     return pImpl->tx_ != nullptr;
 }
 
-
-std::string EtcdClient::get_encryption_key() const {
-    // DEPRECATED DAY 98 — clave HKDF no expuesta (ADR-013)
-    std::cerr << "⚠️  DEPRECATED: get_encryption_key() no disponible con CryptoTransport" << std::endl;
-    return "";
-}
-
-std::string EtcdClient::get_component_config(const std::string& component_name) {
-    return get("/config/" + component_name + "/active");
-}
-
 std::optional<std::vector<uint8_t>> EtcdClient::get_hmac_key(const std::string& key_path) {
-    std::lock_guard<std::mutex> lock(pImpl->mutex_);
-    if (!pImpl->connected_) return std::nullopt;
-
-    auto response = http::get(pImpl->config_.host, pImpl->config_.port, key_path,
-                             pImpl->config_.timeout_seconds, pImpl->config_.max_retry_attempts,
-                             pImpl->config_.retry_backoff_seconds,
-                             pImpl->config_.component_name);
-    if (!response.success) return std::nullopt;
+    // [ETCD-CLIENTE-B1-D316] sin depender del registro: /secrets/{CN} solo exige el certificado con ese CN
+    auto response = pImpl->transporte_.peticion("GET", key_path);
+    if (!response.exito) return std::nullopt;
 
     try {
         auto j = json::parse(response.body);
@@ -742,6 +625,13 @@ std::optional<std::vector<uint8_t>> EtcdClient::get_hmac_key(const std::string& 
         }
         return EtcdClient::hex_to_bytes(key_hex);
     } catch (...) { return std::nullopt; }
+}
+
+// [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3c
+int EtcdClient::get_protegidos(std::string& cuerpo) {
+    auto r = pImpl->transporte_.peticion("GET", "/v1/protegidos");
+    cuerpo = r.status == 0 ? r.error : r.body;
+    return r.status;
 }
 
 ServicePaths EtcdClient::get_service_paths() const {
@@ -777,6 +667,42 @@ std::vector<uint8_t> EtcdClient::hex_to_bytes(const std::string& hex_string) {
         bytes.push_back(static_cast<uint8_t>(std::stoi(hex_string.substr(i, 2), nullptr, 16)));
     }
     return bytes;
+}
+
+// [ETCD-CLIENTE-B1-D316] G2: aviso periódico de bloque etcd con fatales
+struct AvisoBloqueFatal::Impl {
+    std::string cn;
+    size_t n;
+    int intervalo;
+    std::atomic<bool> vivo{true};
+    std::mutex m;
+    std::condition_variable cv;
+    std::thread hilo;
+};
+
+AvisoBloqueFatal::AvisoBloqueFatal(std::string componente, size_t fatales, int intervalo_s)
+    : pImpl(std::make_unique<Impl>()) {
+    pImpl->cn = std::move(componente);
+    pImpl->n = fatales;
+    pImpl->intervalo = intervalo_s > 0 ? intervalo_s : 30;
+    Impl* d = pImpl.get();
+    d->hilo = std::thread([d]() {
+        while (true) {
+            std::cerr << "[ETCD-CLIENTE-FATAL] " << d->cn << ": bloque etcd con " << d->n
+                      << " campos fatales (detalle al arrancar, arriba); el componente sigue sin etcd: sin registro y sin "
+                         "clave HMAC hasta corregir el JSON y reiniciar. Próximo aviso en "
+                      << d->intervalo << " s" << std::endl;
+            std::unique_lock<std::mutex> lk(d->m);
+            if (d->cv.wait_for(lk, std::chrono::seconds(d->intervalo), [d] { return !d->vivo.load(); })) break;
+        }
+    });
+}
+
+AvisoBloqueFatal::~AvisoBloqueFatal() {
+    pImpl->vivo = false;
+    { std::lock_guard<std::mutex> lk(pImpl->m); }
+    pImpl->cv.notify_all();
+    if (pImpl->hilo.joinable()) pImpl->hilo.join();
 }
 
 } // namespace etcd_client

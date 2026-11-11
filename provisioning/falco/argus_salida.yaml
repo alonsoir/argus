@@ -1,0 +1,27 @@
+# provisioning/falco/argus_salida.yaml — [VIGILANCIA-D321] ADR-060 8e.4d: configuración de Falco para aRGus en el lab.
+# Va a /etc/falco/config.d/ (scripts/vigilancia/falco_instalar.sh) y se suma a la falco.yaml del paquete.
+# - Solo las reglas de aRGus (provisioning/falco/argus_lab.yaml) quedan activas: las de serie se cargan pero se apagan
+#   (medido DAY321: 0 eventos en ~20 min de carga del lab; si se quieren, se encienden abajo).
+# - Eventos en JSON a /var/log/falco/eventos.json (lo lee el agente de Wazuh: agent.conf de cada grupo); rotación en
+#   /etc/logrotate.d/argus-falco.
+# - modern_ebpf (medido DAY321 en las dos VMs: BTF presente, 114-149 MB de RSS y menos del 1 % de un núcleo).
+engine:
+  kind: modern_ebpf
+# Solo las reglas argus_*: el reglamento lo carga la falco.yaml del paquete (falco_rules.yaml, rules.d/); aquí se
+# apagan todas y se encienden las nuestras. No se toca rules_files: config.d se FUSIONA en modo append (falco.yaml,
+# config_files) y lo añadiría a la lista del paquete (medido DAY321: argus_lab.yaml cargado dos veces). Con esto,
+# --dry-run da 3 reglas activas que piden 5 syscalls (execve, execveat, open, openat, openat2; 64 en total con las del
+# motor de estado de Falco). `rules` es [Incubating] en 0.43.1.
+rules:
+  - disable:
+      rule: "*"
+  - enable:
+      rule: "argus_*"
+json_output: true
+json_include_output_property: true
+file_output:
+  enabled: true
+  keep_alive: false
+  filename: /var/log/falco/eventos.json
+stdout_output:
+  enabled: false

@@ -40,13 +40,14 @@
 
 #include <chrono>  // [DDOS-SHADOW-OBS-D293]
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
-#include "firewall/ddos_protegidos.hpp"  // [PROTEGIDOS-D300]
+#include "protegidos/manifiesto.hpp"  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060
 #include "firewall/ddos_mitigacion.hpp"  // [DDOS-MITIGACION-B2-D302]
 #include "firewall/timebase_lite.hpp"  // [TIMEBASE-D295]
 #include "firewall/seq_tracker.hpp"  // [TIMEBASE-SEQ-D297]
 #include "firewall/batch_processor.hpp"
 #include "firewall/logger.hpp"
 #include "firewall/etcd_client.hpp"
+#include "firewall/clave_csv.hpp"  // [FW-CSV-CLAVE-B2-D316]
 #include "network_security.pb.h"
 #include <zmq.hpp>
 #include <string>
@@ -123,10 +124,12 @@ public:
         bool encryption_enabled;         ///< Enable ChaCha20 decryption
         std::string crypto_token;        ///< Decryption key (hex)
         ::mldefender::firewall::DdosShadowParams ddos_shadow;  ///< [DDOS-SHADOW-D293] política por víctima en sombra
-        ::mldefender::firewall::RangosProtegidos ddos_protegidos;  ///< [PROTEGIDOS-D300] rangos protegidos
+        /// [PROTEGIDOS-MANIFIESTO-D318] lo vigente (ADR-060). null = nada protegido y candado cerrado
+        std::shared_ptr<::argus::protegidos::ProtegidosVigentes> protegidos;
         ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  ///< [DDOS-MITIGACION-B2-D302] mitigacion real
         std::vector<uint32_t> ddos_escalones_cortos;  ///< [DDOS-MITIGACION-B2-D302] escalones de prueba (aviso periodico)
         bool dry_run = true;  ///< [DDOS-MITIGACION-B2-D302] copia de operation.dry_run (1.a llave); defecto el seguro
+        int hmac_key_check_interval_seconds = 60;  ///< [FW-CSV-CLAVE-B2-D316] copia de hmac_key.check_interval_seconds
 
         /**
          * @brief Default configuration
@@ -365,7 +368,7 @@ private:
     int64_t sombra_ts_min_ = 0;
     int64_t sombra_ts_max_ = 0;
     bool sombra_primer_drop_ = false;
-    uint64_t prot_alertas_[4] = {};  // [PROTEGIDOS-D300] ALERTA_PROTEGIDO acumuladas por CategoriaProtegida
+    uint64_t prot_alertas_[5] = {};  // [PROTEGIDOS-D300] ALERTA_PROTEGIDO acumuladas por CategoriaProtegida (+infra D318)
     uint64_t prot_detalle_ = 0;      // [PROTEGIDOS-D300] lineas de detalle del periodo (tope anomalias_detalle_max)
     uint64_t aisl_drop_ = 0;          // [SOMBRA-AISLADO-D311] DROP de los AISLADO cerrados en el periodo
     uint64_t aisl_victimas_ = 0;      // [SOMBRA-AISLADO-D311] registros AISLADO cerrados en el periodo
@@ -378,6 +381,7 @@ private:
     uint64_t mit_esperar_ = 0;
     uint64_t mit_protegido_ = 0;
     uint64_t mit_invalida_ = 0;
+    uint64_t mit_candado_ = 0;  // [PROTEGIDOS-MANIFIESTO-D318] DROP no mitigados por el candado (D6) en el periodo
     uint64_t mit_bloquear_total_ = 0;
     uint64_t mit_renovar_total_ = 0;
     // [TIMEBASE-D295] validacion de time_context y retraso sniffer->firewall (contrato temporal v1).
@@ -512,7 +516,7 @@ private:
     std::unique_ptr<FirewallLogger> logger_;
     // ✅ Day 59: HMAC integration
     EtcdClient* etcd_client_;  ///< etcd client for HMAC key retrieval (not owned)
-    std::optional<std::vector<uint8_t>> hmac_key_;  ///< HMAC key for CSV signing
+    std::unique_ptr<ClaveCsv> clave_csv_;  ///< [FW-CSV-CLAVE-B2-D316] clave del CSV, pedida cada intervalo
 };
 
 } // namespace firewall

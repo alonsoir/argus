@@ -13,8 +13,10 @@ int main() {
     // Setup
     Config config;
     config.component_name = "test-service-discovery";
-    config.host = "127.0.0.1";
-    config.port = 2379;
+    // DEBT-ETCD-CLIENT-MANUAL-TESTS-CTEST-001 (DAY316): test manual fuera de ctest. Desde el paso 5 la librería solo
+    // habla HTTPS con certificado de cliente; este test aún no los trae (connect() falla) hasta que la deuda
+    // lo pase a TLS y a ctest como los demás.
+    config.endpoints = {"https://127.0.0.1:2379"};
     config.heartbeat_enabled = false;  // Disable for test
 
     EtcdClient client(config);
@@ -36,20 +38,20 @@ int main() {
     ServicePaths paths = client.get_service_paths();
 
     assert(!paths.hmac_key.empty() && "HMAC key path is empty");
-    assert(!paths.crypto_token.empty() && "Crypto token path is empty");
     assert(!paths.config.empty() && "Config path is empty");
     assert(paths.is_valid() && "Paths are not valid");
 
     std::cout << "✅ Paths received:" << std::endl;
     std::cout << "   - HMAC key: " << paths.hmac_key << std::endl;
-    std::cout << "   - Crypto token: " << paths.crypto_token << std::endl;
     std::cout << "   - Config: " << paths.config << std::endl;
 
     // Test 4: Verify path format
     std::cout << "\n[TEST 4] Verifying path format..." << std::endl;
     assert(paths.hmac_key.find("/secrets/") == 0 && "HMAC path doesn't start with /secrets/");
-    assert(paths.crypto_token.find("/crypto/") == 0 && "Crypto path doesn't start with /crypto/");
     assert(paths.config.find("/config/") == 0 && "Config path doesn't start with /config/");
+    // [ETCD-B4-D315] nombre completo (= CN), sin cortar en el primer guion
+    assert(paths.hmac_key == "/secrets/test-service-discovery" && "HMAC path is not /secrets/<component>");
+    assert(paths.config == "/config/test-service-discovery" && "Config path is not /config/<component>");
     std::cout << "✅ Path formats correct" << std::endl;
 
     // Test 5: Use HMAC path to get key

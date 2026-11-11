@@ -926,6 +926,13 @@ deja de ser benigno (símbolo divergente, no solo soname).
 verificación de que ambos resuelven al símbolo correcto). Sin warning de `ld`, o warning
 documentado como esperado.
 **Estimación:** 0.5 sesión (investigación).
+**Medido DAY318 (8e.1a, el firewall enlaza libsodium):** en el defender conviven la 1.0.18 de Debian
+(`libsodium23`) y la 1.0.19 compilada desde el código fuente en `/usr/local/lib`. La buena solo carga porque el FIX
+DAY107 de `tools/provision.sh` enlaza `/usr/local/lib/libsodium.so.23 -> .so.26` y porque las unidades systemd,
+`firewall-start`, `test-firewall` y el perfil del Vagrantfile ponen `LD_LIBRARY_PATH=/usr/local/lib`. Funciona,
+pero es frágil: un binario lanzado sin esa variable carga la 1.0.18. Hay que hacerlo bien (rpath o una sola
+versión instalada); lo ideal, que la 1.0.19 llegue con Debian (Alonso DAY318). El banco reproduce ya el enlace y la
+variable.
 
 ### DEBT-SEMGREP-CPP-HANG-001 — semgrep-core se cuelga sobre el árbol C++ completo
 **Severidad:** 🟡 P2
@@ -2618,6 +2625,8 @@ Derivar subclaves especializadas desde K_root usando HKDF (NIST SP 800-108): K_p
 **Estado:** ABIERTO — DAY 149
 **Descripción:** Backend `file` suficiente para dev/FEDER. Producción real requiere Vault HA con backend `raft` (3+ nodos). Dev y prod no deben ser idénticos — diferencial se mitiga con tests específicos.
 **Test de cierre:** Vault HA 3 nodos. Kill del líder → failover < 5s → componentes siguen operativos.
+**DAY318 (Alonso):** Vault puede caerse y aún no hemos hecho ni visto nada de Vault en HA. Hoy, con Vault caído, no
+se pueden firmar manifiestos de protegidos nuevos (la verificación no depende de Vault: ADR-060, F-A). Va con PR2.
 **Estimación:** 2 sesiones post-FEDER
 
 ### DEBT-CRYPTO-STAMPEDE-001 — Jitter startup en vault_client
@@ -8257,3 +8266,1314 @@ en que falló. Un log puede mentir: el etcd-server escribe 200 y responde 404.
 3. DEBT-FW-HMAC-KEY-ALARM-001 ampliada.
 4. REA.
 Más adelante: DEBT-ETCD-MASTER-CLUSTER-001. Residuos: sitio por decidir.
+
+## DAY312–314 — rama feat/etcd-mtls-vault (PR1 de DEBT-ETCD-HA-TLS-RAFT-001: etcd-server en un nodo, HTTPS + mTLS, claves en Vault)
+
+Documento: `docs/ml-heads/day312_diseno.md` (diseño y secciones de resultados DAY312, DAY313 y DAY314). Parcheadores de
+un solo uso, no se commitean. Commits: DAY312 e7309db2 … ee6d07ac (VM etcd, Vault servidor, etcd 3.6.16, despliegue,
+4b.1); DAY313 f4658796 (4b.2); DAY314 a29942fc (4b.3) y 0ddfe530 (4b.4).
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (PR1: pasos 0-4 hechos salvo 4b.6)
+- 4b.2: HTTPS + mTLS, autorización por (OU, CN) con tabla en el JSON, `tls.modo` mtls|http (http solo en el defender
+  hasta el paso 6), registro y latido del etcd-server en proceso, `[ETCD←]` con el status real. Medido 20/20.
+- 4b.3: registro en el etcd real (gRPC + TLS, RBAC); muerto se marca y no se borra; etcd caído = lecturas de la copia y
+  escrituras 503. Medido 28/28; etcd de vuelta, primer latido 200 en 0,7 s; parada 0,07–0,12 s.
+- 4b.4: claves HMAC en Vault (kv v2, `cas_required=true`), `<CN>/<huella8>` inmutable y `<CN>/ventana` con CAS;
+  enfriamiento medido desde la creación de la activa; Vault caído = última ventana con sus dos claves, sin ella 503 y
+  nunca una clave sin guardar; lista de direcciones de Vault con reintentos y sin defecto. Medido 29/29 (banco y lab),
+  ctest 9/23/13/7/82. En el banco, un fallo real (la copia no traía la clave anterior tras reiniciar) cazado por la 2.ª
+  pasada del instrumento y arreglado con su test.
+- Decisiones DAY314 (V1-V4, direcciones sin defecto, `almacen.endpoints`/`prefijo` desde el inventario, un clúster por
+  despliegue, marcador de despliegue descartado): en el diseño y en `prompt_day315.md`.
+- Siguiente (DAY315): pasos 1-3 de DEBT-ANSIBLE-DEPLOY-CONFIGS-001 (abajo). Después 4b.6, pasos 5-8.
+
+### DEBT-ETCD-HEARTBEAT-LOG-STATUS-001 — CERRADA DAY313 (4b.2)
+`[ETCD←]` se escribe después de responder, con el status real, el CN y el OU. Medido: el latido de un no registrado sale
+`status=404`.
+
+### DEBT-ETCD-SECRETS-UNAUTHENTICATED-001 — CERRADA en la VM etcd (4b.2); el defender, hasta el paso 6
+Con mTLS: sin certificado o de otra CA no hay respuesta HTTP; `/seed` y `/secrets/keys` fuera (403). El defender sigue en
+`tls.modo=http` (transición, aviso periódico `[ETCD-TLS-DESACTIVADO]`) hasta el paso 6.
+
+### DEBT-ETCD-SERVER-LOG-TIMESTAMP-001 — ABIERTA (nueva DAY314)
+El log del etcd-server no lleva hora: 143 `std::cout/cerr` en `src/` e `include/` (solo `secrets_manager` usaba spdlog).
+Un grep del log mezcla arranques sin poder saber cuál es cuál (medido DAY314). Arreglo: un único logger con la hora
+como primer campo, patrón en el JSON (defecto ISO-8601 UTC con milisegundos) registrado con su origen, y un test que
+compruebe que cada línea empieza por la hora. Decisión de Alonso: parcheador aparte, antes del paso 8.
+
+### DEBT-ANSIBLE-DEPLOY-CONFIGS-001 — ABIERTA (nueva DAY314), plan aprobado para DAY315
+Medido: el stage «Deploy Configs — Ansible/Jinja2» de `Jenkinsfile.prod` nunca pudo funcionar. Ansible solo carga
+`group_vars/` junto al inventario o al playbook y el repo las tiene en `ansible/group_vars/` (`argus_config_base`
+indefinida; reproducido con ansible-core 2.14.18, la del defender). Con las variables arregladas, las plantillas de
+DAY161 sobrescriben `sniffer.json` (-502/+8 de 561 líneas) y `ml_detector_config.json` (-371/+9 de 423), y en dev el
+destino es `/vagrant`: los JSON del repo. `dev.yml`/`prod.yml` duplican `argus_dev.yml`/`argus_prod.yml`.
+Plan (Alonso DAY314):
+1. Borrar las dos plantillas, sus tareas y los duplicados; después mover `group_vars` junto al inventario.
+2. etcd-server por entorno: tarea que toma el JSON del repo y sustituye solo `almacen.endpoints` y `almacen.prefijo`
+   desde el inventario; escribe en `/etc/ml-defender/etcd-server/etcd-server.json` de la VM etcd (nunca en `/vagrant`)
+   y comprueba `--check-config`. Dev: target del Makefile con el inventario dev (un miembro elegido a mano); la VM etcd
+   entra en el inventario. Pseudo-distribuido: Jenkins con el inventario de preproducción (crearlo) o producción.
+3. `almacen.endpoints` en modo etcd sin defecto: `[ETCD-ALMACEN-FATAL]`, no arranca.
+
+### DEBT-CONFIG-JINJA2-PIPELINE-001 — ACTUALIZADA DAY314 (punto 4 del plan, diferido)
+Cambio de enfoque: nada de plantillas completas que se desfasan (medido: las de DAY161 destruirían los JSON). El patrón
+es el del etcd-server: JSON del repo como única fuente + solo los campos del despliegue sustituidos desde el inventario.
+Aplicarlo a sniffer y ml-detector (y al resto de la lista de DAY161) cuando toque.
+
+### Preguntas abiertas (Alonso decide, PR2)
+- Arrancar sin etcd-server: modo sin registro (cifrado ZMQ intacto, sin bronce ni grafo) frente a no arrancar (DAY310).
+  Alonso DAY314: «arrancar desprotegido es muy peligroso si un atacante ha entrado en la DMZ».
+- Una CA por despliegue (falla cerrado si una plantilla apunta al clúster de otro despliegue). El marcador de
+  despliegue en etcd quedó descartado.
+
+### Pendientes de DAY313 que siguen abiertos
+`make up` no levanta la VM etcd (añadirla antes del paso 8); fijar cpp-httplib en `v0.63.0`; `test_autonomy_integration`
+falló una vez en el banco (vigilar); `scripts/timebase/__pycache__/` al .gitignore (DEBT-REPO-RESIDUOS-001).
+
+### Lecciones DAY312–314
+Probar lo que se compila en el mismo sistema y con las mismas opciones (Debian 12, GCC 12, production): un GCC 13 sin
+LTO no ve el falso `-Wstringop-overflow` de GCC 12. Un parcheador no está aplicado hasta que `--check` lo dice. Un
+instrumento se pasa al menos dos veces seguidas: la primera parte de un estado limpio. Una predicción que depende del
+estado se escribe en función del estado medido justo antes. Un camino de despliegue que nadie ha ejecutado no existe:
+medirlo antes de construir encima (Ansible DAY314).
+
+## DAY315 — rama feat/etcd-mtls-vault (DEBT-ANSIBLE-DEPLOY-CONFIGS-001 pasos 1-3 y 4b.6)
+
+Documento: `docs/ml-heads/day312_diseno.md`, sección «Resultados DAY315». Commits: fbd42be4 (paso 1), 58cb72ac
+(pasos 2a-2c), 23c2e4f8 (paso 3), 68ebbdaa (4b.6). Medido al final: ctest 9/23/13/7/82; registro 28/28; claves 29/29;
+paso 3 15/15 y B4 10/10, dos veces seguidas cada uno; `d312_etcd_vm_deploy.sh` PASA (binario `6d837186`);
+`make deploy-configs` dev `etcd ok=7 changed=0`.
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (PR1: pasos 0-4 hechos, 4b.6 incluido)
+- 4b.6 / B4: `/register` con el CN completo (`/secrets/<CN>`, `/config/<CN>`); antes `firewall-acl-agent` acababa en
+  `/secrets/firewall` y con mTLS daba 403. `crypto_token` fuera del servidor y de etcd-client.
+- `HttpEtcdRegistrar` y `CryptoEpochCoordinator` (common/, ADR-045): ningún binario los usa; se decide en el paso 5.
+- Siguiente: paso 5 (libetcd_client con TLS y lista de endpoints; hoy sniffer, ml-detector y firewall solo usan
+  `endpoints[0]`), empezando por medir qué cliente usa cada uno. Luego pasos 6, 7 y 8.
+
+### DEBT-ANSIBLE-DEPLOY-CONFIGS-001 — CERRADA DAY315 (pasos 1-3; el punto 4 sigue en DEBT-CONFIG-JINJA2-PIPELINE-001)
+- Paso 1: fuera las plantillas Jinja de sniffer y ml-detector, sus tareas y los `group_vars` duplicados; `group_vars`
+  junto al inventario. Medido antes: `make deploy-configs` sí cargaba variables y habría sobrescrito los JSON del repo.
+- 2a: clave de despliegue propia (defender → usuario `argus-deploy` de la VM etcd, huella publicada). Cazado:
+  `ansible.cfg` con `host_key_checking = False` dejaba conectar con una huella falsa; arreglo con
+  `ansible_host_key_checking: true`.
+- 2b: Ansible escribe `/etc/ml-defender/etcd-server/etcd-server.json` en la VM etcd = JSON del repo con
+  `almacen.endpoints`/`almacen.prefijo` del inventario, validado con `--check-config`. `d312` ya no lo copia.
+- 2c: inventarios reales fuera del repo, ejemplo RFC 5737 dentro, `INVENTARIO=` obligatorio en
+  `deploy-configs-prod`, `ARGUS_INVENTARIO` obligatorio en `Jenkinsfile.prod`, sin `etcd_servers` = `[ETCD-CONFIG-ENTORNO]`.
+- Paso 3: en modo etcd los campos del almacén (endpoints, prefijo, tres rutas; endpoints sin repetir) son fatales
+  (`[ETCD-ALMACEN-FATAL]`); sin endpoints se niega a arrancar en 0,04 s.
+
+### DEBT-ETCD-CLIENT-DEAD-VARIANTS-001 — CERRADA DAY315 (68ebbdaa)
+Borradas `etcd_client_base.cpp`, `etcd_client_manual.cpp`, `etcd_client.hpp.day54_hmac_only` y
+`etcd_client.cpp.day54_broken`. Los 9 `*.backup*` ignorados que quedan van a DEBT-REPO-RESIDUOS-001.
+
+### Medido DAY315: Jenkins no puede hacer preproducción hoy
+`Jenkinsfile.dev`: «Build .deb» y «Deploy Vagrant Test» son un `echo` de DEBT-PACKAGE-DEB-001 y DEBT-DEPLOY-VAGRANT-001.
+`Jenkinsfile.prod`: pide el agente `argus-server`, que no existe, y lanza `vagrant up`. Solo el etcd-server tiene
+despliegue de binarios (`d312_etcd_vm_deploy.sh`, desde el Mac). DEBT-DEPLOY-VAGRANT-001 no tiene entrada propia en este
+BACKLOG (solo aparece en la lista de DAY167).
+
+### Preproducción de laboratorio (DAY315) — fusionada en DEBT-LAB-PREPROD-TOPOLOGIAS-001 (sección DAY316, abajo)
+Prevista como DEBT-PREPROD-LAB-001; la entrada de DAY316 pide fusionarlas, así que no se abre un identificador nuevo.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY315
+9 `*.backup*` ignorados en `etcd-client/` y `etcd-server/` (engañaron a un `grep -r` del parcheador de 4b.6); binario
+`firewall-acl-agent/fuzz/fuzz_validate_chain` trackeado; `scripts/timebase/__pycache__/`.
+
+### Pendientes DAY315
+- RBAC de etcd por prefijo en producción: el rol del lab cubre `readwrite /argus/`; con prefijos por despliegue
+  (`/argus/<hospital>/<planta>/`) tiene que cubrirlos.
+- `d312`: 25 paquetes Debian frente a 26 medidos DAY314; sin explicar.
+- Siguen: `make up` sin la VM etcd (antes del paso 8; tras parar el Mac queda `aborted`), cpp-httplib sin fijar a
+  `v0.63.0`, `test_autonomy_integration`, DEBT-ETCD-SERVER-LOG-TIMESTAMP-001, DEBT-CONFIG-JINJA2-PIPELINE-001.
+
+### Lecciones DAY315
+Una comprobación de huella que nadie ha visto fallar no comprueba nada: control negativo con huella falsa. Antes de
+ejecutar un target «de configuración», medir adónde escribe. Una VM recién arrancada puede tener dpkg cogido: se espera.
+Ficheros ignorados engañan a `grep -r`: `git grep`. El mensaje de `fbd42be4` no describe el cambio; la historia no se
+reescribe, queda descrito aquí.
+
+## DAY316 — diseño (conversación): firewall en modo pasarela, agresor interno y estado compartido
+
+Conversación de diseño, sin código. No cambia el orden de ramas (sigue PR1/PR2 de DEBT-ETCD-HA-TLS-RAFT-001). Punto de
+partida: ¿pararía aRGus un gusano tipo WannaCry (EternalBlue/DoublePulsar, SMB 445, todo de 2017 y todavía peligroso en
+hospitales con equipos médicos sin parchear)? Respuesta: el cifrado ocurre en el host y es invisible desde la red; la
+propagación es muy visible, pero pararla depende más de DÓNDE actúa el firewall que del modelo.
+
+### DEBT-FW-ENFORCEMENT-POINT-001 — AMPLIADA DAY316
+Sigue vigente lo de DAY301 (lista de cadenas INPUT/FORWARD en el JSON, defecto INPUT con [CONFIG-DEFAULT]). Se añade:
+- Leído en el código DAY316: un único salto `INPUT -I 1 -j <cadena>` ([ARGUS-CADENA-D301],
+  `firewall-acl-agent/src/core/iptables_wrapper.cpp` 449-548). El enum `IPTablesChain` ya conoce FORWARD, pero nada lo
+  engancha. El agente protege solo la máquina donde está instalado (servidor de la DMZ, norte-sur). El tráfico de un PC a otro dentro del mismo segmento conmutado no pasa por ningún Linux: ni INPUT ni
+  FORWARD lo ven. Contra la propagación lateral hace falta un punto de control entre segmentos (pasarela Linux entre
+  VLANs con FORWARD) o bloqueo en el switch.
+- En modo pasarela: INPUT (proteger la propia pasarela) y FORWARD a la vez.
+- dry_run debe simular también las reglas de FORWARD (como se exigió para INPUT en DAY301).
+- Hipótesis a medir: qué pasa con las conexiones ya establecidas (conntrack) cuando entra el bloqueo.
+
+### DEBT-FW-PROTECTED-RANGES-INTERNAL-AGGRESSOR-001 — ABIERTA (nueva DAY316), decide Alonso
+Medido en el diseño (DEBT-FW-PROTECTED-RANGES-001, DAY300): aRGus nunca bloquea un rango protegido (defecto RFC 1918 y
+fc00::/7). Es lo correcto para DDoS (agresor externo), pero en una propagación tipo WannaCry el agresor es un host
+interno, es decir, una IP protegida: aunque la cabeza ransomware lo detecte, el firewall se negaría a bloquearlo.
+Opciones:
+- A: protección por cabeza (los rangos protegidos valen para las cabezas de tráfico externo; ransomware puede aislar).
+- B: bloquear solo el tráfico lateral del host interno (hacia otros internos y en los puertos de propagación: 445, 135,
+  139), dejándolo alcanzable para que el admin lo investigue. Propuesta de Claude: la más prudente en un hospital.
+- C: aislamiento total con doble llave (interruptor propio en el JSON, defecto false, aviso muy visible en el log).
+Relación: DEBT-IRP-NFTABLES-001 (argus-network-isolate aísla una interfaz de la propia máquina, no un host interno
+remoto) y la regla permanente DAY142 (nunca señal única; un FP sobre un equipo médico es inaceptable).
+
+### DEBT-FW-MULTI-AGENT-SHARED-STRIKES-001 — ABIERTA (nueva DAY316), después de la PR2 (HA Raft)
+Doble protección en un despliegue: el mismo paquete Debian en dos papeles, servidor de la DMZ (INPUT) y pasarela entre
+segmentos (INPUT+FORWARD). Las capas fallan por separado. Problema: `strike_states_` vive en cada agente; con dos
+agentes una IP puede ir por strikes distintos en cada uno.
+- El etcd-server sigue SIN estado (D1, DAY312: fachada HTTPS); el estado va al etcd real, como el registro y los
+  latidos. Ruta propuesta: `<prefijo>/firewall/strikes/<ip>`.
+- "Un episodio = un strike" con dos agentes: transacción con compare-and-swap en etcd (mismo patrón que
+  `cas_required=true` en Vault).
+- Volumen bajo (un strike por episodio, nunca por paquete): encaja con etcd. Nada de tráfico de alta frecuencia ahí.
+- Con etcd caído: cada agente sigue bloqueando con su copia en memoria, aviso en el log y sincronización al volver
+  (regla DAY314: proteger al hospital primero).
+- Autorización por CN de instancia (p. ej. firewall-acl-agent-nodo2): solo la ruta de strikes.
+- El ipset sigue siendo local; en etcd va el expediente (strikes, último DROP, escalón). El volcado de `strike_states_`
+  en la parada queda como copia local de respaldo.
+- Ámbito por agente en su JSON (modo, rangos protegidos, cabezas que le competen); logs identificando al agente.
+Orden: (1) FORWARD en un agente, medido; (2) dos agentes con estado independiente, midiendo las inconsistencias
+reales; (3) estado compartido en etcd, con el HA cerrado.
+
+### DEBT-LAB-PREPROD-TOPOLOGIAS-001 — ABIERTA (nueva DAY316), cuando todas las cabezas estén operativas
+Laboratorio con las dos configuraciones y la doble protección: servidor de la DMZ (INPUT) y pasarela Linux con
+`ip_forward=1` entre dos subredes (FORWARD), con el sensor viendo el tráfico de un PC a otro. Métrica principal por
+topología: tiempo desde la detección hasta que la regla está aplicada. Si la entrada del entorno de preproducción de
+DAY315 (VM objetivo mínima, campo de pruebas de DDoS y ransomware) se registra aparte, fusionarlas.
+Fusión DAY315 (prevista como DEBT-PREPROD-LAB-001): objetivo Alpine diminuto (128–256 MB), el client como atacante,
+DDoS y ransomware SIMULADO (Atomic Red Team / mitre-start); solo funcional, no de capacidad (Mac de 2019). Solo cuando
+todas las cabezas estén certificadas (hoy solo DDoS). Antes, medir la RAM. Después del paso 6 de DEBT-ETCD-HA-TLS-RAFT-001.
+
+### DEBT-RANSOMWARE-ML-HEAD-INERT-001 — nota DAY316 para la reescritura de la cabeza
+- Desde la red se ve la propagación (un host interno abriendo conexiones al 445 hacia muchos destinos; EternalBlue/
+  DoublePulsar sobre SMBv1; DNS del killswitch; Tor), no el cifrado. La pieza ya existe: `count_unique_ips` solo
+  destino (diversidad SMB, `time_window_aggregator` cpp:240).
+- Las firmas de EternalBlue/DoublePulsar (Suricata) cubren WannaCry original; la cabeza aporta en variantes sin firma.
+  El caso difícil: propagación con credenciales robadas (PsExec/WMI, estilo NotPetya), parecida a un admin.
+- Datos reales, nunca sintéticos (detonación controlada en red aislada, VMs Windows sin parchear).
+- Criterio de HECHO propuesto: dos métricas por separado, recall sobre el host que se propaga y tiempo hasta la
+  regla aplicada. Predicción escrita antes de medir: detección alta; contención desconocida hasta medir la topología;
+  el cifrado en el paciente cero, imposible desde la red.
+
+## DAY316 — paso 5, commit A (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, sección «Resultados DAY316 — paso 5, commit A». Commit `fe99a7e70` (42 ficheros,
++1045/-1068). Medido: `test-components` 9/23/13/7/82; los tres componentes registrados por mTLS en el etcd-server de la VM
+etcd, cada uno con su CN; `test-e2e-synthetic` PASSED; `mitre-start` rc 0 (argus 1518, suricata 32, zeek 1074, invariante 0,
+1051 corroborados).
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (paso 5: commit A hecho)
+libetcd_client habla HTTPS con certificado de cliente, con lista de 1-7 direcciones (sin respuesta o 5xx: siguiente; 4xx:
+respuesta final) y un lector único del bloque `etcd`. sniffer, ml-detector y firewall usan el etcd-server de la VM etcd
+(`https://192.168.100.20:2379`). Siguiente: commit B (DEBT-FW-HMAC-KEY-ALARM-001), después paso 6 (etcd-server de la VM como
+servicio, `make up` levanta la VM etcd, fuera el etcd-server del defender y los modos http/memoria), 7 y 8.
+
+### DEBT-HMAC-KEY-INSECURE-TRANSPORT-001 — CERRADA DAY316 (lo que hacía de ella una P1)
+La clave HMAC ya no viaja en claro ni sin autenticación: los componentes la piden por mTLS con su certificado
+(`/secrets/<CN>`, solo el CN propio) y mitre/ctu/custom-start por mTLS con el certificado de `bronze-to-gold-converter`
+(`/secrets/valid/ml-detector`, regla `ou:bronze-to-gold-converter`); las claves viven en Vault (PR1). Medido en mitre-start:
+0 descartadas en los tres converters. Queda, con su propia entrada: el converter recibe la clave por variable de entorno
+(DEBT-BRONZE-KEY-PROVISIONING-001). Hasta el paso 6 el etcd-server del defender sigue arrancando en HTTP con claves de
+memoria que ya no usa nadie.
+
+### DEBT-ETCD-CLIENT-MANUAL-TESTS-CTEST-001 — ABIERTA (nueva DAY316, decisión de Alonso)
+`test_hmac_integration_client`, `test_put_config_integration` y `test_service_discovery` (etcd-client) nunca han entrado en
+ctest y necesitaban un etcd-server en HTTP. En el commit A solo pasan a `endpoints = {"https://127.0.0.1:2379"}` y les falta
+la PKI. Entran en ctest como los demás, con la PKI desechable de `test_etcd_cliente_tls` (E2).
+
+### DEBT-ETCD-CONFIG-SIZE-ENDIAN-001 — ABIERTA (nueva DAY316, medida)
+`PUT /v1/config/<CN>`: el cliente antepone el tamaño original en little-endian (`etcd_client.cpp`, `memcpy` de un
+`uint32_t`) y el etcd-server lo lee en big-endian (`etcd_server.cpp` 374-378). Medido en la VM: `Size mismatch:
+header=3882352640 vs HTTP=26855` (26855 = 0x68E7 → bytes `E7 68 00 00` → 0xE7680000). El servidor descarta el prefijo y
+usa la cabecera HTTP, así que hoy guarda bien. Arreglo: un único orden de bytes escrito en los dos lados y con test; con
+el arreglo, el desacuerdo pasa de aviso a error.
+
+### DEBT-PKI-AT-REST-001 — ABIERTA (nueva DAY316)
+`ca.key` en el Mac y las `.key` de los componentes en claro en disco (0600 root). En producción, la CA fuera de línea y lejos
+del despliegue; para las claves de cliente, pedirlas a Vault al arrancar y tenerlas solo en memoria, o TPM/HSM.
+
+### DEBT-GRAPH-HUECO-SIN-CLAVE-001 — ABIERTA (nueva DAY316)
+Estado deseado de Alonso: sin etcd-server el pipeline sigue protegiendo aunque no pueda firmar. Ese periodo tiene que verse en
+el grafo como evento (p. ej. una fila firmada de tipo hueco al recuperar la clave, con inicio, fin y filas perdidas), no solo
+en el log (`[BRONCE-SIN-CLAVE]`). Toca correlation_v1: diseño propio.
+
+### DEBT-CONFIG-AT-REST-PROTECTION-001 — PROPUESTA DAY316 (pendiente de que Alonso la confirme)
+Los JSON de los componentes son configuración sensible (direcciones del etcd-server, rutas de certificados, rangos
+protegidos, umbrales). Hoy, en el lab, son ficheros del repo legibles en `/vagrant`. Propuesta para producción: propiedad de
+root y permisos mínimos, integridad comprobada al arrancar (firma, como los plugins) y entregados solo por Ansible; el
+cifrado en reposo (TPM/LUKS) se mide aparte. El código no se puede ejecutar cifrado: lo que se protege es el disco y el
+camino de entrega.
+
+### DEBT-LAB-VAULT-CLAVES-PRUEBA-001 — ABIERTA (nueva DAY316)
+`d314_claves_medir.sh` rota con `force` la clave del CN real `ml-detector`, y cada pasada deja en Vault claves inmutables para
+siempre (medido: `c10f19d3` → `60768287`), además de `argus-hmac/d312/prueba`. Propuesta: un CN de prueba propio para los
+instrumentos y rehacer la VM etcd antes del paso 8.
+
+### DEBT-PIPELINE-STATUS-LIVENESS-001 — AMPLIADA DAY316
+Alonso: `pipeline-status` está desfasado. Además de mirar solo el proceso, enseña el etcd-server del defender (que con el
+commit A ya no usa ningún componente) y Vault en modo dev, y no ve el etcd-server de la VM etcd. Junto con
+DEBT-PIPELINE-STATUS-ALL-VMS-001 y -LOGFILES-001.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY316
+Cuatro parcheadores viejos sin trackear en `scripts/` (`d313_4b2_parche.py`, `d313_4b3_parche.py`, `d314_4b4_parche.py`,
+`d314_docs_parche.py`); `etcd-client/src/etcd_client_simple.cpp` es un script de bash con extensión `.cpp` (nadie lo
+compila); el bloque `etcd` de `correlation-engine/config/correlation_engine.json` (declarado, no consumido, con
+`localhost:2379`).
+
+### Pendientes DAY316
+- `registerService` con rutas escritas en el código (sniffer `/vagrant/sniffer/config/sniffer.json`, firewall
+  `../config/firewall.json`): debe registrar el JSON con el que arrancó. Commit B o paso 6.
+- El etcd-server de la VM se arranca a mano (`vagrant ssh etcd -c "bash /vagrant/scripts/etcd_ha/d313_es_vm.sh arrancar"`,
+  sin `sudo`) hasta el paso 6.
+
+### Lecciones DAY316 (commit A)
+Una línea de éxito solo vale si es de esta ejecución (`sudo bash d313_es_vm.sh` no pudo escribir su fichero de comprobación
+y el `grep` mostró el OK viejo). Un log por comando. Un servidor falso responde también lo que el cliente pide antes de la
+ruta bajo prueba.
+
+### Diseño del commit B (DAY316) — `docs/ml-heads/day312_diseno.md`, «Diseño del commit B (paso 5)»
+Decisiones G1-G7 de Alonso: un hilo mantenedor en la librería con un solo ritmo (`heartbeat_interval_seconds`: latido si
+está registrado, reconexión si no); ninguno de los tres sale por etcd (deja atrás F1 de DAY310); la config se sube al
+registrarse y al volver a registrarse, desde el JSON con el que arrancó; el firewall pide su clave cada
+`hmac_key.check_interval_seconds` y abre un CSV por clave; fuera la semilla muerta del sniffer. B1 (librería y arranque) y
+B2 (clave del firewall, cierra DEBT-FW-HMAC-KEY-ALARM-001).
+
+### DEBT-SNIFFER-LIBPCAP-ETCD-001 — ABIERTA (nueva DAY316, G7)
+El sniffer libpcap (variante B, `main_libpcap.cpp`, `sniffer-libpcap.json`) no habla con etcd: ni registro, ni latidos,
+ni config subida, aunque su JSON ya trae el bloque `etcd` del commit A. Mismo comportamiento que la variante A cuando se
+retome (lector único y mantenedor de la librería).
+
+## DAY316 — paso 5, commits B1 y B2 (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Resultados DAY316 — commits B1 y B2». Commits `370210a28` (B1) y `cde7dd213`
+(B2). Con ellos el paso 5 de DEBT-ETCD-HA-TLS-RAFT-001 queda hecho: commits `fe99a7e70` (A), `370210a28` (B1), `cde7dd213`
+(B2), y sus documentos `c256e88c4` y `8d56ff747`.
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (pasos 0-5 hechos)
+Los tres componentes hablan mTLS con el etcd-server de la VM etcd, arrancan sin él, se registran (o reanudan el latido)
+cuando vuelve y suben el JSON de arranque. Siguiente: paso 6 (Vault y etcd-server fuera del defender: etcd-server de la VM
+como servicio systemd, `make up` levanta la VM etcd, fuera `tls.modo=http` y los modos memoria, `pipeline-start` sin
+`etcd-server-start` del defender), paso 7 (instrumento de reinicio de DAY311 en la VM: medido en parte con B1 y B2, misma
+huella y registro conservado) y paso 8 (EMECAS+++ production). La decisión F1 de DAY310 (sin etcd-server el ml-detector no
+arranca) queda sustituida por G2 (DAY316): ninguno sale por etcd.
+
+### DEBT-FW-HMAC-KEY-ALARM-001 — CERRADA DAY316 (`370210a28` + `cde7dd213`)
+Los tres componentes se comportan igual con el etcd-server (mantenedor común de la librería). El firewall pide su clave cada
+`hmac_key.check_interval_seconds` con los mismos casos que el ml-detector (sin clave, modo extendido, confirmada, cambiada,
+recuperada) y un CSV por clave. Medido en el lab: clave al arrancar, modo extendido y confirmación con la misma huella.
+
+### DEBT-FW-CSV-SIN-FILAS-EN-GATE-001 — ABIERTA (nueva DAY316, decisión H1 c de Alonso)
+Medido: desde D302 el firewall solo escribe CSV en acciones de la mitigación ddos_v2 (`habilitada=false` en el lab): ninguna
+fila desde el 29-oct; `test-parquet` validaba ese CSV viejo (verde falso). Criterio de Alonso: en `firewall_blocks-*.csv`
+va una fila solo cuando el firewall bloquea de verdad, ordene el bloqueo la cabeza que sea (DDoS, ransomware o las otras
+dos); lo que no se bloquea no tiene sentido escribirlo. Falta: que cada cabeza que bloquee escriba su fila, y que el gate
+tenga un caso que bloquee para que `test-parquet` valide datos de esa corrida. Pregunta abierta para Alonso: hoy D1 escribe
+también `DRY_RUN_BLOCK`/`DRY_RUN_RENEW` (lo que se habría bloqueado); ¿siguen yendo al CSV? Relacionada:
+DEBT-FW-LEGACY-STEPS-001 (pasos 5-8 inalcanzables).
+
+### CSV viejo del firewall — archivado DAY316 (decisión H2 de Alonso)
+`logs/firewall_logs/firewall_blocks.csv` (19 MB, 29-oct, firmado sin huella conocida) movido a
+`logs/firewall_logs/archivo/`. Con B2 ya no lo lee nadie.
+
+### Pendiente de DAY316 cerrado
+`registerService` con rutas escritas en el código (sniffer `/vagrant/sniffer/config/sniffer.json`, firewall
+`../config/firewall.json`): cerrado con B1 (se sube el JSON de `-c`, en ruta absoluta desde B2).
+
+### Lecciones DAY316 (B1, B2)
+Un test con hilos espera al hecho que comprueba. Un servidor falso atiende todos los métodos del cliente. Un `grep -c`
+también cuenta líneas de configuración: mirar la línea. Un verde que valida datos de hace una semana no es un verde.
+
+### Plan acordado al cierre de DAY316 (Alonso): primero certificar etcd, después lo demás
+1. **Cierre del PR1** (un nodo): paso 6 (etcd-server de la VM como servicio; `make up` y `make emecas` levantan y
+   aprovisionan la VM etcd sin pasos manuales; fuera del defender etcd-server, Vault dev y modos `http`/`memoria`;
+   `pipeline-status` comprueba el etcd-server Y el etcd de la VM, no solo procesos), paso 7 (reinicio), paso 8 (EMECAS+++).
+2. **PR2 — HA de verdad (Alonso: al menos 3 nodos etcd)**: cuántos levanta la imagen, cada uno con su etcd-server y
+   Vault HA. Tests nuevos: tirar un nodo (también el líder) y comprobar que uno de los otros dos toma el control; que el
+   estado de los componentes (registro, latidos, config) sigue sincronizado entre los nodos; medir cuánto tardan todos
+   en estar sincronizados tras la caída y la vuelta. Antes, la RAM (diseño, sección 6: VMs pequeñas o `ip netns`).
+3. **DEBT-ETCD-VIGILANCIA-FALCO-WAZUH-001 — ABIERTA (nueva DAY316)**: que Falco y Wazuh vigilen etcd y el etcd-server
+   (procesos, ficheros de datos y certificados, puertos, accesos), como el resto del pipeline. Falco ya existe en la VM
+   hardened-x86 (`hardened-setup-falco`, DEBT-PROD-FALCO-RULES-EXTENDED-001, DEBT-FALCO-ARGUS-GRAPH-RULES-001); medir qué
+   vigila hoy antes de diseñar. Después del PR2 (las reglas dependen de cuántos nodos y dónde).
+4. **Producción**: que el Jenkinsfile produzca el pipeline (medido DAY315: hoy no puede; DEBT-PACKAGE-DEB-001,
+   DEBT-DEPLOY-VAGRANT-001).
+5. **Preproducción**: imagen mínima con dos o tres servidores detrás del firewall en FORWARD, para ver llegar la protección
+   a esos servidores (DEBT-LAB-PREPROD-TOPOLOGIAS-001, DEBT-FW-ENFORCEMENT-POINT-001). Cuando el etcd esté certificado y
+   las cabezas también.
+
+## DAY317 — diseño del paso 6 de DEBT-ETCD-HA-TLS-RAFT-001 (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Diseño del paso 6». Decisiones de Alonso: el Vault dev del defender se
+queda hasta DEBT-VAULT-REST-SECRETS-001; los Actos I y III de `emecas++` usan un JSON de prueba propio con `-c`;
+`pipeline-status` con estado real (cada miembro etcd: sano, líder, retraso; Vault; etcd-server); sin etcd-server, aviso
+claro (`pipeline-start` avisa, EMECAS falla); `ml-defender-etcd-server.service` en la VM etcd y los targets del Makefile
+la gestionan allí; un único `etcd-server.json`. Commits previstos: 6a (unidad), 6b (Makefile), 6c (`pipeline-status`),
+6d (defender).
+
+### DEBT-VAULT-ENTERPRISE-SMOKE-VM-001 — ABIERTA (nueva DAY317, decisión 2 de Alonso)
+`test-e2e-vault` (Acto I) y `vault-fault-inject` (Acto III) arrancan un etcd-server `build-vault` en el defender contra
+el Vault dev, con `etcd-server.smoke-enterprise.json` (`http`/`memoria`). Por ellos el código sigue aceptando esos
+modos. Se llevan a la VM etcd junto con DEBT-VAULT-REST-SECRETS-001; entonces salen los modos `http`/`memoria`.
+
+### Aclaraciones DAY317 para el PR2
+La clave HMAC sale de Vault (etcd-client → etcd-server → Vault), no de etcd; ningún componente habla con Vault. El Vault
+que va a HA es el de la VM etcd (raft integrado, 3 nodos). Un etcd-server por máquina junto a su etcd, con la lista de
+todos los miembros (etcd lleva cada petición al líder). Por medir: que `EtcdRegistryStore` pase todas las direcciones.
+Propuesta: que el playbook de Ansible genere también `vault.hcl` y `etcd.conf.yml` desde el inventario de cada
+despliegue (hospital y planta).
+
+## DAY317 — paso 6 de DEBT-ETCD-HA-TLS-RAFT-001 hecho (rama feat/etcd-mtls-vault)
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Resultados DAY317 — paso 6». Commits `8834cad88` (6a: etcd-server de la VM
+como `ml-defender-etcd-server.service`), `4df098f34` (6b: Makefile con la VM etcd, `etcd_vm_estado.sh`), `2e7cfea2a`
+(6c: `pipeline-status` con el estado real), `86ab61607` (6d: el defender deja el etcd-server).
+
+### DEBT-ETCD-HA-TLS-RAFT-001 — EN CURSO (pasos 0-6 hechos)
+El etcd-server corre en la VM etcd como servicio systemd, junto a etcd y Vault, y vuelve solo tras reiniciar la VM;
+`make up` y `make emecas` levantan la VM etcd y EMECAS la despliega tras compilar (`etcd-vm-deploy`, con control
+estricto). En el defender nada escucha en 2379; en 8200 solo el Vault dev en 127.0.0.1 (decisión 1). Siguiente: paso 7
+(reinicio en la VM, bronce anterior verificable) y paso 8 (EMECAS+++ production).
+
+### DEBT-PIPELINE-STATUS-LIVENESS-001 — AVANZADA DAY317
+`pipeline-status` enseña el estado real de la VM etcd: el etcd-server (systemd y `/health`), cada miembro etcd (sano,
+líder, term, retraso respecto al líder) y cada nodo del Vault de las claves HMAC. Los componentes del defender siguen
+mirándose solo por proceso.
+
+### Hallazgo DAY317 — corregido en 6d
+Las unidades systemd de sniffer, ml-detector y firewall en el defender llevaban
+`Requires=ml-defender-etcd-server.service` (contra G2). Fuera.
+
+## DAY317 — diseño del paso 7 de DEBT-ETCD-HA-TLS-RAFT-001
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Diseño del paso 7». Instrumento nuevo
+`scripts/etcd_ha/d317_reinicio_vm.sh` (+ ayudante del defender) que sustituye al de DAY311 (se borra): reinicia el
+etcd-server de la VM con el pipeline vivo y tráfico benigno, y da un veredicto PASA/FALLA (misma huella de bronce y CSV,
+ningún registro nuevo, latidos 200, todo el bronce del intervalo verificable con la clave de antes y la de después).
+Decisión de Alonso: primero se mide a mano; luego se decide si entra en `lab-e2e`.
+
+## DAY317 — paso 7 de DEBT-ETCD-HA-TLS-RAFT-001 hecho
+
+Documento: `docs/ml-heads/day312_diseno.md`, «Resultados DAY317 — paso 7». `reinicio_vm_2`: VEREDICTO PASA (misma huella
+de bronce y CSV tras reiniciar el etcd-server de la VM con el pipeline vivo, ningún registro nuevo, latidos 200, los 16
+segmentos del intervalo verificables con la clave de antes y la de después). `reinicio_vm_1` paró por un fallo del
+instrumento (valor de `vagrant ssh` sin sanear), arreglado. DEBT-ETCD-HA-TLS-RAFT-001: pasos 0-7 hechos; queda el 8
+(EMECAS+++ production).
+
+---
+
+## DAY317 — Resultado del EMECAS+++ y DEBT-FW-MANIFIESTO-PROTEGIDOS-001 [MANIFIESTO-PROTEGIDOS-D317]
+
+### Resultado del EMECAS+++ (paso 8), miércoles 2026-11-04
+`make emecas+++ PROFILE=production`: 2 h 20 min, **FALLA** en `lab-e2e-protegidos`, criterio P2. Todo lo anterior
+pasó: test-all, firewall e2e/perf, test-e2e-synthetic, los tres reinicios (R1-R3 PASA en antes, ordenada y kill9),
+P1, P3, P4 y P5. El Acto IV no llegó a correr (`err_to_row` del adapter de Suricata sigue sin medir desde cero).
+
+```
+[VEREDICTO] FALLA P2 episodio: FIN=1 (esperado 1), origenes=192.168.100.50:10780,192.168.100.20:3
+```
+
+Medido: 192.168.100.20 es la VM etcd; el episodio es UDP (`proto=17`); la VM etcd sincroniza con chrony contra el
+defender (`server 192.168.100.1`, poll 64 s); 207 s de episodio / 64 s = 3 peticiones NTP de cliente que `ddos_v2`
+marcó junto con la reflexión NTP. El HTTPS del etcd-server (TCP) es normal. Con la mitigación real (hoy en sombra) la
+VM etcd quedaría una hora en el blacklist: **DoS autoinfligido del plano de control**. P2 hizo bien su trabajo y no se
+relaja. Diseño y decisiones: `docs/adr/ADR-060-manifiesto-firmado-rangos-protegidos.md`.
+
+### DEBT-FW-MANIFIESTO-PROTEGIDOS-001 — ABIERTA, BLOQUEANTE para el merge de PR1 (decisión de Alonso DAY317)
+Entra en esta PR: EMECAS no deja pasar sin ella y no se debilita EMECAS por haber hecho su trabajo.
+Un manifiesto firmado (Ed25519, clave privada en Vault transit por hospital, pública compilada en el firewall) por
+despliegue, con categorías `infraestructura`, `intranet`, `dmz`, `externos_criticos`; sustituye a `ddos_protegidos` de
+cada `firewall.json`. Entradas estrechas `{cidr, interfaz, mac?, motivo}`, límites de prefijo por categoría desde la
+plantilla de despliegue (`infraestructura` solo /32 y /128). Versión monótona, deshacer firmado, candado (la mitigación
+real exige manifiesto verificado), último verificado en memoria y aviso periódico, comprobación continua kernel ↔
+manifiesto, alertas de spoofing por interfaz y MAC, Falco, Wazuh y audit de Vault. `argus-infra` solo en la máquina
+del admin.
+Pasos: 8e.1 firewall · 8e.2 Vault transit · 8e.3 `argus-infra` y rutas del etcd-server · 8e.4 vigilancia ·
+8e.5 bootstrap del lab, veredicto P1-P6 y EMECAS+++.
+**Test de cierre:** EMECAS+++ PROFILE=production rc 0 con `lab-e2e-protegidos` P1-P6 PASA, .20 aprovisionado en
+`infraestructura` por `argus-infra` en el bootstrap, y los tests de 8e.1 (firma, versión, despliegue, límites,
+caché, candado) en verde.
+
+### Limitación del laboratorio (decisión de Alonso DAY317)
+`argus-infra` vive en la VM etcd: no hay RAM para una VM admin y Vault solo escucha en 127.0.0.1. En producción la
+máquina admin la fija la plantilla de despliegue de Jenkins. Escrito también en el `_doc` correspondiente.
+
+### Medido DAY317: la whitelist exime de TODO bloqueo de aRGus
+`iptables_wrapper.cpp`: `--match-set <whitelist> src ... RETURN` antes del blacklist. Un origen protegido no queda
+exento solo de la cabeza DDoS, sino de todo bloqueo. Razón de más para que la lista sea un manifiesto firmado.
+
+### DEBT-DDOS-V2-NTP-CLIENTE-001 — ABIERTA (nueva DAY317)
+`ddos_v2_fact_rf@day293-f3d6b261` marca con p1 >= 0,96 una petición NTP de cliente legítima (48 bytes,
+`.20:<p> -> .1:123`) que cae dentro de un episodio de reflexión NTP contra la misma víctima. Defecto del modelo; el
+manifiesto evita el daño, no lo corrige. Destino: `diag/ml-heads`.
+**Test de cierre:** con el modelo corregido, una corrida de `lab-e2e-protegidos` SIN .20 en el manifiesto da `origenes=` solo .50.
+
+### DEBT-FW-DOS-PERSONAS-001 — ABIERTA, no bloqueante (nueva DAY317)
+Regla de dos personas para firmar el manifiesto (Vault control groups). No ahora: muchos hospitales no tendrán dos
+administradores. Campo futuro en la plantilla, desactivado por defecto.
+
+### Hipótesis sin medir (Alonso DAY317): el DDoS autoinfligido, primo malvado del DoS autoinfligido
+En un despliegue distribuido real, el tráfico legítimo del propio aRGus (N componentes reconectando a la vez al
+etcd-server tras una caída, latidos alineados, muchos clientes NTP contra el mismo servidor de hora) podría parecer un
+DDoS contra un nodo del plano de control. Se mide en PR2 (3 nodos). Sin predicción todavía: no adelantarse.
+
+### Pendiente de decidir: eve.json de Suricata (medido DAY317)
+Los dos avisos `json ilegible` del adapter de Suricata (líneas 9393 y 20447 de `/var/log/suricata/eve.json`) son
+huellas de apagados bruscos de la VM (arranques del 1, 2 y 3 de noviembre sin `shutdown` en `last -x`): un registro
+cortado con otro pegado, y 3024 bytes `\0` de asignación diferida de ext4. El adapter hizo lo correcto (Error, no
+Skip; `err_to_row=2`; 0 descartadas en la conversión). Opciones propuestas, a decidir por Alonso: (c) `mitre_start` y
+`ctu_start` dan al adapter solo lo escrito desde T0 (tamaño en bytes en T0 y `tail -c +N`; si el fichero encoge, se
+lee entero y se avisa) y (b) `err_to_row=0` obligatorio; opcional, las dos líneas reales (recortadas) como casos de
+`test_to_row`.
+
+### Lecciones DAY317
+EMECAS debe levantar la topología de producción, no un subconjunto: con solo defender y client no existía .20 y P2
+pasaba. El fallo no estaba en el código de ninguna pieza, sino en la topología. El DoS autoinfligido no solo viene de
+que alguien escriba en la lista protegida: también de que falte algo en ella. Antes de afirmar una causa, mirar el
+protocolo del episodio (la primera hipótesis, el HTTPS del etcd-server, cayó con `proto=17`).
+
+---
+
+## DAY318 — Diseño fino de 8e cerrado [MANIFIESTO-PROTEGIDOS-D318]
+
+Documento: `docs/adr/ADR-060-manifiesto-firmado-rangos-protegidos.md`, sección 6 (cerrada) y precisiones en D1, D2,
+D3, D5, D8, D10, consecuencias y plan. Decisiones de Alonso DAY318:
+- **D-A** set nuevo `hash:net,iface` con `ipset swap` atómico; fuera `ipsets.whitelist` (medido en el defender: ipset
+  v7.17, `eth2`, `src,src` y `swap` funcionan).
+- **D-B** un manifiesto por hospital, con `comun` y `plantas`; solo `motivo` corto (ni ubicación ni función: sería un
+  mapa del hospital); fuera el defecto RFC 1918.
+- **D-C** aviso `[PROTEGIDOS-INFRA-INCOMPLETA]` si un host de `etcd.endpoints` falta en `infraestructura`; no cierra el
+  candado (el hospital siempre protegido). Se compara al aplicar cada manifiesto, no por paquete.
+- **D-D** 8e.2 (Vault transit) se commitea antes que 8e.1; EMECAS, al final de la rama.
+- **D-E** clave pública con el patrón de ADR-025 (`-D` o fichero traído de Vault; sin ella, `FATAL_ERROR`); el
+  firewall enlaza libsodium.
+- **D-F** fuera `ranura_clave`: se prueban las dos ranuras.
+- **D-G** la barrera de usuario protege por IP siempre; la interfaz y la MAC atan la exención del kernel y el
+  antispoofing en `raw PREROUTING` generado desde el manifiesto (8e.4), con todo registrado.
+- **D-H** `protegidos.consulta_sec` pasa a 8e.3; 8e.1 trabaja con la caché.
+- **D-I** IPv6 como hoy: protegido en la barrera, omitido en el kernel con aviso hasta DEBT-FW-IPV6-SETS-001.
+
+### DEBT-FW-SPOOFING-ORIGENES-AJENOS-001 — ABIERTA, permanente (nueva DAY318)
+Falsificar orígenes ajenos (IPs de terceros) con herramientas de fabricación o manipulación de paquetes (Scapy,
+hping3, o Polymorph de shramos, que además manipula el tráfico en tiempo de ejecución) no se resuelve desde el borde
+del hospital: depende de que los operadores apliquen BCP 38. Lo falsificado con el origen de un protegido sí se cubre
+(antispoofing por interfaz y MAC desde el manifiesto, 8e.4). Ideas sin medir: en TCP, que la cabeza DDoS pese solo los
+orígenes con el saludo completo (`diag/ml-heads`); en la reflexión UDP el origen que se ve es el reflector real.
+Postura de partida (Alonso DAY318): mejor pasarse de duros mientras se diseña y registrarlo todo; si resulta demasiado
+lesivo, se mide y se suaviza. Se revisa en cada rama que toque la cabeza DDoS o el firewall.
+
+### Hallazgos DAY318
+- El aprovisionamiento del Vagrantfile pone `rp_filter=0` en todas las interfaces del defender (modo gateway). El
+  antispoofing de 8e.4 no depende de él; en 8e.4 se mide si el lab lo necesita.
+- `firewall-acl-agent/src/rules/*.cpp` (`whitelist_manager`, `rate_limiter`, `temporal_acl`) no se compila: código
+  muerto. Sin decidir (DEBT-REPO-RESIDUOS-001).
+- La barrera de usuario recorre la lista entera por cada DROP de la cabeza DDoS (no por paquete). Con miles de
+  entradas, medir y cambiar a un árbol de prefijos.
+- `make up` no arranca el pipeline, ni lo ha hecho nunca (git): solo `make pipeline-start`, `make bootstrap` y EMECAS.
+  Un primer `pipeline-status` con la VM etcd apagada tras un `make up` no se reprodujo (la VM arrancó con un
+  `vagrant up` posterior); si vuelve a pasar: `make halt`, `make up` mirando la VM `etcd`, `vagrant status`.
+
+---
+
+## DAY318 — paso 8e.2 hecho [PROTEGIDOS-PUBKEY-D318]
+
+Commit de código: «DAY318 paso 8e.2: Vault transit para el manifiesto de protegidos ...». Decisiones de Alonso DAY318:
+E1 certificado nuevo `argus-infra` separado de `admin` (ADR-060, D9 bis); E2 dos audit devices (fichero + syslog) con
+rotación; E3 `argus_hospital_id` en `group_vars` (lab: `hospital-lab`); E4 Vault en Ansible va con PR2; E5
+DEBT-VAULT-GESTION-TRAS-INIT-001.
+
+### Medido en el banco (Debian 12, Vault 2.2.1 real, dos pasadas idénticas)
+- Desde cero y segunda pasada: rc 0; sonda: clave ed25519, `exportable=False`, `deletion_allowed=False`, los dos audit
+  escriben.
+- La firma de Vault transit se verifica con `crypto_sign_verify_detached` de libsodium 1.0.19; con un byte de la carga o
+  un bit de la firma cambiados, no verifica (confirma D-E para 8e.1).
+- Permisos: 7 de 7 con 403 (ver ADR-060, D9 bis).
+- Mutaciones: Vault de DAY317 sin transit, otro hospital y syslog caído dan rc 1 con su mensaje. Con syslog caído Vault
+  sigue respondiendo: el audit de fichero basta para no bloquearlo, y la sonda lo canta.
+- Fallo del instrumento corregido antes de entregar: la primera sonda de syslog buscaba en los últimos 5 minutos y dio
+  OK con líneas de una pasada anterior (en la VM habría pasado igual al reaprovisionar). Ahora cuenta antes y después.
+
+### Medido en el lab
+`vagrant destroy -f etcd && vagrant up etcd`: inicializado con audit de fichero + syslog, `protegidos-hospital-lab`
+ed25519 no exportable versión 1, los dos audit escriben, ningún `❌`. `etcd-vm-deploy`: PASA, SANO.
+`make protegidos-pubkey`: clave versión 1, huella 52ba6180cf5e8e9a, en el defender. `pipeline-start`: 8/8, los tres
+componentes RUNNING. Se perdieron las claves HMAC de prueba del lab (previsto: DEBT-LAB-VAULT-CLAVES-PRUEBA-001).
+
+### DEBT-VAULT-GESTION-TRAS-INIT-001 — ABIERTA (nueva DAY318, decisión E5 de Alonso)
+El root de Vault se revoca tras el `init`: nadie puede rotar la clave transit del manifiesto (las dos ranuras de D3) ni
+cambiar políticas o el CIDR autorizado sin rehacer Vault. Lo mismo para `argus-hmac/`. Hace falta una identidad de
+gestión de Vault propia, con su certificado y su auditoría. Va con PR2 (Vault HA). Sin la regla de dos personas: en los
+hospitales no suele haber tanta gente y uno puede no estar disponible (Alonso DAY318; DEBT-FW-DOS-PERSONAS-001 sigue
+sin decidir).
+
+### Para 8e.4 (Alonso DAY318)
+Falco y Wazuh avisan cuando la partición del audit de Vault pasa de un umbral (p. ej. 75 %) y cuando falla uno de los
+dos audit devices, con prioridad en el log. Retención del audit en el lab: 30 días (`logrotate`); en producción la fija
+la ley de cada hospital.
+
+---
+
+## DAY318 — pasos 8e.1a y 8e.1b hechos [PROTEGIDOS-MANIFIESTO-D318]
+
+Commits: 3af32373c (8e.1a, el verificador, sin cambiar el comportamiento del agente) y f9076a97c (8e.1b, el
+cableado). Diseño: ADR-060, secciones 5 y 6.
+
+### Medido en el banco (Debian 12, GCC 12.2.0, opciones de production, dos pasadas)
+- 8e.1a y 8e.1b: 117/117 tests en cada pasada, los mismos que el control.
+- Mutaciones del verificador (8e.1a): todas detectadas, después de exigir `!ok` en cada rechazo (`rech()`) y de
+  añadir la caché con la misma versión y otro contenido.
+- Mutaciones del cableado (8e.1b), las 8 detectadas: candado siempre abierto, candado que ignora el nulo, rangos que
+  no se renuevan, sin `swap`, entradas malas aceptadas, temporal sin borrar, regla `src` en vez de `src,src`, tipo
+  del set mal leído. `test_argus_cadena_root` corre contra el kernel de verdad.
+
+### Medido en el lab (PROFILE=production)
+- `pipeline-build` rc 0. `test-firewall`: 94/94 (2 de rendimiento saltados, como antes). `test-firewall-e2e`: 23/23,
+  0 saltados en el gate; `test_argus_cadena_root` 58/58.
+- La huella compilada (52ba6180cf5e8e9a) es la del sha256 de `protegidos_pubkey_actual.hex`: la misma clave que
+  trajo `make protegidos-pubkey` de `protegidos-hospital-lab`.
+- Arranque: cinco `[CONFIG] protegidos.*` del JSON y ningún `ddos_protegidos`; `[PROTEGIDOS-SIN-MANIFIESTO]` (no hay
+  caché hasta 8e.3); regla `ml_defender_protegidos src,src RETURN`; rangos `NINGUNO`; resumen con
+  `infraestructura=0 manifiesto=ninguno`.
+
+### Hallazgos DAY318 (8e.1)
+- En `dry_run` el agente no crea ningún set: la whitelist vieja no ha existido nunca en el kernel del defender del
+  lab (medido: ningún set ni regla de aRGus). Los sets solo los crean los E2E que ponen `dry_run=false`.
+- La llamada al candado dentro de `zmq_subscriber` no tiene test unitario (el suscriptor no tiene ninguno); la
+  función `candado_cerrado` sí. La cubre el E2E de 8e.5.
+- libsodium del lab: ver DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001 (medido DAY318).
+- `firewall-acl-agent/config/rules/` (`blacklist.json` y `whitelist.json`, vacíos) tampoco se usa; va con
+  `src/rules` en DEBT-REPO-RESIDUOS-001.
+
+### Pendiente
+- `lab-e2e-mitigacion` y `lab-e2e-protegidos` fallan hasta 8e.5: sin manifiesto el candado para la mitigación, y
+  `d303_veredicto_protegidos.sh` busca líneas de log que ya no existen (se reescribe en 8e.5 con P1–P6).
+- 8e.3: anti-rollback entre reinicios (ADR-060, sección 6), `[INFRA-CAMBIO]`, `consulta_sec`.
+
+---
+
+## DAY318 — diseño de 8e.3 cerrado [PROTEGIDOS-MANIFIESTO-D318]
+
+Decisiones de Alonso F-A..F-I: ADR-060, sección 5 (8e.3). La más discutida, F-A: la clave pública va compilada
+también en el etcd-server, no se lee de Vault. Aclarado en la discusión (DAY318):
+- La **privada del manifiesto** no está en ningún disco: vive solo dentro de Vault transit (ed25519, no exportable,
+  sin borrado, 8e.2). Vault firma por dentro y devuelve la firma: hace de HSM.
+- La **pública** no es secreta (que REA la vea no da nada, D9). El riesgo es sustituirla, y eso exige cambiar el
+  binario (firma ADR-025, Falco y Wazuh).
+- El par **no se regenera** con cada build ni con cada EMECAS: es por hospital y de larga vida; solo cambia en una
+  rotación deliberada (dos ranuras, D3). Jenkins recibe la pública con `-D`. En el lab cambia cada vez que se
+  destruye la VM etcd (Vault nace de cero) y el bootstrap la vuelve a traer ([4b/8]).
+- Lo que sí está en disco es la **privada TLS de `argus-infra`** (`/etc/argus-pki/argus-infra.key`, VM etcd): da
+  derecho a pedir firmas (desde 127.0.0.1, token de 300 s). Es la que hay que proteger: DEBT-FW-ARGUS-INFRA-LLAVE-HW-001.
+- Vault puede caerse y hoy no está en HA (Alonso DAY318; DEBT-VAULT-HA-001, PR2). Con F-A, Vault caído solo impide
+  firmar versiones nuevas: el etcd-server y los firewalls verifican y protegen sin Vault.
+
+### DEBT-FW-ARGUS-INFRA-LLAVE-HW-001 — ABIERTA (nueva DAY318, Alonso)
+En producción la privada del certificado de `argus-infra` no puede estar en el disco de una máquina: va en una
+llave hardware (USB tipo YubiKey o smartcard PIV) de la que no se puede extraer, y firmar exige tenerla enchufada;
+Vault registra en su audit quién firmó, cuándo y desde dónde. En el lab queda en el disco de la VM etcd porque no hay
+VM admin (RAM) ni hardware. Va con DEBT-VAULT-GESTION-TRAS-INIT-001 y con la máquina del admin (ADR-060, D8).
+**Test de cierre:** sin la llave enchufada `argus-infra` no consigue token de Vault; con ella, firma y queda en el
+audit.
+
+---
+
+## DAY318 — pasos 8e.3a, 8e.3b y 8e.3c hechos [PROTEGIDOS-MANIFIESTO-D318]
+
+Commits: a5a41ba4 (8e.3a `libs/protegidos`), 465e6aa4 (8e.3b etcd-server), 91981329 (8e.3c consulta del firewall).
+Diseño: ADR-060, sección 5 (F-A..F-I).
+
+### Medido en el banco
+- 8e.3a: 117/117 con `native` y con `skylake`; una mutación en la librería la caza el ctest del firewall.
+- 8e.3b: firewall 117/117 y etcd-server 8/8 (antes 7) con `skylake` y `native`. Prueba de punta a punta con el
+  etcd-server real (mTLS), firma real de Vault 2.2.1 transit y `curl` por rol, 12/12 dos veces (404 sin manifiesto;
+  PUT con firewall-acl-agent o admin 403; PUT con argus-infra 201; GET devuelve los bytes exactos; sniffer 403;
+  repetida y rollback 409; alterada tras firmar 403). 6 mutaciones detectadas.
+- 8e.3c: 117/117 con `skylake` y `native`; `test_protegidos_manifiesto` 125 comprobaciones; 3 mutaciones (sin suelo,
+  sin bajas, fichero de versión ausente como error) detectadas. La consulta y el arranque de `main.cpp` no tienen test
+  unitario: la primera prueba real es 8e.3d (publicar la versión 1 y verla aplicada sin reiniciar).
+
+### Medido en el lab (PROFILE=production)
+- El etcd-server de la VM y el firewall tienen la misma huella de clave (`52ba6180cf5e8e9a`); reglas 14/15 y 15/15;
+  `[ETCD-PROTEGIDOS] protegidos.hospital_id=hospital-lab (JSON)`; `--check-config` sin defectos; `GET` con argus-infra
+  404 (aún no hay manifiesto).
+- El firewall: `consulta_sec=30`, `suelo=0` y `[PROTEGIDOS-CONSULTA] ... 404`: llega al etcd-server con su certificado y
+  authz le deja pasar.
+
+### Hallazgos DAY318 (8e.3)
+- **`-march=native` engaña al banco:** el defender es `skylake` y el banco otra CPU. Con LTO, GCC 12.2 dio en el lab un
+  falso `-Werror=stringop-overflow` (37 bytes en el búfer corto de 16 de `std::string`) en
+  `test_ipset_injection_integration` que en el banco no salía. Reproducido con `-march=skylake`; arreglado sin
+  desactivar el aviso (cadenas con `ostringstream`). Desde entonces el banco compila también con `-march=skylake`.
+- El despliegue del etcd-server a la VM copia `libsodium.so.23` como librería propia: es el enlace del FIX DAY107 a la
+  `.so.26` (1.0.19) copiado con `cp -L` (ver DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001).
+- La escritura del manifiesto en etcd no es una transacción (primero `protegidos/v/<N>`, después `protegidos/vigente`)
+  y un `PUT` a la vez lo asegura un mutex: con varios etcd-server (PR2) hace falta una transacción de etcd.
+
+### DEBT-FW-TEST-IPSET-INJECTION-DEBIL-001 — ABIERTA (nueva DAY318, Alonso)
+`test_ipset_injection_integration` pasa aunque el validador de CIDR lo acepte todo (medido DAY318 en el banco, también
+en el árbol de 8e.1b): lo más probable es que la línea inyectada (`add argus_h2_evil ...`) falle por sí sola porque ese
+set no existe. Arreglo: que el test cree antes el set víctima.
+**Test de cierre:** con el validador mutado (acepta todo), el test falla; con el bueno, pasa.
+
+
+---
+
+## DAY319 — pasos 8e.3d-0 y 8e.3d hechos [PROTEGIDOS-MANIFIESTO-D319]
+
+Commits: a831c44b0 (8e.3d-0, `GET /v1/protegidos/v/{n}` en el etcd-server) y 6b88a0c84 (8e.3d, `tools/argus-infra/`).
+Diseño fino G-A..G-G (decisiones de Alonso DAY319):
+- G-A configuración `/etc/argus-infra/argus-infra.json` (lab: `tools/argus-infra/argus-infra.lab.json`): hospital,
+  plantas, límites, Vault, etcd-server y TLS sin defecto sano (no firma); `timeout_s` [1, 120], 10, con aviso.
+- G-B plantilla sin firmar separada (`tools/argus-infra/plantillas/hospital-lab.json`); los límites salen siempre de la
+  configuración, nunca de la plantilla ni de la versión anterior.
+- G-C el historial se lee del etcd-server (ruta nueva, solo `ou:argus-infra`), no de un archivo local.
+- G-D firmante desde la identidad de Vault. Cambiado tras medir: `<cn> entidad=<entity_id>` (<= 64 caracteres), porque el
+  etcd-server y el firewall registran el firmante con `saneado()`, que corta a 64, y el entity_id salía cortado.
+- G-E cada cambio: login, vigente validado (reglas portadas de libs/protegidos + transit verify), N+1, diff, confirmación
+  tecleando el número de versión (`--si` para el bootstrap), sign, verify, PUT, GET byte a byte, revoke-self.
+- G-F órdenes init, list, add, del, diff, verificar (con la cadena `hash_anterior`), deshacer N. Salidas 0/1/2/3.
+- G-G `tools/argus-infra/`, instalado por el aprovisionador `argus-infra` de la VM etcd (run: always); `make test-argus-infra`.
+
+### Medido en el banco (Debian 12, GCC 12.2, Python 3.11.2, Vault 2.2.1, etcd 3.6.16)
+- etcd-server 8/8 con native y skylake; mutaciones (ceros a la izquierda, devolver la vigente, el firewall lee el
+  histórico, tabla por defecto sin la regla): 4/4 detectadas.
+- argus-infra: unittest 19/19; prueba diferencial C++ (libs/protegidos) contra el porte en Python con 8000 cargas al azar,
+  0 discrepancias de motivo (con `repetidas` mutada, 94: el instrumento detecta); E2E contra el etcd-server real 43/43 en
+  tres pasadas (native x2, skylake); 12/12 mutaciones detectadas (dos sobrevivían a los unitarios, base64 sucio y clave
+  duplicada con el mismo valor: casos añadidos tras medir que libs/protegidos los rechaza).
+- Fallos de predicción (no del código): un segundo `15u` en test_etcd_server_authz; en el chroot faltaba el plugin LTO de
+  `ar` (`/usr/lib/bfd-plugins`).
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0; ctest del etcd-server 8/8; `etcd-vm-deploy` SANO; `regla 16/16`; aprovisionador `argus-infra` OK
+(Python 3.11.2); `make test-argus-infra` 19 OK; huella 52ba6180cf5e8e9a en argus-infra, etcd-server y firewall.
+Publicadas v1..v5. El firewall, al arrancar, aplica la vigente desde el etcd-server (`[PROTEGIDOS-MANIFIESTO] verificado
+version=3 ... entradas=2 (infraestructura=1 intranet=1 dmz=0 externos_criticos=0) (etcd-server)`, caché y `.version`=3) y,
+sin reiniciar, `[INFRA-CAMBIO] version 3 -> 4 ... altas=[intranet 192.168.100.62/32 eth2]` y `4 -> 5 ... bajas=[...]`.
+Primera prueba real de 8e.3c: PASA. Lab vigente al cierre: v5 (contenido de la plantilla).
+
+### Hallazgos DAY319
+- `[INFRA-CAMBIO]` solo se escribe si ya había vigente (con la primera versión, solo `[PROTEGIDOS-MANIFIESTO]`).
+- La VM etcd es `autostart: false`: `vagrant up` a secas no la levanta y `etcd-vm-deploy` falla con "vagrant ssh-config".
+  Para el cierre del PR1 hay que comprobar el arranque del lab con la VM etcd (plan de DAY316).
+- Los ficheros nuevos de `tools/argus-infra` quedaron 100644 en git (el parcheador aplica el modo, pero git en el Mac no lo
+  registró): no afecta (el Vagrantfile instala con `install -m 0750` y los tests se lanzan con `python3 -I`).
+
+### Pendiente (por orden)
+8e.3e (borrar `set/get/del/list_keys` del etcd-client), docs de 8e.3 en ADR-060 (F-C con la ruta del historial, G-A..G-G,
+firmante corto), 8e.4, 8e.5 (bootstrap con `argus-infra init --si`, P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ y
+cierre del PR1.
+
+
+---
+
+## DAY320 — paso 8e.3e hecho y docs de 8e.3 [PROTEGIDOS-MANIFIESTO-D320]
+
+Commit e2f4bb79 (8e.3e). Fuera del etcd-client todo lo que pide `/kv/...` (rutas que el etcd-server no tiene): `set`,
+`get`, `del`, `list_keys` y los 6 que se apoyan en ellos, `save_config_master`, `save_config_active`, `get_config_master`,
+`get_config_active`, `get_component_config` y `rollback_config` (decisión de Alonso DAY320, tras medir que borrar solo los
+4 rompía la librería). Se quedan `put_config` (va por `put_config_impl`) y el `mutex_`. ADR-060 al día: 8e.3 hecho, F-C con
+`GET /v1/protegidos/v/{n}`, G-A..G-G y firmante corto, F-I con el alcance real.
+
+### Medido en el banco (Debian 12, GCC 12.2.0, CMake 3.25.1, libsodium 1.0.19, httplib v0.63.0; banco rehecho)
+- Base (2cc8c344) y parcheado, con Release (como `etcd-client-build`), native y skylake (opciones de production), dos
+  pasadas: 12/12 compilan sin avisos del código y ctest de etcd-client 5/5.
+- `nm -DC`: `EtcdClient` exporta 26 símbolos (antes 36); el diff son exactamente los 10, ninguno nuevo.
+- Mutación: una sonda que llama a los 10 métodos compila contra la base; contra el parcheado, 10 "has no member named".
+- Parcheador `d320_8e3e.py`: `--check`, `--apply`, idempotente; con un fichero alterado o en estado mezclado no escribe.
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0 (etcd-server, ml-detector, sniffer, firewall y tools recompilados contra la cabecera nueva);
+`make etcd-client-test` 5/5; en el defender, 0 símbolos de la familia en `/usr/local/lib/libetcd_client.so`.
+
+### Hallazgos DAY320
+- **Buscar usos por palabra, no por `objeto.metodo(`.** El primer `git grep` (`.set(`, `->set(`) daba 0 usos y se le
+  escaparon las llamadas sin calificar dentro de la propia clase; la compilación del banco lo cazó. Para borrar un
+  método: `git grep -w`.
+- `etcd-client-build` (y crypto-transport, seed-client, plugin-loader, vault-client) compila con
+  `-DCMAKE_BUILD_TYPE=Release` y sin los flags de `PROFILE` (`CXX Flags (from Makefile):` vacío); los consumidores sí van
+  con production. Anotado, sin decidir.
+- `common/EtcdServiceRegistry.{h,cpp}` (habla con la API v3 de etcd directamente) solo lo cita
+  `scripts/build_and_run.sh`, que exige `service1/`, `service2/` y `docker-compose.yaml`, que no existen en el repo: el
+  script siempre aborta. Es de la época de Docker. Candidato a borrar, sin decidir.
+- `EtcdClient::set_encryption_key` (no-op desde DAY98) y `has_encryption_key`: nadie los llama. Candidatos a borrar, sin
+  decidir.
+
+### DEBT-ETCD-CLIENT-TEST-R2-CARRERA-001 — ABIERTA (nueva DAY320, Alonso)
+`test_etcd_cliente_tls` (DAY316, mantenedor G1-G3) falla de vez en cuando en R2 ("el etcd-server aparece: se registra
+en <= 1 latido y sube la config del JSON de arranque"). Medido DAY320 en el banco, en el árbol base 2cc8c344 sin ningún
+cambio: 1 de 30 y 1 de 60 ejecuciones, más 1 en la matriz. Con R2 instrumentado en una copia aparte: en los 60 casos el
+servidor falso cuenta `register=1 config=1` y `reg=1`; en el que falla, las líneas `[ETCD-CLIENTE-REGISTRADO] sniffer` y
+`config subida: ...` aún no están en la salida capturada. Es una carrera del test (comprueba el log en cuanto el
+servidor cuenta la petición, antes de que el hilo mantenedor escriba su línea), no del cliente.
+Arreglo: que R2 espere (`espera(...)`) también a las dos líneas del log antes de comprobar.
+**Test de cierre:** 200 ejecuciones seguidas de `test_etcd_cliente_tls` sin un fallo de R2; y con la espera del log
+quitada, vuelve a fallar alguna (el instrumento detecta).
+
+### Pendiente (por orden)
+8e.4 (vigilancia: kernel <-> manifiesto, antispoofing en raw PREROUTING, MAC, rp_filter, versión en latido y
+pipeline-status, Falco/Wazuh, alarma de disco del audit de Vault al 75 %), 8e.5 (bootstrap con `argus-infra init --si`,
+`d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1.
+
+---
+
+## DAY320 — paso 8e.4a hecho y diseño fino de 8e.4 [PROTEGIDOS-VIGIA-D320]
+
+Commit fe4c94d3 (8e.4a). Diseño fino de 8e.4 (H-A..H-J, decisiones de Alonso DAY320) y precisión de `dry_run`:
+ADR-060, sección 7. Cuatro commits: 8e.4a vigía (hecho), 8e.4b antispoofing, 8e.4c versión en el latido, 8e.4d
+Wazuh/Falco (dentro del PR1).
+
+### Medida previa de 8e.4b (H-B), en el defender
+`scripts/etcd_ha/d320_medir_antispoof.sh` (solo mide, lo deja todo como estaba; entra en el commit de 8e.4b): v1 16/17,
+v2 19/19. ipset 7.17 con `hash:ip,mac`; seis reglas fijas en raw PREROUTING clasifican no protegido / spoofing por
+interfaz / por MAC / bueno con coste constante; DROP en raw efectivo; `iptables-restore --noflush` atómico; 2-3 ms por
+lectura; `rp_filter` 0 en todas las interfaces. Fallo de la v1 = fallo de predicción: con `-j` en modo solo contar el
+paquete seguía por la cadena (doble cuenta posible en sombra); la v2 usa `-g`.
+
+### Medido en el banco (Debian 12, GCC 12.2, banco del firewall rehecho DAY320)
+- Base 117/117. 8e.4a: native y skylake, dos pasadas, 119/119; 0 avisos del código (los 3 avisos de siempre son del
+  enlazador por libsodium .so.23/.so.26).
+- `test_protegidos_vigia` 42/42 (puro; wrappers falsos); `test_protegidos_vigia_root` 34/34 (kernel real, S1-S9).
+- Mutaciones: m1 ignorar lo que sobra, m2 ignorar la interfaz, m3 ignorar las opciones, m4 no mirar el orden de la
+  cadena, m5 no releer el set, m6 no releer las reglas, m7 no quitar el RETURN con un set ajeno: 7/7 cazadas.
+- Fallos de predicción, parados y corregidos antes del lab: (1) con un set ajeno de tipo `hash:ip`, iptables acepta
+  `--match-set ... src,src` y el RETURN seguía eximiendo su contenido: el vigía rehace la cadena sin RETURN; (2) m5
+  sobrevivía (la sustitución real nunca "miente"): el paso pasó a plantilla para probarlo con wrappers falsos.
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0; `test-firewall` 95/95 (con `test_protegidos_vigia`); `test-firewall-e2e` PASA (24 tests, 0
+saltados; `test_protegidos_vigia_root` 34/34). `lab-e2e-vigia` PASA: V0 sin divergencias; E1 (entrada de más) 6 s,
+E2 (RETURN borrado) 26 s, E3 (`nomatch`) 25 s, E4 (regla ajena delante del salto) 25 s, límite 35; set y cadena iguales
+que al empezar; 0 `[PROTEGIDOS-VIGIA] ERROR`; JSON restaurado (cmp 0). `lab-e2e-mitigacion` PASA con C7: .20 en 0 de
+459 muestras del blacklist y su entrada del set de protegidos 223 -> 529 paquetes durante los ataques; en la misma
+corrida `[SOMBRA-DDOS] protegidos: ... infraestructura=2`: `ddos_v2` volvió a marcar DROP a la VM etcd (el DoS
+autoinfligido del DAY317) y la barrera lo paró con la mitigación real.
+
+### Hallazgos DAY320 (8e.4a)
+- Las guardas de `d302_mitigacion_e2e.sh` y `d320_vigia_e2e.sh` exigen `firewall.json` sin cambios pendientes (lo
+  modifican durante la prueba y lo restauran con cmp): los E2E que tocan el JSON se lanzan después del commit.
+- `LAB_E2E_DIA` vale `day303` por defecto: las corridas de hoy quedaron en `logs/lab/day303/`. Funciona, pero confunde;
+  sin decidir.
+- `make test-firewall-e2e` va por la etiqueta `e2e`: un test de root nuevo entra solo en el gate.
+
+### Pendiente (por orden)
+8e.4b (antispoofing; H-B a H-G, con `d320_medir_antispoof.sh`), 8e.4c (versión en el latido y `pipeline-status`),
+8e.4d (Wazuh y Falco, con su configuración en ficheros propios), docs de cada uno, 8e.5 (bootstrap con
+`argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++
+PROFILE=production y cierre del PR1.
+
+---
+
+## DAY320 — paso 8e.4b hecho: antispoofing en raw PREROUTING [PROTEGIDOS-ANTISPOOF-D320]
+
+Commits 345f8607 (8e.4b), 6479804f (`vm()` del E2E) y 3c67ca40 (limpieza del kernel tras los E2E). Diseño y medidas:
+ADR-060, sección 7 (8e.4b). Manifiesto del lab: la entrada de prueba .62 se firma y se quita en cada corrida de
+`lab-e2e-antispoof` (dos versiones por corrida; v9 al acabar el DAY320).
+
+### Medido en el banco (Debian 12, GCC 12.2)
+- native y skylake, dos pasadas: 121/121, 0 avisos del código (los 3 del enlazador por libsodium, como siempre).
+  `test_protegidos_antispoof_root` sale Skipped (77): el kernel del banco no tiene `hash:ip,mac`; con
+  `ARGUS_TEST_SIN_IPMAC=1`, 15/15. `test_protegidos_antispoof` 41/41.
+- Mutaciones, 8/8 cazadas: a1 `-j` en vez de `-g`; a2 sin la regla de `lo`; a3 `DROP` en modo cuenta; a4 una red sin
+  ruta en `set_redes`; a5 el paso no vuelve a leer; a6 `set_cuadra` no normaliza; a7 `--limit-burst 5` siempre escrito;
+  a8 MAC comparada distinguiendo mayúsculas. Las primeras versiones de a5 y a6 eran equivalentes al original (no
+  cambiaban nada observable): se rehicieron, y se quitó una comprobación de opciones redundante. a2 hacía caer el test
+  puro con un segfault: el test lleva ahora guardas y falla limpio.
+- `d320_limpia_kernel.sh`: `test_d320_limpia_kernel.sh` 9/9 en el banco y 9/9 en el defender (con `hash:ip,mac`);
+  T1 reproduce el defecto (con la limpieza antigua quedan 14 líneas raw y el set de protegidos); mutaciones k1-k7
+  cazadas.
+
+### Medido en el lab (PROFILE=production)
+`pipeline-build` rc 0; `test-firewall` 96/96; `test-firewall-e2e` PASA (25 tests, 0 saltados;
+`test_protegidos_antispoof_root` 16/16). `lab-e2e-antispoof` PASA:
+- S1, spoofing por MAC: `SPOOF-MAC` +20 y 0 a mangle;
+- S2, spoofing por interfaz: `SPOOF-IF` +20 y 0 a mangle;
+- S3, el tráfico legítimo de .20 suma 0 al spoofing (su entrada del set de protegidos de 209 a 531 paquetes);
+- S4, 5 `ARGUS-SPOOF-IF` y 5 `ARGUS-SPOOF-MAC` en el journal, 0 `[PROTEGIDOS-RUTA]` y 0 `ERROR`.
+
+`lab-e2e-vigia` y `lab-e2e-mitigacion` siguen PASA con el antispoofing instalado. Tras el arreglo del kernel,
+repetidos los tres: trap `quedan raw=0 filter=0 sets=0` y `lab-kernel-limpio` PASA en cada uno; C7 .20 en 0 muestras
+del blacklist, su entrada del set de protegidos de 398 a 1026 paquetes.
+
+### Hallazgos DAY320 (8e.4b)
+- `iptables -S` no imprime `--limit-burst 5` (es el valor por defecto): las reglas esperadas lo omiten cuando
+  `log_rafaga` vale 5, o el vigía vería una divergencia que no existe.
+- El kernel imprime las MAC en mayúsculas: se comparan sin distinguir.
+- El kernel del banco no tiene `hash:ip,mac`. El test de root sale con 77, o corre sin MAC con
+  `ARGUS_TEST_SIN_IPMAC=1`; la prueba con MAC es la del defender.
+- El banco, para `ip netns exec`, necesita `/run/argus/irp`, un `proc` montado de nuevo y la raíz del chroot montada
+  sobre sí misma.
+- `vm()` de `d320_antispoof_e2e.sh` devolvía el código del filtro, no el del comando remoto: un `grep -q` remoto que
+  casaba daba 1. Arreglado en 6479804f.
+- Con la mitigación real, el agente instala el antispoofing en todos los E2E que la usan, y los traps de vigía y
+  mitigación no lo retiraban: quedaban en el defender las tres cadenas raw en modo descarta y cuatro sets. Arreglado en
+  3c67ca40 (ayudante único, `make lab-test-limpia-kernel` y `make lab-kernel-limpio` en `lab-e2e`).
+- `d302_mitigacion_e2e.sh` tenía `CHAIN=ML_DEFENDER_TEST` escrito en el script; ahora lo lee de `iptables.chain_name`
+  (3c67ca40).
+- `LAB_E2E_DIA` sigue valiendo `day303`: las corridas de hoy están en `logs/lab/day303/`. Sin decidir.
+- Sin medir: si `vagrant reload etcd` aplica la MAC fija del Vagrantfile a una VM ya creada.
+
+### DEBT-FW-ANTISPOOF-RP-FILTER-001 — CERRADA DAY321 (1818f4ec, 8e.4c)
+Cerrada con el test de cierre: `test_protegidos_rp_filter` (33/33) lee un árbol `/proc` falso con 0, 1 y 2, valores
+ilegibles y nombres que saldrían de la raíz, y en el defender sale `[PROTEGIDOS-RP-FILTER] eth2=0 (all=0 if=0, sin
+filtro)`. Texto original:
+H-F (ADR-060, sección 7) dice que el agente lee `rp_filter` y lo informa, sin cambiarlo. 8e.4b no lo hace: solo lo lee
+el script de medida. Arreglo: al arrancar y cada `aviso_sec`, leer `/proc/sys/net/ipv4/conf/{all,<interfaz>}/rp_filter`
+de las interfaces del manifiesto y escribir el valor efectivo (el máximo de `all` y el de la interfaz) en el log.
+**Test de cierre:** un test que lee un árbol `/proc` falso con valores 0, 1 y 2 y comprueba el valor efectivo y la línea
+del log; en el defender, la línea aparece con `rp_filter` 0 en todas.
+
+### DEBT-ARGUS-INFRA-MOD-001 — ABIERTA (nueva DAY320)
+`argus-infra` no tiene `mod`: cambiar la interfaz o la MAC de una entrada son dos versiones firmadas (`del` y luego
+`add`), y entre una y otra la entrada no está en el manifiesto vigente. Sin medir cuánto dura esa ventana en el agente.
+Arreglo: `mod`, que firma una sola versión con la baja y el alta, y `[INFRA-CAMBIO]` que lo muestra como un cambio.
+**Test de cierre:** en `test_argus_infra.py`, `mod` deja una única versión nueva cuyo `diff` con la anterior es solo el
+campo cambiado; en el lab, el agente pasa de la entrada vieja a la nueva sin ninguna vuelta del vigía en la que falte.
+
+### Pendiente (por orden)
+8e.4c (versión del manifiesto en el latido y en `pipeline-status`, H-H), 8e.4d (Wazuh y Falco, con su configuración en
+ficheros propios), docs de cada uno, 8e.5 (bootstrap con `argus-infra init --si`, `d303_veredicto_protegidos.sh`
+P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1. Sin orden decidido:
+DEBT-FW-ANTISPOOF-RP-FILTER-001 y DEBT-ARGUS-INFRA-MOD-001.
+
+## DAY321 — paso 8e.4c hecho: versión del manifiesto en el latido y en pipeline-status [LATIDO-DATOS-D321]
+
+Commits: `1818f4ec` (8e.4c), el arreglo de `test-firewall` (`[ARGUS-GATE-PERF-D321]`) y este de documentación.
+Diseño y decisiones en ADR-060, sección 7 («8e.4c»). Cierra DEBT-FW-ANTISPOOF-RP-FILTER-001.
+
+### Decisiones de Alonso (DAY321)
+- Datos del latido: solo enteros. Regla única en `libs/latido/datos_latido.hpp` para el etcd-client y el etcd-server.
+- Datos mal formados: el etcd-server guarda el latido sin ellos, responde 200 y lo dice en `datos_rechazados`.
+- `pipeline-status` lee de etcd con `etcdctl`, sin ruta nueva.
+- E2E del desfase con `protegidos.consulta_sec=3600` solo durante la prueba (`lab-e2e-latido`, dentro de `lab-e2e`).
+- `rp_filter` (H-F) dentro de 8e.4c.
+- `test-firewall` excluye también `perf` (los dos `IPSetWrapperPerfTest` corren en `test-firewall-perf`).
+
+### Medido en el banco (Debian 12, GCC 12.2, banco rehecho DAY321)
+- native y skylake, dos pasadas cada uno: etcd-client 5/5, etcd-server 9/9, firewall 122/122, 0 avisos del código.
+- `test_latido_datos` 8 tests; L1-L7 en `test_etcd_cliente_tls` (35/35); `test_protegidos_rp_filter` 33/33.
+- etcd 3.6.16 real (TLS y RBAC como el Vagrantfile) con el etcd-server compilado y latidos por curl con el certificado
+  de cada componente: 16/16 en las cuatro compilaciones (datos en `latido/<CN>`, desfase, por delante, ilegible,
+  rechazo sin perder el latido, todo o nada, muerto con su versión, revivido, regla `propio` con 403, filtro de
+  `pipeline-status`).
+- 16 mutaciones cazadas, todas compilando (la primera pasada contaba un fallo de compilación como cazada: corregido el
+  script y repetidas las 16).
+- `ctest -N`: con `-LE "e2e"` entraban 97 tests en `test-firewall`; con `-LE "e2e|root|perf"`, 95, y salen exactamente
+  los dos `IPSetWrapperPerfTest`.
+
+### Medido en el lab (PROFILE=production)
+- `pipeline-build` rc 0; `test-firewall` 97/97 (los dos perf salían Skipped, sin root); etcd-server 9/9; etcd-client
+  5/5 (R2 no saltó); `test-firewall-e2e` PASA (25, 0 saltados).
+- `etcd-vm-deploy` SANO, con `⚠️ protegidos: v9 publicada; ningún componente informa protegidos_version` (el firewall
+  aún con el binario viejo). Tras `pipeline-start`: `✅ protegidos: v9 publicada; 1 componente al día` y
+  `- firewall-acl-agent v9 al día (activo, latido hace 7 s)`; en el log `protegidos_version=9 (nuevo)` y
+  `[PROTEGIDOS-RP-FILTER] eth2=0 (all=0 if=0, sin filtro)`.
+- `lab-e2e-latido` PASA (7 min 49 s): L0 al día con v9 en 5 s; L1 v10 publicada, firewall en v9 DESFASADO a los 4 s y
+  veredicto SANO; L2 al día con v10 a los 4 s del rearranque; L3 v11 por la consulta periódica en 37 s (límite 75);
+  L4 0 rechazos en el firewall y en el journal del etcd-server. Lab vigente: v11.
+
+### Hallazgos DAY321
+- Un 4xx al latido deja al etcd-client desregistrado y «sin servicio»: por eso los datos malos no pueden rechazar el
+  latido entero.
+- `--estricto` de `etcd_vm_estado.sh` lo usan también `etcd-vm-deploy`, `etcd-server-start` y `etcd-vm-aviso`, con el
+  firewall parado: la línea de protegidos solo informa.
+- La baja ordenada (`/unregister`) borra `latido/<CN>`: un firewall parado deja de salir en `pipeline-status`; solo
+  sale como muerto si cae sin darse de baja.
+- `test-firewall` lanzaba sin root los tests `perf`, que salían Skipped desde DAY303.
+- El banco necesita `/run/argus/irp` (lo crea `provision.sh`) para los tests de ipset del firewall.
+- `LAB_E2E_DIA` sigue valiendo `day303`: la corrida de hoy está en `logs/lab/day303/`. Sin decidir.
+
+### Pendiente (por orden)
+8e.4d (Wazuh y Falco, con su configuración en ficheros propios, H-I y H-J), sus docs, 8e.5 (bootstrap con
+`argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++
+PROFILE=production y cierre del PR1. Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001.
+
+## DAY321 — pasos 8e.4d-1 y 8e.4d-2 hechos: Wazuh y Falco vigilan a aRGus [VIGILANCIA-D321]
+
+Commits: `464c733bc` (8e.4d-1, el manager), el de 8e.4d-2 (los sensores, `feat(vigilancia): 8e.4d-2 …`) y este de
+documentación. Diseño y decisiones en ADR-060, sección 7 («8e.4d»). Queda 8e.4d-3 (el E2E).
+
+### Decisiones de Alonso (DAY321)
+- Los sensores van en la máquina que vigilan (Falco ve las syscalls del kernel donde corre; el FIM y el journal son
+  locales); el manager de Wazuh queda en su VM. Falco en la VM etcd y en el defender; la VM etcd pasa a 1536 MB.
+- Falco no habla con Wazuh: escribe JSON en un fichero y el agente de Wazuh lo lee.
+- Configuración de los agentes centralizada en el manager, un grupo por máquina (`argus-etcd`, `argus-defender`).
+- El E2E de la vigilancia, dentro de `lab-e2e`.
+- Versión del manager fijada (`provisioning/wazuh/VERSION`), la misma para los agentes.
+- **Todo el software de terceros sale de su mantenedor oficial, con su firma** («un admin de un hospital lo va a
+  exigir sí o sí»): fuera el `.deb` del agente guardado en el repo; agente y Falco desde el apt firmado de cada uno,
+  con la versión fija y la clave comprobada por huella. Claude no pasa binarios de terceros.
+- `std::system` del sniffer: deuda aparte (DEBT-SNIFFER-SYSTEM-SYSCTL-001); mientras, la regla de Falco permite
+  exactamente esas dos órdenes.
+- Hora de las VMs: la zona del despliegue, como deuda en un commit aparte (DEBT-LAB-ZONA-HORARIA-001). Hasta entonces,
+  los scripts dicen «UTC» cuando muestran horas de las VMs.
+
+### Medido en el banco
+- Manager 4.14.10 en un chroot: decoders y reglas con `wazuh-logtest`, 27/27 casos (`casos_reglas.tsv`);
+  `verify-agent-conf` y `wazuh-analysisd -t` de los dos grupos; el despliegue restaura lo anterior si algo no valida.
+- Falco 0.43.1 extraído del `.deb` oficial (sha256 `7b89e294…`, el que da el índice `Packages` del repositorio):
+  `--dry-run` con las reglas de aRGus, 3 reglas activas que piden 5 syscalls (64 con las del motor de estado).
+  `falco_instalar.sh` con stubs y el binario real: restaura lo anterior con la configuración que duplica la carga y con
+  una regla rota.
+- `lib_apt_oficial.sh` contra las claves reales: las dos buenas pasan; clave ajena, descarga que no es clave, otra
+  lista al mismo repositorio y huellas vacías se rechazan sin tocar nada; idempotente.
+- `test_argus_disco.py` 16/16; 9 mutaciones cazadas. `argus_disco_instalar.sh` con stubs: restaura con `umbral_pct=0`.
+
+### Medido en el lab
+- `vagrant reload etcd`: Falco 0.43.1, argus-disco (`uso=4 umbral=75 estado=OK`) y el agente 4.14.10-1 conectado.
+  Defender: agente de 4.14.7-1 a 4.14.10-1 y Falco. client, suricata y zeek: agente de 4.14.7-1 a 4.14.10-1.
+- `vigilancia-manager-deploy`: etcd (005) en `argus-etcd`, defender (002) en `argus-defender`; 27 PASA.
+- `test-vigilancia-disco` 16/16. `d321_comprobar_sensores.sh` (v2): los cinco agentes 4.14.10-1 en hold y conectados,
+  0 errores en el `ossec.log` de etcd y defender desde su arranque; RSS de Falco 101 MB (etcd) y 160 MB (defender);
+  MemTotal de la VM etcd 1463 MB; vault en `/usr/bin/vault` en las dos VMs y etcd en `/usr/local/bin/etcd` (lo que
+  suponen las reglas); pipeline-status en ✅.
+
+### Hallazgos DAY321
+- `agent_groups` devuelve rc 0 aunque falle (Error 1017): se comprueba por el resultado.
+- `verify-agent-conf` no ve una opción desconocida dentro de `<syscheck>`; solo el agente al recibirla.
+- El decoder de iptables de serie (regla 4100) se queda con las líneas del kernel: las de `ARGUS-SPOOF-*` cuelgan de
+  4100 (`if_sid`) y el campo `action` es estático (se compara con `<action>`).
+- Actualizar el manager dejó a los agentes ~80 s desconectados.
+- Falco: `proc.name`/`proc.pname` son el `comm` del kernel, 15 caracteres; las reglas van por ruta del ejecutable
+  (DEBT-HARDENED-FALCO-RUTAS-001 para las de la hardened). `config.d` se funde en modo `append`: un `rules_files` ahí se
+  suma al del paquete (cargaba las reglas dos veces); se apagan todas y se encienden las `argus_*`. El postinst deja
+  `config.d/engine-kind-falcoctl.yaml` (`engine.kind: modern_ebpf`, el mismo valor).
+- Con dos grupos (`default` y el de aRGus) el agente recibe los dos fundidos: su `agent.conf` no tiene el sha256 del
+  del grupo.
+- El client no tiene salida a Internet después de `client-setup` (ruta por el defender, sin NAT): una subida de
+  versión del agente se hace con `vagrant reload client` (al arrancar sale por la NAT de VirtualBox y el agente se
+  aprovisiona antes de `client-setup`). Con la versión ya puesta, el script no usa la red.
+- En la VM etcd, 17 eventos `argus_lab_clave_leida_admin` (NOTICE, nivel 4 en Wazuh) a las 12:03 UTC, la hora del
+  primer `pipeline-status` (que lee `etcd-server.key` con sudo): es el rastro que la regla quiere dejar, pero 17 por
+  cada `pipeline-status` es ruido. Por confirmar (DAY322) que salen de ahí y cuántos da cada `pipeline-status`.
+- Falco publicado va por la 0.45.2; nos quedamos en la 0.43.1 (la medida en las VMs). La configuración de aRGus pasa
+  `--dry-run` en 0.45.2.
+
+### DEBT-SNIFFER-SYSTEM-SYSCTL-001 — ABIERTA (nueva DAY321)
+El sniffer activa el reenvío con `std::system("sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1")` (y lo mismo para
+IPv6): un shell por arrancar, y la regla de Falco tiene que permitir a `dash` hijo del sniffer con esas dos órdenes
+exactas. `autonomy_reactor` también usa `std::system`. Arreglo: escribir `1` en `/proc/sys/net/ipv4/ip_forward` y en
+`/proc/sys/net/ipv6/conf/all/forwarding` sin shell, y quitar la excepción de `provisioning/falco/argus_lab.yaml`.
+**Test de cierre:** test unitario de la escritura contra un `/proc` falso; en el lab, el sniffer arranca sin hijos y
+`argus_lab_hijo_inesperado` no salta sin la excepción.
+
+### DEBT-LAB-ZONA-HORARIA-001 — ABIERTA (nueva DAY321, Alonso)
+Las VMs están en UTC y el reloj de Alonso en Europe/Madrid: las horas de los logs confunden. Arreglo: la zona del
+despliegue en su `group_vars` y `timedatectl set-timezone` en cada VM (commit aparte). Sin hacer, los scripts dicen
+«UTC» al mostrar horas de las VMs.
+**Test de cierre:** `timedatectl` en cada VM da la zona del `group_vars`, y una línea nueva del journal sale en esa hora.
+
+### DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001 — ABIERTA (nueva DAY321, Alonso)
+Todo software de terceros tiene que venir de su mantenedor, verificado con su firma o su sha256 oficial. Hecho en
+8e.4d: agente de Wazuh, manager y Falco (apt firmado, versión fija, clave por huella; la descarga de Falco para la
+hardened, fijada). Hecho DAY323 [JENKINS-CLAVE-D323]: la clave del repositorio de Jenkins, de pkg.jenkins.io por huella
+(`provisioning/jenkins/CLAVE`, `5E386EAD…7198F4B714ABFC68`; antes, un keyserver de terceros sin comprobar nada).
+Queda: el JDK de Jenkins se instala con `curl https://get.sdkman.io | bash` sin verificar (Adoptium tiene apt firmado
+para bookworm); libsodium se descarga en el Vagrantfile sin comprobar sha256 ni firma; etcd tiene sha256
+fijo pero no consta de dónde sale; la huella de la clave de Wazuh (`0DCFCA55…29111145`) está medida en la descarga pero
+Wazuh no la publica en su documentación (contrastarla con Wazuh); el resto del Vagrantfile y de `provisioning/`, por
+inventariar.
+**Test de cierre:** un script que recorre lo que se descarga en el Vagrantfile y en `provisioning/` y falla si algo no
+se comprueba contra la firma o el sha256 publicado por su mantenedor.
+
+### DEBT-HARDENED-FALCO-RUTAS-001 — ABIERTA (nueva DAY321)
+Las reglas de Falco de la hardened comparan `proc.name`/`proc.pname` con nombres de más de 15 caracteres
+(`firewall-acl-agent`…): el kernel los guarda truncados y la condición no casa nunca. Arreglo: por ruta del ejecutable
+(`proc.exepath`, `proc.pexepath`), como `provisioning/falco/argus_lab.yaml`.
+**Test de cierre:** en la hardened (`check-prod-falco`), un evento que tiene que saltar por el firewall salta.
+
+### Pendiente (por orden)
+Commit de 8e.4d-2 (con `git add` de sus 19 ficheros), 8e.4d-3 (`lab-e2e-vigilancia` dentro de `lab-e2e`: FIM en
+`/etc/argus-pki`, umbral del disco bajado, audit de Vault roto con `chattr`, divergencia del vigía y lectura ajena de
+una clave por Falco, comprobados en el `alerts.json` del manager), sus docs, 8e.5 (bootstrap con `argus-infra init
+--si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del
+PR1. Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001,
+DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001, DEBT-HARDENED-FALCO-RUTAS-001.
+
+## DAY322 — el arranque de Vault sin Vagrant, destapado por Falco [VAULT-ARRANQUE-D322]
+
+Commits: `886515c78` (medidor de eventos de Falco, `scripts/etcd_ha/d322_medir_falco_admin.sh`), `31ae20e62` (Vault
+arranca y se dessella sin Vagrant; desellado con identidad propia), `3cb29fee0` (Falco solo cuenta lecturas con éxito;
+`vault-arranque` no reinstala una identidad sin cambios) y este de documentación. Diseño y decisiones en ADR-060,
+sección 7 («8e.4d, DAY322»).
+
+### Decisiones de Alonso (DAY322)
+- Las 17 trazas NOTICE `argus_lab_clave_leida_admin` por cada `pipeline-status` se aceptan; se mide en 8e.4d-3 cuántas
+  deja un `etcd-vm-check` con etcd caído y, si pasa de un límite, se agrupan en Wazuh.
+- El desellado del lab tiene identidad propia (opción b): `CN=OU=argus-vault-unseal`, sin políticas en Vault.
+- El test del reinicio de Vault entra en `lab-e2e-vigilancia`.
+- Regla de Falco aparte para los intentos fallidos de leer una clave (EACCES/EPERM, WARNING), en 8e.4d-3 con su E2E.
+
+### Medido en el lab (horas UTC)
+- Falco en la VM etcd: 17 eventos por `pipeline-status` (2 `curl` + 15 `etcdctl`, padre `/usr/bin/sudo`,
+  `etcd-server.key`) en las cuatro pasadas medidas (DAY321 12:03, 12:57 y 13:00; DAY322 06:30). Y 7 CRITICAL a las
+  06:26 y 06:28: `curl` con padre `bash` y `etcd-server.key`, de `argus-vault-unseal`.
+- Arranque del DAY322 (06:25:57): `logrotate.service` 06:25:59-06:26:00 rota `audit.log`; su `postrotate` manda SIGHUP a
+  Vault (PID 459) en arranque: `Failed with result 'protocol'`; `argus-vault-unseal`: «Dependency failed»;
+  `Restart=on-failure` levanta Vault a las 06:26:07, sellado. El etcd-server (PID 540, sin reinicio) avisa
+  `[ETCD-VAULT-NO-DISPONIBLE]` y `[ETCD-VAULT-RECUPERADO]` a los 16 s, cuando el `systemctl start` del aprovisionador
+  `etcd-server-unit` de `make up` arrastra el desellado por `Wants=` (06:26:13; otra vez con `vagrant up etcd`, 06:28:46).
+- Tras el arreglo, `d322_reinicio_vault.sh`: R1 logrotate rota en el arranque, R2 Vault a la primera (NRestarts=0),
+  R3 desellado por su unidad sin aprovisionadores, R4 Vault y etcd-server sanos, R5 tras SIGKILL vuelve desellado en
+  7 s (NRestarts 0 -> 1), R6 0 CRITICAL (34 NOTICE de los `etcd_vm_estado.sh` del propio test). VM de vuelta en 40 s.
+- `install` de una clave en `/etc/argus-pki`: 0 eventos; `install` de `argus-vault-unseal.key` a `/tmp`: 1 CRITICAL
+  (`proc=/usr/bin/install padre=/usr/bin/sudo`).
+
+### Medido en el banco
+- Vault 2.2.1 (releases.hashicorp.com, SHA256SUMS con firma de HashiCorp) con el listener del lab (mTLS obligatorio):
+  el desellado nuevo en 6 casos (sin inicializar rc 0; sellado; ya desellado; sin `unseal.key`; certificado de otra
+  CA, curl rc 56; Vault parado, curl rc 7). Sin certificado de cliente, `sys/seal-status` no responde (rc 56): la
+  identidad hace falta.
+- Falco 0.43.1 (tarball oficial, firma con la huella de `provisioning/falco/CLAVE`): `--dry-run` con las reglas nuevas,
+  3 activas. En el contenedor no hay eBPF: el linaje (`proc.apid[2] = 1`) se midió en el lab (R5 + R6).
+- `vault_arranque_instalar.sh` con `systemctl` simulado: otra CA, CN ajeno, clave que no casa y sin PKI fallan; bueno,
+  idempotente, rotación e identidad sin cambios (no reescribe la clave). `postrotate` con estados simulados: activo,
+  arrancando->activo, parado, fallido, arrancando siempre (60 esperas). `logrotate -d` acepta el fichero.
+  `d312_pki.sh init` (9 hojas) y `cliente` sobre una PKI vieja. `d322_reinicio_vault.sh` con `vagrant` simulado: pasa,
+  falla un criterio, falla la previa y la VM no vuelve (el trap deshace la rotación pendiente).
+- `strace` de GNU install 9.4: `openat(destino, O_RDONLY|O_PATH|O_DIRECTORY)` antes de crear el destino.
+
+### Hallazgos DAY322
+- Dos predicciones fallidas, y las dos se pararon a medir: la caída de Vault no era la red (la unidad ya tiene
+  `After=network-online.target`) sino el SIGHUP de logrotate; y quien desellaba no era un reinicio del etcd-server sino
+  el `start` de su unidad activa, que arranca sus `Wants=` inactivos.
+- La macro de lectura de Falco contaba `open` fallidos: el sondeo `O_PATH|O_DIRECTORY` de `install` daba un CRITICAL
+  en cada `vagrant up` (los aprovisionadores `file` de la identidad son `run: always`).
+- Las unidades que escribía `vault-server` con `umask 077` salían 0600 («marked world-inaccessible» en el journal); las
+  de `vault-arranque` van 0644.
+- Por vigilar: el aprovisionador `vault-server` (solo al crear la VM) usa `vault status` con la clave del etcd-server;
+  si alguna vez corre con Falco instalado, dará CRITICAL. En un lab desde cero Falco se instala después.
+- Sin probar en el lab: el camino desde cero (`vault-arranque` antes de `vault-server`, Vault sin inicializar: el
+  desellado da rc 0 en el banco). Lo cubre el EMECAS+++.
+
+### DEBT-VAULT-SELLADO-ALERTA-001 — ABIERTA (nueva DAY322, aceptada por Alonso)
+En producción no hay clave de desellado en disco: tras un reinicio o una caída, Vault queda sellado hasta que alguien
+lo desselle (procedimiento manual, o auto-unseal con HSM/KMS). El etcd-server sigue (`[ETCD-VAULT-NO-DISPONIBLE]`,
+última ventana conocida; sin ella `/secrets` da 503) y el pipeline sigue protegiendo sin firmar. Falta que Wazuh lo
+convierta en una alerta que el admin vea, y el procedimiento de desellado escrito y disponible para el admin (Alonso:
+«con el tiempo se lo aprenderá de memoria»).
+**Test de cierre:** con Vault sellado a mano, el `alerts.json` del manager tiene la alerta en menos de un minuto y el
+procedimiento lo deja desellado.
+
+### Pendiente (por orden)
+8e.4d-3 (`lab-e2e-vigilancia` dentro de `lab-e2e`: FIM en `/etc/argus-pki`, umbral del disco bajado, audit de Vault
+roto con `chattr`, divergencia del vigía, lectura ajena de una clave, intento fallido de leer una clave (regla nueva),
+el reinicio de Vault de `d322_reinicio_vault.sh` y las trazas de un `etcd-vm-check` con etcd caído, comprobados en el
+`alerts.json` del manager), sus docs, 8e.5 (bootstrap con `argus-infra init --si`, `d303_veredicto_protegidos.sh`
+P1-P6, `test-argus-infra` en EMECAS), EMECAS+++ PROFILE=production y cierre del PR1. Sin orden decidido:
+DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001, DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001,
+DEBT-HARDENED-FALCO-RUTAS-001, DEBT-VAULT-SELLADO-ALERTA-001.
+
+## DAY322 — paso 8e.4d-3 hecho: `lab-e2e-vigilancia` [VIGILANCIA-E2E-D322]
+
+Commit `9aea549ba` y este de documentación. Diseño en ADR-060, sección 7 («8e.4d-3, DAY322»).
+
+### Decisiones de Alonso (DAY322)
+- C4 (divergencia del vigía) la provoca el propio test: `d320_vigia_e2e.sh` con `D320_EVENTOS=E1`.
+- C8 midió primero (sin PASA ni FALLA) y, con el dato, es criterio con `VIG_C8_MAX_TRAZAS` = 60 por defecto, como
+  parámetro: otro despliegue puede necesitar un número mayor.
+- Regla de Falco para los intentos fallidos de leer una clave (EACCES/EPERM, WARNING).
+- DEBT-VAULT-SELLADO-ALERTA-001 aceptada.
+
+### Medido en el lab (horas UTC; suricata y zeek apagadas: 32 GB en el Mac, las seis VMs ocupaban 19,2 GB de RSS)
+- Sonda de C3 (08:35): con `audit.log` en `chattr +i`, el login da HTTP 200, Vault escribe dos `[ERROR] audit: log …
+  underlying pipeline error` (petición y respuesta: reabre el fichero y ese `open` falla) y la 100520 llega al manager
+  en 1 s.
+- Falco con la regla nueva: 4 reglas activas en la VM etcd y en el defender (las mismas 5 syscalls).
+- Corrida 1 (08:41-08:49) y corrida 2 (09:06-09:14), las dos PASA: C1 554 en 8-12 s y 553 en 11-12 s; C2 100541 en
+  45-69 s; C3 100520 en 10 s; C5 100551 en 10 s; C6 100552 en 10 s (`usuario=nobody res=EACCES`, `fichero=` la ruta
+  pedida); C8 14 trazas en Falco (4 `curl` + 10 `etcdctl`) y 14 alertas 100553, `etcd-vm-check` de 36 s; C7 R1-R6;
+  C4 E1 reconciliado en 3-11 s y la 100511 y la 100512 del defender con 3 ms de diferencia.
+
+### Medido en el banco
+- `alertas_wazuh.sh` con un `alerts.json` falso (espera, agente, texto, argumentos mal formados); copia y restauración
+  de `disco.json` (una segunda bajada no pisa la copia); `--dry-run` de Falco con 4 reglas; el driver con `vagrant`
+  falso: todo bien, una alerta que falta, C8 con trazas de más, con alertas de menos y sin línea de partida.
+
+### Hallazgos DAY322 (8e.4d-3)
+- C8: predicción fallida, de ~255 a 14 trazas: el bucle de 2 s de `etcd_vm_estado.sh` lo frena el timeout de cada
+  `etcdctl` con etcd parado. Menos ruido que un `pipeline-status` sano: no se agrupa.
+- Dos errores míos cazados antes de dar nada por bueno: `alerta()` cruzaba agente y espera (lo vio el ensayo con
+  `vagrant` falso) y `sudo wc -l < fichero` (la redirección la abre `vagrant`: salía vacío; lo vio la primera corrida,
+  donde C8 resumió el fichero entero).
+- Wazuh no agrupa ni descarta las trazas NOTICE de Falco: 14 en el agente, 14 en el manager.
+
+### Pendiente (por orden)
+8e.5 (bootstrap con `argus-infra init --si`, `d303_veredicto_protegidos.sh` P1-P6, `test-argus-infra` en EMECAS),
+EMECAS+++ PROFILE=production (cubre el lab desde cero: `vault-arranque` antes de `vault-server`) y cierre del PR1
+(README del etcd-server, push, PR). Sin orden decidido: DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001,
+DEBT-LAB-ZONA-HORARIA-001, DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001, DEBT-HARDENED-FALCO-RUTAS-001,
+DEBT-VAULT-SELLADO-ALERTA-001.
+
+## DAY322 — 8e.5 hecho: bootstrap del manifiesto y P1-P6; EMECAS+++ desde cero, cuatro paradas [PROTEGIDOS-BOOTSTRAP-D322]
+
+Commits: `aae32596d` (8e.5), `b8831bcb9` (antispoof desde el manifiesto), `c772cb27b` (avance y resumen de EMECAS),
+`bd3f8bb18` (R3 por flujo), `218e0aaea` (grupo del agente de Wazuh; C7 en una VM nueva). Documentados el DAY323.
+
+### Decisiones de Alonso (DAY322)
+- `argus-infra init`: rc 4 propio (`SALIDA_YA_HAY`) si ya hay un manifiesto publicado; el bootstrap da por buenos 0 y 4.
+- Avance y resumen de EMECAS: un log por paso; se guardan todas las corridas.
+- El agente de Wazuh pide su grupo al registrarse (`WAZUH_AGENT_GROUP`); `provisioning/wazuh/argus/grupos.tsv` es la
+  única fuente.
+- «No revocamos nada»: el pipeline arranca con el etcd-server ya desplegado (orden normal); sigue la decisión DAY316
+  (si al arrancar no responde ninguno, los componentes protegen sin firmar).
+
+### EMECAS+++ desde cero: cuatro corridas, cada parada con su causa medida y su arreglo
+1. `lab-e2e-antispoof`: esperaba `ips_mac=1 mac=1`, escritos a mano con la v11 del lab; con la v1 de la plantilla, .20
+   lleva su MAC (`08:00:27:a2:00:20`): `redes=3 ips_mac=2 mac=2`. Lo esperado sale ahora del manifiesto publicado
+   (`b8831bcb9`).
+2. `lab-e2e-reinicio-antes`, R3: 3 marcas tras el reinicio que eran AISLADO de 192.168.100.12 (manager de Wazuh) -> .1
+   por TCP, no del ataque (UDP). R3 cuenta solo el flujo del ataque (`bd3f8bb18`).
+3. `vagrant-up`: el wheel de pandas 3.0.5 llegó corrupto. El hash fijado es el oficial de PyPI (`2c0cf1dd…c78a`,
+   11 323 634 bytes): pasajero. Si se repite, reintentar la descarga hasta 3 veces sin aflojar el hash.
+4. `lab-e2e-vigilancia` (6 fallos): la VM etcd nace después que la wazuh y su agente se quedaba en `default`
+   (`agent.conf` de 76 bytes), y C7 exigía una entrada de logrotate que una VM nueva no tiene (`218e0aaea`).
+En la 4.ª pasaron vagrant-up (55 min), bootstrap (38 min), test-all, test-argus-infra, test-vigilancia-*, firewall,
+synthetic y lab-e2e hasta vigilancia.
+
+### Hallazgos DAY322 (8e.5 y EMECAS)
+- Ninguna de las cuatro paradas era del producto: eran de los tests o del orden en que nacen las VMs, y tres solo se
+  ven desde cero (la plantilla v1, la VM etcd después que la wazuh, una VM sin historia de logrotate).
+- `make emecas-progreso`: con un paso fallido, el reloj de la cabecera seguía contando hasta ahora (arreglado DAY323).
+
+## DAY323 — EMECAS+++ desde cero en verde: Suricata ciego, un reloj por sensor, una ventana MITRE que mezclaba días, Jenkins sin clave y el NTP de los sensores en el episodio DDoS [SURICATA-ARRANQUE-D323] [LAB-NTP-SENSORES-D323] [MITRE-VENTANA-D323] [JENKINS-CLAVE-D323] [PROTEGIDOS-SENSORES-D323]
+
+Commits: `d44e0a2d0` (Suricata), `6387cfd75` (un solo reloj), `2fcac3ce9` (ventana MITRE), `2f74f5047` (Jenkins),
+`95d349c89` (sensores en la plantilla), `443fffb96` (veredicto de protegidos), el de `[EMECAS-PROGRESO-D323]` y este de
+documentación.
+
+### Las corridas
+1.ª EMECAS+++ desde cero sobre `218e0aaea` (06:39-11:02 hora de Madrid, 4h23m): pasaron los 21 primeros pasos, también
+lo que el DAY322 quedó sin probar en esta configuración (lab-kernel-limpio, restore, reinicio del etcd-server, los
+actos de emecas++). Paró en mitre-check: `suricata: eventos en el grafo > 0 (0)`. Arreglos: Suricata, el reloj y la
+ventana MITRE (abajo).
+2.ª (13:36): paró en vagrant-up a los 18 min: `NO_PUBKEY 7198F4B714ABFC68` del repositorio de Jenkins en el
+`apt-get update` de `vault-install`. Arreglo: Jenkins.
+3.ª (14:23): paró en lab-e2e, P2 de protegidos: `origenes=192.168.100.50:10783,192.168.100.10:1,192.168.100.11:1,
+192.168.100.12:1`. Arreglo: los sensores en la plantilla y el veredicto.
+4.ª (18:10, sobre `443fffb96`): ver «EMECAS+++ desde cero con los arreglos».
+
+### Medido en el lab (horas UTC)
+- Suricata: el adapter leyó 1982 eventos y los descartó todos (solo guarda `alert`; hubo 0). El log decía
+  `0 signatures processed` y captura en eth0, la NAT (solo 10.0.2.15). El proceso era de las 06:11:50 (lo arranca
+  `apt-get install` con la configuración de fábrica); las reglas son de las 06:12:15 y el yaml de las 06:12:58, y nadie
+  lo reiniciaba. Tras `systemctl restart`: 53 345 firmas, eth1, mitre-check PASA. El 3-nov funcionó en una VM que se
+  había reiniciado.
+- Lo que el veredicto daba por bueno: los bronces de Suricata del 04-nov empiezan con las mismas alertas, del 3-nov a
+  las 10:51; `mitre_start.sh` copiaba el eve.json entero. Hoy, en la misma VM, 32 → 64 eventos de una corrida a otra.
+- Zeek: 8 filas (7 de .1 → .20:2379 y un NTP), ninguna del barrido. A las 10:00:00 zeekctl rotó el conn.log a mitad
+  de la corrida: el barrido (1072 líneas de .50) quedó en `conn.09:59:34-10:00:00.log.gz` y la cosecha copiaba solo el
+  del spool. La corrida de las 10:33, sin hora en punto, dio 1077.
+- `zeekctl stop` vuelve en el acto y el archivado sigue en segundo plano: `post-terminate` y un `archive-log` por
+  fichero, en serie, unos 55 s cada uno; 121 s para dos ficheros.
+- Relojes: suricata (162.159.200.1), zeek y wazuh (195.95.153.59) tomaban la hora del pool de Debian por la NAT, cada
+  uno con su referencia; client y etcd, del defender. Las VMs derivan de 2000 a 4600 ppm (de 3 a 7 minutos al día sin
+  NTP).
+- Un FATAL del loader (`gold Parquet not found`) acabó en `mitre_start.sh rc=0`.
+- Jenkins: la clave del repositorio se pedía a keyserver.ubuntu.com con los errores a `/dev/null`. No respondió, el
+  anillo quedó vacío, apt rechazó el repositorio, el bloque dijo «✅ Jenkins instalado (puerto 8080)» sin Jenkins y el
+  repositorio roto tumbó el `apt-get update` de `vault-install`, tres aprovisionadores después. La descarga oficial
+  (`https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key`) trae `5E386EADB55F01504CAE8BCF7198F4B714ABFC68`, la
+  publicada en el changelog 2.543. Al reinstalar en el defender roto, dpkg se quedó preguntando qué hacer con el
+  `/etc/default/jenkins` que el bloque viejo había escrito sin Jenkins.
+- El NTP de los sensores: con la hora del defender, suricata, zeek y wazuh mandan UDP/123 a .1 (31, 22 y 34 consultas
+  en la corrida; ningún otro UDP suyo a .1). Las que caen dentro del ataque UDP a .1 entraron en el episodio de la
+  cabeza DDoS, un evento por sensor. .20 (etcd, protegido) ya iba al defender: sus consultas dan alerta, no bloqueo.
+
+### Decisiones de Alonso (DAY323)
+- Un solo reloj para el lab, el del defender. Si un sensor no va con él es un bug operacional, y la prueba falla
+  diciéndolo; no se compensa.
+- El grafo del día lleva solo los datos de esa sesión: los de otro día, mezclados, son datos sucios.
+- Se arregla todo; cada arreglo se prueba aparte y, con todos probados, EMECAS+++ otra vez desde cero.
+- Jenkins se arregla ya, con la clave del mantenedor comprobada por huella. Si no se puede instalar, el up sigue
+  (EMECAS no usa Jenkins; las claves del lab las crean los aprovisionadores de Vagrant, no Jenkins), pero sin dejar un
+  repositorio roto.
+- Los sensores del lab son infraestructura del NDR: entran en la plantilla del manifiesto, con MAC vacía.
+- El problema de fondo (tráfico legítimo hacia la víctima dentro del episodio) es deuda; al afrontarla, primero se mide
+  qué ve el modelo. Alonso: «van a ser las dos cosas, como mínimo; no descartemos alguna sorpresa».
+
+### Los arreglos, cada uno probado aparte antes de EMECAS
+- `d44e0a2d0`: la provisión reinicia Suricata con las reglas y el yaml ya escritos y comprueba, en las líneas del log
+  con el pid nuevo, `Engine started`, `eth1: creating` y firmas > 0; si no, falla. `suricata-update` con 3 intentos
+  (antes `|| true`). Probado: 6 casos con los logs medidos; `vagrant destroy -f suricata` y `vagrant up suricata`: eth1
+  y 53 345 firmas; mitre-check PASA sin tocar nada a mano.
+- `6387cfd75`: provisión `lab-ntp` (run: always) en suricata, zeek y wazuh: hora del defender o la provisión falla;
+  `lab-clock-step` recorre `LAB_CLOCK_VMS` (por defecto `client`, como hasta ahora) y mitre-check lo pasa primero con
+  client suricata zeek. Probado: las tres VMs con `C0A86401 (192.168.100.1)`; con chrony del defender parado, ❌ y rc 1;
+  lab-clock-step con cinco VMs < 1 ms.
+- `2fcac3ce9`: una ventana [T0, T1] del reloj del defender para los tres sensores: `scripts/mitre_ventana.py` filtra
+  cada bronce (fila a fila, byte a byte: el HMAC sigue valiendo) y cuenta las filas del ataque (.50 ↔ .1). Zeek se
+  cosecha tras el stop y su archivado (`scripts/mitre_zeek_cosecha.sh`, `MITRE_ZEEK_ARCHIVO_MAX_S` = 300 s), también lo
+  que una rotación archivó. Adapter, converter (sin filas es fallo), loader y consultas comprueban su resultado. El
+  veredicto exige filas del ataque por sensor. `test-mitre-ventana` (15 casos; 7 mutaciones cazadas) va antes de
+  mitre-check. Medido en el lab: archivado en 114 s; 13 ficheros conn del día, de los que la ventana dejó 1093 filas
+  (1069 del ataque); Suricata `dentro=33 fuera=64`; argus, 541 filas anteriores a T0 fuera.
+- `2f74f5047`: `scripts/jenkins/jenkins_instalar.sh` con `repo_oficial` (como Wazuh y Falco) y
+  `provisioning/jenkins/CLAVE`; «✅» solo si dpkg lo da por instalado; si no, rc 3, aviso y repositorio retirado, y el up
+  sigue. Nunca una pregunta de dpkg: fuera el `/etc/default/jenkins` de un intento fallido, y `confdef`/`confold` sin
+  terminal. Probado en el defender roto: clave falsa → rechazo con la huella real y rc 3, apt sano después; caso bueno →
+  Jenkins 2.580.2; reinstalación con un `/etc/default/jenkins` suelto → sin pregunta; idempotente.
+- `95d349c89`: .10, .11 y .12 como `infraestructura` en `tools/argus-infra/plantillas/hospital-lab.json` y las tres
+  aserciones de `test_argus_infra.py` que fijaban la plantilla (22 tests). Probado publicándolos en el manifiesto vivo
+  (`argus-infra add`, v2-v4) y repitiendo lab-e2e-protegidos: P2 = solo .50.
+- `443fffb96`: el veredicto de protegidos saca la infraestructura de la línea «rangos protegidos» que escribe el
+  firewall (lo que aplica) y P1 exige todas las entradas de la plantilla; antes, .20 escrita a mano y P3 contaba como
+  «de otro origen» las alertas de los sensores. Probado con logs sintéticos (lo de hoy PASA; un sensor en `origenes=`,
+  una alerta de una IP fuera del manifiesto o un manifiesto sin una entrada de la plantilla FALLAN) y con la corrida
+  real: P1-P6 PASA.
+- `[EMECAS-PROGRESO-D323]`: `make emecas-progreso` para el reloj de la cabecera en el fallo (test nuevo; sin el
+  arreglo, falla).
+
+### EMECAS+++ desde cero con los arreglos
+**PASA, rc=0, en 4h02m** (18:10-22:13 hora de Madrid, sobre `443fffb96`): la primera emecas+++ verde desde cero del
+PR1. mitre-check con los criterios nuevos: argus 1777 eventos en el grafo (1253 del ataque en la ventana), Suricata
+31 (31), Zeek 1114 (1068), invariante 0, 1080 flujos corroborados. Los tiempos de cada paso quedan en
+`logs/lab/emecas_tiempos_emecas+++.tsv` (dan el porcentaje de `make emecas-progreso` desde ahora).
+
+### Hallazgos DAY323
+- Tests que no podían fallar por la razón correcta: (1) provisión que no comprueba su efecto (Suricata instalado sin
+  mirar si captura; `|| true`); (2) aserciones débiles («> 0» pasaba con alertas del día anterior y con NTP y etcd);
+  (3) resultados que dependen del reloj o del estado (la rotación a la hora en punto, el eve.json acumulado, un reloj
+  por sensor). Solo los destapa una corrida desde cero. Regla para lo nuevo: cada operación comprueba su efecto
+  concreto, sobre estado nuevo, y se prueba también que falla cuando debe.
+- Dos predicciones fallidas de Claude, paradas a medir: que el barrido de Zeek seguía en memoria (era la rotación: lo
+  dijeron los nombres de los archivados) y que los 1076 de Zeek del 04-nov eran acumulados (el `deploy` empieza un log
+  nuevo en cada corrida; en Suricata sí lo eran).
+- Un arreglo puede destapar otro problema: «un solo reloj» hizo que el NTP de los sensores fuera a la víctima del
+  ataque del lab y destapó que la cabeza DDoS mete tráfico legítimo en el episodio. Y dos tests tenían listas escritas
+  a mano (el veredicto de protegidos y `test_argus_infra.py`): lo esperado tiene que salir de la fuente (el manifiesto,
+  la plantilla), como ya se hizo con antispoof el DAY322.
+
+### DEBT-CTU-START-VENTANA-001 — ABIERTA (nueva DAY323)
+`scripts/ctu_start.sh` tiene los patrones que tenía `mitre_start.sh`: el eve.json entero, `ls -t … | head -1` para la
+salida de cada adapter, Zeek copiado del spool y pasos sin comprobar. No está en EMECAS. Arreglo: lo mismo que
+`mitre_start.sh` (`mitre_ventana.py`, `mitre_zeek_cosecha.sh` y las comprobaciones de cada paso).
+**Test de cierre:** ctu-start en una VM con corridas anteriores deja en el grafo solo las filas de su ventana, y falla
+si un paso falla.
+
+### DEBT-DDOS-COLATERAL-LEGITIMO-001 — ABIERTA (nueva DAY323, Alonso)
+Durante un ataque contra una víctima, la cabeza DDoS mete en el episodio el tráfico legítimo de un paquete que llega a
+esa víctima (medido DAY323: NTP de los sensores a .1, un evento por sensor en `origenes=`). Fuera del modo sombra se
+bloquearía a quien solo pidió la hora o un nombre. En un hospital: cualquier equipo que consulte NTP o DNS a un
+servidor atacado; y, al revés, las respuestas legítimas a lo que la DMZ pregunta fuera (53/123 → puerto alto) se
+parecen a una reflexión. Primer paso: medir qué ve el modelo en esos eventos (escritor del dataset DDoS v2 o
+`[HEAD-SCORES]` en verbose). Dos líneas, probablemente las dos: (1) benigno de servicio en el entrenamiento, en los dos
+sentidos (consultas a la víctima y respuestas a lo que pregunta la DMZ), sin que el puerto solo decida, porque los
+floods y amplificaciones van precisamente a 53 y 123; (2) un umbral de evidencia por origen en la atribución del
+episodio, configurable en el JSON (DAY323: .50 con 10 783 eventos, cada sensor con 1). Va con los rasgos por origen.
+**Test de cierre:** un cliente no protegido que consulta NTP y DNS a la víctima durante el ataque no aparece en
+`origenes=`, y el atacante sí.
+
+### Pendiente (por orden)
+Cierre del PR1 (README del etcd-server, push, PR). Después, PR2 (HA): ≥3 nodos etcd (caída de uno, reelección, cuánto
+tardan en sincronizar; apagar todos y encender uno a uno), Vault en HA y su Ansible, nº de nodos en el inventario y
+plantilla Jinja2 de `etcd.conf.yml`, en PRs pequeños. Después del PR2, la «dieta de adelgazamiento» (código deprecado
+fuera; Trivy). Más tarde (toca Jenkins y exige otro EMECAS): DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001. Sin orden decidido:
+DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001, DEBT-HARDENED-FALCO-RUTAS-001,
+DEBT-VAULT-SELLADO-ALERTA-001, DEBT-CTU-START-VENTANA-001, DEBT-DDOS-COLATERAL-LEGITIMO-001.

@@ -71,35 +71,107 @@ ADAPTER_TOOLCHAIN = <<-'ADAPTER_TOOLCHAIN_SHELL'
   echo "✅ ADAPTER_TOOLCHAIN verificado"
 ADAPTER_TOOLCHAIN_SHELL
 
-# WAZUH_AGENT_INSTALL — instala el agente Wazuh por dpkg del .deb cacheado en /vagrant.
-# dpkg NO necesita repo/apt/DNS/gnupg (a diferencia de la via apt). El nombre del agente
-# llega por env AGENT_NAME (fijado en cada provision). Version clavada = la del manager.
-WAZUH_AGENT_INSTALL = <<-'WAZUH_AGENT_INSTALL_SHELL'
+# WAZUH_AGENT_INSTALL — [VIGILANCIA-D321] el agente de Wazuh desde el repositorio apt firmado de Wazuh (clave comprobada
+# por huella, provisioning/wazuh/CLAVE), en la versión de provisioning/wazuh/VERSION (la del manager) y apuntando a
+# provisioning/wazuh/MANAGER: scripts/vigilancia/wazuh_agente_instalar.sh. Sustituye al dpkg de un .deb guardado en el
+# repo, de origen no documentado. run: always en cada VM: con la versión ya puesta no hace nada; si VERSION cambia,
+# actualiza el agente en el siguiente vagrant provision. El nombre del agente llega por env AGENT_NAME.
+WAZUH_AGENT_INSTALL = "bash /vagrant/scripts/vigilancia/wazuh_agente_instalar.sh"
+
+# LAB_NTP — [LAB-NTP-SENSORES-D323] los sensores (suricata, zeek, wazuh) toman la hora del defender (192.168.100.1),
+# como el client [ARGUS-LAB-NTP-D294] y la VM etcd: un solo reloj para el lab, con o sin Internet (el defender sirve
+# hora con local stratum 10 aunque pierda sus fuentes). Medido DAY323: los tres iban al pool de Debian por la NAT
+# (162.159.200.1 y 195.95.153.59), cada uno con su referencia, y el reloj de las VMs de VirtualBox deriva de 2000 a
+# 5000 ppm (de 3 a 7 minutos al día sin NTP). Si no sincroniza con el defender en 30 s, la provisión FALLA.
+# run: always: cada vagrant up vuelve a sincronizar (tras suspender el Mac, el reloj de la VM se queda atrás).
+LAB_NTP = <<-'LAB_NTP_SHELL'
+  CHRONY_CONF=/etc/chrony/chrony.conf
+  command -v chronyc >/dev/null || { apt-get update -qq; apt-get install -y chrony; }
+  sed -i 's/^pool /#pool /' "$CHRONY_CONF"
+  sed -i 's/^makestep 1 3$/makestep 1 -1/' "$CHRONY_CONF"
+  grep -q '^server 192.168.100.1 iburst' "$CHRONY_CONF" || echo 'server 192.168.100.1 iburst' >> "$CHRONY_CONF"
+  systemctl restart chrony
+  if ! chronyc waitsync 30 0.1 0 1; then
+    echo "❌ [LAB-NTP] $(hostname): sin sincronizar con 192.168.100.1 en 30 s"; chronyc -n sources; exit 1
+  fi
+  if ! chronyc -n tracking | grep -qF '(192.168.100.1)'; then
+    echo "❌ [LAB-NTP] $(hostname): su fuente no es el defender 192.168.100.1"; chronyc -n tracking; exit 1
+  fi
+  echo "✅ [LAB-NTP] $(hostname): $(chronyc -n tracking | grep -E 'Reference ID|System time' | tr -s ' ' | paste -sd ';' -)"
+LAB_NTP_SHELL
+
+# ══════════════════════════════════════════════════════════════════════════════
+# VAULT_INSTALL — [VAULT-INSTALL-D312] un único sitio donde se instala Vault, con la versión FIJADA (determinismo de
+# EMECAS: dos up separados por una publicación de HashiCorp no deben dar versiones distintas). Lo usan el defender y la
+# VM etcd. Repo y clave de HashiCorp como hasta DAY311. Versión medida en el defender DAY312: 2.2.1-1.
+# ══════════════════════════════════════════════════════════════════════════════
+VAULT_INSTALL = <<-'VAULT_INSTALL_SHELL'
   set -e
-  MANAGER_IP="192.168.100.12"
-  DEB="/vagrant/provisioning/wazuh/wazuh-agent_4.14.7-1_amd64.deb"
-  echo "🛡️  WAZUH_AGENT_INSTALL — agente '${AGENT_NAME}' -> manager ${MANAGER_IP}"
-  if /var/ossec/bin/wazuh-control info >/dev/null 2>&1; then
-    echo "✅ agente ya instalado, nada que hacer"; exit 0
+  export DEBIAN_FRONTEND=noninteractive
+  VAULT_PIN="2.2.1-1"
+  ACTUAL=$(dpkg-query -W -f='${Version}' vault 2>/dev/null || true)
+  if [ "$ACTUAL" = "$VAULT_PIN" ]; then
+    apt-mark hold vault > /dev/null
+    echo "✅ Vault ${VAULT_PIN} ya instalado y fijado"; exit 0
   fi
-  if [ ! -f "$DEB" ]; then
-    echo "❌ no encuentro el .deb en $DEB"
-    echo "   cachealo antes del up:  mkdir -p provisioning/wazuh && cp logs/wazuh-agent_4.14.7-1_amd64.deb provisioning/wazuh/"
-    exit 1
-  fi
-  WAZUH_MANAGER="$MANAGER_IP" WAZUH_AGENT_NAME="$AGENT_NAME" dpkg -i "$DEB"
-  systemctl daemon-reload
-  systemctl enable --now wazuh-agent
-  echo "✅ WAZUH_AGENT_INSTALL — '${AGENT_NAME}' instalado y arrancado"
-WAZUH_AGENT_INSTALL_SHELL
+  echo "📦 Instalando HashiCorp Vault ${VAULT_PIN} (instalado antes: ${ACTUAL:-ninguno})..."
+  if ! command -v wget > /dev/null || ! command -v gpg > /dev/null; then apt-get update -qq; apt-get install -y wget gnupg; fi
+  wget -O - https://apt.releases.hashicorp.com/gpg 2>/dev/null | \
+    gpg --dearmor | \
+    tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
+  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bookworm main" | \
+    tee /etc/apt/sources.list.d/hashicorp.list
+  apt-get update -qq
+  apt-mark unhold vault > /dev/null 2>&1 || true
+  apt-get install -y --allow-downgrades "vault=${VAULT_PIN}"
+  apt-mark hold vault > /dev/null
+  GOT=$(dpkg-query -W -f='${Version}' vault)
+  [ "$GOT" = "$VAULT_PIN" ] || { echo "❌ VAULT_INSTALL: instalado ${GOT}, se exige ${VAULT_PIN}"; exit 1; }
+  echo "✅ Vault $(vault version | head -1) instalado y fijado (apt-mark hold)"
+VAULT_INSTALL_SHELL
+
+# [VAULT-SERVER-D312] PKI del lab en el Mac (scripts/etcd_ha/d312_pki.sh). Fuera del repo: llega a la VM etcd por el
+# aprovisionador file, nunca por /vagrant. Se lee al aprovisionar la VM etcd y, desde DAY316 ([PKI-DEFENDER-D316]),
+# el defender (certificados de cliente de sus componentes).
+ARGUS_PKI_DIR = ENV.fetch("ARGUS_PKI_DIR", File.join(Dir.home, "argus-pki"))
+
+# [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2: hospital de este despliegue, de su group_vars (el mismo fichero por despliegue
+# que rellena Jenkins). Nombra la clave transit del manifiesto de protegidos (argus-transit/keys/protegidos-<hospital>):
+# una clave por hospital. Sin valor válido Vagrant para aquí: no hay defecto sano para la identidad de un hospital.
+require "yaml"
+ARGUS_GROUP_VARS = File.expand_path(File.join("ansible", "inventory", "group_vars", "argus_dev.yml"), __dir__)
+ARGUS_HOSPITAL_ID = ((YAML.safe_load(File.read(ARGUS_GROUP_VARS)) || {})["argus_hospital_id"]).to_s
+unless ARGUS_HOSPITAL_ID.match?(/\A[a-z0-9-]{1,64}\z/)
+  abort "[PROTEGIDOS-PUBKEY-D318] argus_hospital_id ausente o mal formado en #{ARGUS_GROUP_VARS} " \
+        "(formato: [a-z0-9-], de 1 a 64 caracteres; p. ej. hospital-lab)"
+end
 
 Vagrant.configure("2") do |config|
+
+  # [APT-ESPERA-D317] determinismo de EMECAS: en una VM recién arrancada, unattended-upgrades coge el bloqueo de dpkg y un
+  # apt-get/dpkg de cualquier aprovisionador falla al azar (medido DAY317 en client-setup y DAY315 en d312). Va a nivel de
+  # config (no por VM): Vagrant lo ejecuta el primero en cada VM y en cada up. Espera a que acabe el unattended-upgrades
+  # en curso (hasta 600 s; cubre también el dpkg -i del agente de Wazuh) y deja DPkg::Lock::Timeout para que todo apt-get
+  # posterior espere al bloqueo en vez de fallar. unattended-upgrades sigue activo (DEBT-DEBIAN-BASE-SECURITY-001).
+  config.vm.provision "shell", name: "apt-espera", run: "always", inline: <<-'APT_ESPERA'
+    set -u
+    C=/etc/apt/apt.conf.d/80argus-espera-dpkg
+    echo 'DPkg::Lock::Timeout "600";  // [APT-ESPERA-D317] generado por el Vagrantfile; no editar a mano' > "$C"
+    T0=$(date +%s); n=0
+    while pgrep -f '/usr/bin/unattended-upgrade|apt.systemd.daily' > /dev/null && [ "$n" -lt 600 ]; do sleep 2; n=$((n + 2)); done
+    if pgrep -f '/usr/bin/unattended-upgrade|apt.systemd.daily' > /dev/null; then
+      echo "⚠️  apt-espera: unattended-upgrades sigue activo tras 600 s; los apt-get esperarán al bloqueo (DPkg::Lock::Timeout)"
+    else
+      echo "✅ apt-espera: dpkg libre tras $(( $(date +%s) - T0 )) s; DPkg::Lock::Timeout=600 en $C"
+    fi
+  APT_ESPERA
 
   # ════════════════════════════════════════════════════════════════════════════
   # DEFENDER VM - Full ML Pipeline (Primary)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "defender", primary: true do |defender|
-    defender.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "defender"}, inline: WAZUH_AGENT_INSTALL
+    defender.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "defender"},
+      inline: WAZUH_AGENT_INSTALL
     defender.vm.box = "debian/bookworm64"
     defender.vm.box_version = "12.20240905.1"
 
@@ -139,7 +211,7 @@ Vagrant.configure("2") do |config|
     defender.vm.network "forwarded_port", guest: 5572, host: 5572
     defender.vm.network "forwarded_port", guest: 2379, host: 2379
     defender.vm.network "forwarded_port", guest: 8080, host: 8080  # Jenkins
-    defender.vm.network "forwarded_port", guest: 8200, host: 8200  # Vault
+    # [VAULT-DEV-LOOPBACK-D312] sin forwarded_port 8200: el Vault dev escucha solo en 127.0.0.1 del defender (nada fuera lo usa, medido DAY312)
 
     defender.vm.synced_folder ".", "/vagrant", type: "virtualbox",
         mount_options: ["dmode=775,fmode=775,exec"]
@@ -576,18 +648,21 @@ BASHRC_EOF
       echo "✅ PROVISIONING COMPLETED SUCCESSFULLY!"
       # Falco .deb — descargado en dev VM → dist/vendor/ para instalar offline en hardened VM (ADR-030 BSR)
       # dist/vendor/ es la fuente de verdad. CHECKSUMS generado aquí y committeado. .deb gitignored.
+      # [VIGILANCIA-D321] la versión de provisioning/falco/VERSION (la misma que instala falco_instalar.sh) y el repositorio
+      # con la clave comprobada por huella (provisioning/falco/CLAVE); un .deb de otra versión se borra.
       mkdir -p /vagrant/dist/vendor
-      if ls /vagrant/dist/vendor/falco_*.deb 1>/dev/null 2>&1; then
-        echo "✅ Falco .deb ya presente en /vagrant/dist/vendor/"
+      FV=$(tr -d '[:space:]' < /vagrant/provisioning/falco/VERSION)
+      find /vagrant/dist/vendor -maxdepth 1 -name 'falco_*.deb' ! -name "falco_${FV}_amd64.deb" -print -delete
+      if [ -f "/vagrant/dist/vendor/falco_${FV}_amd64.deb" ]; then
+        echo "✅ Falco ${FV} .deb ya presente en /vagrant/dist/vendor/"
       else
-        echo "📦 Descargando Falco .deb → dist/vendor/..."
-        curl -fsSL https://falco.org/repo/falcosecurity-packages.asc | \
-          gpg --dearmor -o /usr/share/keyrings/falco-archive-keyring.gpg
-        echo "deb [signed-by=/usr/share/keyrings/falco-archive-keyring.gpg] https://download.falco.org/packages/deb stable main" | \
-          tee /etc/apt/sources.list.d/falcosecurity.list
+        echo "📦 Descargando Falco ${FV} .deb → dist/vendor/..."
+        . /vagrant/scripts/vigilancia/lib_apt_oficial.sh
+        repo_oficial falcosecurity https://falco.org/repo/falcosecurity-packages.asc /vagrant/provisioning/falco/CLAVE \
+          https://download.falco.org/packages/deb "stable main" || { echo "❌ repositorio de Falco"; exit 1; }
         apt-get update -qq
-        cd /vagrant/dist/vendor && apt-get download falco
-        echo "✅ Falco .deb descargado en /vagrant/dist/vendor/"
+        (cd /vagrant/dist/vendor && apt-get download "falco=${FV}") || { echo "❌ apt-get download falco=${FV}"; exit 1; }
+        echo "✅ Falco ${FV} .deb descargado en /vagrant/dist/vendor/"
       fi
       sha256sum /vagrant/dist/vendor/falco_*.deb > /vagrant/dist/vendor/CHECKSUMS
       echo "✅ dist/vendor/CHECKSUMS actualizado"
@@ -627,20 +702,7 @@ BASHRC_EOF
       fi
 
       # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
-      # Fix DAY 160: repo hashicorp OK con dearmor directo
-      if ! command -v vault &>/dev/null; then
-        echo "📦 Instalando HashiCorp Vault..."
-        wget -O - https://apt.releases.hashicorp.com/gpg 2>/dev/null | \
-          gpg --dearmor | \
-          tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bookworm main" | \
-          tee /etc/apt/sources.list.d/hashicorp.list
-        apt-get update -qq
-        apt-get install -y vault
-        echo "✅ Vault $(vault version | head -1) instalado"
-      else
-        echo "✅ Vault ya instalado: $(vault version | head -1)"
-      fi
+      # [VAULT-INSTALL-D312] se instala en el aprovisionador vault-install (VAULT_INSTALL, versión fijada), tras este bloque
 
       # ── Java 21 via SDKMAN (requerido por Jenkins 2.555+) ──────────────────
       # Fix DAY 160: Java 21 no está en repos Bookworm — SDKMAN + Temurin
@@ -659,34 +721,13 @@ BASHRC_EOF
       fi
 
       # ── Jenkins (DEBT-VAULT-PROVISION-PROD-001) ───────────────────────────
-      # Fix DAY 160: key via keyserver (jenkins.io-2023.key rotada — NO usar)
-      # Fix DAY 160: Jenkins 2.555+ requiere Java 21 — JAVA_HOME en defaults
-      # Fix DAY 160: Jenkins como root en dev (Java 21 en /root/.sdkman)
-      if ! command -v jenkins &>/dev/null && [ ! -f /etc/init.d/jenkins ]; then
-        echo "📦 Instalando Jenkins 2.555+..."
-        gpg --keyserver keyserver.ubuntu.com --recv-keys 7198F4B714ABFC68 2>/dev/null
-        gpg --export 7198F4B714ABFC68 \
-          | tee /usr/share/keyrings/jenkins-keyring.gpg > /dev/null
-        echo "deb [signed-by=/usr/share/keyrings/jenkins-keyring.gpg] https://pkg.jenkins.io/debian-stable binary/" \
-          | tee /etc/apt/sources.list.d/jenkins.list
-        apt-get update -qq
-        apt-get install -y jenkins
-        echo "JAVA_HOME=/root/.sdkman/candidates/java/21.0.7-tem" >> /etc/default/jenkins
-        echo "JAVA=/root/.sdkman/candidates/java/21.0.7-tem/bin/java" >> /etc/default/jenkins
-        sed -i 's/^JENKINS_USER=.*/JENKINS_USER=root/' /etc/default/jenkins
-        sed -i 's/^JENKINS_GROUP=.*/JENKINS_GROUP=root/' /etc/default/jenkins
-        mkdir -p /etc/systemd/system/jenkins.service.d
-        printf '[Service]\nUser=root\nGroup=root\nEnvironment="JAVA_HOME=/root/.sdkman/candidates/java/21.0.7-tem"\nEnvironment="PATH=/root/.sdkman/candidates/java/21.0.7-tem/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"\n' \
-          > /etc/systemd/system/jenkins.service.d/java21.conf
-        systemctl daemon-reload
-        systemctl enable jenkins
-        systemctl start jenkins
-        echo "✅ Jenkins instalado (puerto 8080)"
-        echo "⚠️  Password inicial: sudo cat /var/lib/jenkins/secrets/initialAdminPassword"
-      else
-        echo "✅ Jenkins ya instalado — asegurando arranque..."
-        systemctl start jenkins 2>/dev/null || true
-      fi
+      # [JENKINS-CLAVE-D323] scripts/jenkins/jenkins_instalar.sh: el repositorio de pkg.jenkins.io con la clave comprobada
+      # por huella (provisioning/jenkins/CLAVE), como Wazuh y Falco; antes, un keyserver de terceros sin comprobar nada
+      # (medido DAY323: no respondió y el bloque dijo «✅ Jenkins instalado» sin Jenkins). rc 3 = Jenkins no instalado,
+      # avisado y con el repositorio retirado: el up sigue (decisión de Alonso DAY323: EMECAS no usa Jenkins). Otro rc
+      # distinto de 0 para el up.
+      bash /vagrant/scripts/jenkins/jenkins_instalar.sh; JK_RC=$?
+      [ "$JK_RC" = 0 ] || [ "$JK_RC" = 3 ] || { echo "❌ [JENKINS-INSTALAR] rc=$JK_RC"; exit 1; }
 
       # Vault autostart movido a vault-enterprise-bootstrap (run: always) — DAY 163
 
@@ -772,6 +813,9 @@ BASHRC_EOF
                     apt-mark hold libarrow-dev libparquet-dev >/dev/null 2>&1 || true
                   fi
     DEPENDENCIES_EOF
+
+    # [VAULT-INSTALL-D312] Vault con la versión fijada; antes de vault-enterprise-bootstrap, que lo usa
+    defender.vm.provision "shell", name: "vault-install", inline: VAULT_INSTALL
 
     # ════════════════════════════════════════════════════════════════════════
     # Provisioning: directorio de runtime del grafo Kuzu (DAY 180)
@@ -991,12 +1035,13 @@ BASHRC_EOF
       export VAULT_ADDR=http://127.0.0.1:8200
       export VAULT_TOKEN=argus-dev-token
 
+      # [VAULT-DEV-LOOPBACK-D312] solo 127.0.0.1: el Vault dev no se alcanza desde la red del lab (DEBT-VAULT-DEV-EXPOSED-001)
       # ── 1. Vault dev ──────────────────────────────────────────────────
       if ! pgrep -x vault > /dev/null; then
         echo "🔐 Arrancando Vault dev mode..."
         nohup vault server -dev \
           -dev-root-token-id=argus-dev-token \
-          -dev-listen-address=0.0.0.0:8200 \
+          -dev-listen-address=127.0.0.1:8200 \
           > /tmp/vault-dev.log 2>&1 &
         sleep 3
         echo "✅ Vault dev OK"
@@ -1085,6 +1130,78 @@ BASHRC_EOF
       echo "   vendor.key : solo en Vault (nunca en disco)"
     VAULT_ENTERPRISE
 
+    # [DEPLOY-SSH-D315] DEBT-ANSIBLE-DEPLOY-CONFIGS-001 paso 2a: clave de despliegue de Ansible/Jenkins (Jenkins corre
+    # como root en dev). Se genera aquí y la privada nunca sale del defender; solo la pública se deja en
+    # /vagrant/dist/deploy/ (fuera de git) para que la VM etcd la autorice (provisioner deploy-access). run: always: si el
+    # defender se rehace, la clave nueva se publica y basta con: vagrant provision etcd --provision-with deploy-access
+    defender.vm.provision "shell", name: "deploy-key", run: "always", inline: <<-'DEPLOY_KEY'
+      set -e
+      K=/root/.ssh/argus_deploy_ed25519
+      install -d -m 0700 -o root -g root /root/.ssh
+      if [ ! -f "$K" ]; then
+        ssh-keygen -q -t ed25519 -N "" -C "argus-deploy@defender" -f "$K"
+        echo "✅ deploy-key: clave de despliegue nueva"
+      fi
+      chmod 0600 "$K"
+      mkdir -p /vagrant/dist/deploy
+      cp "$K.pub" /vagrant/dist/deploy/argus_deploy_ed25519.pub
+      echo "✅ deploy-key: $(ssh-keygen -lf "$K.pub" | awk '{print $2}') publicada en /vagrant/dist/deploy/ (solo la pública)"
+    DEPLOY_KEY
+
+    # [PKI-DEFENDER-D316] DEBT-ETCD-HA-TLS-RAFT-001 paso 5, decisión E4 de Alonso (DAY316): certificados de cliente de
+    # los componentes del defender para hablar con el etcd-server por mTLS (CN = OU = nombre del componente). Igual que
+    # la VM etcd: copia desde ARGUS_PKI_DIR (Mac) por el aprovisionador file, nunca por /vagrant; se instala en
+    # /etc/argus-pki y se borra la entrada. El de admin NO viene: los instrumentos lo llevan a /dev/shm cuando hace falta.
+    # Las claves quedan en claro en disco (0600 root): DEBT-PKI-AT-REST-001.
+    defender.vm.provision "shell", name: "pki-defender-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-defender"
+    %w[ca.crt sniffer.crt sniffer.key ml-detector.crt ml-detector.key firewall-acl-agent.crt firewall-acl-agent.key
+       bronze-to-gold-converter.crt bronze-to-gold-converter.key].each do |f|
+      defender.vm.provision "pki-defender-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki-defender/#{f}"
+    end
+    defender.vm.provision "shell", name: "pki-defender", inline: <<-'PKI_DEFENDER'
+      set -e
+      umask 077
+      # [PKI-DEFENDER-D316] E4 (DEBT-ETCD-HA-TLS-RAFT-001 paso 5): certificados de cliente de los componentes del defender
+      PKI_IN=/tmp/argus-pki-defender
+      PKI=/etc/argus-pki
+      CLIENTES="sniffer ml-detector firewall-acl-agent bronze-to-gold-converter"
+      if [ -d "$PKI_IN" ]; then
+        for f in ca.crt $(for c in $CLIENTES; do echo "$c.crt $c.key"; done); do
+          [ -s "$PKI_IN/$f" ] || { echo "❌ pki-defender: no llegó $f (¿existe en ARGUS_PKI_DIR del Mac?)"; exit 1; }
+        done
+        install -d -m 0700 -o root -g root "$PKI"
+        install -m 0644 -o root -g root "$PKI_IN/ca.crt" "$PKI/ca.crt"
+        for c in $CLIENTES; do
+          install -m 0644 -o root -g root "$PKI_IN/$c.crt" "$PKI/$c.crt"
+          install -m 0600 -o root -g root "$PKI_IN/$c.key" "$PKI/$c.key"
+        done
+        rm -rf "$PKI_IN"
+      fi
+      # Comprobación (también si no había nada que copiar): cada certificado firmado por la CA, CN = OU = nombre del
+      # fichero, la clave privada es la de ese certificado, permisos 0644/0600 root. Por la salida solo huellas.
+      [ -s "$PKI/ca.crt" ] || { echo "❌ pki-defender: falta $PKI/ca.crt (¿existe la PKI del lab en el Mac? ARGUS_PKI_DIR)"; exit 1; }
+      [ "$(stat -c %a "$PKI")" = 700 ] || { echo "❌ pki-defender: $PKI no es 0700"; exit 1; }
+      for c in $CLIENTES; do
+        for f in "$PKI/$c.crt" "$PKI/$c.key"; do
+          [ -s "$f" ] || { echo "❌ pki-defender: falta $f (¿existe en ARGUS_PKI_DIR del Mac?)"; exit 1; }
+        done
+        [ "$(stat -c %a:%U "$PKI/$c.key")" = 600:root ] || { echo "❌ pki-defender: $PKI/$c.key no es 0600 root"; exit 1; }
+        openssl verify -CAfile "$PKI/ca.crt" "$PKI/$c.crt" > /dev/null 2>&1 \
+          || { echo "❌ pki-defender: $c.crt no lo firma la CA de $PKI/ca.crt"; exit 1; }
+        SUJ=$(openssl x509 -in "$PKI/$c.crt" -noout -subject -nameopt RFC2253 | sed 's/^subject=//')
+        case ",$SUJ," in *",CN=$c,"*) ;; *) echo "❌ pki-defender: $c.crt tiene sujeto '$SUJ' (se exige CN=$c)"; exit 1 ;; esac
+        case ",$SUJ," in *",OU=$c,"*) ;; *) echo "❌ pki-defender: $c.crt tiene sujeto '$SUJ' (se exige OU=$c)"; exit 1 ;; esac
+        PUB_CRT=$(openssl x509 -in "$PKI/$c.crt" -noout -pubkey | openssl sha256 | awk '{print $NF}')
+        PUB_KEY=$(openssl pkey -in "$PKI/$c.key" -pubout | openssl sha256 | awk '{print $NF}')
+        [ "$PUB_CRT" = "$PUB_KEY" ] || { echo "❌ pki-defender: $c.key no es la clave de $c.crt"; exit 1; }
+        echo "✅ pki-defender: $c CN=OU=$c, firmado por la CA, clave 0600 root (huella $(openssl x509 -in "$PKI/$c.crt" -noout -fingerprint -sha256 | sed 's/^.*=//; s/://g' | cut -c1-16))"
+      done
+    PKI_DEFENDER
+
+    # [VIGILANCIA-D321] ADR-060 8e.4d (H-I): Falco desde su apt firmado (provisioning/falco/VERSION) con las reglas de
+    # aRGus; todo o nada y run: always (con todo ya puesto no cambia nada). El agente de Wazuh es el primer aprovisionador.
+    defender.vm.provision "shell", name: "falco", run: "always", inline: "bash /vagrant/scripts/vigilancia/falco_instalar.sh"
+
   end  # End defender VM
 
   # ════════════════════════════════════════════════════════════════════════════
@@ -1092,7 +1209,8 @@ BASHRC_EOF
   # ════════════════════════════════════════════════════════════════════════════
 
   config.vm.define "client", autostart: false do |client|
-    client.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "client"}, inline: WAZUH_AGENT_INSTALL
+    client.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "client"},
+      inline: WAZUH_AGENT_INSTALL
     client.vm.box = "debian/bookworm64"
     client.vm.box_version = "12.20240905.1"
     client.vm.hostname = "ml-client"
@@ -1172,7 +1290,8 @@ BASHRC_EOF
   # SURICATA VM — IDS signatures (ADR-048 F2)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "suricata", autostart: false do |suricata|
-    suricata.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "suricata"}, inline: WAZUH_AGENT_INSTALL
+    suricata.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "suricata"},
+      inline: WAZUH_AGENT_INSTALL
     suricata.vm.box         = "debian/bookworm64"
     suricata.vm.box_version = "12.20240905.1"
     suricata.vm.hostname    = "argus-suricata"
@@ -1221,8 +1340,15 @@ BASHRC_EOF
 
       suricata --build-info | grep -i "version" || true
 
-      suricata-update --no-reload || true
-      echo "Rules: $(find /var/lib/suricata/rules -name '*.rules' 2>/dev/null | head -1)"
+      # [SURICATA-ARRANQUE-D323] reglas ET Open: hasta 3 intentos; sin reglas la provisión FALLA. Antes era `|| true` y
+      # un fallo de descarga habría pasado en silencio, con Suricata vivo y ciego (0 firmas, medido DAY323).
+      REGLAS=/var/lib/suricata/rules/suricata.rules
+      for intento in 1 2 3; do
+        suricata-update --no-reload && [ -s "$REGLAS" ] && break
+        echo "⚠️  [SURICATA-ARRANQUE] suricata-update, intento $intento: sin reglas; reintento en 10 s"; sleep 10
+      done
+      [ -s "$REGLAS" ] || { echo "❌ [SURICATA-ARRANQUE] sin reglas tras 3 intentos de suricata-update"; exit 1; }
+      echo "Rules: $REGLAS ($(wc -l < "$REGLAS") líneas)"
 
       sed -i 's/- interface: eth0/- interface: eth1/' /etc/suricata/suricata.yaml
       ip link set eth1 promisc on || true
@@ -1238,12 +1364,33 @@ BASHRC_EOF
       mkdir -p /var/log/suricata
       chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
 
+      # [SURICATA-ARRANQUE-D323] apt-get install arranca Suricata con la configuración de fábrica (eth0, 0 firmas) y las
+      # reglas y los sed de arriba solo valen al reiniciarlo. Medido DAY323 en una VM nueva: proceso de las 06:11:50,
+      # reglas de las 06:12:15, yaml de las 06:12:58, ningún reinicio -> capturaba en eth0 con 0 firmas y mitre-check
+      # dio 0 alertas. Se reinicia y se comprueba en el log del proceso NUEVO (líneas con su pid): eth1 y firmas > 0.
+      systemctl restart suricata
+      SURI_ESPERA_S=180   # cargar 53 345 firmas tardó 28 s (DAY323); margen para un Mac cargado
+      SURI_LOG=/var/log/suricata/suricata.log
+      PID=0; OK=""
+      for i in $(seq 1 $SURI_ESPERA_S); do
+        PID=$(systemctl show -p MainPID --value suricata)
+        if [ "$PID" != "0" ] && grep -F "[$PID - " "$SURI_LOG" 2>/dev/null | grep -q 'Engine started'; then OK=1; break; fi
+        sleep 1
+      done
+      [ -n "$OK" ] || { echo "❌ [SURICATA-ARRANQUE] Suricata (pid $PID) sin 'Engine started' en $SURI_ESPERA_S s"; tail -n 20 "$SURI_LOG"; exit 1; }
+      LINEAS=$(grep -F "[$PID - " "$SURI_LOG")
+      FIRMAS=$(echo "$LINEAS" | grep -o '[0-9]* signatures processed' | tail -n 1 | cut -d' ' -f1)
+      echo "$LINEAS" | grep -q 'eth1: creating' || { echo "❌ [SURICATA-ARRANQUE] pid $PID no captura en eth1:"; echo "$LINEAS" | grep -i 'creating'; exit 1; }
+      [ "${FIRMAS:-0}" -gt 0 ] || { echo "❌ [SURICATA-ARRANQUE] pid $PID con ${FIRMAS:-0} firmas"; exit 1; }
+      echo "✅ [SURICATA-ARRANQUE] pid $PID captura en eth1 con $FIRMAS firmas"
+
       echo "=== Suricata ready ==="
       suricata --build-info | grep -iE "version|AF_PACKET|PCAP" || true
       echo "community-id: $(grep 'community-id' /etc/suricata/suricata.yaml | head -1)"
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
 
+    suricata.vm.provision "shell", name: "lab-ntp", run: "always", inline: LAB_NTP
     suricata.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
 
   end  # End suricata VM
@@ -1252,7 +1399,8 @@ BASHRC_EOF
   # ZEEK VM — protocol analysis / observability layer (ADR-048 F3)
   # ════════════════════════════════════════════════════════════════════════════
   config.vm.define "zeek", autostart: false do |zeek|
-    zeek.vm.provision "shell", name: "wazuh-agent", env: {"AGENT_NAME" => "zeek"}, inline: WAZUH_AGENT_INSTALL
+    zeek.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "zeek"},
+      inline: WAZUH_AGENT_INSTALL
     zeek.vm.box         = "debian/bookworm64"
     zeek.vm.box_version = "12.20240905.1"
     zeek.vm.hostname    = "argus-zeek"
@@ -1335,6 +1483,7 @@ BASHRC_EOF
       ip link show eth1 | grep -i promisc || echo "⚠️  eth1 promisc no activo aun"
     SHELL
 
+    zeek.vm.provision "shell", name: "lab-ntp", run: "always", inline: LAB_NTP
     zeek.vm.provision "shell", name: "adapter-toolchain", inline: ADAPTER_TOOLCHAIN
 
   end  # End zeek VM
@@ -1381,12 +1530,19 @@ BASHRC_EOF
       echo "nameserver 1.1.1.1" >> /etc/resolv.conf
       chattr +i /etc/resolv.conf
 
-      curl -s https://packages.wazuh.com/key/GPG-KEY-WAZUH \
-        | gpg --dearmor > /usr/share/keyrings/wazuh.gpg
-      echo "deb [signed-by=/usr/share/keyrings/wazuh.gpg] https://packages.wazuh.com/4.x/apt/ stable main" \
-        > /etc/apt/sources.list.d/wazuh.list
+      # [VIGILANCIA-D321] repositorio de Wazuh con su clave comprobada por huella (provisioning/wazuh/CLAVE); el mismo
+      # código que los agentes (scripts/vigilancia/lib_apt_oficial.sh)
+      . /vagrant/scripts/vigilancia/lib_apt_oficial.sh
+      repo_oficial wazuh https://packages.wazuh.com/key/GPG-KEY-WAZUH /vagrant/provisioning/wazuh/CLAVE \
+        https://packages.wazuh.com/4.x/apt/ "stable main" || { echo "❌ repositorio de Wazuh"; exit 1; }
       apt-get update -qq
-      apt-get install -y wazuh-manager || { echo "❌ wazuh-manager install failed"; exit 1; }
+      # [VIGILANCIA-D321] versión FIJA (provisioning/wazuh/VERSION, la misma para manager y agentes): sin fijar, apt
+      # instalaba la última del día (medido DAY321: el lab tenía 4.14.9-1 y apt daba ya 4.14.10-1).
+      WV=$(tr -d '[:space:]' < /vagrant/provisioning/wazuh/VERSION)
+      apt-mark unhold wazuh-manager >/dev/null 2>&1 || true
+      apt-get install -y --allow-downgrades "wazuh-manager=$WV" || { echo "❌ wazuh-manager $WV install failed"; exit 1; }
+      apt-mark hold wazuh-manager >/dev/null
+      echo "✅ wazuh-manager $(dpkg-query -W -f='${Version}' wazuh-manager) (fijado en provisioning/wazuh/VERSION, apt-mark hold)"
 
       systemctl daemon-reload
       systemctl enable wazuh-manager
@@ -1396,6 +1552,7 @@ BASHRC_EOF
       /var/ossec/bin/wazuh-control status | head -5 || true
     SHELL
 
+    wazuh.vm.provision "shell", name: "lab-ntp", run: "always", inline: LAB_NTP
     wazuh.vm.provision "shell", name: "host-adapter-perms", inline: <<-'PERMS_SHELL'
           set -eu
           echo "=== host-adapter-perms: vagrant lee alerts.json + buzon host (DEBT-HOST-ADAPTER-ALERTS-PERMS-001) ==="
@@ -1431,6 +1588,518 @@ BASHRC_EOF
       echo "=== authd-force OK (force codificada; el enroll de zeek lo prueba E2E) ==="
     AUTHD_FORCE_SHELL
 
+    # [VIGILANCIA-D321] ADR-060 8e.4d: decoders, reglas y agent.conf por grupo de aRGus (provisioning/wazuh/argus),
+    # agentes a su grupo y test de las reglas. Todo o nada; mismo script que make vigilancia-manager-deploy.
+    wazuh.vm.provision "shell", name: "argus-vigilancia", run: "always",
+      inline: "bash /vagrant/scripts/vigilancia/wazuh_manager_desplegar.sh"
   end  # End wazuh VM
+
+
+  # ════════════════════════════════════════════════════════════════════════════
+  # ETCD VM — etcd-server (fachada HTTPS + mTLS), etcd y Vault en modo servidor
+  # [VM-ETCD-D312] DEBT-ETCD-HA-TLS-RAFT-001, PR1 (un nodo). docs/ml-heads/day312_diseno.md
+  # El etcd-server sale del defender (decisión de Alonso DAY312). Solo el defender habla con el 2379.
+  # ════════════════════════════════════════════════════════════════════════════
+  config.vm.define "etcd", autostart: false do |etcd|
+    etcd.vm.box         = "debian/bookworm64"
+    etcd.vm.box_version = "12.20240905.1"
+    etcd.vm.hostname    = "argus-etcd"
+
+    etcd.vm.provider "virtualbox" do |vb|
+      vb.name   = "argus-etcd"
+      vb.memory = "1536"  # [VIGILANCIA-D321] +512: Falco (medido DAY321: 114-149 MB de RSS) y el agente de Wazuh
+      vb.cpus   = 2
+      vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+      vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
+      vb.customize ["modifyvm", :id, "--ioapic", "on"]
+      vb.customize ["modifyvm", :id, "--audio", "none"]
+      vb.customize ["modifyvm", :id, "--usb", "off"]
+    end
+
+    # [PROTEGIDOS-ANTISPOOF-D320] ADR-060 H-G: MAC fija (VirtualBox, OUI 08:00:27) para que el manifiesto del lab pueda
+    # atar .20 a su MAC (tools/argus-infra/plantillas/hospital-lab.json): el antispoofing por MAC caza a quien, desde
+    # la misma LAN, falsifique el origen de la VM etcd. Si se cambia aquí, cambiarla también en la plantilla.
+    etcd.vm.network "private_network",
+      ip: "192.168.100.20",
+      mac: "080027A20020",
+      virtualbox__intnet: "ml_defender_gateway_lan"
+
+    etcd.vm.synced_folder ".", "/vagrant", type: "virtualbox",
+      mount_options: ["dmode=775,fmode=775,exec"]
+
+    # [VM-ETCD-D312] hora del defender (TLS y logs necesitan relojes alineados) y cortafuegos de entrada.
+    etcd.vm.provision "shell", name: "etcd-base", run: "always", inline: <<-'ETCD_BASE'
+      set -e
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== etcd VM: base (chrony + nftables) [VM-ETCD-D312] ==="
+      if ! command -v nft >/dev/null || ! command -v chronyc >/dev/null; then
+        apt-get update -qq
+        apt-get install -y nftables chrony curl
+      fi
+
+      CHRONY_CONF=/etc/chrony/chrony.conf
+      sed -i 's/^pool /#pool /' "$CHRONY_CONF"
+      sed -i 's/^makestep 1 3$/makestep 1 -1/' "$CHRONY_CONF"
+      grep -q '^server 192.168.100.1 iburst' "$CHRONY_CONF" || echo 'server 192.168.100.1 iburst' >> "$CHRONY_CONF"
+      systemctl restart chrony
+      chronyc waitsync 30 0.1 0 1 || echo "⚠️  etcd-base: sin sincronizar con 192.168.100.1 en 30 s"
+
+      # Entrada: loopback, conexiones ya establecidas, ICMP, SSH (gestión de Vagrant) y 2379 SOLO desde el defender.
+      cat > /etc/nftables.conf <<'NFT'
+#!/usr/sbin/nft -f
+# [VM-ETCD-D312] generado por el Vagrantfile; no editar a mano
+flush ruleset
+table inet argus_etcd {
+  chain input {
+    type filter hook input priority 0; policy drop;
+    iif "lo" accept
+    ct state established,related accept
+    ct state invalid drop
+    meta l4proto { icmp, ipv6-icmp } accept
+    tcp dport 22 accept
+    ip saddr 192.168.100.1 tcp dport 2379 accept
+  }
+  chain forward { type filter hook forward priority 0; policy drop; }
+  chain output  { type filter hook output priority 0; policy accept; }
+}
+NFT
+      nft -c -f /etc/nftables.conf
+      systemctl enable nftables
+      systemctl restart nftables
+      nft list chain inet argus_etcd input | grep -q 'ip saddr 192.168.100.1 tcp dport 2379 accept' \
+        || { echo "❌ etcd-base: la regla del 2379 no quedó cargada"; exit 1; }
+      echo "✅ etcd-base OK: $(chronyc -n tracking | grep 'Reference ID'); nftables argus_etcd cargada"
+    ETCD_BASE
+
+
+    # [VAULT-SERVER-D312] PKI: directorio de entrada 0700 y copia desde ARGUS_PKI_DIR (Mac); vault-server la instala y borra
+    etcd.vm.provision "shell", name: "pki-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki"
+    # [PROTEGIDOS-PUBKEY-D318] argus-infra: certificado que SOLO firma el manifiesto de protegidos (ver d312_pki.sh)
+    %w[ca.crt vault.crt vault.key etcd-server.crt etcd-server.key argus-infra.crt argus-infra.key].each do |f|
+      etcd.vm.provision "pki-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki/#{f}"
+    end
+    etcd.vm.provision "shell", name: "vault-install", inline: VAULT_INSTALL
+
+    # [VAULT-ARRANQUE-D322] arranque de Vault (scripts/etcd_ha/vault_arranque_instalar.sh, ficheros en provisioning/vault/):
+    # desellado ligado a vault.service (cada arranque de Vault, también un Restart=on-failure, lo dessella) con identidad
+    # propia (CN=argus-vault-unseal, sin políticas en Vault) y rotación del audit sin SIGHUP a un Vault que arranca.
+    # run: always, antes de vault-server. PKI creada antes de DAY322: bash scripts/etcd_ha/d312_pki.sh cliente
+    # $ARGUS_PKI_DIR argus-vault-unseal
+    etcd.vm.provision "shell", name: "pki-unseal-dir", run: "always",
+      inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-unseal"
+    %w[ca.crt argus-vault-unseal.crt argus-vault-unseal.key].each do |f|
+      etcd.vm.provision "pki-unseal-#{f}", type: "file", run: "always", source: File.join(ARGUS_PKI_DIR, f),
+        destination: "/tmp/argus-pki-unseal/#{f}"
+    end
+    etcd.vm.provision "shell", name: "vault-arranque", run: "always",
+      inline: "bash /vagrant/scripts/etcd_ha/vault_arranque_instalar.sh"
+
+    # [VAULT-SERVER-D312] Vault en modo servidor: raft 1 nodo, solo 127.0.0.1, mTLS obligatorio, desellado c (SOLO lab),
+    # kv v2 argus-hmac/ (sin borrado), auth cert para CN=etcd-server, root revocado. docs/ml-heads/day312_diseno.md
+    # [VAULT-CAS-D314] el montaje lleva cas_required=true (decisión V2 de Alonso, DAY314): ninguna escritura sin CAS puede
+    # pisar una clave aunque el código falle. Se comprueba en cada aprovisionamiento (sonda: escribir sin CAS da 400)
+    etcd.vm.provision "shell", name: "vault-server", env: { "ARGUS_HOSPITAL_ID" => ARGUS_HOSPITAL_ID },
+      inline: <<-'VAULT_SERVER'
+      set -e
+      umask 077
+      export DEBIAN_FRONTEND=noninteractive
+      echo "=== etcd VM: Vault en modo servidor (raft 1 nodo, TLS + mTLS, desellado c) [VAULT-SERVER-D312] ==="
+      command -v python3 >/dev/null || { echo "❌ vault-server: falta python3"; exit 1; }
+      command -v curl    >/dev/null || apt-get install -y curl
+
+      # 1. PKI del lab (copiada desde el Mac por los aprovisionadores file; nunca pasa por /vagrant)
+      PKI_IN=/tmp/argus-pki
+      if [ -d "$PKI_IN" ]; then
+        install -d -m 0700 -o root -g root /etc/argus-pki
+        for f in ca.crt etcd-server.crt; do install -m 0644 -o root -g root "$PKI_IN/$f" /etc/argus-pki/$f; done
+        install -m 0600 -o root -g root "$PKI_IN/etcd-server.key" /etc/argus-pki/etcd-server.key
+        # [PROTEGIDOS-PUBKEY-D318] argus-infra (OU=argus-infra) SOLO firma el manifiesto de protegidos (rol de Vault
+        # argus-infra-admin). No es admin (OU=admin: en el etcd-server rota claves HMAC y lista componentes).
+        install -m 0644 -o root -g root "$PKI_IN/argus-infra.crt" /etc/argus-pki/argus-infra.crt
+        install -m 0600 -o root -g root "$PKI_IN/argus-infra.key" /etc/argus-pki/argus-infra.key
+        install -d -m 0750 -o vault -g vault /etc/vault.d/tls
+        install -m 0644 -o vault -g vault "$PKI_IN/ca.crt"    /etc/vault.d/tls/ca.crt
+        install -m 0644 -o vault -g vault "$PKI_IN/vault.crt" /etc/vault.d/tls/vault.crt
+        install -m 0600 -o vault -g vault "$PKI_IN/vault.key" /etc/vault.d/tls/vault.key
+        rm -rf "$PKI_IN"
+      fi
+      for f in /etc/vault.d/tls/ca.crt /etc/vault.d/tls/vault.crt /etc/vault.d/tls/vault.key /etc/argus-pki/etcd-server.crt /etc/argus-pki/etcd-server.key /etc/argus-pki/argus-infra.crt /etc/argus-pki/argus-infra.key; do
+        [ -s "$f" ] || { echo "❌ vault-server: falta $f (¿existe la PKI del lab en el Mac? ARGUS_PKI_DIR)"; exit 1; }
+      done
+      [[ "${ARGUS_HOSPITAL_ID:-}" =~ ^[a-z0-9-]{1,64}$ ]] || { echo "❌ vault-server: ARGUS_HOSPITAL_ID '${ARGUS_HOSPITAL_ID:-}' ausente o mal formado ([a-z0-9-], 1 a 64)"; exit 1; }
+      CLAVE_PROT="protegidos-$ARGUS_HOSPITAL_ID"
+
+      # 2. Configuración: raft en /opt/vault/data, solo 127.0.0.1, TLS con certificado de cliente obligatorio
+      install -d -m 0700 -o vault -g vault /opt/vault/data
+      cat > /etc/vault.d/vault.hcl <<'HCL'
+# [VAULT-SERVER-D312] generado por el Vagrantfile; no editar a mano
+ui            = false
+disable_mlock = true
+api_addr      = "https://127.0.0.1:8200"
+cluster_addr  = "https://127.0.0.1:8201"
+storage "raft" {
+  path    = "/opt/vault/data"
+  node_id = "argus-etcd-1"
+}
+listener "tcp" {
+  address                            = "127.0.0.1:8200"
+  cluster_address                    = "127.0.0.1:8201"
+  tls_cert_file                      = "/etc/vault.d/tls/vault.crt"
+  tls_key_file                       = "/etc/vault.d/tls/vault.key"
+  tls_client_ca_file                 = "/etc/vault.d/tls/ca.crt"
+  tls_require_and_verify_client_cert = "true"
+}
+HCL
+      chown root:vault /etc/vault.d/vault.hcl; chmod 0640 /etc/vault.d/vault.hcl
+
+      # 3. [VAULT-ARRANQUE-D322] /var/log/vault, la rotación del audit y el desellado c (SOLO laboratorio; la clave vive en
+      # /etc/vault.d/unseal.key, root 0600) los pone el aprovisionador vault-arranque, que corre antes que este
+      # (provisioning/vault/, scripts/etcd_ha/vault_arranque_instalar.sh). argus-vault-unseal.service va ligada a
+      # vault.service: el restart de abajo ya lo dessella (si Vault está inicializado).
+      [ -x /usr/local/sbin/argus-vault-unseal ] && [ -d /var/log/vault ] \
+        || { echo "❌ vault-server: falta el desellado o /var/log/vault (¿corrió el aprovisionador vault-arranque?)"; exit 1; }
+      systemctl daemon-reload
+      systemctl enable vault
+      systemctl restart vault
+
+      export VAULT_ADDR=https://127.0.0.1:8200 VAULT_CACERT=/etc/vault.d/tls/ca.crt
+      export VAULT_CLIENT_CERT=/etc/argus-pki/etcd-server.crt VAULT_CLIENT_KEY=/etc/argus-pki/etcd-server.key
+      rc=1; for i in $(seq 1 30); do rc=0; vault status >/dev/null 2>&1 || rc=$?; [ "$rc" -ne 1 ] && break; sleep 1; done
+      [ "$rc" -ne 1 ] || { echo "❌ vault-server: Vault no responde en 30 s (ver journalctl -u vault)"; exit 1; }
+
+      # 4. Primera vez: init 1/1, guardar SOLO la clave de desellado, configurar con el root y revocarlo
+      set +e; vault operator init -status >/dev/null 2>&1; INIT_RC=$?; set -e
+      if [ "$INIT_RC" = "2" ]; then
+        INIT_JSON=$(vault operator init -key-shares=1 -key-threshold=1 -format=json)
+        echo "$INIT_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["unseal_keys_b64"][0])' > /etc/vault.d/unseal.key
+        chmod 0600 /etc/vault.d/unseal.key; chown root:root /etc/vault.d/unseal.key
+        ROOT=$(echo "$INIT_JSON" | python3 -c 'import sys,json; print(json.load(sys.stdin)["root_token"])')
+        unset INIT_JSON
+        systemctl start argus-vault-unseal
+        export VAULT_TOKEN="$ROOT"
+        # [PROTEGIDOS-PUBKEY-D318] audit ANTES que todo lo demás (también queda auditada la configuración). Dos devices:
+        # Vault rechaza TODA petición si no puede escribir en ninguno; con dos, un disco lleno en /var/log no lo para.
+        vault audit enable file file_path=/var/log/vault/audit.log mode=0640 >/dev/null
+        vault audit enable syslog tag=vault-audit facility=AUTH >/dev/null
+        vault secrets enable -path=argus-hmac -version=2 kv >/dev/null
+        vault write argus-hmac/config cas_required=true >/dev/null   # [VAULT-CAS-D314]
+        vault policy write etcd-server - >/dev/null <<'POL'
+# [VAULT-SERVER-D312] el etcd-server crea y lee claves HMAC; nunca las borra (re-verificar el grafo años después)
+path "argus-hmac/data/*"     { capabilities = ["create", "read", "update"] }
+path "argus-hmac/metadata/*" { capabilities = ["read", "list"] }
+POL
+        vault auth enable cert >/dev/null
+        vault write auth/cert/certs/etcd-server display_name=etcd-server policies=etcd-server \
+          certificate=@/etc/vault.d/tls/ca.crt allowed_common_names=etcd-server token_ttl=3600 >/dev/null
+        # [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2: firma del manifiesto de protegidos. Clave ed25519 por hospital, NO
+        # exportable y sin borrado: la privada nunca sale de Vault. Solo argus-infra (rol argus-infra-admin) firma, y solo
+        # desde el CIDR autorizado (lab: 127.0.0.1/32, Vault solo escucha ahí; producción: el de la plantilla de despliegue).
+        vault secrets enable -path=argus-transit transit >/dev/null
+        vault write -f "argus-transit/keys/$CLAVE_PROT" type=ed25519 exportable=false allow_plaintext_backup=false >/dev/null
+        vault policy write argus-infra-admin - >/dev/null <<POL
+# [PROTEGIDOS-PUBKEY-D318] argus-infra firma, verifica y lee la clave pública del manifiesto de su hospital; nada más
+path "argus-transit/sign/$CLAVE_PROT"   { capabilities = ["update"] }
+path "argus-transit/verify/$CLAVE_PROT" { capabilities = ["update"] }
+path "argus-transit/keys/$CLAVE_PROT"   { capabilities = ["read"] }
+POL
+        vault write auth/cert/certs/argus-infra display_name=argus-infra policies=argus-infra-admin \
+          certificate=@/etc/vault.d/tls/ca.crt allowed_common_names=argus-infra \
+          token_ttl=300 token_max_ttl=900 token_bound_cidrs=127.0.0.1/32 >/dev/null
+        printf '%s\n' "$CLAVE_PROT" > /etc/vault.d/argus-protegidos.clave
+        chmod 0644 /etc/vault.d/argus-protegidos.clave
+        vault token revoke -self >/dev/null
+        unset VAULT_TOKEN ROOT
+        echo "✅ vault-server: inicializado (1/1), audit (fichero + syslog), argus-hmac (kv v2), política etcd-server, auth cert,"
+        echo "   argus-transit con $CLAVE_PROT (ed25519, no exportable) y rol argus-infra; root revocado"
+      elif [ "$INIT_RC" = "0" ]; then
+        systemctl start argus-vault-unseal
+        echo "✅ vault-server: ya inicializado; desellado comprobado"
+      else
+        echo "❌ vault-server: vault operator init -status rc=$INIT_RC"; exit 1
+      fi
+      # [VAULT-CAS-D314] sonda con el certificado del etcd-server: una escritura sin CAS debe dar 400 (cas_required). Con
+      # root revocado no se puede corregir aquí: un Vault inicializado antes de DAY314 se rehace desde cero
+      T=$(vault login -method=cert -path=cert -token-only name=etcd-server 2>/dev/null) || { echo "❌ vault-server: login cert de etcd-server"; exit 1; }
+      SONDA=$(curl -s -o /dev/null -w '%{http_code}' --cacert "$VAULT_CACERT" --cert "$VAULT_CLIENT_CERT" --key "$VAULT_CLIENT_KEY" \
+        -H "X-Vault-Token: $T" -X POST -d '{"data":{"sonda":1}}' https://127.0.0.1:8200/v1/argus-hmac/data/aprovisionamiento/sonda-cas)
+      unset T
+      if [ "$SONDA" = "400" ]; then
+        echo "✅ vault-server: argus-hmac/ con cas_required=true (escritura sin CAS rechazada)"
+      else
+        echo "❌ vault-server: escritura sin CAS dio HTTP $SONDA (se esperaba 400): el montaje no tiene cas_required."
+        echo "   Vault inicializado antes de DAY314. Desde el Mac: vagrant destroy -f etcd && vagrant up etcd"; exit 1
+      fi
+      # [PROTEGIDOS-PUBKEY-D318] sonda en cada aprovisionamiento: con el certificado de argus-infra se lee la clave del
+      # manifiesto (ed25519, no exportable, sin borrado), y esa lectura tiene que aparecer en los dos audit devices. Un
+      # Vault inicializado antes de DAY318 no tiene transit y, con el root revocado, no se puede añadir: se rehace.
+      REHACER="Desde el Mac: vagrant destroy -f etcd && vagrant up etcd"
+      [ -s /etc/vault.d/argus-protegidos.clave ] || { echo "❌ vault-server: Vault sin argus-transit (inicializado antes de DAY318). $REHACER"; exit 1; }
+      HAY=$(cat /etc/vault.d/argus-protegidos.clave)
+      [ "$HAY" = "$CLAVE_PROT" ] || { echo "❌ vault-server: este Vault firma con $HAY y el despliegue pide $CLAVE_PROT (argus_hospital_id). Un Vault por hospital. $REHACER"; exit 1; }
+      N0=$(wc -l < /var/log/vault/audit.log)
+      audit_syslog() { journalctl -t vault-audit --since "-15min" --no-pager 2>/dev/null | grep -c "argus-transit/keys/$CLAVE_PROT"; }
+      S0=$(audit_syslog)
+      TI=$(VAULT_CLIENT_CERT=/etc/argus-pki/argus-infra.crt VAULT_CLIENT_KEY=/etc/argus-pki/argus-infra.key \
+           vault login -method=cert -path=cert -token-only name=argus-infra 2>/dev/null) || { echo "❌ vault-server: login cert de argus-infra"; exit 1; }
+      INFO=$(curl -s --cacert "$VAULT_CACERT" --cert /etc/argus-pki/argus-infra.crt --key /etc/argus-pki/argus-infra.key \
+        -H "X-Vault-Token: $TI" "https://127.0.0.1:8200/v1/argus-transit/keys/$CLAVE_PROT")
+      unset TI
+      printf '%s' "$INFO" | python3 -c '
+import sys, json
+d = json.load(sys.stdin)["data"]
+ver = {k: d.get(k) for k in ("type", "exportable", "deletion_allowed", "supports_signing")}
+if ver != {"type": "ed25519", "exportable": False, "deletion_allowed": False, "supports_signing": True}:
+    sys.exit("❌ vault-server: la clave del manifiesto no es ed25519 no exportable y sin borrado: %s" % ver)
+print("✅ vault-server: argus-transit/keys/%s ed25519, exportable=False, deletion_allowed=False, version %s" % (sys.argv[1], d["latest_version"]))
+' "$CLAVE_PROT" || exit 1
+      tail -n +"$((N0 + 1))" /var/log/vault/audit.log | grep -q "argus-transit/keys/$CLAVE_PROT" \
+        || { echo "❌ vault-server: la lectura de la clave no aparece en /var/log/vault/audit.log (audit de fichero sin escribir)"; exit 1; }
+      S1=$S0; for i in 1 2 3 4 5; do S1=$(audit_syslog); [ "$S1" -gt "$S0" ] && break; sleep 1; done
+      [ "$S1" -gt "$S0" ] \
+        || { echo "❌ vault-server: la lectura de la clave no aparece en el audit de syslog (journalctl -t vault-audit: $S0 -> $S1)"; exit 1; }
+      echo "✅ vault-server: los dos audit devices escriben (fichero: $(wc -l < /var/log/vault/audit.log) líneas; syslog: vault-audit)"
+      vault status -format=json | python3 -c 'import sys,json; s=json.load(sys.stdin); print("✅ vault-server: sealed=%s storage=%s version=%s" % (s["sealed"], s["storage_type"], s["version"]))'
+    VAULT_SERVER
+
+    # [ETCD-LOCAL-D312] etcd real de 1 nodo (binario oficial v3.6.16, sha256 fijado, como Kuzu), solo 127.0.0.1:2381/2382,
+    # TLS de cliente obligatorio y RBAC por CN (etcd-server: readwrite /argus/). El PR2 añade los peers (HA Raft).
+    etcd.vm.provision "shell", name: "pki-etcd-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-etcd"
+    %w[ca.crt etcd.crt etcd.key].each do |f|
+      etcd.vm.provision "pki-etcd-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki-etcd/#{f}"
+    end
+    etcd.vm.provision "shell", name: "etcd-install", inline: <<-'ETCD_INSTALL'
+  set -e
+  ETCD_VER="v3.6.16"
+  ETCD_SHA256="c8c0d96d8292ef085deabbf735e9561d3d396768e4d606df005aa25964f21911"
+  ETCD_URL="https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz"
+  if [ -x /usr/local/bin/etcd ] && /usr/local/bin/etcd --version 2>/dev/null | grep -q "^etcd Version: ${ETCD_VER#v}$"; then
+    echo "✅ etcd ${ETCD_VER} ya instalado"; exit 0
+  fi
+  echo "📦 Instalando etcd ${ETCD_VER} (binario oficial, sha256 fijado)..."
+  command -v curl > /dev/null || { apt-get update -qq; apt-get install -y curl; }
+  T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
+  curl -fsSL "$ETCD_URL" -o "$T/etcd.tgz"
+  GOT=$(sha256sum "$T/etcd.tgz" | awk '{print $1}')
+  [ "$GOT" = "$ETCD_SHA256" ] || { echo "❌ ETCD_INSTALL: sha256 ${GOT}, se exige ${ETCD_SHA256}"; exit 1; }
+  tar xzf "$T/etcd.tgz" -C "$T"
+  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcd"    /usr/local/bin/etcd
+  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcdctl" /usr/local/bin/etcdctl
+  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcdutl" /usr/local/bin/etcdutl
+  /usr/local/bin/etcd --version | grep -q "^etcd Version: ${ETCD_VER#v}$" || { echo "❌ ETCD_INSTALL: versión instalada inesperada"; exit 1; }
+  echo "✅ etcd $(/usr/local/bin/etcd --version | head -1 | awk '{print $3}') instalado (sha256 verificado)"
+    ETCD_INSTALL
+    etcd.vm.provision "shell", name: "etcd-local", inline: <<-'ETCD_LOCAL'
+      set -e
+      umask 077
+      echo "=== etcd VM: etcd 1 nodo (solo 127.0.0.1, TLS de cliente obligatorio) [ETCD-LOCAL-D312] ==="
+      id etcd > /dev/null 2>&1 || useradd --system --home-dir /var/lib/etcd --shell /usr/sbin/nologin etcd
+      install -d -m 0700 -o etcd -g etcd /var/lib/etcd
+      PKI_IN=/tmp/argus-pki-etcd
+      if [ -d "$PKI_IN" ]; then
+        install -d -m 0750 -o etcd -g etcd /etc/etcd/tls
+        install -m 0644 -o etcd -g etcd "$PKI_IN/ca.crt"   /etc/etcd/tls/ca.crt
+        install -m 0644 -o etcd -g etcd "$PKI_IN/etcd.crt" /etc/etcd/tls/etcd.crt
+        install -m 0600 -o etcd -g etcd "$PKI_IN/etcd.key" /etc/etcd/tls/etcd.key
+        rm -rf "$PKI_IN"
+      fi
+      for f in /etc/etcd/tls/ca.crt /etc/etcd/tls/etcd.crt /etc/etcd/tls/etcd.key /etc/argus-pki/etcd-server.crt /etc/argus-pki/etcd-server.key; do
+        [ -s "$f" ] || { echo "❌ etcd-local: falta $f"; exit 1; }
+      done
+      cat > /etc/etcd/etcd.conf.yml <<'YML'
+# [ETCD-LOCAL-D312] generado por el Vagrantfile; no editar a mano. Un nodo (PR1); el PR2 añade los peers.
+name: argus-etcd-1
+data-dir: /var/lib/etcd
+listen-client-urls: https://127.0.0.1:2381
+advertise-client-urls: https://127.0.0.1:2381
+listen-peer-urls: https://127.0.0.1:2382
+initial-advertise-peer-urls: https://127.0.0.1:2382
+initial-cluster: argus-etcd-1=https://127.0.0.1:2382
+initial-cluster-state: new
+initial-cluster-token: argus-lab
+client-transport-security:
+  cert-file: /etc/etcd/tls/etcd.crt
+  key-file: /etc/etcd/tls/etcd.key
+  trusted-ca-file: /etc/etcd/tls/ca.crt
+  client-cert-auth: true
+peer-transport-security:
+  cert-file: /etc/etcd/tls/etcd.crt
+  key-file: /etc/etcd/tls/etcd.key
+  trusted-ca-file: /etc/etcd/tls/ca.crt
+  client-cert-auth: true
+YML
+      chown root:etcd /etc/etcd/etcd.conf.yml; chmod 0640 /etc/etcd/etcd.conf.yml
+      cat > /etc/systemd/system/etcd.service <<'UNIT'
+[Unit]
+Description=etcd del lab (1 nodo, solo 127.0.0.1) [ETCD-LOCAL-D312]
+After=network-online.target
+Wants=network-online.target
+[Service]
+User=etcd
+Group=etcd
+ExecStart=/usr/local/bin/etcd --config-file /etc/etcd/etcd.conf.yml
+Restart=on-failure
+RestartSec=2
+LimitNOFILE=65536
+[Install]
+WantedBy=multi-user.target
+UNIT
+      systemctl daemon-reload
+      systemctl enable etcd
+      systemctl restart etcd
+      E="etcdctl --endpoints=https://127.0.0.1:2381 --cacert=/etc/etcd/tls/ca.crt --cert=/etc/argus-pki/etcd-server.crt --key=/etc/argus-pki/etcd-server.key"
+      ok=0; for i in $(seq 1 30); do if $E endpoint health > /dev/null 2>&1; then ok=1; break; fi; sleep 1; done
+      [ "$ok" = "1" ] || { echo "❌ etcd-local: etcd no responde en 30 s (ver journalctl -u etcd)"; exit 1; }
+      # RBAC: el CN del certificado es el usuario. etcd-server solo lee/escribe bajo /argus/; root sin contraseña y sin
+      # certificado CN=root emitido: nadie administra salvo que se emita uno a propósito.
+      # Sin auth, auth status lo puede pedir cualquiera; con auth, a etcd-server se le niega: las dos cosas dicen "activado".
+      AUTH=$($E auth status 2>&1 || true)
+      if ! echo "$AUTH" | grep -qE 'Authentication Status: true|permission denied'; then
+        echo "$AUTH" | grep -q 'Authentication Status: false' || { echo "❌ etcd-local: auth status inesperado"; exit 1; }
+        $E user get root > /dev/null 2>&1        || $E user add root --no-password > /dev/null
+        $E user grant-role root root > /dev/null
+        $E role get argus-rw > /dev/null 2>&1    || $E role add argus-rw > /dev/null
+        $E role grant-permission argus-rw readwrite /argus/ --prefix=true > /dev/null
+        $E user get etcd-server > /dev/null 2>&1 || $E user add etcd-server --no-password > /dev/null
+        $E user grant-role etcd-server argus-rw > /dev/null
+        $E auth enable > /dev/null
+        echo "✅ etcd-local: RBAC activado (etcd-server: readwrite /argus/; root sin certificado emitido)"
+      else
+        echo "✅ etcd-local: RBAC ya activado"
+      fi
+      echo "✅ etcd-local: $($E endpoint status -w json | python3 -c 'import sys,json; s=json.load(sys.stdin)[0]["Status"]; print("version=%s lider=%s" % (s["version"], "si" if s["leader"] == s["header"]["member_id"] else "no"))')"
+    ETCD_LOCAL
+    # [DEPLOY-SSH-D315] DEBT-ANSIBLE-DEPLOY-CONFIGS-001 paso 2a: usuario argus-deploy para Ansible/Jenkins desde el
+    # defender. authorized_keys = SOLO la pública que dejó el provisioner deploy-key del defender (se reemplaza, no se
+    # añade); sudo sin contraseña SOLO en el laboratorio (en producción, limitado a lo que se despliega); la huella de esta
+    # VM se publica para que el defender la verifique (StrictHostKeyChecking=yes, nada se acepta a ciegas). run: always:
+    # sigue a la clave del defender y a la huella de esta VM si cualquiera de las dos se rehace.
+    etcd.vm.provision "shell", name: "deploy-access", run: "always", inline: <<-'DEPLOY_ACCESS'
+      set -e
+      PUB=/vagrant/dist/deploy/argus_deploy_ed25519.pub
+      [ -s "$PUB" ] || { echo "❌ deploy-access: falta $PUB (antes, desde el Mac: vagrant provision defender --provision-with deploy-key)"; exit 1; }
+      grep -qE '^ssh-ed25519 [A-Za-z0-9+/=]+ argus-deploy@defender$' "$PUB" \
+        || { echo "❌ deploy-access: $PUB no es una clave ed25519 de argus-deploy@defender"; exit 1; }
+      id argus-deploy >/dev/null 2>&1 || useradd -m -s /bin/bash argus-deploy
+      install -d -m 0700 -o argus-deploy -g argus-deploy /home/argus-deploy/.ssh
+      install -m 0600 -o argus-deploy -g argus-deploy "$PUB" /home/argus-deploy/.ssh/authorized_keys
+      echo 'argus-deploy ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/argus-deploy
+      chmod 0440 /etc/sudoers.d/argus-deploy
+      visudo -cf /etc/sudoers.d/argus-deploy > /dev/null
+      echo "192.168.100.20 $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)" > /vagrant/dist/deploy/known_hosts_etcd
+      echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_etcd"
+    DEPLOY_ACCESS
+
+    # [ETCD-SERVER-UNIT-D317] DEBT-ETCD-HA-TLS-RAFT-001 paso 6a (decisión 5 de Alonso, DAY317): el etcd-server corre aquí como
+    # servicio systemd, junto a etcd y Vault. El binario y el JSON NO los pone Vagrant (el binario se compila en el defender
+    # tras bootstrap): los dejan d312_etcd_vm_deploy.sh y make deploy-configs. Sin ellos la unidad queda habilitada pero
+    # no arranca (ConditionPathExists): un up desde cero no falla antes del despliegue. run: always: la unidad sigue al
+    # Vagrantfile; si cambia, daemon-reload y reinicio solo si estaba activa. docs/ml-heads/day312_diseno.md, paso 6
+    etcd.vm.provision "shell", name: "etcd-server-unit", run: "always", inline: <<-'ETCD_SERVER_UNIT'
+      set -e
+      U=ml-defender-etcd-server.service
+      BIN=/opt/argus/etcd-server/bin/etcd-server
+      JSON=/etc/ml-defender/etcd-server/etcd-server.json
+      echo "=== etcd VM: etcd-server como servicio systemd [ETCD-SERVER-UNIT-D317] ==="
+      NUEVA=$(mktemp --suffix=.service)
+      cat > "$NUEVA" <<'UNIT'
+# [ETCD-SERVER-UNIT-D317] generado por el Vagrantfile; no editar a mano. docs/ml-heads/day312_diseno.md, paso 6
+[Unit]
+Description=aRGus etcd-server (fachada HTTPS + mTLS; registro en etcd, claves HMAC en Vault) [ETCD-SERVER-UNIT-D317]
+# [VAULT-ARRANQUE-D322] After (no Wants) del desellado: va ligado a vault.service. Con Wants, cada `systemctl start` del
+# aprovisionador lo arrastraba y tapaba que un Vault caído en el arranque se quedaba sellado (medido DAY322)
+After=network-online.target etcd.service vault.service argus-vault-unseal.service
+Wants=network-online.target etcd.service vault.service
+ConditionPathExists=/opt/argus/etcd-server/bin/etcd-server
+ConditionPathExists=/etc/ml-defender/etcd-server/etcd-server.json
+# Nunca se rinde: el pipeline necesita su etcd-server en cuanto pueda volver (sin límite de reinicios)
+StartLimitIntervalSec=0
+[Service]
+Type=simple
+User=root
+Group=root
+Environment=LD_PRELOAD=
+Environment=LD_LIBRARY_PATH=/opt/argus/etcd-server/lib
+ExecStart=/opt/argus/etcd-server/bin/etcd-server -c /etc/ml-defender/etcd-server/etcd-server.json
+Restart=always
+RestartSec=5s
+TimeoutStopSec=30s
+KillSignal=SIGTERM
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=ml-defender-etcd-server
+[Install]
+WantedBy=multi-user.target
+UNIT
+      # systemd-analyze verify da rc 0 con directivas mal escritas: se decide por la salida (sin binario aún, se tolera solo eso)
+      VER=$(systemd-analyze verify "$NUEVA" 2>&1 | grep -v -E "Command $BIN is not executable" || true)
+      [ -z "$VER" ] || { echo "$VER"; rm -f "$NUEVA"; echo "❌ etcd-server-unit: systemd-analyze verify (arriba)"; exit 1; }
+      CAMBIA=1
+      if [ -f "/etc/systemd/system/$U" ] && cmp -s "$NUEVA" "/etc/systemd/system/$U"; then CAMBIA=0; fi
+      install -m 0644 -o root -g root "$NUEVA" "/etc/systemd/system/$U"; rm -f "$NUEVA"
+      systemctl daemon-reload
+      systemctl enable "$U" > /dev/null 2>&1
+      systemctl is-enabled "$U" | grep -qx enabled || { echo "❌ etcd-server-unit: $U no quedó habilitada"; exit 1; }
+      if [ ! -x "$BIN" ] || [ ! -f "$JSON" ]; then
+        echo "✅ etcd-server-unit: $U instalada y habilitada; sin arrancar: falta $([ -x "$BIN" ] || echo "$BIN ")$([ -f "$JSON" ] || echo "$JSON ")(despliegue: make etcd-vm-deploy desde el Mac)"
+        exit 0
+      fi
+      # Otro proceso en el 2379 (p. ej. uno lanzado a mano con d313_es_vm.sh) haría fallar la unidad en bucle: se para aquí
+      if ! systemctl is-active --quiet "$U" && ss -ltnH 'sport = :2379' | grep -q .; then
+        ss -ltnpH 'sport = :2379'
+        echo "❌ etcd-server-unit: el 2379 lo ocupa otro proceso (arriba). Si es el de d313_es_vm.sh: bash /vagrant/scripts/etcd_ha/d313_es_vm.sh parar"
+        exit 1
+      fi
+      if [ "$CAMBIA" = 1 ] && systemctl is-active --quiet "$U"; then
+        systemctl restart "$U"; echo "etcd-server-unit: la unidad cambió; reiniciada"
+      else
+        systemctl start "$U"
+      fi
+      ok=0; for i in $(seq 1 30); do
+        if systemctl is-active --quiet "$U" && ss -ltnpH 'sport = :2379' | grep -q '"etcd-server"'; then ok=1; break; fi
+        sleep 1
+      done
+      [ "$ok" = 1 ] || { journalctl -u "$U" -n 20 --no-pager; echo "❌ etcd-server-unit: $U no escucha en 2379 a los 30 s (arriba el journal)"; exit 1; }
+      echo "✅ etcd-server-unit: $U activa, pid $(systemctl show -p MainPID --value "$U"), escucha $(ss -ltnH 'sport = :2379' | awk '{print $4}' | tr '\n' ' ')"
+    ETCD_SERVER_UNIT
+
+    # [PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (F-G, G-G): argus-infra, la herramienta que firma el manifiesto de
+    # protegidos (Vault transit) y lo publica en el etcd-server. Solo en la máquina del admin (D9); en el lab, esta VM
+    # (D11: Vault solo escucha en 127.0.0.1). Un fichero Python con la biblioteca estándar, desde el repo (es código, no
+    # un secreto). La configuración del lab (tools/argus-infra/argus-infra.lab.json) tiene que ser del hospital de
+    # group_vars. run: always: la herramienta y su configuración siguen al repo en cada vagrant provision.
+    etcd.vm.provision "shell", name: "argus-infra", run: "always", env: { "ARGUS_HOSPITAL_ID" => ARGUS_HOSPITAL_ID },
+      inline: <<-'ARGUS_INFRA'
+      set -e
+      echo "=== etcd VM: argus-infra (firma del manifiesto de protegidos) [PROTEGIDOS-MANIFIESTO-D319] ==="
+      SRC=/vagrant/tools/argus-infra
+      PY=/usr/bin/python3
+      [ -x "$PY" ] || { echo "❌ argus-infra: falta $PY"; exit 1; }
+      "$PY" -I -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' \
+        || { echo "❌ argus-infra: se exige Python >= 3.11 (hay $("$PY" --version 2>&1))"; exit 1; }
+      for f in argus-infra.py argus-infra.lab.json; do
+        [ -s "$SRC/$f" ] || { echo "❌ argus-infra: falta $SRC/$f"; exit 1; }
+      done
+      HJ=$("$PY" -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["hospital_id"])' "$SRC/argus-infra.lab.json")
+      [ "$HJ" = "$ARGUS_HOSPITAL_ID" ] \
+        || { echo "❌ argus-infra: argus-infra.lab.json es de '$HJ' y group_vars de '$ARGUS_HOSPITAL_ID'"; exit 1; }
+      install -m 0750 -o root -g root "$SRC/argus-infra.py" /usr/local/sbin/argus-infra
+      install -d -m 0750 -o root -g root /etc/argus-infra
+      install -m 0640 -o root -g root "$SRC/argus-infra.lab.json" /etc/argus-infra/argus-infra.json
+      /usr/local/sbin/argus-infra --check-config > /tmp/argus_infra_check.txt 2>&1 \
+        || { cat /tmp/argus_infra_check.txt; echo "❌ argus-infra: --check-config (arriba)"; exit 1; }
+      echo "✅ argus-infra: /usr/local/sbin/argus-infra (sha256 $(sha256sum /usr/local/sbin/argus-infra | cut -c1-16)), /etc/argus-infra/argus-infra.json, --check-config OK, $("$PY" --version 2>&1)"
+    ARGUS_INFRA
+
+    # [VIGILANCIA-D321] ADR-060 8e.4d (H-I): los sensores de la VM etcd, todo o nada cada uno y run: always (con todo ya
+    # puesto no cambian nada). Falco desde su apt firmado (provisioning/falco/VERSION) con las reglas de aRGus;
+    # argus-disco (uso del disco del audit de Vault); el agente de Wazuh (grupo argus-etcd: lo asigna el manager en
+    # make vigilancia-manager-deploy, provisioning/wazuh/argus/grupos.tsv).
+    etcd.vm.provision "shell", name: "falco", run: "always", inline: "bash /vagrant/scripts/vigilancia/falco_instalar.sh"
+    etcd.vm.provision "shell", name: "argus-disco", run: "always",
+      inline: "bash /vagrant/scripts/vigilancia/argus_disco_instalar.sh"
+    etcd.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "etcd"},
+      inline: WAZUH_AGENT_INSTALL
+
+  end  # End etcd VM
 
 end  # End Vagrant configuration

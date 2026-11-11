@@ -1,0 +1,34 @@
+{
+  "_doc": "[PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (G-A). Configuración de argus-infra del LABORATORIO: el Vagrantfile la instala en la VM etcd como /etc/argus-infra/argus-infra.json (0640 root). En producción la genera Jenkins desde la plantilla de despliegue certificada (D10). El JSON es la ley: argus-infra registra cada campo y de dónde sale; comprobar sin firmar: sudo argus-infra --check-config. hospital_id, plantas, limites, vault, etcd_server y tls NO tienen valor sano por defecto (la identidad de un hospital no se inventa): si falta uno o está mal, argus-infra no firma nada. timeout_s sí lo tiene (10, con [CONFIG-DEFAULT]). Campos que empiezan por _ = documentación.",
+  "hospital_id": "hospital-lab",
+  "_doc_hospital_id": "[a-z0-9-], de 1 a 64. El de ansible/inventory/group_vars (argus_hospital_id), el de etcd-server.json (protegidos.hospital_id) y el de cada firewall.json (protegidos.hospital_id).",
+  "plantas": ["lab-vagrant"],
+  "_doc_plantas": "Lista de 1 a 64 identificadores [a-z0-9-] distintos: los protegidos.despliegue_id de los firewalls de este hospital. Cada versión firmada trae una sección por planta (vacía si no tiene entradas propias).",
+  "limites": {
+    "_doc": "ADR-060 D2: el prefijo IPv4 más amplio que se puede firmar en cada categoría. infraestructura: exactamente 32 (solo hosts). intranet, dmz, externos_criticos: entero en [8, 32]. IPv6: solo /128 en cualquier categoría (D-I). Se firman en cada versión: los fija esta configuración, nunca la plantilla ni la versión anterior.",
+    "infraestructura": 32,
+    "intranet": 24,
+    "dmz": 24,
+    "externos_criticos": 32
+  },
+  "vault": {
+    "_doc": "Vault transit del hospital (8e.2). url: https://HOST:PUERTO (lab: solo escucha en 127.0.0.1). ca_file: CA que firmó el certificado de Vault. rol_login: el rol de auth/cert (argus-infra; token de 300 s atado a 127.0.0.1). montaje: el de transit (argus-transit). clave: protegidos-<hospital_id>, exactamente (D3: una clave por hospital).",
+    "url": "https://127.0.0.1:8200",
+    "ca_file": "/etc/vault.d/tls/ca.crt",
+    "rol_login": "argus-infra",
+    "montaje": "argus-transit",
+    "clave": "protegidos-hospital-lab"
+  },
+  "etcd_server": {
+    "_doc": "El etcd-server del hospital (GET y PUT /v1/protegidos, GET /v1/protegidos/v/{n}). Lab: en la misma VM; su certificado lleva IP:127.0.0.1, así que el tráfico no sale de la VM.",
+    "url": "https://127.0.0.1:2379",
+    "ca_file": "/etc/argus-pki/ca.crt"
+  },
+  "tls": {
+    "_doc": "Certificado de cliente de argus-infra (OU=argus-infra, ADR-060 D9 bis), el mismo para Vault y para el etcd-server. Rutas absolutas legibles por root. Producción: en una llave hardware (DEBT-FW-ARGUS-INFRA-LLAVE-HW-001).",
+    "cert_file": "/etc/argus-pki/argus-infra.crt",
+    "key_file": "/etc/argus-pki/argus-infra.key"
+  },
+  "timeout_s": 10,
+  "_doc_timeout_s": "Segundos de espera de cada petición HTTPS. Entero en [1, 120]; defecto 10 (ausente o mal formado: [CONFIG-DEFAULT] y se usa 10)."
+}

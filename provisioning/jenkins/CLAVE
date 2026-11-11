@@ -1,0 +1,7 @@
+# provisioning/jenkins/CLAVE — [JENKINS-CLAVE-D323] huella de la clave con la que Jenkins firma su repositorio apt
+# (https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key). scripts/vigilancia/lib_apt_oficial.sh descarga la clave y
+# SOLO la instala si todas sus claves principales están aquí.
+# Publicada por Jenkins: https://www.jenkins.io/changelog/2.543 (clave nueva desde la 2.543 y la LTS 2.541.1, enero de
+# 2026; la clave del repositorio caduca a los 3 años) y https://www.jenkins.io/blog/2025/12/23/repository-signing-keys-changing/.
+# Se mide en la descarga en la primera instalación (DAY323): repo_oficial la rechaza si no coincide.
+5E386EADB55F01504CAE8BCF7198F4B714ABFC68

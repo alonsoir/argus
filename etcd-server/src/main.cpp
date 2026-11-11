@@ -6,6 +6,13 @@
 
 #include "etcd_server/etcd_server.hpp"
 #include "etcd_server/secrets_manager.hpp"
+#include "etcd_server/etcd_server_config.hpp"
+#include "etcd_server/etcd_server_authz.hpp"
+#include "etcd_server/etcd_server_almacen.hpp"
+#include "etcd_server/etcd_registry_store.hpp"
+#include "etcd_server/etcd_server_claves.hpp"   // [ETCD-CLAVES-D314]
+#include "etcd_server/vault_secret_store.hpp"   // [ETCD-CLAVES-D314]
+#include "etcd_server/protegidos_servidor.hpp"   // [PROTEGIDOS-MANIFIESTO-D318]
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <csignal>
@@ -19,11 +26,11 @@
 #include <sodium.h>
 #include <sstream>
 #include "alert_client.hpp"
-#include <vault_client/http_etcd_registrar.h>
-#include <vault_client/crypto_epoch_coordinator.h>
 #include <iomanip>
 #include <cstdio>
 
+// [PROTEGIDOS-MANIFIESTO-D318] declarado ANTES que g_server: se destruye después (el servidor lo usa hasta pararse)
+std::unique_ptr<argus::protegidos::AlmacenProtegidos> g_protegidos;
 std::unique_ptr<EtcdServer> g_server;
 std::shared_ptr<etcd_server::SecretsManager> g_secrets_manager;
 
@@ -35,13 +42,136 @@ void signal_handler(int signal) {
     exit(0);
 }
 
-int main() {
+int main(int argc, char** argv) {
     // SET_TERMINATE — DAY 100 (ADR-022: fail-closed, unhandled exceptions)
     std::set_terminate([]() {
         std::cerr << "[FATAL] std::terminate() called — unhandled exception or contract violation\n";
         std::abort();
     });
     std::cout << "🚀 Iniciando etcd-server v0.3 - Day 54 Grace Period..." << std::endl;
+
+    // [ETCD-CONFIG-D312] -c/--config RUTA (defecto: la de siempre) y --check-config (lee y valida el JSON y sale:
+    // 0 sin defectos, 1 con alguno; los obsoletos solo avisan). El JSON es la ley: si no se puede leer, o un campo
+    // falta o está mal, se avisa ([CONFIG-DEFAULT]) y se usa el defecto validado.
+    std::string config_path = "/etc/ml-defender/etcd-server/etcd-server.json";
+    bool check_only = false;
+    for (int i = 1; i < argc; ++i) {
+        const std::string a = argv[i];
+        if ((a == "-c" || a == "--config") && i + 1 < argc) {
+            config_path = argv[++i];
+        } else if (a == "--check-config") {
+            check_only = true;
+        } else {
+            std::cerr << "Uso: etcd-server [-c|--config RUTA] [--check-config]" << std::endl;
+            return 2;
+        }
+    }
+    nlohmann::json root = nlohmann::json::object();
+    bool fichero_ok = false;
+    {
+        std::ifstream f(config_path);
+        if (!f.good()) {
+            std::cerr << "[CONFIG-DEFAULT] no se puede abrir " << config_path
+                      << ": se usan los defectos de todos los campos" << std::endl;
+        } else {
+            try {
+                root = nlohmann::json::parse(f);
+                fichero_ok = true;
+            } catch (const std::exception& e) {
+                std::cerr << "[CONFIG-DEFAULT] " << config_path << " no es JSON válido (" << e.what()
+                          << "): se usan los defectos de todos los campos" << std::endl;
+            }
+        }
+    }
+    const auto leida = argus::etcdcfg::parse_etcd_server_config(root);
+    const auto& cfg = leida.cfg;
+    // [ETCD-AUTHZ-D313] bloques tls y authz del mismo JSON
+    const auto leida_tls = argus::etcdcfg::parse_tls_config(root);
+    const auto& tls = leida_tls.cfg;
+    auto leida_authz = argus::etcdauthz::parse_authz(root);
+    // [ETCD-REGISTRO-D313] bloque almacen (etcd real | memoria de transición)
+    const auto leida_almacen = argus::etcdcfg::parse_almacen_config(root);
+    const auto& almacen_cfg = leida_almacen.cfg;
+    // [ETCD-CLAVES-D314] bloque almacen_claves (Vault | memoria de transición). Direcciones y certificados de Vault
+    // ausentes o mal formados en modo vault: [ETCD-VAULT-FATAL], no se arranca (decisión de Alonso DAY314)
+    const auto leida_claves = argus::etcdcfg::parse_almacen_claves_config(root);
+    const auto& claves_cfg = leida_claves.cfg;
+    // [PROTEGIDOS-MANIFIESTO-D318] bloque protegidos (hospital_id; sin defecto sano: ausente = 503 en /v1/protegidos)
+    const auto leida_protegidos = argus::protegidos::parse_protegidos_config(root, std::cerr, std::cout);
+    const int defectos = leida.defectos + leida_tls.defectos + leida_authz.defectos + leida_almacen.defectos +
+                         leida_claves.defectos + leida_protegidos.defectos;
+    if (defectos > 0) {
+        std::cerr << "[CONFIG-DEFAULT] " << defectos << " ajustes con valor por defecto en " << config_path
+                  << ": revisarlo" << std::endl;
+    }
+    // En mtls, los tres ficheros deben poder leerse: si no, el servidor no arranca ([ETCD-TLS-FATAL])
+    int tls_ilegibles = 0;
+    if (tls.modo == "mtls") {
+        for (const auto* r : {&tls.ca_file, &tls.cert_file, &tls.key_file}) {
+            std::ifstream f(*r, std::ios::binary);
+            if (!f.good() || f.peek() == std::ifstream::traits_type::eof()) {
+                std::cerr << "[ETCD-TLS-FATAL] no se puede leer " << *r << " (o está vacío)" << std::endl;
+                ++tls_ilegibles;
+            }
+        }
+    }
+    // En modo etcd, los certificados del almacén deben poder leerse; si no, el registro no estará disponible (503),
+    // pero el proceso arranca igual (no es TLS de servicio): aviso [ETCD-ALMACEN-FICHERO]
+    int almacen_ilegibles = 0;
+    // [ETCD-ALMACEN-FATAL-D315] con campos fatales no se miran los ficheros (las rutas pueden ser las de ejemplo)
+    const int almacen_fatales = static_cast<int>(leida_almacen.fatales.size());
+    if (almacen_cfg.modo == "etcd" && almacen_fatales == 0) {
+        for (const auto* r : {&almacen_cfg.ca_file, &almacen_cfg.cert_file, &almacen_cfg.key_file}) {
+            std::ifstream f(*r, std::ios::binary);
+            if (!f.good() || f.peek() == std::ifstream::traits_type::eof()) {
+                std::cerr << "[ETCD-ALMACEN-FICHERO] no se puede leer " << *r
+                          << " (o está vacío): el registro no estará disponible (503)" << std::endl;
+                ++almacen_ilegibles;
+            }
+        }
+    } else if (almacen_cfg.modo == "memoria") {
+        std::cerr << "[ETCD-ALMACEN-MEMORIA] almacen.modo=memoria: el registro vive solo en memoria y se pierde al "
+                     "reiniciar. Solo para el smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)" << std::endl;
+    }
+    // [ETCD-CLAVES-D314] en modo vault, los certificados para Vault deben poder leerse: si no, no hay claves nunca
+    // (error de configuración, no un fallo pasajero): fatal como los de TLS
+    int claves_ilegibles = 0;
+    if (claves_cfg.modo == "vault" && leida_claves.fatales.empty()) {
+        for (const auto* r : {&claves_cfg.ca_file, &claves_cfg.cert_file, &claves_cfg.key_file}) {
+            std::ifstream f(*r, std::ios::binary);
+            if (!f.good() || f.peek() == std::ifstream::traits_type::eof()) {
+                std::cerr << "[ETCD-VAULT-FATAL] no se puede leer " << *r << " (o está vacío): sin él no hay login en "
+                          << "Vault; no se arranca" << std::endl;
+                ++claves_ilegibles;
+            }
+        }
+    } else if (claves_cfg.modo == "memoria") {
+        std::cerr << "[ETCD-CLAVES-MEMORIA] almacen_claves.modo=memoria: las claves HMAC viven solo en memoria y se "
+                     "pierden al reiniciar. Solo para el smoke enterprise de emecas++ (DEBT-VAULT-ENTERPRISE-SMOKE-VM-001)" << std::endl;
+    }
+    const int claves_fatales = static_cast<int>(leida_claves.fatales.size()) + claves_ilegibles;
+    if (check_only) {
+        const bool limpio = fichero_ok && defectos == 0 && tls_ilegibles == 0 && almacen_ilegibles == 0 &&
+                            almacen_fatales == 0 && claves_fatales == 0;
+        std::cout << "[ETCD-CONFIG-CHECK] " << config_path << ": " << (limpio ? "OK" : "CON DEFECTOS")
+                  << " (defectos=" << defectos << ", obsoletos=" << leida.obsoletos << ", tls.modo=" << tls.modo
+                  << ", ficheros_tls_ilegibles=" << tls_ilegibles << ", almacen.modo=" << almacen_cfg.modo
+                  << ", ficheros_almacen_ilegibles=" << almacen_ilegibles << ", almacen_fatales=" << almacen_fatales
+                  << ", almacen_claves.modo=" << claves_cfg.modo
+                  << ", claves_fatales=" << claves_fatales << ")" << std::endl;
+        return limpio ? 0 : 1;
+    }
+
+    if (almacen_fatales > 0) {
+        std::cerr << "[ETCD-ALMACEN-FATAL] " << almacen_fatales << " problemas en almacen de " << config_path
+                  << ": el etcd-server no arranca (revisar con --check-config)" << std::endl;
+        return 1;
+    }
+    if (claves_fatales > 0) {
+        std::cerr << "[ETCD-VAULT-FATAL] " << claves_fatales << " problemas en almacen_claves de " << config_path
+                  << ": el etcd-server no arranca (revisar con --check-config)" << std::endl;
+        return 1;
+    }
 
     std::signal(SIGINT, signal_handler);
     std::signal(SIGTERM, signal_handler);
@@ -61,6 +191,9 @@ int main() {
         // DEBT-AUTONOMY-CRYPTO-INTEGRATION-001
         // etcd-server es el único publisher de autonomía en el nodo (Q1 DAY 155).
         // ═══════════════════════════════════════════════════════════
+        // [ETCD-CONFIG-D312] /run/argus ANTES del AutonomyPublisher: su socket ipc vive ahí. Si faltaba (VM etcd,
+        // DAY312) el arranque moría con "No such file or directory"; se creaba más abajo, tarde.
+        std::filesystem::create_directories("/run/argus");
         const std::string autonomy_endpoint = "ipc:///run/argus/autonomy.sock";
         ml_defender::common::AutonomyPublisher autonomy_pub(
             autonomy_endpoint, "etcd-server", 0
@@ -118,8 +251,6 @@ int main() {
         // Se borra tras g_server->start().
         const std::string bootstrap_path = "/run/argus/etcd-bootstrap-status.json";
         try {
-            std::filesystem::create_directories("/run/argus");
-
             // DEBT-BOOTSTRAP-STATUS-SIGNATURE-001 (DAY 157)
             // Construir JSON canónico a firmar (sin signature_hex, claves ordenadas)
             const std::string provider_str =
@@ -190,20 +321,21 @@ int main() {
         std::cout << "  Initializing SecretsManager (Day 54)" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        nlohmann::json config = {
-    		{"secrets", {
-        	{"grace_period_seconds", 300},
-        	{"rotation_interval_hours", 168},
-        	{"default_key_length_bytes", 32},
-        	{"min_rotation_interval_seconds", 300}  // AÑADIR (ADR-004)
-    	}}
-		};
-
-        g_secrets_manager = std::make_shared<etcd_server::SecretsManager>(config);
-
-        std::cout << "✅ SecretsManager inicializado correctamente" << std::endl;
-        std::cout << "   - Grace period: " << g_secrets_manager->get_grace_period_seconds() << "s" << std::endl;
-        std::cout << "   - Namespace: etcd_server::" << std::endl;
+        // [ETCD-CLAVES-D314] ventana de dos sobre el almacén de claves (Vault en la VM etcd; memoria solo en el smoke
+        // enterprise de emecas++). Los parámetros, del JSON (validado por argus::etcdcfg)
+        std::unique_ptr<argus::claves::ISecretStore> almacen_claves;
+        if (claves_cfg.modo == "vault") {
+            almacen_claves = std::make_unique<argus::claves::VaultSecretStore>(claves_cfg, std::cout);
+        } else {
+            almacen_claves = std::make_unique<argus::claves::MemoriaSecretStore>();
+        }
+        const etcd_server::SecretsConfig sec{cfg.grace_period_seconds, cfg.default_key_length_bytes,
+                                             cfg.min_rotation_interval_seconds};
+        g_secrets_manager = std::make_shared<etcd_server::SecretsManager>(
+            sec, std::move(almacen_claves), claves_cfg.modo == "memoria", claves_cfg.aviso_intervalo_s,
+            claves_cfg.sondeo_s);
+        g_secrets_manager->comprobar_al_arrancar();
+        g_secrets_manager->arrancar_monitor();
 
         // ═══════════════════════════════════════════════════════════
         // STEP 2: Initialize EtcdServer
@@ -213,13 +345,37 @@ int main() {
         std::cout << "  Initializing EtcdServer" << std::endl;
         std::cout << "═══════════════════════════════════════════════════════" << std::endl;
 
-        g_server = std::make_unique<EtcdServer>(2379);
-
-        // NOTA: set_secrets_manager espera etcd::SecretsManager*
-        // Esto puede causar incompatibilidad de tipos
-        // TODO Day 55: Actualizar EtcdServer para aceptar etcd_server::SecretsManager
-        // Por ahora, comentamos esta línea para que compile
+        std::unique_ptr<argus::almacen::IRegistryStore> almacen;
+        if (almacen_cfg.modo == "etcd") {
+            almacen = std::make_unique<argus::almacen::EtcdRegistryStore>(almacen_cfg);
+        } else {
+            almacen = std::make_unique<argus::almacen::MemoriaRegistryStore>();
+        }
+        g_server = std::make_unique<EtcdServer>(cfg, tls, std::move(leida_authz.reglas), almacen_cfg,
+                                                std::move(almacen), config_path);
         g_server->set_secrets_manager(g_secrets_manager.get());
+
+        // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3b: el manifiesto de protegidos, en el mismo etcd que el registro (su
+        // propio cliente) y verificado con la clave pública compilada (F-A, la misma que el firewall-acl-agent)
+        {
+            const auto& k = argus::protegidos::claves_protegidos_compiladas();
+            std::cout << "[PROTEGIDOS-CLAVE] actual huella=" << argus::protegidos::huella_clave_protegidos(k.actual)
+                      << (k.hay_siguiente ? " siguiente huella=" + argus::protegidos::huella_clave_protegidos(k.siguiente)
+                                          : std::string(" siguiente=ninguna"))
+                      << " (compiladas) hospital=" << (leida_protegidos.cfg.hospital_id.empty()
+                                                           ? std::string("SIN CONFIGURAR (503)")
+                                                           : leida_protegidos.cfg.hospital_id)
+                      << std::endl;
+            std::unique_ptr<argus::almacen::IRegistryStore> almacen_prot;
+            if (almacen_cfg.modo == "etcd") {
+                almacen_prot = std::make_unique<argus::almacen::EtcdRegistryStore>(almacen_cfg);
+            } else {
+                almacen_prot = std::make_unique<argus::almacen::MemoriaRegistryStore>();
+            }
+            g_protegidos = std::make_unique<argus::protegidos::AlmacenProtegidos>(
+                std::move(almacen_prot), k, leida_protegidos.cfg.hospital_id, std::cout);
+            g_server->set_protegidos(g_protegidos.get());
+        }
 
         if (!g_server->initialize()) {
             std::cerr << "❌ Error inicializando etcd-server" << std::endl;
@@ -230,60 +386,32 @@ int main() {
         std::cout << std::endl;
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 3: Display Available Endpoints
+        // STEP 3: Start Server ([ETCD-AUTHZ-D313] rutas y permisos: las líneas [ETCD-AUTHZ] de arriba)
         // ═══════════════════════════════════════════════════════════
-        std::cout << "🌐 Servidor HTTP escuchando en: http://0.0.0.0:2379" << std::endl;
-        std::cout << "📚 Endpoints disponibles:" << std::endl;
-        std::cout << "   POST /register      - Registrar componente" << std::endl;
-        std::cout << "   POST /unregister    - Desregistrar componente" << std::endl;
-        std::cout << "   GET  /components    - Listar componentes" << std::endl;
-        std::cout << "   GET  /config/*      - Obtener configuración" << std::endl;
-        std::cout << "   PUT  /config/*      - Actualizar configuración" << std::endl;
-        std::cout << "   GET  /seed          - Obtener seed de cifrado ChaCha20" << std::endl;
-        std::cout << "   GET  /validate      - Validar configuración global" << std::endl;
-        std::cout << "   GET  /health        - Estado del servidor" << std::endl;
-        std::cout << "   GET  /info          - Información del sistema" << std::endl;
-        std::cout << std::endl;
-        std::cout << "🔐 Secrets Endpoints (Day 54 - NEW):" << std::endl;
-        std::cout << "   (SecretsManager activo pero NO integrado aún con EtcdServer)" << std::endl;
-        std::cout << "   TODO Day 55: Integrar etcd_server::SecretsManager con EtcdServer" << std::endl;
-        std::cout << std::endl;
-
-        // ═══════════════════════════════════════════════════════════
-        // STEP 4: Start Server
-        // ═══════════════════════════════════════════════════════════
-        std::cout << "🚀 Starting HTTP server..." << std::endl;
-        std::cout << "💡 ChaCha20 seed encryption: ACTIVE (EtcdServer)" << std::endl;
-        std::cout << "💡 HMAC Grace Period: READY (etcd_server::SecretsManager)" << std::endl;
-        std::cout << "⚠️  SecretsManager NO integrado aún (namespace mismatch)" << std::endl;
-        std::cout << std::endl;
-
+        std::cout << "🌐 Escuchando en " << (tls.modo == "mtls" ? "https://" : "http://") << cfg.host << ":"
+                  << cfg.port << std::endl;
         g_server->start();
 
         // ═══════════════════════════════════════════════════════════
-        // STEP 4b: CryptoEpochCoordinator (ADR-045 v2 — DAY 164)
-        // Registra etcd-server en el servidor de configuración y
-        // observa /v1/epoch para coordinar rotaciones de época.
+        // STEP 4: registro y latido del propio etcd-server, EN PROCESO ([ETCD-AUTHZ-D313], decisión de Alonso DAY313)
+        // Antes: HttpEtcdRegistrar + CryptoEpochCoordinator contra sí mismo por HTTP (registro, latido cada 30 s y
+        // sondeo de /v1/epoch cada 2 s, cuyo callback solo escribía en el log). Con HTTPS ese bucle fallaba; ahora va
+        // directo a su ComponentRegistry y GET /components sigue mostrándolo. [ADR045-FUERA-D316] /v1/epoch, fuera.
         // ═══════════════════════════════════════════════════════════
-        const std::string etcd_server_url = "http://127.0.0.1:2379";
-        ml_defender::HttpEtcdRegistrar epoch_registrar(
-            etcd_server_url, "etcd-server",
-            /*keepalive_ms=*/30000,
-            /*poll_ms=*/2000);
-        std::this_thread::sleep_for(std::chrono::milliseconds(1500)); // esperar servidor listo
-        epoch_registrar.register_status(crypto_material, "etcd-server");
-        epoch_registrar.start_keepalive();
-
-        ml_defender::CryptoEpochCoordinator epoch_coordinator(
-            epoch_registrar, "etcd-server");
-        epoch_coordinator.start([&](uint16_t eid, const std::string& nb) {
-            std::cout << "[epoch] 🔄 Nueva época " << eid
-                      << " not_before=" << nb
-                      << " — handle.reload() pendiente FASE 3" << std::endl;
-            // FASE 3 (BACKLOG-CRYPTO-DUAL-KEY-ZMQ-001):
-            // handle.reload(CryptoProvider::create(new_cfg));
-        });
-        std::cout << "✅ CryptoEpochCoordinator arrancado (watch /v1/epoch)" << std::endl;
+        const std::string yo = nlohmann::json{
+            {"component", "etcd-server"},
+            {"key_version", crypto_material.key_version},
+            {"family", crypto_material.family},
+            {"started_with_cache", false}
+        }.dump();
+        if (g_server->register_component("etcd-server", yo)) {
+            std::cout << "✅ etcd-server registrado en proceso (sin red)" << std::endl;
+        } else {
+            std::cerr << "❌ etcd-server no se pudo registrar en proceso (almacén no disponible): se reintenta con "
+                         "cada latido" << std::endl;
+        }
+        auto last_self_heartbeat = std::chrono::steady_clock::now();
+        auto last_tls_warning = std::chrono::steady_clock::now();
 
         // Borrar bootstrap status — servidor activo y aceptando conexiones
         try {
@@ -296,17 +424,33 @@ int main() {
         bool   was_vault_healthy = true;
 
         // ── AlertClient (DEBT-ALERTING-EDGE-SOS-001) ─────────────────────────────
+        // [ETCD-CONFIG-D312] el mismo JSON ya leído (-c/--config), no una segunda lectura de una ruta fija
         argus::AlertClient alert_client([&]() -> nlohmann::json {
-            try {
-                std::ifstream f("/etc/ml-defender/etcd-server/etcd-server.json");
-                if (f.good()) return nlohmann::json::parse(f);
-            } catch (...) {}
+            if (root.is_object() && root.contains("alerting")) return root;
             return nlohmann::json{{"alerting", {{"enabled", false}}}};
         }());
         while (g_server->is_running()) {
             auto now     = std::chrono::steady_clock::now();
             auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(
                                now - last_vault_check).count();
+
+            // [ETCD-AUTHZ-D313] latido propio en proceso, cada heartbeat.interval_seconds
+            if (std::chrono::duration_cast<std::chrono::seconds>(now - last_self_heartbeat).count() >=
+                cfg.heartbeat_interval_seconds) {
+                // [ETCD-REGISTRO-D313] si el almacén no respondía al arrancar (o lo perdió), se vuelve a registrar
+                if (!g_server->update_heartbeat("etcd-server") && g_server->register_component("etcd-server", yo)) {
+                    std::cout << "✅ etcd-server registrado en proceso (reintento)" << std::endl;
+                }
+                last_self_heartbeat = now;
+            }
+            // [ETCD-AUTHZ-D313] en modo http, aviso periódico: que nadie lo olvide encendido
+            if (tls.modo != "mtls" &&
+                std::chrono::duration_cast<std::chrono::seconds>(now - last_tls_warning).count() >=
+                    tls.aviso_http_intervalo_s) {
+                std::cerr << "[ETCD-TLS-DESACTIVADO] sirviendo HTTP en claro sin autenticación en " << cfg.host << ":"
+                          << cfg.port << " (tls.modo=http, solo para el smoke enterprise de emecas++)" << std::endl;
+                last_tls_warning = now;
+            }
 
             if (elapsed >= 5) {
                 const bool healthy = crypto_provider->is_healthy();

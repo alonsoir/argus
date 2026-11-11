@@ -1,0 +1,26 @@
+<!--
+  provisioning/wazuh/argus/decoders/argus_decoders.xml — [VIGILANCIA-D321] ADR-060 8e.4d (H-I, H-J).
+  Decoders de aRGus para el wazuh-manager (los instala scripts/vigilancia/wazuh_manager_desplegar.sh en
+  /var/ossec/etc/decoders/). Las reglas que los usan están en ../rules/argus_rules.xml y cada una tiene su caso en
+  ../tests/casos_reglas.tsv (make test-vigilancia-reglas).
+  - argus-protegidos: las líneas [PROTEGIDOS-*] del log del firewall-acl-agent (sin cabecera syslog: el agente las
+    lee del fichero de log tal cual). argus_etiqueta = la etiqueta sin corchetes.
+  - argus-disco: la línea periódica de scripts/vigilancia/argus_disco.py (journald, identificador argus-disco).
+  Vault, ARGUS-SPOOF (kernel) y Falco no necesitan decoder propio: los dos primeros llegan por journald con cabecera
+  syslog (program_name) y Falco escribe JSON (decoder json de serie).
+-->
+<decoder name="argus-protegidos">
+  <prematch>^[PROTEGIDOS-</prematch>
+  <regex>^[(PROTEGIDOS-\S+)] </regex>
+  <order>argus_etiqueta</order>
+</decoder>
+
+<decoder name="argus-disco">
+  <program_name>^argus-disco$</program_name>
+</decoder>
+
+<decoder name="argus-disco-campos">
+  <parent>argus-disco</parent>
+  <regex>ARGUS-DISCO ruta=(\S+) uso=(\d+) umbral=(\d+) estado=(\w+)</regex>
+  <order>argus_ruta,argus_uso,argus_umbral,argus_estado</order>
+</decoder>

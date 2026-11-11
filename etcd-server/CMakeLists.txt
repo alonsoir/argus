@@ -156,9 +156,35 @@ set(SOURCES
         src/crypto_manager.cpp
         src/compression_lz4.cpp
         src/secrets_manager.cpp
-        ../common/http_etcd_registrar.cpp
-        ../common/crypto_epoch_coordinator.cpp
+        src/etcd_registry_store.cpp
+        src/vault_secret_store.cpp
+        src/protegidos_servidor.cpp   # [PROTEGIDOS-MANIFIESTO-D318] GET/PUT /v1/protegidos (ADR-060 8e.3b)
 )
+
+# ============================================================================
+# [PROTEGIDOS-MANIFIESTO-D318] ADR-060 F-A/F-B: el verificador del manifiesto de protegidos (libs/protegidos, estática,
+# compilada con las opciones de este binario) y la clave pública compilada, la misma que el firewall-acl-agent: -D o el
+# fichero que deja el bootstrap en el defender, donde se compilan los dos. Sin la clave actual no compila.
+# ============================================================================
+set(ARGUS_PROTEGIDOS_TESTS OFF CACHE BOOL "Tests de libs/protegidos (los corre el firewall-acl-agent)" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos ${CMAKE_CURRENT_BINARY_DIR}/libs-protegidos)
+
+# ============================================================================
+# ETCD-CPP-APIV3 v0.15.3 (gRPC + TLS hacia el etcd real) [ETCD-REGISTRO-D313]
+# Instalada por el Vagrantfile en /usr/local (sus dependencias: grpc++ y protobuf de Debian)
+# ============================================================================
+find_library(ETCD_CPP_API_LIB NAMES etcd-cpp-api PATHS /usr/local/lib NO_DEFAULT_PATH)
+find_path(ETCD_CPP_API_INCLUDE_DIR NAMES etcd/SyncClient.hpp PATHS /usr/local/include NO_DEFAULT_PATH)
+find_library(GRPCPP_LIB NAMES grpc++)
+find_library(PROTOBUF_LIB NAMES protobuf)
+if(ETCD_CPP_API_LIB AND ETCD_CPP_API_INCLUDE_DIR AND GRPCPP_LIB AND PROTOBUF_LIB)
+    message(STATUS "✅ Found etcd-cpp-apiv3: ${ETCD_CPP_API_LIB} (grpc++: ${GRPCPP_LIB})")
+else()
+    message(FATAL_ERROR "❌ etcd-cpp-apiv3 (v0.15.3), grpc++ o protobuf no encontrados
+    etcd-cpp-api: ${ETCD_CPP_API_LIB} / ${ETCD_CPP_API_INCLUDE_DIR}
+    grpc++: ${GRPCPP_LIB}  protobuf: ${PROTOBUF_LIB}
+    Fix: aprovisionamiento del Vagrantfile (etcd-cpp-apiv3 v0.15.3 en /usr/local)")
+endif()
 
 # ============================================================================
 # EXECUTABLE
@@ -179,6 +205,9 @@ target_compile_options(etcd-server
         -Wpedantic
 )
 target_compile_definitions(etcd-server PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
+# [ETCD-REGISTRO-D313] etcd-cpp-apiv3 se compiló con gRPC 1.51 (> 1.31) y por tanto con WITH_GRPC_CHANNEL_CLASS: quien
+# incluye sus cabeceras debe definirla igual (si no, SyncClient declara grpc_impl::ChannelArguments)
+target_compile_definitions(etcd-server PRIVATE WITH_GRPC_CHANNEL_CLASS)
 
 # ============================================================================
 # LINK LIBRARIES
@@ -188,11 +217,15 @@ target_link_libraries(etcd-server
         crypto_transport
         seed_client
         ${CRYPTO_PROVIDER_LIB}
+        argus_protegidos_clave   # [PROTEGIDOS-MANIFIESTO-D318] (arrastra argus_protegidos)
         sodium
         lz4
         ${OPENSSL_LIBRARIES}
         fmt
         curl
+        ${ETCD_CPP_API_LIB}
+        ${GRPCPP_LIB}
+        ${PROTOBUF_LIB}
 )
 
 # ============================================================================
@@ -202,6 +235,7 @@ target_include_directories(etcd-server
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_SOURCE_DIR}/../common/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/../libs/latido/include   # [LATIDO-DATOS-D321] regla única de los datos del latido
         ${CRYPTO_TRANSPORT_INCLUDE_DIR}
         ${SEED_CLIENT_INCLUDE_DIR}
         ${CRYPTO_PROVIDER_INCLUDE_DIR}
@@ -341,6 +375,58 @@ add_test(NAME test_autonomy_integration COMMAND test_autonomy_integration)
             OpenSSL::Crypto
             fmt
     )
+
+    # [ETCD-CONFIG-D312] lector de etcd-server.json (server/secrets/heartbeat): defectos, tipos, rangos, reglas, obsoletos
+    add_executable(test_etcd_server_config tests/test_etcd_server_config.cpp)
+    target_include_directories(test_etcd_server_config PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_link_libraries(test_etcd_server_config PRIVATE GTest::gtest_main)
+    add_test(NAME test_etcd_server_config COMMAND test_etcd_server_config)
+
+    # [ETCD-AUTHZ-D313] tls y authz de etcd-server.json: tabla, plantillas, CN/OU de certificados creados en el test,
+    # casos ambiguos, y que los defectos del código sean los que traen los JSON del repo
+    add_executable(test_etcd_server_authz tests/test_etcd_server_authz.cpp)
+    target_include_directories(test_etcd_server_authz PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_definitions(test_etcd_server_authz PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_etcd_server_authz PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_etcd_server_authz COMMAND test_etcd_server_authz)
+
+    # [ETCD-REGISTRO-D313] registro sobre el almacén: muerto/revivido, etcd no disponible (lectura de copia, escritura
+    # 503), recarga, época, nombres; con MemoriaRegistryStore y reloj inyectado (sin red)
+    add_executable(test_registro_componentes tests/test_registro_componentes.cpp)
+    target_include_directories(test_registro_componentes PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_definitions(test_registro_componentes PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_registro_componentes PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_registro_componentes COMMAND test_registro_componentes)
+
+    # [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): la regla única de los datos del latido (libs/latido) y lo que hace el
+    # registro con ellos (guardar, conservar al marcar muerto, rechazo sin perder el latido)
+    add_executable(test_latido_datos tests/test_latido_datos.cpp)
+    target_include_directories(test_latido_datos PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/../libs/latido/include)
+    target_link_libraries(test_latido_datos PRIVATE GTest::gtest_main OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_latido_datos COMMAND test_latido_datos)
+    # [ETCD-CLAVES-D314] almacen_claves de etcd-server.json (fatales en modo vault, rangos, JSON del repo) y ventana de
+    # dos del SecretsManager sobre MemoriaSecretStore con reloj inyectado (sin red): reinicio, rotación, caducidad,
+    # enfriamiento, almacén caído, CAS entre dos instancias, huella repetida, log sin claves
+    add_executable(test_almacen_claves tests/test_almacen_claves.cpp src/secrets_manager.cpp)
+    target_include_directories(test_almacen_claves PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
+    target_compile_definitions(test_almacen_claves PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_almacen_claves PRIVATE GTest::gtest_main Threads::Threads OpenSSL::SSL OpenSSL::Crypto)
+    add_test(NAME test_almacen_claves COMMAND test_almacen_claves)
+    # [PROTEGIDOS-MANIFIESTO-D318] GET/PUT del manifiesto de protegidos sobre MemoriaRegistryStore (sin red): publicar,
+    # versión no mayor, ya existe, firma, hospital, planta con duplicado, almacén caído, vigente que ya no verifica,
+    # sin configurar; histórico por versión (D319, 8e.3d-0); clave desechable generada en el test (ayudantes de
+    # libs/protegidos/tests)
+    add_executable(test_protegidos_servidor tests/test_protegidos_servidor.cpp src/protegidos_servidor.cpp)
+    target_include_directories(test_protegidos_servidor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos/tests ${LIBSODIUM_INCLUDE_DIRS})
+    target_compile_definitions(test_protegidos_servidor PRIVATE
+            ETCD_SERVER_CONFIG_DIR="${CMAKE_CURRENT_SOURCE_DIR}/config")
+    target_link_libraries(test_protegidos_servidor PRIVATE GTest::gtest_main argus_protegidos sodium)
+    add_test(NAME test_protegidos_servidor COMMAND test_protegidos_servidor)
     # target_include_directories(test_hmac_integration
     #         PRIVATE
     #         ${CMAKE_CURRENT_SOURCE_DIR}/include

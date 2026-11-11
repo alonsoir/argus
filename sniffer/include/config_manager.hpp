@@ -206,19 +206,10 @@ struct TransportConfig {
     EncryptionConfig encryption;
 };
 
-// etcd configuration
+// etcd configuration. [ETCD-CLIENTE-D316] F1: el bloque "etcd" se guarda tal cual (texto JSON) y lo lee y valida
+// etcd_client::leer_bloque_etcd() al arrancar, igual que en ml-detector y firewall. Vacío = el JSON no lo trae.
 struct EtcdConfig {
-    bool enabled;
-    std::vector<std::string> endpoints;
-    int connection_timeout_ms;
-    int retry_attempts;
-    int retry_interval_ms;
-    std::string crypto_token_path;
-    std::string config_sync_path;
-    bool required_for_encryption;
-    std::string fallback_mode;
-    int heartbeat_interval_seconds;
-    int lease_ttl_seconds;
+    std::string bloque_json;
 };
 
 // Monitoring configuration

@@ -94,12 +94,9 @@ namespace sniffer {
 
     RingBufferConsumer::RingBufferConsumer(
     const SnifferConfig& config,
-    const FastDetectorConfig& fast_detector_config,
-    const std::string& /*encryption_seed*/)
+    const FastDetectorConfig& fast_detector_config)
     : config_(config)
     , fast_detector_config_(fast_detector_config)
-    // DEPRECATED DAY 98 — encryption_seed ignorado, SeedClient lee desde /etc/ml-defender/sniffer/sniffer.json
-    // , encryption_seed_(encryption_seed)
     , ring_buf_(nullptr)
         , ring_fd_(-1)
         , active_consumers_(0)

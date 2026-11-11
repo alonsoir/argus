@@ -133,6 +133,16 @@ message(STATUS "✅ LZ4 found: ${LZ4_VERSION}")
 include_directories(${LZ4_INCLUDE_DIRS})
 
 # ============================================================================
+# [PROTEGIDOS-MANIFIESTO-D318] ADR-060 F-B: verificador del manifiesto de protegidos y rangos en libs/protegidos,
+# compartido con el etcd-server. Estática y compilada aquí con las opciones de este binario (ver su CMakeLists.txt).
+# ============================================================================
+option(BUILD_TESTS "Build unit tests" ON)
+set(ARGUS_PROTEGIDOS_TESTS ${BUILD_TESTS} CACHE BOOL "Tests de libs/protegidos" FORCE)
+add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos ${CMAKE_CURRENT_BINARY_DIR}/libs-protegidos)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../libs/protegidos/include)
+
+
+# ============================================================================
 # etcd-client Library (Custom)
 # ============================================================================
 set(ETCD_CLIENT_LIB /vagrant/etcd-client/build/libetcd_client.so)
@@ -186,6 +196,7 @@ set(FIREWALL_CORE_SOURCES
         src/core/etcd_client.cpp
         src/core/autonomy_reactor.cpp
         src/core/autonomy_subscriber.cpp
+        src/core/clave_csv.cpp           # [FW-CSV-CLAVE-B2-D316] clave HMAC del CSV pedida cada intervalo
         # src/core/acl_intelligence.cpp     # TODO: Phase 2+
 )
 
@@ -251,6 +262,9 @@ target_include_directories(firewall_core
         /usr/local/include
 )
 
+# [PROTEGIDOS-MANIFIESTO-D318] verificador del manifiesto y clave pública compilada (libs/protegidos, ADR-060)
+target_link_libraries(firewall_core PUBLIC argus_protegidos argus_protegidos_clave)
+
 #===----------------------------------------------------------------------===//
 # Main Executable (Day 50: Enhanced)
 #===----------------------------------------------------------------------===//
@@ -310,10 +324,8 @@ install(FILES systemd/firewall-acl-agent.service
 )
 
 #===----------------------------------------------------------------------===//
-# Testing
+# Testing (BUILD_TESTS se declara arriba, con libs/protegidos)
 #===----------------------------------------------------------------------===//
-
-option(BUILD_TESTS "Build unit tests" ON)
 
 if(BUILD_TESTS)
     enable_testing()
@@ -333,6 +345,7 @@ if(BUILD_TESTS)
     set(TEST_SOURCES
             tests/unit/test_ipset_is_valid_ip.cpp
             tests/unit/test_logger.cpp
+            tests/unit/test_clave_csv.cpp   # ← [FW-CSV-CLAVE-B2-D316]
             tests/unit/test_config_loader_traversal.cpp
             tests/unit/test_config_loader_setname.cpp
             tests/unit/test_set_name_validator.cpp
@@ -402,19 +415,13 @@ if(BUILD_TESTS)
     target_include_directories(test_ip_cidr_validator
             PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include
+            ${CMAKE_CURRENT_SOURCE_DIR}/../common/include  # [PROTEGIDOS-MANIFIESTO-D318] argus/ip_cidr_validator.hpp
     )
     add_test(NAME test_ip_cidr_validator COMMAND test_ip_cidr_validator)
 
-    # test_ddos_protegidos — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
-    add_executable(test_ddos_protegidos
-            tests/unit/test_ddos_protegidos.cpp
-    )
-    target_include_directories(test_ddos_protegidos
-            PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/include
-    )
-    add_test(NAME test_ddos_protegidos COMMAND test_ddos_protegidos)
-# [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_ddos_protegidos)
+    # [PROTEGIDOS-MANIFIESTO-D318] test_protegidos_rangos, _manifiesto y _claves viven en libs/protegidos
+    # (ARGUS_PROTEGIDOS_TESTS = BUILD_TESTS)
+# [DDOS-MITIGACION-D301] test de la mitigacion ddos_v2 (mismo patron que test_protegidos_rangos)
     # test_ddos_mitigacion — DAY300, rangos protegidos de la cabeza DDoS (header-only, CHECK propio) [PROTEGIDOS-D300]
     add_executable(test_ddos_mitigacion
             tests/unit/test_ddos_mitigacion.cpp
@@ -491,6 +498,69 @@ add_test(NAME test_autonomy_e2e COMMAND test_autonomy_e2e)
     )
     add_test(NAME test_argus_cadena_root COMMAND test_argus_cadena_root)
     set_tests_properties(test_argus_cadena_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
+
+    # [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a: el vigía kernel <-> manifiesto. Parte pura (sin root) y contra el
+    # kernel (requiere root; sin root sale 77 = Skipped).
+    add_executable(test_protegidos_vigia
+        tests/unit/test_protegidos_vigia.cpp
+    )
+    target_include_directories(test_protegidos_vigia PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_vigia PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_vigia COMMAND test_protegidos_vigia)
+
+    add_executable(test_protegidos_vigia_root
+        tests/unit/test_protegidos_vigia_root.cpp
+    )
+    target_include_directories(test_protegidos_vigia_root PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_vigia_root PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_vigia_root COMMAND test_protegidos_vigia_root)
+    set_tests_properties(test_protegidos_vigia_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
+
+    # [PROTEGIDOS-ANTISPOOF-D320] ADR-060 D8, 8e.4b: antispoofing en raw PREROUTING. Parte pura (sin root) y contra el
+    # kernel con netns + veth (requiere root y hash:ip,mac; si falta alguno sale 77 = Skipped, que el gate e2e cuenta).
+    add_executable(test_protegidos_antispoof
+        tests/unit/test_protegidos_antispoof.cpp
+    )
+    target_include_directories(test_protegidos_antispoof PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_antispoof PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_antispoof COMMAND test_protegidos_antispoof)
+
+    # [PROTEGIDOS-RP-FILTER-D321] ADR-060 H-F (8e.4c): rp_filter leído e informado, con un /proc falso
+    add_executable(test_protegidos_rp_filter
+        tests/unit/test_protegidos_rp_filter.cpp
+    )
+    target_include_directories(test_protegidos_rp_filter PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+    )
+    add_test(NAME test_protegidos_rp_filter COMMAND test_protegidos_rp_filter)
+
+    add_executable(test_protegidos_antispoof_root
+        tests/unit/test_protegidos_antispoof_root.cpp
+    )
+    target_include_directories(test_protegidos_antispoof_root PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/include
+        ${CMAKE_CURRENT_SOURCE_DIR}/src/core
+    )
+    target_link_libraries(test_protegidos_antispoof_root PRIVATE
+        firewall_core
+    )
+    add_test(NAME test_protegidos_antispoof_root COMMAND test_protegidos_antispoof_root)
+    set_tests_properties(test_protegidos_antispoof_root PROPERTIES LABELS "e2e;root" SKIP_RETURN_CODE 77)
 
     # test_recidivism_e2e — RECIDIVISM-D276 (INTEGRACION, requiere root+ipset -> VM, no make test normal)
     add_executable(test_recidivism_e2e

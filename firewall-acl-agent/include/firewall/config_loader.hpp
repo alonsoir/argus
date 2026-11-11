@@ -10,7 +10,7 @@
 #include <chrono>
 #include <json/json.h>
 #include "firewall/ddos_shadow_policy.hpp"  // [DDOS-SHADOW-D293]
-#include "firewall/ddos_protegidos.hpp"  // [PROTEGIDOS-D300]
+#include "protegidos/rangos.hpp"  // [PROTEGIDOS-D300]
 
 namespace mldefender::firewall {
 
@@ -137,14 +137,10 @@ struct LoggingConfigNew {
     //===----------------------------------------------------------------------===//
     // Etcd Configuration
     //===----------------------------------------------------------------------===//
+    // [ETCD-CLIENTE-D316] F1: el bloque "etcd" tal cual (texto JSON); lo lee y valida etcd_client::leer_bloque_etcd()
+    // al arrancar, igual que en sniffer y ml-detector. Vacío = el JSON no lo trae.
     struct EtcdConfig {
-        bool enabled = false;
-        std::vector<std::string> endpoints;
-        int connection_timeout_ms = 5000;
-        int retry_attempts = 3;
-        int retry_interval_ms = 1000;
-        int heartbeat_interval_seconds = 30;
-        int lease_ttl_seconds = 60;
+        std::string bloque_json;
     };
 
     //===----------------------------------------------------------------------===//
@@ -192,6 +188,31 @@ struct IrpConfig {
         std::string zmq_endpoint = "ipc:///run/argus/autonomy.sock";
     };
 
+    // [PROTEGIDOS-ANTISPOOF-D320] ADR-060 8e.4b: antispoofing en raw PREROUTING generado desde el manifiesto.
+    struct AntispoofConfig {
+        std::string cadena = "ARGUS_ANTISPOOF";          // raw; [A-Za-z0-9_-], 1 a 24 (las de spoofing: _IF y _MAC)
+        std::string set_redes = "ml_defender_prot_redes";  // hash:net, redes protegidas con su ruta comprobada
+        std::string set_ips_mac = "ml_defender_prot_ipmac";  // hash:ip, las /32 que llevan MAC
+        std::string set_mac = "ml_defender_prot_mac";      // hash:ip,mac
+        int log_por_minuto = 5;  // [1, 600]: muestras de evidencia (LOG) por minuto y cadena
+        int log_rafaga = 5;      // [1, 100]: ráfaga inicial de esas muestras
+        bool valido = true;      // false: nombres que chocan entre sí o con protegidos.set_name (no se instala)
+        std::string motivo_invalido;
+    };
+
+    // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 sección 6: el manifiesto firmado de protegidos de ESTE firewall.
+    struct ProtegidosConfig {
+        std::string hospital_id;    // [a-z0-9-]{1,64}; sin defecto: vacío = sin manifiesto (candado cerrado) y aviso
+        std::string despliegue_id;  // la planta; igual que hospital_id
+        std::string set_name = "ml_defender_protegidos";  // set hash:net,iface; 1 a 29 (el temporal añade _n)
+        std::string manifiesto_cache = "/var/lib/ml-defender/firewall/protegidos.manifiesto";
+        int aviso_sec = 300;        // [30, 86400]: avisos periódicos y nueva verificación de la caché (D7)
+        int consulta_sec = 30;      // [5, 3600]: cada cuánto se pide el manifiesto al etcd-server (8e.3c, F-E)
+        int comprobacion_kernel_sec = 30;  // [5, 3600]: vigía kernel <-> manifiesto (8e.4a, D8) [PROTEGIDOS-VIGIA-D320]
+        AntispoofConfig antispoof;         // [PROTEGIDOS-ANTISPOOF-D320] 8e.4b
+        std::vector<std::string> etcd_endpoints;  // copia de etcd.endpoints para D-C (solo lectura)
+    };
+
 //===----------------------------------------------------------------------===//
 // MAIN CONFIGURATION STRUCTURE
 //===----------------------------------------------------------------------===//
@@ -199,7 +220,7 @@ struct FirewallAgentConfig {
     OperationConfig operation;
     ZMQConfigNew zmq;
     IPSetConfigNew ipset;
-    std::map<std::string, IPSetConfigNew> ipsets;  // Multiple ipsets (blacklist, whitelist)
+    std::map<std::string, IPSetConfigNew> ipsets;  // blacklist (el de protegidos lo crea el agente: ADR-060)
     IPTablesConfigNew iptables;
     BatchProcessorConfigNew batch_processor;
     RecidivismConfigNew recidivism;   // RECIDIVISM-D276
@@ -211,8 +232,10 @@ struct FirewallAgentConfig {
     IrpConfig irp;                           // ADR-042 auto-isolate
     AutonomyConfig autonomy;   // DAY 155 — DEBT-FIREWALL-DENY-SELECTIVE-001
     DdosShadowParams ddos_shadow;  // [DDOS-SHADOW-D293] política por víctima en sombra
-    ::mldefender::firewall::RangosProtegidos ddos_protegidos;  // [PROTEGIDOS-D300] rangos protegidos de la cabeza DDoS
+    ProtegidosConfig protegidos;  // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 (sustituye a ddos_protegidos)
     ::mldefender::firewall::DdosMitigacionParams ddos_mitigacion;  // [DDOS-MITIGACION-B1-D301] mitigacion real de ddos_v2
+    // [FW-CSV-CLAVE-B2-D316] cada cuánto se pide la clave HMAC del CSV al etcd-server; entero [10, 3600], defecto 60
+    int hmac_key_check_interval_seconds = 60;
 
 
     bool is_valid() const { return true; }

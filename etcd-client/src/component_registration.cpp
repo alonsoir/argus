@@ -3,6 +3,7 @@
 #include <nlohmann/json.hpp>
 #include <iostream>
 #include <chrono>
+#include <map>
 
 using json = nlohmann::json;
 
@@ -33,8 +34,8 @@ std::string build_registration_payload(const Config& config) {
     return payload.dump();
 }
 
-    // Build heartbeat JSON payload
-    std::string build_heartbeat_payload(const Config& /*config*/) {
+    // Build heartbeat JSON payload. [LATIDO-DATOS-D321] con "datos" solo si el componente puso alguno
+    std::string build_heartbeat_payload(const Config& /*config*/, const std::map<std::string, std::int64_t>& datos) {
     // Get timestamp in SECONDS (not milliseconds)
     auto now = std::chrono::system_clock::now();
     auto duration = now.time_since_epoch();
@@ -44,6 +45,11 @@ std::string build_registration_payload(const Config& config) {
         {"timestamp", timestamp_seconds},  // ✅ SEGUNDOS (unix timestamp)
         {"status", "active"}
     };
+    if (!datos.empty()) {
+        json d = json::object();
+        for (const auto& [k, v] : datos) d[k] = v;
+        payload["datos"] = d;
+    }
 
     return payload.dump();
 }

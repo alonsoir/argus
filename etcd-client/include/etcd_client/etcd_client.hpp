@@ -7,6 +7,7 @@
 #include <functional>
 #include <cstdint>
 #include <nlohmann/json.hpp>  // ← Include completo, no forward declaration
+#include <ostream>
 
 namespace etcd_client {
 
@@ -21,22 +22,30 @@ struct ComponentInfo {
 
 // Service discovery paths (Day 59 - Service Discovery)
 // etcd-server owns path topology and tells components where to find resources
+// [ETCD-B4-D315] con el nombre completo del componente (= CN del certificado); sin crypto_token (el etcd-server no tiene
+// ninguna ruta /crypto: era un dato muerto que además hacía falta para is_valid())
 struct ServicePaths {
-    std::string hmac_key;      // e.g., "/secrets/firewall"
-    std::string crypto_token;  // e.g., "/crypto/firewall/tokens"
-    std::string config;        // e.g., "/config/firewall"
+    std::string hmac_key;      // e.g., "/secrets/firewall-acl-agent"
+    std::string config;        // e.g., "/config/firewall-acl-agent"
 
     // Helper to check if paths were received from etcd-server
     bool is_valid() const {
-        return !hmac_key.empty() && !crypto_token.empty() && !config.empty();
+        return !hmac_key.empty() && !config.empty();
     }
 };
-// Configuration structure (loaded from JSON)
+// Configuración del cliente. [ETCD-CLIENTE-D316] DEBT-ETCD-HA-TLS-RAFT-001 paso 5: HTTPS con certificado de cliente y
+// lista de direcciones del etcd-server. Los componentes no la rellenan a mano: la construye leer_bloque_etcd() desde
+// el bloque "etcd" de su JSON (F1, un solo lector para los tres). Los defectos de aquí son los mismos que trae el JSON.
 struct Config {
-    // Server settings
-    std::string host = "127.0.0.1";
-    int port = 2379;
-    int timeout_seconds = 5;
+    // etcd-server: lista de https://<host>:<puerto> (1-7, sin repetir). Se usa la primera que responde; si una deja de
+    // responder (o da 5xx) se pasa a la siguiente. Sin defecto: la rellena el aprovisionamiento.
+    std::vector<std::string> endpoints;
+    std::string ca_file;    // CA que firma el certificado del etcd-server
+    std::string cert_file;  // certificado de cliente del componente (CN = nombre del componente)
+    std::string key_file;   // su clave privada
+    int connection_timeout_ms = 5000;  // [100, 60000]
+    int retry_attempts = 3;            // intentos por dirección, [1, 10]
+    int retry_interval_ms = 1000;      // espera entre intentos, [100, 60000]
 
     // Component identity
     std::string component_name;
@@ -53,17 +62,36 @@ struct Config {
 
     // Heartbeat settings
     bool heartbeat_enabled = true;
-    int heartbeat_interval_seconds = 30;
+    int heartbeat_interval_seconds = 30;  // [5, 300]
+};
 
-    // Retry settings
-    int max_retry_attempts = 3;
-    int retry_backoff_seconds = 2;
+// [ETCD-CLIENTE-D316] F1: lector único del bloque "etcd" del JSON de un componente. El JSON es la ley: cada campo se
+// registra en `log` con su valor y su origen ([CONFIG] ... (JSON) o [CONFIG-DEFAULT] ... con campo, formato y límites).
+// endpoints, ca_file, cert_file y key_file no tienen defecto (los rellena el aprovisionamiento, D1): si faltan o están
+// mal formados van a `fatales` con [ETCD-CLIENTE-FATAL] y el componente se queda sin etcd (qué hace entonces el proceso
+// lo decide cada componente). Los campos que ya no se usan dan [CONFIG-OBSOLETO].
+struct LecturaBloque {
+    Config config;
+    std::vector<std::string> fatales;  // una línea por campo fatal; vacía = se puede hablar con el etcd-server
+    int defectos = 0;
+    int obsoletos = 0;
+};
+LecturaBloque leer_bloque_etcd(const nlohmann::json& bloque, std::ostream& log);
+// Igual, desde el texto JSON del bloque (para los componentes que leen su JSON con jsoncpp)
+LecturaBloque leer_bloque_etcd(const std::string& bloque_json, std::ostream& log);
 
-    // Load from JSON file
-    static Config from_json_file(const std::string& json_path);
-
-    // Load from JSON object
-    static Config from_json(const nlohmann::json& j);
+// [ETCD-CLIENTE-B1-D316] G2: un bloque etcd con campos fatales no para el proceso. Mientras viva este objeto se repite
+// cada intervalo_s «[ETCD-CLIENTE-FATAL] <CN>: bloque etcd con <n> campos fatales ...; el componente sigue sin etcd».
+// Igual en los tres componentes.
+class AvisoBloqueFatal {
+public:
+    AvisoBloqueFatal(std::string componente, size_t fatales, int intervalo_s = 30);
+    ~AvisoBloqueFatal();
+    AvisoBloqueFatal(const AvisoBloqueFatal&) = delete;
+    AvisoBloqueFatal& operator=(const AvisoBloqueFatal&) = delete;
+private:
+    struct Impl;
+    std::unique_ptr<Impl> pImpl;
 };
 
 // Main EtcdClient class
@@ -71,9 +99,6 @@ class EtcdClient {
 public:
     // Constructor with config object
     explicit EtcdClient(const Config& config);
-
-    // Constructor with JSON file path
-    explicit EtcdClient(const std::string& config_json_path);
 
     // Destructor
     ~EtcdClient();
@@ -90,19 +115,17 @@ public:
     // Connection Management
     // ========================================================================
 
+    // [ETCD-CLIENTE-B1-D316] connect(): una comprobación de /health (ya no condiciona nada). is_connected(): registrado
+    // y latiendo. disconnect(): para el mantenedor.
     bool connect();
     bool is_connected() const;
     void disconnect();
-
-    // ========================================================================
-    // Key-Value Operations
-    // (encryption/compression applied automatically based on config)
-    // ========================================================================
-
-    bool set(const std::string& key, const std::string& value);
-    std::string get(const std::string& key);
-    bool del(const std::string& key);
-    std::vector<std::string> list_keys(const std::string& prefix = "");
+    // [ETCD-CLIENTE-B1-D316] G1-G3 (DAY316): arranca el hilo mantenedor y vuelve enseguida. Cada
+    // heartbeat_interval_seconds: registrado, latido; sin servicio, intenta registrarse (o reanudar el latido si el
+    // registro se conservó). En cada registro sube el JSON de ruta_config (el de arranque del proceso) con
+    // _registration.type = tipo. Logs: [ETCD-CLIENTE-MANTENEDOR], -REGISTRADO, -SIN-SERVICIO, -REANUDADO,
+    // -REGISTRO-PERDIDO, -CONFIG-NO-SUBIDA, -BAJA (al destruirse, si estaba registrado).
+    void iniciar(const std::string& ruta_config, const std::string& tipo);
 
     // ========================================================================
     // Component Discovery & Registration
@@ -117,6 +140,12 @@ public:
     // Send heartbeat (called automatically if heartbeat_enabled)
     bool heartbeat();
 
+    // [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): dato genérico que viaja en cada latido ("datos": {clave: valor}) y el
+    // etcd-server guarda en latido/<CN>. Regla única (libs/latido/datos_latido.hpp): clave ^[a-z][a-z0-9_]{0,31}$,
+    // valor entero en [0, 2^53 - 1], como mucho 8 claves. Si no vale, no se guarda, devuelve false y lo dice
+    // [ETCD-CLIENTE-LATIDO-DATO]. Seguro entre hilos; O(datos). Un cambio de valor sale en el log una vez.
+    bool poner_dato_latido(const std::string& clave, std::int64_t valor);
+
     // Get info about a component
     ComponentInfo get_component_info(const std::string& name);
 
@@ -128,22 +157,8 @@ public:
     ServicePaths get_service_paths() const;
 
     // ========================================================================
-    // Config Management (Master + Active copies for rollback)
+    // Config Management
     // ========================================================================
-
-    // Save master config (immutable, original)
-    bool save_config_master(const std::string& config_json);
-
-    // Save active config (mutable, working copy)
-    bool save_config_active(const std::string& config_json);
-
-    // Get master config
-    std::string get_config_master();
-
-    // Get active config
-    std::string get_config_active();
-
-    std::string get_component_config(const std::string& component_name);
 
     /**
      * Upload configuration to etcd-server
@@ -152,9 +167,6 @@ public:
      * @return true if successful, false otherwise
      */
     bool put_config(const std::string& json_config);
-
-    // Rollback active to master
-    bool rollback_config();
 
     // ========================================================================
     // Encryption Key Management (handled automatically by library)
@@ -165,9 +177,6 @@ public:
 
     // Check if encryption key is available
     bool has_encryption_key() const;
-
-    // Get current encryption key (hex format)
-    std::string get_encryption_key() const;
 
     // ========================================================================
     // HMAC Utilities (Day 53 - Log Integrity)
@@ -189,6 +198,11 @@ public:
      *   }
      */
     std::optional<std::vector<uint8_t>> get_hmac_key(const std::string& key_path);
+
+    // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3c: GET /v1/protegidos (mismo transporte mTLS y conmutación de direcciones).
+    // Devuelve el status HTTP (0 = ningún etcd-server respondió) y, con 200, el sobre tal cual en cuerpo; si no, el
+    // error o la respuesta del servidor. No interpreta nada: verifica el firewall.
+    int get_protegidos(std::string& cuerpo);
 
     /**
      * @brief Compute HMAC-SHA256 over data
@@ -256,106 +270,5 @@ private:
     struct Impl;
     std::unique_ptr<Impl> pImpl;
 };
-
-// ============================================================================
-// HTTP Client Namespace (Internal - used by library implementation)
-// ============================================================================
-// These functions are used internally by the etcd_client library for
-// communication with etcd-server. They are exposed here because some tests
-// need direct access to them.
-// ============================================================================
-
-namespace http {
-
-/**
- * @brief HTTP Response structure
- */
-struct Response {
-    int status_code = 0;
-    std::string body;
-    bool success = false;
-};
-
-/**
- * @brief Perform HTTP POST with retry logic
- * @param host Server hostname/IP
- * @param port Server port
- * @param path Request path
- * @param body Request body
- * @param timeout_seconds Connection timeout
- * @param max_retries Maximum retry attempts
- * @param backoff_seconds Delay between retries
- * @return Response structure
- */
-Response post(const std::string& host,
-              int port,
-              const std::string& path,
-              const std::string& body,
-              int timeout_seconds = 5,
-              int max_retries = 3,
-              int backoff_seconds = 2,
-              const std::string& component_name = "");
-
-/**
- * @brief Perform HTTP GET with retry logic
- * @param host Server hostname/IP
- * @param port Server port
- * @param path Request path
- * @param timeout_seconds Connection timeout
- * @param max_retries Maximum retry attempts
- * @param backoff_seconds Delay between retries
- * @return Response structure
- */
-Response get(const std::string& host,
-             int port,
-             const std::string& path,
-             int timeout_seconds = 5,
-             int max_retries = 3,
-             int backoff_seconds = 2,
-              const std::string& component_name = "");
-
-/**
- * @brief Perform HTTP PUT with retry logic
- * @param host Server hostname/IP
- * @param port Server port
- * @param path Request path
- * @param body Request body
- * @param content_type Content-Type header value
- * @param timeout_seconds Connection timeout
- * @param max_retries Maximum retry attempts
- * @param backoff_seconds Delay between retries
- * @param original_size Original uncompressed size (for X-Original-Size header)
- * @return Response structure
- */
-Response put(const std::string& host,
-             int port,
-             const std::string& path,
-             const std::string& body,
-             const std::string& content_type,
-             int timeout_seconds,
-             int max_retries,
-             int backoff_seconds,
-             size_t original_size = 0,
-             const std::string& component_name = "");
-
-/**
- * @brief Perform HTTP DELETE with retry logic
- * @param host Server hostname/IP
- * @param port Server port
- * @param path Request path
- * @param timeout_seconds Connection timeout
- * @param max_retries Maximum retry attempts
- * @param backoff_seconds Delay between retries
- * @return Response structure
- */
-Response del(const std::string& host,
-             int port,
-             const std::string& path,
-             int timeout_seconds = 5,
-             int max_retries = 3,
-             int backoff_seconds = 2,
-              const std::string& component_name = "");
-
-} // namespace http
 
 } // namespace etcd_client

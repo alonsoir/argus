@@ -45,8 +45,10 @@ bool test_retrieve_hmac_key() {
         Config config;
         config.component_name = "test-hmac-client";
         config.encryption_enabled = false;
-        config.host = "127.0.0.1";
-        config.port = 2379;
+        // DEBT-ETCD-CLIENT-MANUAL-TESTS-CTEST-001 (DAY316): test manual fuera de ctest. Desde el paso 5 la librería solo
+        // habla HTTPS con certificado de cliente; este test aún no los trae (connect() falla) hasta que la deuda
+        // lo pase a TLS y a ctest como los demás.
+        config.endpoints = {"https://127.0.0.1:2379"};
 
         EtcdClient client(config);
 

@@ -1,0 +1,12 @@
+# provisioning/vault/argus-vault-unseal.service — [VAULT-ARRANQUE-D322] la pone scripts/etcd_ha/vault_arranque_instalar.sh
+# en /etc/systemd/system/. WantedBy=vault.service (antes multi-user.target): cada arranque de Vault, también el de un
+# Restart=on-failure, arrastra el desellado. SOLO laboratorio (desellado c, clave en disco).
+[Unit]
+Description=Desellado del Vault del lab (opcion c, solo laboratorio) [VAULT-ARRANQUE-D322]
+After=vault.service
+Requires=vault.service
+[Service]
+Type=oneshot
+ExecStart=/usr/local/sbin/argus-vault-unseal
+[Install]
+WantedBy=vault.service

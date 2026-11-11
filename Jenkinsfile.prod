@@ -80,23 +80,28 @@ pipeline {
             }
         }
 
-        stage('Deploy Configs — Ansible/Jinja2') {
-            // Renderiza templates Jinja2 con vars del ambiente y despliega JSONs
+        stage('Deploy Configs — Ansible') {
+            // [ANSIBLE-D315] Configuraciones por entorno; variables en ansible/inventory/group_vars/<grupo>.yml
             // dev:  inventory/dev.yml (Vagrant)
-            // prod: inventory/prod.yml (bare-metal) — requiere FEDER server
+            // [INVENTARIO-FUERA-D315] main: el inventario de producción NO está en el repo (es público); llega en
+            // ARGUS_INVENTARIO (p. ej. una credencial de tipo fichero). Forma: ansible/inventory/ejemplo-preprod/
             steps {
                 script {
-                    def inventory = (env.BRANCH_NAME == 'main') ? 'ansible/inventory/prod.yml' : 'ansible/inventory/dev.yml'
+                    def inventory = 'ansible/inventory/dev.yml'
+                    if (env.BRANCH_NAME == 'main') {
+                        if (!env.ARGUS_INVENTARIO?.trim()) {
+                            error('[ETCD-CONFIG-ENTORNO] main despliega con el inventario de producción: falta ARGUS_INVENTARIO (ruta fuera del repo)')
+                        }
+                        inventory = env.ARGUS_INVENTARIO
+                    }
                     sh """
-                        ansible-playbook -i ${inventory} ansible/playbooks/deploy_configs.yml \
-                            --diff \
-                            -e vault_token_secret=\${VAULT_TOKEN_SECRET:-argus-dev-token}
+                        ansible-playbook -i ${inventory} ansible/playbooks/deploy_configs.yml --diff
                     """
                 }
             }
             post {
                 success { echo 'Configs desplegadas correctamente' }
-                failure  { echo 'FAIL: deploy_configs.yml — revisar templates Jinja2' }
+                failure  { echo 'FAIL: deploy_configs.yml — revisar inventario y group_vars' }
             }
         }
 

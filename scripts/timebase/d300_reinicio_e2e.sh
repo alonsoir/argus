@@ -19,6 +19,8 @@ paso()  { echo; echo "=== [$(date +%T)] $*"; }
 falla() { echo; echo "PARADA [$(date +%T)]: $*"; exit 1; }
 marca() { vagrant ssh defender -c "mkdir -p $D && echo \"$1 \$(date +%s.%N)\" >> $D/tiempos.txt"; }
 marca_linea() { vagrant ssh defender -c "echo \"$1 \$(wc -l < /vagrant/logs/lab/ml-detector.log)\" >> $D/tiempos.txt"; }
+# [REINICIO-R3-FLUJO-D322] la misma marca para el log del firewall: el veredicto separa por flujo lo que llega tras el corte
+marca_linea_fw() { vagrant ssh defender -c "echo \"$1 \$(wc -l < /vagrant/logs/lab/firewall-agent.log)\" >> $D/tiempos.txt"; }
 
 paso "0 lab-clock-step"
 make lab-clock-step || falla "relojes no alineados"
@@ -68,6 +70,7 @@ case "$MODO" in
 esac
 marca sniffer_parado
 marca_linea linea_ml_parado
+marca_linea_fw linea_fw_parado
 make sniffer-start PROFILE=production || falla "sniffer-start"
 marca reinicio_fin
 paso "11 esperar el fin del cliente (hasta 600 s)"

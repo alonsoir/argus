@@ -5,7 +5,7 @@
 
 #include "firewall/config_loader.hpp"
 #include "firewall/set_name_validator.hpp"
-#include "firewall/ip_cidr_validator.hpp"
+#include "argus/ip_cidr_validator.hpp"
 #include <algorithm>
 #include <cctype>
 #include <fstream>
@@ -220,39 +220,177 @@ FirewallAgentConfig ConfigLoader::load_from_file(const std::string& config_path,
         }
         config.ddos_mitigacion = dm;
     }
-    {   // [PROTEGIDOS-D300] DEBT-FW-PROTECTED-RANGES-001: rangos protegidos de la cabeza DDoS
-        const Json::Value p = root.isMember("ddos_protegidos") ? root["ddos_protegidos"] : Json::Value(Json::nullValue);
-        std::vector<std::string> dmz, intranet, externos;
-        if (!p.isObject()) {
-            std::cerr << "[CONFIG-DEFAULT] ddos_protegidos ausente o no es un objeto (formato: {\"dmz\": [CIDR, ...], "
-                         "\"intranet\": [...], \"externos_criticos\": [...]})" << std::endl;
+    {   // [FW-CSV-CLAVE-B2-D316] hmac_key.check_interval_seconds: el JSON manda y se registra siempre de dónde sale el valor
+        constexpr int kDef = 60, kMin = 10, kMax = 3600;
+        const Json::Value h = root.isMember("hmac_key") ? root["hmac_key"] : Json::Value(Json::nullValue);
+        const bool hay = h.isObject() && h.isMember("check_interval_seconds");
+        if (hay && h["check_interval_seconds"].isInt() && h["check_interval_seconds"].asInt() >= kMin &&
+            h["check_interval_seconds"].asInt() <= kMax) {
+            config.hmac_key_check_interval_seconds = h["check_interval_seconds"].asInt();
+            std::cout << "[CONFIG] hmac_key.check_interval_seconds=" << config.hmac_key_check_interval_seconds
+                      << " (JSON)" << std::endl;
         } else {
-            auto lista = [&p](const char* nombre, std::vector<std::string>& out) {
-                if (!p.isMember(nombre)) {
-                    std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre << " ausente: lista vacia" << std::endl;
-                    return;
-                }
-                if (!p[nombre].isArray()) {
-                    std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre
-                              << " no es una lista de cadenas CIDR: se ignora" << std::endl;
-                    return;
-                }
-                for (const auto& it : p[nombre]) {
-                    if (it.isString()) {
-                        out.push_back(it.asString());
-                    } else {
-                        std::cerr << "[CONFIG-DEFAULT] ddos_protegidos." << nombre
-                                  << ": entrada que no es una cadena, descartada" << std::endl;
-                    }
+            config.hmac_key_check_interval_seconds = kDef;
+            std::cerr << "[CONFIG-DEFAULT] hmac_key.check_interval_seconds " << (hay ? "mal formado" : "ausente")
+                      << " (entero en [" << kMin << ", " << kMax << "]): se usa " << kDef << std::endl;
+        }
+    }
+    {   // [PROTEGIDOS-MANIFIESTO-D318] ADR-060 sección 6. Los rangos NO están aquí: salen del manifiesto firmado.
+        // Ningún campo se lee en silencio: cada uno se registra con su valor y su origen.
+        auto& pc = config.protegidos;
+        const Json::Value p = root.isMember("protegidos") ? root["protegidos"] : Json::Value(Json::nullValue);
+        if (root.isMember("ddos_protegidos")) {
+            std::cerr << "[CONFIG-AVISO] ddos_protegidos ya no se lee (ADR-060): los rangos protegidos salen SOLO del "
+                         "manifiesto firmado; retire el bloque de este firewall.json" << std::endl;
+        }
+        if (!p.isObject()) {
+            std::cerr << "[CONFIG-AVISO] protegidos ausente o no es un objeto: sin hospital_id ni despliegue_id no hay "
+                         "manifiesto verificado (candado cerrado); el resto, defectos" << std::endl;
+        }
+        auto es_id = [](const std::string& s) {
+            return !s.empty() && s.size() <= 64 && std::all_of(s.begin(), s.end(), [](char c) {
+                return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '-';
+            });
+        };
+        auto id = [&](const char* k, std::string& out) {
+            if (p.isObject() && p.isMember(k) && p[k].isString() && es_id(p[k].asString())) {
+                out = p[k].asString();
+                std::cout << "[CONFIG] protegidos." << k << "=" << out << " (JSON)" << std::endl;
+            } else {
+                out.clear();
+                std::cerr << "[CONFIG-AVISO] protegidos." << k << " " << (p.isObject() && p.isMember(k) ? "mal formado" : "ausente")
+                          << " ([a-z0-9-], de 1 a 64): sin valor sano por defecto; no habrá manifiesto verificado "
+                             "(candado cerrado)" << std::endl;
+            }
+        };
+        id("hospital_id", pc.hospital_id);
+        id("despliegue_id", pc.despliegue_id);
+        {
+            const std::string def = pc.set_name;
+            const bool hay = p.isObject() && p.isMember("set_name");
+            if (hay && p["set_name"].isString() && p["set_name"].asString().size() <= 29 &&
+                ::mldefender::firewall::is_valid_set_name(p["set_name"].asString())) {
+                pc.set_name = p["set_name"].asString();
+                std::cout << "[CONFIG] protegidos.set_name=" << pc.set_name << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.set_name " << (hay ? "mal formado" : "ausente")
+                          << " ([A-Za-z0-9_-], de 1 a 29): se usa " << def << std::endl;
+            }
+        }
+        {
+            const std::string def = pc.manifiesto_cache;
+            const bool hay = p.isObject() && p.isMember("manifiesto_cache");
+            const std::string v = hay && p["manifiesto_cache"].isString() ? p["manifiesto_cache"].asString() : "";
+            if (!v.empty() && v[0] == '/' && v.size() <= 255 && v.find("..") == std::string::npos &&
+                std::none_of(v.begin(), v.end(), [](char c) { return static_cast<unsigned char>(c) < 0x20; })) {
+                pc.manifiesto_cache = v;
+                std::cout << "[CONFIG] protegidos.manifiesto_cache=" << v << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.manifiesto_cache " << (hay ? "mal formado" : "ausente")
+                          << " (ruta absoluta, sin .., hasta 255): se usa " << def << std::endl;
+            }
+        }
+        {
+            constexpr int kMin = 30, kMax = 86400;
+            const int def = pc.aviso_sec;
+            const bool hay = p.isObject() && p.isMember("aviso_sec");
+            if (hay && p["aviso_sec"].isInt() && p["aviso_sec"].asInt() >= kMin && p["aviso_sec"].asInt() <= kMax) {
+                pc.aviso_sec = p["aviso_sec"].asInt();
+                std::cout << "[CONFIG] protegidos.aviso_sec=" << pc.aviso_sec << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.aviso_sec " << (hay ? "mal formado" : "ausente")
+                          << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+            }
+        }
+        {   // [PROTEGIDOS-MANIFIESTO-D318] 8e.3c (F-E)
+            constexpr int kMin = 5, kMax = 3600;
+            const int def = pc.consulta_sec;
+            const bool hay = p.isObject() && p.isMember("consulta_sec");
+            if (hay && p["consulta_sec"].isInt() && p["consulta_sec"].asInt() >= kMin && p["consulta_sec"].asInt() <= kMax) {
+                pc.consulta_sec = p["consulta_sec"].asInt();
+                std::cout << "[CONFIG] protegidos.consulta_sec=" << pc.consulta_sec << " (JSON)" << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.consulta_sec " << (hay ? "mal formado" : "ausente")
+                          << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+            }
+        }
+        {   // [PROTEGIDOS-VIGIA-D320] 8e.4a (ADR-060 D8): vigía kernel <-> manifiesto
+            constexpr int kMin = 5, kMax = 3600;
+            const int def = pc.comprobacion_kernel_sec;
+            const bool hay = p.isObject() && p.isMember("comprobacion_kernel_sec");
+            if (hay && p["comprobacion_kernel_sec"].isInt() && p["comprobacion_kernel_sec"].asInt() >= kMin &&
+                p["comprobacion_kernel_sec"].asInt() <= kMax) {
+                pc.comprobacion_kernel_sec = p["comprobacion_kernel_sec"].asInt();
+                std::cout << "[CONFIG] protegidos.comprobacion_kernel_sec=" << pc.comprobacion_kernel_sec << " (JSON)"
+                          << std::endl;
+            } else {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.comprobacion_kernel_sec " << (hay ? "mal formado" : "ausente")
+                          << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+            }
+        }
+        {   // [PROTEGIDOS-ANTISPOOF-D320] 8e.4b (ADR-060 D8, H-B..H-E): protegidos.antispoof
+            auto& ac = pc.antispoof;
+            const Json::Value a = (p.isObject() && p.isMember("antispoof")) ? p["antispoof"] : Json::Value();
+            if (!a.isObject()) {
+                std::cerr << "[CONFIG-DEFAULT] protegidos.antispoof " << (a.isNull() ? "ausente" : "mal formado")
+                          << " (objeto): se usan los defectos de todos sus campos" << std::endl;
+            }
+            auto nombre = [&](const char* k, std::string& dst, std::size_t max, bool es_set) {
+                const std::string def = dst;
+                const bool hay = a.isObject() && a.isMember(k);
+                const std::string v = hay && a[k].isString() ? a[k].asString() : "";
+                const bool ok = !v.empty() && v.size() <= max && v[0] != '-' &&
+                                std::all_of(v.begin(), v.end(), [](char c) {
+                                    return std::isalnum(static_cast<unsigned char>(c)) || c == '_' || c == '-';
+                                }) &&
+                                (!es_set || ::mldefender::firewall::is_valid_set_name(v));
+                if (ok) {
+                    dst = v;
+                    std::cout << "[CONFIG] protegidos.antispoof." << k << "=" << v << " (JSON)" << std::endl;
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] protegidos.antispoof." << k << " " << (hay ? "mal formado" : "ausente")
+                              << " ([A-Za-z0-9_-], de 1 a " << max << "): se usa " << def << std::endl;
                 }
             };
-            lista("dmz", dmz);
-            lista("intranet", intranet);
-            lista("externos_criticos", externos);
+            nombre("cadena", ac.cadena, 24, false);
+            nombre("set_redes", ac.set_redes, 29, true);
+            nombre("set_ips_mac", ac.set_ips_mac, 29, true);
+            nombre("set_mac", ac.set_mac, 29, true);
+            auto entero = [&](const char* k, int& dst, int kMin, int kMax) {
+                const int def = dst;
+                const bool hay = a.isObject() && a.isMember(k);
+                if (hay && a[k].isInt() && a[k].asInt() >= kMin && a[k].asInt() <= kMax) {
+                    dst = a[k].asInt();
+                    std::cout << "[CONFIG] protegidos.antispoof." << k << "=" << dst << " (JSON)" << std::endl;
+                } else {
+                    std::cerr << "[CONFIG-DEFAULT] protegidos.antispoof." << k << " " << (hay ? "mal formado" : "ausente")
+                              << " (entero en [" << kMin << ", " << kMax << "]): se usa " << def << std::endl;
+                }
+            };
+            entero("log_por_minuto", ac.log_por_minuto, 1, 600);
+            entero("log_rafaga", ac.log_rafaga, 1, 100);
+            // Cuatro sets de tipos distintos: un nombre repetido haría chocar los tipos en el kernel.
+            const std::vector<std::string> nombres{pc.set_name, ac.set_redes, ac.set_ips_mac, ac.set_mac};
+            for (std::size_t i = 0; i < nombres.size(); ++i) {
+                for (std::size_t j = i + 1; j < nombres.size(); ++j) {
+                    if (nombres[i] == nombres[j]) {
+                        ac.valido = false;
+                        ac.motivo_invalido = "el set " + nombres[i] + " aparece dos veces entre protegidos.set_name y "
+                                             "protegidos.antispoof.set_*";
+                    }
+                }
+            }
+            if (!ac.valido) {
+                std::cerr << "[CONFIG-AVISO] protegidos.antispoof NO se instala: " << ac.motivo_invalido
+                          << " (cada set necesita su propio nombre)" << std::endl;
+            }
         }
-        std::ostringstream plog;
-        config.ddos_protegidos = ::mldefender::firewall::construir_rangos_protegidos(dmz, intranet, externos, plog);
-        std::cout << plog.str() << std::flush;
+        // D-C: los endpoints del etcd-server (los valida etcd-client; aquí solo se copian para comparar)
+        if (root.isMember("etcd") && root["etcd"].isObject() && root["etcd"]["endpoints"].isArray()) {
+            for (const auto& e : root["etcd"]["endpoints"]) {
+                if (e.isString()) pc.etcd_endpoints.push_back(e.asString());
+            }
+        }
     }
     
     if (root.isMember("validation")) {
@@ -587,20 +725,12 @@ void ConfigLoader::log_config_summary(const FirewallAgentConfig& config) {
 //===----------------------------------------------------------------------===//
 
 EtcdConfig ConfigLoader::parse_etcd(const Json::Value& json) {
+    // [ETCD-CLIENTE-D316] F1: antes, sin endpoints quedaba un vector vacío y main.cpp leía endpoints[0]
+    // (comportamiento indefinido). Ahora el bloque viaja entero a la librería, que valida y registra cada campo.
     EtcdConfig config;
-
-    config.enabled = get_optional<bool>(json, "enabled", false);
-
-    if (json.isMember("endpoints") && json["endpoints"].isArray()) {
-        config.endpoints = parse_string_array(json["endpoints"]);
-    }
-
-    config.connection_timeout_ms = get_optional<int>(json, "connection_timeout_ms", 5000);
-    config.retry_attempts = get_optional<int>(json, "retry_attempts", 3);
-    config.retry_interval_ms = get_optional<int>(json, "retry_interval_ms", 1000);
-    config.heartbeat_interval_seconds = get_optional<int>(json, "heartbeat_interval_seconds", 30);
-    config.lease_ttl_seconds = get_optional<int>(json, "lease_ttl_seconds", 60);
-
+    Json::StreamWriterBuilder w;
+    w["indentation"] = "";
+    config.bloque_json = Json::writeString(w, json);
     return config;
 }
 
@@ -678,7 +808,7 @@ CsvBatchLoggerConfig ConfigLoader::parse_csv_batch_logger(const Json::Value& jso
     // estricto ANTES de aceptar = cierra inyección de comandos vía config. Fail-fast:
     // un solo CIDR inválido aborta la carga (JSON is LAW — config mala no arranca).
     for (const auto& cidr : config.whitelist_cidrs) {
-        if (!is_valid_ip_cidr(cidr)) {
+        if (!::argus::is_valid_ip_cidr(cidr)) {
             throw std::runtime_error(
                 "❌ INVALID CIDR en 'autonomy.whitelist_cidrs': '" + cidr + "' ("
                 + config_path + ")\n"

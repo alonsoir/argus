@@ -241,6 +241,8 @@ bootstrap-x86-ebpf:
 	@$(MAKE) set-build-profile
 	@echo "[4/8] Instalando systemd units..."
 	@$(MAKE) install-systemd-units
+	@echo "[4b/8] Clave pública del manifiesto de protegidos (Vault transit de la VM etcd) al defender..."
+	@$(MAKE) protegidos-pubkey  # [PROTEGIDOS-PUBKEY-D318] antes de compilar: sin ella el firewall no compila (8e.1)
 	@echo "[5/8] Compilando pipeline (incluye pubkey runtime + plugin-test-message)..."
 	@$(MAKE) pipeline-build
 	@$(MAKE) check-build-artifacts
@@ -248,6 +250,10 @@ bootstrap-x86-ebpf:
 	@$(MAKE) deploy-models
 	@echo "[6b/8] Firmando plugins..."
 	@$(MAKE) sign-plugins
+	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
+	@$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] antes de pipeline-start: los componentes encuentran el etcd-server sano
+	@echo "[6d/8] Manifiesto de protegidos: versión 1 desde la plantilla del lab, si no hay ninguno publicado..."
+	@$(MAKE) protegidos-bootstrap  # [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: antes de pipeline-start (el candado lo pide)
 	@echo "[7/8] Verificando provisioning..."
 	@$(MAKE) test-provision-1
 	@echo "[8/8] Arrancando pipeline (Variant A — eBPF/XDP)..."
@@ -274,6 +280,8 @@ bootstrap-x86-libpcap:
 	@$(MAKE) set-build-profile
 	@echo "[4/8] Instalando systemd units..."
 	@$(MAKE) install-systemd-units
+	@echo "[4b/8] Clave pública del manifiesto de protegidos (Vault transit de la VM etcd) al defender..."
+	@$(MAKE) protegidos-pubkey  # [PROTEGIDOS-PUBKEY-D318] antes de compilar: sin ella el firewall no compila (8e.1)
 	@echo "[5/8] Compilando pipeline (incluye Variant B sniffer-libpcap)..."
 	@$(MAKE) pipeline-build
 	@$(MAKE) sniffer-libpcap
@@ -282,6 +290,10 @@ bootstrap-x86-libpcap:
 	@$(MAKE) deploy-models
 	@echo "[6b/8] Firmando plugins..."
 	@$(MAKE) sign-plugins
+	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
+	@$(MAKE) etcd-vm-deploy  # [ETCD-VM-D317] antes de pipeline-start: los componentes encuentran el etcd-server sano
+	@echo "[6d/8] Manifiesto de protegidos: versión 1 desde la plantilla del lab, si no hay ninguno publicado..."
+	@$(MAKE) protegidos-bootstrap  # [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: antes de pipeline-start (el candado lo pide)
 	@echo "[7/8] Verificando provisioning..."
 	@$(MAKE) test-provision-1
 	@echo "[8/8] Arrancando pipeline (Variant B — libpcap)..."
@@ -325,31 +337,36 @@ post-up-verify:
 # Un solo vagrant ssh por VM (~14 s cada uno); comparar relojes con date por vagrant ssh no sirve.
 LAB_CLOCK_MAX_OFFSET_S ?= 0.001
 LAB_CLOCK_WAIT_TRIES ?= 30
+# [LAB-NTP-SENSORES-D323] VMs que se alinean con el defender, después de él. Por defecto solo el client (el uso de
+# siempre, con 3 VMs arriba); mitre-check pasa las de su corrida (client suricata zeek): un solo reloj para el grafo.
+LAB_CLOCK_VMS ?= client
 .PHONY: lab-clock-step
 lab-clock-step:
 	@echo "[LAB-CLOCK-STEP] defender: makestep + waitsync"
 	@vagrant ssh defender -c 'sudo chronyc makestep >/dev/null; chronyc waitsync $(LAB_CLOCK_WAIT_TRIES) $(LAB_CLOCK_MAX_OFFSET_S) 0 1 >/dev/null; rc=$$?; chronyc -n tracking | grep -E "Reference ID|System time"; if [ $$rc -ne 0 ]; then echo "[LAB-CLOCK-STEP] FALLO defender: desfase >= $(LAB_CLOCK_MAX_OFFSET_S) s tras $(LAB_CLOCK_WAIT_TRIES) s"; exit 1; fi; echo "[LAB-CLOCK-STEP] defender OK (< $(LAB_CLOCK_MAX_OFFSET_S) s)"'
-	@echo "[LAB-CLOCK-STEP] client: makestep + waitsync (fuente 192.168.100.1)"
-	@vagrant ssh client -c 'sudo chronyc makestep >/dev/null; chronyc waitsync $(LAB_CLOCK_WAIT_TRIES) $(LAB_CLOCK_MAX_OFFSET_S) 0 1 >/dev/null; rc=$$?; chronyc -n tracking | grep -E "Reference ID|System time"; if ! chronyc -n tracking | grep -qF "(192.168.100.1)"; then echo "[LAB-CLOCK-STEP] FALLO client: su fuente no es el defender 192.168.100.1"; exit 1; fi; if [ $$rc -ne 0 ]; then echo "[LAB-CLOCK-STEP] FALLO client: desfase >= $(LAB_CLOCK_MAX_OFFSET_S) s tras $(LAB_CLOCK_WAIT_TRIES) s"; exit 1; fi; echo "[LAB-CLOCK-STEP] client OK (< $(LAB_CLOCK_MAX_OFFSET_S) s)"'
-	@echo "[LAB-CLOCK-STEP] OK: defender y client alineados"
+	@for vm in $(LAB_CLOCK_VMS); do \
+	  echo "[LAB-CLOCK-STEP] $$vm: makestep + waitsync (fuente 192.168.100.1)"; \
+	  vagrant ssh $$vm -c 'sudo chronyc makestep >/dev/null; chronyc waitsync $(LAB_CLOCK_WAIT_TRIES) $(LAB_CLOCK_MAX_OFFSET_S) 0 1 >/dev/null; rc=$$?; chronyc -n tracking | grep -E "Reference ID|System time"; if ! chronyc -n tracking | grep -qF "(192.168.100.1)"; then echo "[LAB-CLOCK-STEP] FALLO $$(hostname): su fuente no es el defender 192.168.100.1"; exit 1; fi; if [ $$rc -ne 0 ]; then echo "[LAB-CLOCK-STEP] FALLO $$(hostname): desfase >= $(LAB_CLOCK_MAX_OFFSET_S) s tras $(LAB_CLOCK_WAIT_TRIES) s"; exit 1; fi; echo "[LAB-CLOCK-STEP] $$(hostname) OK (< $(LAB_CLOCK_MAX_OFFSET_S) s)"' || exit 1; \
+	done
+	@echo "[LAB-CLOCK-STEP] OK: defender y $(LAB_CLOCK_VMS) alineados"
 
 up-argus:
-	@vagrant up defender client
+	@vagrant up defender client etcd
 
 up-suricata:
 	@cd experiments/suricata-comparative && vagrant up suricata client
 
 up:
-	@vagrant up defender client suricata zeek wazuh
+	@vagrant up defender client suricata zeek wazuh etcd
 
 halt-argus:
-	@vagrant halt defender client
+	@vagrant halt defender client etcd
 
 halt-suricata:
 	@cd experiments/suricata-comparative && vagrant halt
 
 halt:
-	@vagrant halt defender client suricata zeek wazuh
+	@vagrant halt defender client suricata zeek wazuh etcd
 
 destroy:
 	@vagrant destroy -f
@@ -752,12 +769,8 @@ etcd-server:
 	@echo ""
 	@echo "✅ etcd-server built ($(PROFILE))"
 
-etcd-server-status:
-	@echo "════════════════════════════════════════════════════════════"
-	@echo "etcd-server Status:"
-	@vagrant ssh -c "pgrep -a -f etcd-server && echo '✅ etcd-server: RUNNING' || echo '❌ etcd-server: STOPPED'"
-	@vagrant ssh -c "curl -s http://localhost:2379/health || echo '⚠️  Not responding'"
-	@echo "════════════════════════════════════════════════════════════"
+etcd-server-status:  # [ETCD-VM-D317] el etcd-server vive en la VM etcd (servicio systemd)
+	@$(MAKE) --no-print-directory etcd-vm-estado
 
 
 # ============================================================================
@@ -830,8 +843,8 @@ test-provision-1:
 	@echo ""
 	@echo "── Check 5/8: systemd units instalados ──"
 	@vagrant ssh -c "systemctl list-unit-files ml-defender-*.service 2>/dev/null | grep -c 'ml-defender'" | \
-		grep -q "4" || \
-		(echo "❌ CHECK 5 FAILED: systemd units no instalados (esperado: 4)" && \
+		tr -d '\r ' | grep -qx "3" || \
+		(echo "❌ CHECK 5 FAILED: systemd units no instalados (esperado: 3; el etcd-server vive en la VM etcd)" && \
 		 echo "   Ejecuta: vagrant ssh -c 'sudo bash /vagrant/etcd-server/config/install-systemd-units.sh'" && \
 		 exit 1)
 	@echo "✅ Check 5/8 OK"
@@ -874,10 +887,8 @@ test-invariant-seed:
 	"' || (echo "❌ INVARIANTE-SEED-001 violado: seeds divergentes" && exit 1)
 	@echo ""
 
-pipeline-start: test-provision-1 etcd-server-start
-	@echo "⏳ Waiting for etcd-server to stabilize (Seed generation)..."
-	@sleep 4
-	@sleep 5
+pipeline-start: test-provision-1
+	@$(MAKE) --no-print-directory etcd-vm-aviso  # [ETCD-VM-D317] avisa si la VM etcd no está sana; no para el arranque
 	@$(MAKE) ml-detector-start VERBOSE=$(VERBOSE) FORCE_ALL_HEADS=$(FORCE_ALL_HEADS)
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -888,10 +899,8 @@ pipeline-start: test-provision-1 etcd-server-start
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@$(MAKE) pipeline-status
 
-pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
-	@echo "⏳ Waiting for etcd-server to stabilize (Seed generation)..."
-	@sleep 4
-	@sleep 5
+pipeline-start-x86-libpcap: test-provision-1
+	@$(MAKE) --no-print-directory etcd-vm-aviso  # [ETCD-VM-D317]
 	@$(MAKE) ml-detector-start
 	@$(MAKE) firewall-start
 	@sleep 2
@@ -905,7 +914,7 @@ pipeline-start-x86-libpcap: test-provision-1 etcd-server-start
 pipeline-stop:
 	@echo "🛑 Stopping all pipeline components..."
 	@$(MAKE) --no-print-directory sniffer-stop  # [SNIFFER-STOP-D299] parada ordenada antes del resto
-	@vagrant ssh -c "for s in sniffer ml-detector firewall etcd-server; do tmux kill-session -t $$s 2>/dev/null || true; done"
+	@vagrant ssh -c "for s in sniffer ml-detector firewall; do tmux kill-session -t $$s 2>/dev/null || true; done"
 	@echo "✅ Pipeline stopped"
 
 pipeline-status:
@@ -913,7 +922,8 @@ pipeline-status:
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  📊 ML Defender Pipeline Status (via TMUX + pgrep)        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
-	@vagrant ssh -c "( tmux has-session -t etcd-server 2>/dev/null || pgrep -x etcd-server >/dev/null 2>&1 ) && echo '  ✅ etcd-server:   RUNNING' || echo '  ❌ etcd-server:   STOPPED'"
+	@# [ETCD-VM-D317] VM etcd: etcd-server (systemd + /health), cada miembro etcd (sano, líder, retraso) y Vault de las claves HMAC
+	@vagrant ssh etcd -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh" 2>/dev/null | grep -E '^  (✅|❌|⚠️)|^       - ' || echo '  ❌ etcd-server:   STOPPED [VM etcd parada o inalcanzable: vagrant up etcd]'
 	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
 	  EBPF=0; PCAP=0; \
@@ -1232,12 +1242,16 @@ test-components: correlation-engine-test
 	@echo ""
 
 deploy-configs:
-	@echo "🚀 Desplegando configs Ansible/Jinja2 (dev)..."
-	@vagrant ssh defender -- -t "cd /vagrant && ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml -e @ansible/group_vars/argus_dev.yml --diff"
+	@echo "🚀 Desplegando configs por entorno (Ansible) (dev)..."
+	@vagrant ssh defender -- -t "cd /vagrant && sudo ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/deploy_configs.yml --diff"
 
+# [INVENTARIO-FUERA-D315] preproducción/producción: el inventario NO está en este repo (es público). Uso:
+#   make deploy-configs-prod INVENTARIO=/ruta/fuera/del/repo/hosts.yml   (forma: ansible/inventory/ejemplo-preprod/)
 deploy-configs-prod:
-	@echo "🚀 Desplegando configs Ansible/Jinja2 (prod)..."
-	@ansible-playbook -i ansible/inventory/prod.yml ansible/playbooks/deploy_configs.yml -e @ansible/group_vars/argus_prod.yml -e vault_token_secret=$${VAULT_TOKEN_SECRET} --diff
+	@test -n "$(INVENTARIO)" || { echo "[ETCD-CONFIG-ENTORNO] falta INVENTARIO=<ruta del inventario de preproducción o producción, fuera de este repo; forma en ansible/inventory/ejemplo-preprod/>"; exit 1; }
+	@test -f "$(INVENTARIO)" || { echo "[ETCD-CONFIG-ENTORNO] INVENTARIO=$(INVENTARIO) no existe"; exit 1; }
+	@echo "🚀 Desplegando configs por entorno (Ansible) ($(INVENTARIO))..."
+	@ansible-playbook -i "$(INVENTARIO)" ansible/playbooks/deploy_configs.yml --diff
 
 parquet-convert:
 	@echo "📦 Installing/upgrading pyarrow..."
@@ -1276,25 +1290,50 @@ test: test-all
 # cualquier test saltado o una ejecucion de gtest de 0 tests) y test-firewall-perf (da numeros del
 # entorno; falla solo si la medida es invalida). Heredan el PROFILE de la corrida: make emecas+++ PROFILE=production
 emecas:
+	@$(EMECAS_PY) inicio $(EMECAS_META_O)  # [EMECAS-PROGRESO-D322] avance: make emecas-progreso
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  🏛️  EMECAS — OSS gate (destroy → up → bootstrap → test)  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
-	vagrant destroy -f
-	$(MAKE) clean-host-builds
-	vagrant up defender client suricata
-	vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
-	$(MAKE) bootstrap
-	$(MAKE) emecas-frescura
-	$(MAKE) test-all
-	$(MAKE) test-firewall-e2e
-	$(MAKE) test-firewall-perf
-	$(MAKE) test-e2e-synthetic
-	$(MAKE) lab-e2e
+	@$(EMECAS_PASO) vagrant-destroy -- vagrant destroy -f
+	@$(EMECAS_PASO) clean-host-builds -- $(MAKE) clean-host-builds
+	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
+	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh etcd
+	@$(EMECAS_PASO) sello-inicio -- vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
+	@$(EMECAS_PASO) bootstrap -- $(MAKE) bootstrap
+	@$(EMECAS_PASO) emecas-frescura -- $(MAKE) emecas-frescura
+	@$(EMECAS_PASO) test-all -- $(MAKE) test-all
+	@# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: argus-infra (VM etcd) y la vigilancia de 8e.4d (manager y argus-disco)
+	@$(EMECAS_PASO) test-argus-infra -- $(MAKE) test-argus-infra
+	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
+	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
+	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
+	@$(EMECAS_PASO) test-firewall-perf -- $(MAKE) test-firewall-perf
+	@$(EMECAS_PASO) test-e2e-synthetic -- $(MAKE) test-e2e-synthetic
+	@$(EMECAS_PASO) lab-e2e -- $(MAKE) lab-e2e
+	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS PASSED                                        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
+
+# [EMECAS-PROGRESO-D322] avance de EMECAS (petición de Alonso DAY322): cada paso de emecas, emecas++ y emecas+++ va
+# envuelto por scripts/emecas/emecas_paso.py, que lo ejecuta igual (misma salida y código de salida) y apunta en
+# logs/lab/emecas_progreso.txt cuándo empieza y acaba. Porcentaje y hora de fin, de los tiempos MEDIDOS en la última
+# corrida buena de la misma meta (logs/lab/emecas_tiempos_<meta>.tsv). Desde otra terminal: make emecas-progreso.
+# [EMECAS-RESUMEN-D322] cada corrida deja en logs/lab/emecas/<fecha>_<meta>/ la salida de cada paso (NN_<paso>.log) y
+# resumen.md (al final y también si un paso falla); se guardan todas (decisiones de Alonso DAY322).
+EMECAS_META := $(firstword $(filter emecas+++ emecas++ emecas,$(MAKECMDGOALS)))
+EMECAS_META_O = $(or $(EMECAS_META),emecas)
+EMECAS_PY := python3 scripts/emecas/emecas_paso.py
+EMECAS_PASO = $(EMECAS_PY) paso $(EMECAS_META_O)
+.PHONY: emecas-progreso test-emecas-paso
+emecas-progreso:
+	@$(EMECAS_PY) ver
+
+# Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
+test-emecas-paso:
+	@python3 scripts/emecas/test_emecas_paso.py
 
 # [ARGUS-CLEAN-D303] emecas-frescura: cada binario del pipeline existe en build-$(PROFILE), build-active
 # apunta ahi y es mas nuevo que el sello escrito tras clean-all. Fuera de EMECAS, sin sello:
@@ -1308,7 +1347,7 @@ emecas-frescura:
 # Corridas en logs/lab/$(LAB_E2E_DIA)/lab_*/. Duracion total de lab-e2e: ~60 min.
 # lab_corrida_defender.sh exige DIA con formato dayNNN (medido DAY303)
 LAB_E2E_DIA ?= day303
-.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion
+.PHONY: lab-e2e lab-e2e-prep lab-e2e-reinicio-antes lab-e2e-reinicio-ordenada lab-e2e-reinicio-kill9 lab-e2e-protegidos lab-e2e-mitigacion lab-e2e-vigia lab-e2e-antispoof lab-e2e-reinicio-etcd lab-test-limpia-kernel lab-kernel-limpio lab-e2e-latido lab-e2e-vigilancia
 lab-e2e-prep:
 	@echo "[LAB-E2E] client: alias 192.168.100.51 en eth1 y MAC de 192.168.100.1 en la tabla de vecinos"
 	@vagrant ssh client -c "ip -4 addr show dev eth1 | grep -q 192.168.100.51 || sudo ip addr add 192.168.100.51/24 dev eth1; ping -c 3 -W 1 -I eth1 192.168.100.1 > /dev/null 2>&1; ip -4 addr show dev eth1 | grep -q 192.168.100.51 && ip neigh show 192.168.100.1 dev eth1 | grep -q lladdr && ip neigh show 192.168.100.1 dev eth1" || { echo "[LAB-E2E] FALLA: client sin alias .51 o sin MAC de .1"; exit 1; }
@@ -1337,19 +1376,79 @@ lab-e2e-mitigacion:
 	@$(MAKE) lab-e2e-prep
 	DIA=$(LAB_E2E_DIA) bash scripts/timebase/d302_mitigacion_e2e.sh lab_mitigacion
 
+# [PROTEGIDOS-VIGIA-D320] ADR-060 D8, 8e.4a: el vigía kernel <-> manifiesto con el pipeline vivo (dry_run=false SOLO
+# durante la prueba; el JSON se restaura con cmp). Estropea el set y la cadena cuatro veces y exige que cada una se
+# reconcilie en <= comprobacion_kernel_sec + 5 s. Deja el pipeline parado, como lab-e2e-mitigacion. ~4 min.
+lab-e2e-vigia:
+	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d320_vigia_e2e.sh lab_vigia_$$(date -u +%Y%m%dT%H%M%SZ)
+
+# [PROTEGIDOS-ANTISPOOF-D320] ADR-060 D8, 8e.4b: antispoofing con la MITIGACION REAL (dry_run=false, habilitada=true
+# SOLO durante la prueba). Firma una entrada de prueba (.62 por eth2 con una MAC falsa) y la quita al acabar; el client
+# falsifica .62 (SPOOF-MAC) y un netns del defender falsifica .20 (SPOOF-IF); el trafico legitimo de .20 suma 0. Necesita
+# las VMs client y etcd. Deja el pipeline parado. ~5 min.
+lab-e2e-antispoof:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d320_antispoof_e2e.sh lab_antispoof_$$(date -u +%Y%m%dT%H%M%SZ)
+
+# [PROTEGIDOS-LIMPIEZA-D320] los E2E con la mitigación real (mitigacion, vigia, antispoof) dejan el pipeline parado y
+# limpian el kernel en su trap con scripts/etcd_ha/d320_limpia_kernel.sh (cadena del filtro, cadena raw del antispoofing
+# y sus sets; medido DAY320: sin la raw quedaban sets=1). lab-test-limpia-kernel prueba el ayudante en el defender con
+# nombres propios (no toca los del pipeline); lab-kernel-limpio comprueba, sin tocar nada (--contar), que tras cada uno
+# no queda nada con los nombres de firewall.json. Pipeline parado: si está vivo, sus cadenas y sets son legítimos.
+lab-test-limpia-kernel:
+	@vagrant ssh defender -c "sudo bash /vagrant/scripts/etcd_ha/test_d320_limpia_kernel.sh" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]' > /tmp/argus_test_limpia.txt; cat /tmp/argus_test_limpia.txt; grep -qE '^([0-9]+)/\1 PASA' /tmp/argus_test_limpia.txt || { echo "[LAB-E2E] FALLA: test_d320_limpia_kernel"; exit 1; }
+
+lab-kernel-limpio:
+	@n=$$(python3 -c 'import json; d = json.load(open("firewall-acl-agent/config/firewall.json")); p = d.get("protegidos", {}); a = p.get("antispoof", {}); print(d["iptables"]["chain_name"], a.get("cadena", "ARGUS_ANTISPOOF"), a.get("set_redes", "ml_defender_prot_redes"), a.get("set_ips_mac", "ml_defender_prot_ipmac"), a.get("set_mac", "ml_defender_prot_mac"), d["ipsets"]["blacklist"]["set_name"], p.get("set_name", "ml_defender_protegidos"))') || { echo "[LAB-E2E] FALLA: no leo firewall.json"; exit 1; }; \
+	vagrant ssh defender -c "sudo bash /vagrant/scripts/etcd_ha/d320_limpia_kernel.sh --contar $$n" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]' > /tmp/argus_kernel_limpio.txt; cat /tmp/argus_kernel_limpio.txt; \
+	grep -qx '    quedan raw=0 filter=0 sets=0' /tmp/argus_kernel_limpio.txt && echo "[LAB-E2E] kernel limpio ($$n)" || { echo "[LAB-E2E] FALLA: restos en el kernel del defender (sudo bash /vagrant/scripts/etcd_ha/d320_limpia_kernel.sh $$n)"; exit 1; }
+
+# [REINICIO-VM-D317] sexto E2E: reinicia el etcd-server de la VM etcd con el pipeline vivo (scripts/etcd_ha/d317_reinicio_vm.sh,
+# veredicto PASA/FALLA). Requiere el pipeline arrancado: va al final de lab-e2e, tras la restauración. El nombre de la
+# corrida lleva la fecha (el instrumento no reescribe una corrida y EMECAS se repite). ~10 min.
+lab-e2e-reinicio-etcd:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d317_reinicio_vm.sh lab_reinicio_etcd_$$(date -u +%Y%m%dT%H%M%SZ)
+
+# [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H y H-F): la versión del manifiesto que el firewall manda en su latido frente a la
+# publicada, como la enseña pipeline-status (etcd_vm_estado.sh), y la línea [PROTEGIDOS-RP-FILTER] del agente. Desfase
+# de verdad con protegidos.consulta_sec=3600 SOLO durante la prueba (el JSON se restaura con cmp); publica y retira una
+# entrada de prueba con argus-infra. No toca dry_run ni la mitigación. Necesita la VM etcd. Deja el pipeline parado. ~8 min.
+lab-e2e-latido:
+	DIA=$(LAB_E2E_DIA) bash scripts/etcd_ha/d321_latido_e2e.sh lab_latido_$$(date -u +%Y%m%dT%H%M%SZ)
+
+# [VIGILANCIA-E2E-D322] ADR-060 8e.4d-3: la vigilancia de aRGus (Wazuh y Falco), comprobada en el alerts.json del
+# manager (VM wazuh): FIM en /etc/argus-pki, umbral del disco, audit de Vault inmutable, lectura ajena y intento
+# fallido de leer una clave (Falco), trazas de un etcd-vm-check con etcd parado (C8: solo mide), reinicio de Vault sin
+# Vagrant (d322_reinicio_vault.sh) y una divergencia del vigía (d320_vigia_e2e.sh con D320_EVENTOS=E1). Necesita las
+# VMs defender, client, etcd y wazuh. Deja el pipeline parado. ~10 min.
+lab-e2e-vigilancia:
+	@$(MAKE) lab-e2e-prep
+	DIA=$(LAB_E2E_DIA) bash scripts/vigilancia/lab_e2e_vigilancia.sh lab_vigilancia_$$(date -u +%Y%m%dT%H%M%SZ)
+
 lab-e2e:
-	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion"
+	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion, vigia, antispoof, latido, vigilancia, reinicio del etcd-server"
+	$(MAKE) lab-test-limpia-kernel
 	$(MAKE) lab-e2e-reinicio-antes
 	$(MAKE) lab-e2e-reinicio-ordenada
 	$(MAKE) lab-e2e-reinicio-kill9
 	$(MAKE) lab-e2e-protegidos
 	$(MAKE) lab-e2e-mitigacion
+	$(MAKE) lab-kernel-limpio
+	$(MAKE) lab-e2e-vigia
+	$(MAKE) lab-kernel-limpio
+	$(MAKE) lab-e2e-antispoof
+	$(MAKE) lab-kernel-limpio
+	$(MAKE) lab-e2e-latido
+	$(MAKE) lab-e2e-vigilancia
+	$(MAKE) lab-kernel-limpio
 	@echo "[LAB-E2E] [ARGUS-LAB-RESTORE-D303] los E2E paran el pipeline: se deja arrancado, como se encontro"
 	$(MAKE) pipeline-start > /tmp/argus_lab_e2e_restore.txt 2>&1 || { tail -n 20 /tmp/argus_lab_e2e_restore.txt; echo "[LAB-E2E] FALLA: pipeline-start al restaurar"; exit 1; }
 	@# [ARGUS-LAB-RESTORE-D303] patron estricto: pgrep -a -f se imprime a si mismo y su linea contiene STOPPED
 	@if grep -E '^[[:space:]]*❌.*STOPPED' /tmp/argus_lab_e2e_restore.txt; then echo "[LAB-E2E] FALLA: componente STOPPED al restaurar"; exit 1; fi
 	@n=$$(grep -c -E '^[[:space:]]+✅ (etcd-server|ml-detector|sniffer|firewall):' /tmp/argus_lab_e2e_restore.txt); if [ "$$n" -lt 4 ]; then echo "[LAB-E2E] FALLA: solo $$n de 4 componentes RUNNING al restaurar"; exit 1; fi; echo "[LAB-E2E] restaurado: $$n de 4 componentes RUNNING"
-	@echo "[LAB-E2E] PASA los cinco E2E del lab $$(date '+%F %T')"
+	$(MAKE) lab-e2e-reinicio-etcd
+	@echo "[LAB-E2E] PASA todos los E2E del lab $$(date '+%F %T')"
 
 
 emecas++: emecas
@@ -1359,14 +1458,15 @@ emecas++: emecas
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@echo ""
 	@echo "══ Acto I — Arranque nominal con Vault ══"
-	$(MAKE) test-e2e-vault
+	@$(EMECAS_PASO) test-e2e-vault -- $(MAKE) test-e2e-vault
 	@echo ""
 	@echo "══ Acto II — Rotación controlada (pipeline sintético) ══"
-	$(MAKE) test-e2e-synthetic-full
-	$(MAKE) test-e2e-synthetic-firewall
+	@$(EMECAS_PASO) test-e2e-synthetic-full -- $(MAKE) test-e2e-synthetic-full
+	@$(EMECAS_PASO) test-e2e-synthetic-firewall -- $(MAKE) test-e2e-synthetic-firewall
 	@echo ""
 	@echo "══ Acto III — Fallo Vault controlado (token revocation) ══"
-	$(MAKE) vault-fault-inject
+	@$(EMECAS_PASO) vault-fault-inject -- $(MAKE) vault-fault-inject
+	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas++
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ EMECAS++ PASSED — 3 Actos verdes                     ║"
@@ -1554,7 +1654,7 @@ test-e2e-vault: vault-dev-seed
 	@# [ARGUS-VAULT-QUOTE-D303] comillas simples: CMAKE_FLAGS lleva comillas dobles (medido DAY303)
 	@vagrant ssh -c 'mkdir -p /vagrant/etcd-server/build-vault-$(PROFILE) && cd /vagrant/etcd-server/build-vault-$(PROFILE) && cmake $(CMAKE_FLAGS) .. -DARGUS_VAULT_ENABLED=ON > /dev/null 2>&1 && make etcd-server -j$$(nproc) 2>&1 | tail -3'
 	@echo "── Step 5: Smoke test etcd-server enterprise (Acto I — VaultProvider) ──"
-	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
+	@vagrant ssh -c "sudo timeout -k 2 8 env LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server -c /vagrant/etcd-server/config/etcd-server.smoke-enterprise.json 2>&1 | tee /tmp/etcd_vault_smoke.log | grep -E 'VaultProvider|ICryptoProvider|epoch|fatal' ; grep -q 'ICryptoProvider OK' /tmp/etcd_vault_smoke.log && echo '✅ Acto I: VaultProvider OK' || (echo '❌ Acto I FAILED' && exit 1)"
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
 	@echo "║  ✅ TEST-E2E-VAULT PASSED                                 ║"
@@ -1574,7 +1674,7 @@ vault-fault-inject:
 	@echo "── Fase 1: Crear token hijo para etcd-server ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token create -ttl=120s -display-name=argus-etcd-server-fault -field=token) && echo \$$CHILD_TOKEN > /tmp/argus_fault_token.txt && echo '✅ Token hijo creado'"
 	@echo "── Fase 2: Arrancar etcd-server con token hijo ──"
-	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
+	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && sudo bash -c 'LD_LIBRARY_PATH=/usr/local/lib VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN='\$$CHILD_TOKEN' /vagrant/etcd-server/build-vault-$(PROFILE)/etcd-server -c /vagrant/etcd-server/config/etcd-server.smoke-enterprise.json > /tmp/etcd_fault_test.log 2>&1 &' && sleep 3 && grep -a -E 'VaultProvider|ICryptoProvider OK' /tmp/etcd_fault_test.log && echo '✅ etcd-server arrancado con token hijo'"
 	@echo "── Fase 3: Revocar token hijo (simular Vault KO) ──"
 	@vagrant ssh -c "CHILD_TOKEN=\$$(cat /tmp/argus_fault_token.txt) && VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token vault token revoke \$$CHILD_TOKEN > /dev/null && echo '✅ Token revocado — Vault KO simulado'"
 	@echo "── Fase 4: Verificar modo AUTONOMOUS (cache RCU) ──"
@@ -1588,13 +1688,14 @@ vault-fault-inject:
 	@echo "║  ✅ VAULT-FAULT-INJECT PASSED                            ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
+# [VAULT-DEV-LOOPBACK-D312] Vault dev solo en 127.0.0.1, igual que el bootstrap del Vagrantfile y provision_crypto.sh
 vault-dev-start:
 	@echo "=== Arrancando Vault dev mode ==="
 	@vagrant ssh defender -c " \
 	  pgrep -x vault > /dev/null && echo 'Vault ya corriendo' || \
 	  (nohup vault server -dev \
 	    -dev-root-token-id=argus-dev-token \
-	    -dev-listen-address=0.0.0.0:8200 \
+	    -dev-listen-address=127.0.0.1:8200 \
 	    > /tmp/vault-dev.log 2>&1 &) ; \
 	  sleep 3 && \
 	  VAULT_ADDR=http://127.0.0.1:8200 VAULT_TOKEN=argus-dev-token \
@@ -2142,16 +2243,88 @@ dev-setup-tools:
 	@echo "🔧 Instalando herramientas de gestión en la VM..."
 	@vagrant ssh -c "sudo apt-get update && sudo apt-get install -y tmux net-tools"
 
-etcd-server-start: etcd-server
-	@echo "🚀 Starting etcd-server (Persistente)..."
-	@vagrant ssh -c "tmux kill-session -t etcd-server 2>/dev/null || true"
-	@vagrant ssh -c "tmux new-session -d -s etcd-server 'mkdir -p /vagrant/logs/lab && cd /vagrant && sudo env LD_LIBRARY_PATH=/usr/local/lib $(ETCD_SERVER_BUILD_DIR)/etcd-server >> /vagrant/logs/lab/etcd-server.log 2>&1'"
-	@sleep 2
-	@$(MAKE) etcd-server-status
+# ════════════════════════════════════════════════════════════════════════════
+# [ETCD-VM-D317] DEBT-ETCD-HA-TLS-RAFT-001 paso 6b: el etcd-server corre en la VM etcd como ml-defender-etcd-server.service
+# (Vagrantfile, [ETCD-SERVER-UNIT-D317]), junto a etcd y Vault. El binario se compila en el defender (única máquina que
+# compila) y etcd-vm-deploy lo lleva a la VM. Estado real (no procesos): scripts/etcd_ha/etcd_vm_estado.sh.
+#   ETCD_VM_ESPERA_S: segundos que etcd-vm-check y etcd-vm-aviso esperan a que todo esté sano (entero [0, 300], defecto 30)
+# ════════════════════════════════════════════════════════════════════════════
+ETCD_VM_ESPERA_S ?= 30
+ETCD_VM_UNIDAD := ml-defender-etcd-server.service
+ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
+.PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey protegidos-bootstrap test-argus-infra
+.PHONY: vigilancia-manager-deploy test-vigilancia-reglas test-vigilancia-disco
 
-etcd-server-stop:
-	@vagrant ssh -c "tmux kill-session -t etcd-server 2>/dev/null || true"
-	@echo "✅ etcd-server stopped"
+# [PROTEGIDOS-PUBKEY-D318] ADR-060 8e.2 (Mac): clave PÚBLICA del manifiesto de protegidos (Vault transit de la VM etcd)
+# al defender, donde CMake la compila en el firewall-acl-agent (patrón ADR-025). Lee con el certificado de argus-infra.
+protegidos-pubkey:
+	@bash scripts/etcd_ha/protegidos_pubkey.sh
+
+# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5 (Mac): el bootstrap firma la versión 1 del manifiesto de protegidos con la
+# propia herramienta del admin (argus-infra init, VM etcd) desde la plantilla del lab (tools/argus-infra/plantillas/
+# hospital-lab.json: .20 en infraestructura con su MAC, .61 en intranet). Idempotente (decisión de Alonso DAY322): rc 0
+# firmada; rc 4 ya había un manifiesto publicado y no se toca; cualquier otro código para el bootstrap.
+protegidos-bootstrap:
+	@vagrant ssh etcd -c "sudo /usr/local/sbin/argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json --si; echo ARGUS_INFRA_RC=\$$?" > /tmp/argus_protegidos_bootstrap.txt 2>&1; \
+	grep -v -e '^\[argus\]' -e '^ARGUS_INFRA_RC=' /tmp/argus_protegidos_bootstrap.txt; \
+	rc=$$(tr -d '\r' < /tmp/argus_protegidos_bootstrap.txt | sed -n 's/^ARGUS_INFRA_RC=\([0-9]*\)$$/\1/p' | tail -n 1); \
+	case "$$rc" in \
+	  0) echo "[PROTEGIDOS-BOOTSTRAP] versión 1 firmada desde la plantilla del lab";; \
+	  4) echo "[PROTEGIDOS-BOOTSTRAP] ya había un manifiesto publicado: no se toca";; \
+	  *) echo "[PROTEGIDOS-BOOTSTRAP] FALLA: argus-infra init rc=$${rc:-sin respuesta de la VM etcd} (/tmp/argus_protegidos_bootstrap.txt)"; exit 1;; \
+	esac
+
+# [PROTEGIDOS-MANIFIESTO-D319] ADR-060 8e.3d (Mac): tests de argus-infra (unittest, biblioteca estándar, sin red ni
+# Vault) con el Python de la VM etcd, donde vive la herramienta: el validador portado de libs/protegidos, la
+# configuración, la plantilla del laboratorio, el diff y la política.
+test-argus-infra:
+	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
+
+# [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
+# agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el
+# aprovisionador argus-vigilancia del Vagrantfile. La versión del manager sale de provisioning/wazuh/VERSION.
+vigilancia-manager-deploy:
+	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/wazuh_manager_desplegar.sh"
+
+# Cada regla de aRGus contra su línea de provisioning/wazuh/argus/tests/casos_reglas.tsv, con wazuh-logtest en el manager
+test-vigilancia-reglas:
+	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/test_reglas_wazuh.sh"
+
+# [VIGILANCIA-D321] tests de argus-disco (unittest, biblioteca estándar) con el Python de la VM etcd, donde corre:
+# configuración (rangos, tipos, defectos), medida como df y las líneas que leen el decoder y las reglas de Wazuh
+test-vigilancia-disco:
+	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/scripts/vigilancia/test_argus_disco.py"
+
+# Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
+etcd-vm-deploy:
+	@bash scripts/etcd_ha/d312_etcd_vm_deploy.sh $(PROFILE)
+	@$(MAKE) --no-print-directory deploy-configs
+	@vagrant ssh etcd -c "sudo systemctl restart $(ETCD_VM_UNIDAD)"
+	@$(MAKE) --no-print-directory etcd-vm-check
+
+# Informe (rc 0 siempre)
+etcd-vm-estado:
+	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO)"
+
+# Estricto (EMECAS): rc 1 si etcd-server, algún miembro etcd o Vault no están sanos tras ETCD_VM_ESPERA_S
+etcd-vm-check:
+	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)"
+
+# pipeline-start: informa y, si no está sano (o la VM está parada), avisa claro y sigue (decisión 4 de Alonso, DAY317)
+etcd-vm-aviso:
+	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)" > /tmp/argus_etcd_vm_aviso.txt 2>&1; rc=$$?; \
+	  cat /tmp/argus_etcd_vm_aviso.txt; \
+	  if [ $$rc -ne 0 ]; then \
+	    echo "[ETCD-VM-AVISO] la VM etcd NO está sana (o está parada): los componentes arrancan y protegen, pero sin clave HMAC no"; \
+	    echo "[ETCD-VM-AVISO] firman bronce ni CSV hasta que vuelvan etcd-server, etcd y Vault. Ver: make etcd-vm-estado; VM parada: vagrant up etcd"; \
+	  fi
+
+etcd-server-start:  # [ETCD-VM-D317] arranca el servicio de la VM etcd y exige que quede sano
+	@vagrant ssh etcd -c "sudo systemctl start $(ETCD_VM_UNIDAD)"
+	@$(MAKE) --no-print-directory etcd-vm-check
+
+etcd-server-stop:  # [ETCD-VM-D317] para el servicio de la VM etcd (Restart=always no lo relanza tras un stop explícito)
+	@vagrant ssh etcd -c "sudo systemctl stop $(ETCD_VM_UNIDAD); echo \"etcd-server de la VM etcd: \$$(systemctl is-active $(ETCD_VM_UNIDAD))\""
 
 # ============================================================================
 # TSAN Validation Suite (Day 48 Phase 0)
@@ -3002,11 +3175,13 @@ correlation-v1-rebuild: correlation-v1-clean correlation-v1-build correlation-v1
 .PHONY: test-firewall test-firewall-e2e
 # No-root: tests puros del firewall (validacion/parsing). Entra en make test-all.
 # Los tests que tocan ipset real hacen GTEST_SKIP sin root -> 'Skipped', no 'Failed'.
+# [ARGUS-GATE-PERF-D321] sin root: fuera e2e, root y perf, como test-components (medido DAY321: con -LE "e2e" los dos
+# IPSetWrapperPerfTest salían Skipped por falta de root). Los perf corren en test-firewall-perf, con root y su puerta.
 test-firewall:
-	@echo "🧪 firewall tests (perfil=$(PROFILE), sin root)"
+	@echo "🧪 firewall tests (perfil=$(PROFILE), sin root; e2e/root en test-firewall-e2e, perf en test-firewall-perf)"
 	@vagrant ssh -c 'cd $(FIREWALL_BUILD_DIR) && \
 		LD_LIBRARY_PATH=/usr/local/lib \
-		ctest -LE "e2e" --output-on-failure'
+		ctest -LE "e2e|root|perf" --output-on-failure'
 
 # e2e/root: integracion contra ipset real (canario de inyeccion H-2). Solo VM, con sudo.
 test-firewall-e2e:
@@ -3025,12 +3200,45 @@ test-firewall-perf:
 # emecas/emecas++ sin cambios. Cuando exista Eslabon 1 (Flujo A/B, Landing
 # Zone), este target gana sus propios Actos rio-abajo sin tocar emecas/emecas++.
 # ══════════════════════════════════════════════════════════════════════════
+# [MITRE-VENTANA-D323] tests de scripts/mitre_ventana.py y scripts/mitre_zeek_cosecha.sh con datos fabricados a partir
+# de lo medido DAY323 (rotación de Zeek de las 10:00, eve.json de dos corridas, archivado de zeekctl en segundo plano,
+# .gz cortado). Se lanza en la VM zeek (GNU date); no toca Zeek. mitre-check lo pasa antes de la corrida.
+.PHONY: test-mitre-ventana
+test-mitre-ventana:
+	@vagrant ssh zeek -c "bash /vagrant/scripts/test_mitre_ventana.sh"
+
+# [EMECAS-TODO-D317] Acto IV (río abajo, ADR-058): los tres adapters recompilados desde cero y probados (no se usan
+# binarios de VMs que ya no existen), pipeline arrancado y MITRE -> grafo con veredicto (scripts/mitre_veredicto.sh).
+.PHONY: mitre-check
+mitre-check:
+	@echo "[MITRE-CHECK] $$(date '+%T') tests de la ventana y de la cosecha de Zeek (log: /tmp/argus_mitre_check_tests.txt)"
+	@$(MAKE) --no-print-directory test-mitre-ventana > /tmp/argus_mitre_check_tests.txt 2>&1 || { tail -n 20 /tmp/argus_mitre_check_tests.txt; echo "[MITRE-VEREDICTO] FALLA: test-mitre-ventana"; exit 1; }
+	@# [LAB-NTP-SENSORES-D323] un solo reloj: el grafo del día junta los tres sensores por ventana de tiempo; si una VM
+	@# de la corrida no va con el defender (< LAB_CLOCK_MAX_OFFSET_S), es un fallo operacional y mitre-check FALLA
+	@echo "[MITRE-CHECK] $$(date '+%T') 0/3 relojes del lab: defender y client suricata zeek (log: /tmp/argus_mitre_check_reloj.txt)"
+	@$(MAKE) --no-print-directory lab-clock-step LAB_CLOCK_VMS="client suricata zeek" > /tmp/argus_mitre_check_reloj.txt 2>&1 || { tail -n 20 /tmp/argus_mitre_check_reloj.txt; echo "[MITRE-VEREDICTO] FALLA: relojes del lab"; exit 1; }
+	@echo "[MITRE-CHECK] $$(date '+%T') 1/3 parando el pipeline (log: /tmp/argus_mitre_check_stop.txt)"
+	@# [EMECAS-TODO-D317] pipeline-start no admite un pipeline ya arrancado (duplicate session, medido DAY317): se para
+	@# antes, como en los E2E del lab, y el Acto IV parte siempre de un pipeline limpio
+	@$(MAKE) --no-print-directory pipeline-stop > /tmp/argus_mitre_check_stop.txt 2>&1 || { tail -n 20 /tmp/argus_mitre_check_stop.txt; echo "[MITRE-VEREDICTO] FALLA: pipeline-stop"; exit 1; }
+	@echo "[MITRE-CHECK] $$(date '+%T') 2/3 arrancando el pipeline (log: /tmp/argus_mitre_check_start.txt)"
+	@$(MAKE) --no-print-directory pipeline-start > /tmp/argus_mitre_check_start.txt 2>&1 || { tail -n 20 /tmp/argus_mitre_check_start.txt; echo "[MITRE-VEREDICTO] FALLA: pipeline-start"; exit 1; }
+	@if grep -E '^[[:space:]]*❌.*STOPPED' /tmp/argus_mitre_check_start.txt; then echo "[MITRE-VEREDICTO] FALLA: componente STOPPED"; exit 1; fi
+	@echo "[MITRE-CHECK] $$(date '+%T') 3/3 mitre_start.sh y veredicto (la salida sale aquí y en logs/lab/mitre-veredicto-*.txt)"
+	@bash scripts/mitre_veredicto.sh
+
 emecas+++: emecas++
 	@echo ""
+	@echo "══ Acto IV — río abajo: adapters desde cero y MITRE -> grafo con veredicto ══"
+	@$(EMECAS_PASO) suricata-adapter-test -- $(MAKE) suricata-adapter-test
+	@$(EMECAS_PASO) zeek-adapter-test -- $(MAKE) zeek-adapter-test
+	@$(EMECAS_PASO) wazuh-adapter-test -- $(MAKE) wazuh-adapter-test
+	@$(EMECAS_PASO) mitre-check -- $(MAKE) mitre-check
+	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas+++
+	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
-	@echo "║  ✅ EMECAS+++ PASSED — circuito bronce->Kuzu verificado    ║"
-	@echo "║  (test_bronze_to_kuzu_circuit, dentro de test-all)          ║"
-	@echo "║  Eslabon 1+ (Landing Zone) anadira Actos propios aqui       ║"
+	@echo "║  ✅ EMECAS+++ PASSED — Acto IV: aRGus, Suricata y Zeek     ║"
+	@echo "║  hasta el grafo, invariante 0, flujos corroborados > 0     ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
 .PHONY:eslabon1-smoke-build eslabon1-smoke-test
@@ -3075,7 +3283,7 @@ suricata-adapter-clean:
 	@echo "✅ suricata-adapter cleaned"
 
 .PHONY: mitre-start
-mitre-start: ## MITRE -> grafo (requiere pipeline-start arriba). Ver DEBT-HMAC-KEY-INSECURE-TRANSPORT-001.
+mitre-start: ## MITRE -> grafo (requiere pipeline-start arriba y el etcd-server de la VM etcd). Clave por mTLS: DEBT-BRONZE-KEY-PROVISIONING-001.
 	@bash scripts/mitre_start.sh
 
 # zeek-adapter — conn.log -> bronce correlation_v1 (DAY 235)

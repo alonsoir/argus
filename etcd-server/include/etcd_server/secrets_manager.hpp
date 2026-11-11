@@ -1,188 +1,120 @@
-// /vagrant/etcd-server/include/etcd_server/secrets_manager.hpp
-// Day 54: HMAC Secrets Manager with Grace Period Support
-//
-// Co-authored-by: Claude (Anthropic)
-// Co-authored-by: Alonso
-
 #pragma once
-
-#include <string>
-#include <vector>
+// etcd-server/include/etcd_server/secrets_manager.hpp — [ETCD-CLAVES-D314]
+// Claves HMAC del bronce con ventana de dos, persistidas en un ISecretStore (Vault en la VM etcd; memoria solo en el smoke
+// enterprise de emecas++). DEBT-ETCD-HA-TLS-RAFT-001, paso 4b.4. Sustituye al SecretsManager de DAY54 (claves solo en memoria:
+// un reinicio del etcd-server daba otra clave y el bronce anterior ya no se podía verificar; carrera de DAY311 en
+// leer-o-crear; enfriamiento sin mutex; parse_time con mktime).
+//
+// En el almacén (rutas relativas al montaje; el CN ya validado por la tabla authz):
+//   <CN>/<huella8> = {"clave": hex, "creada": ISO-8601 UTC}       inmutable: se escribe con CAS 0 y nunca se borra
+//   <CN>/ventana   = {"activa": h8, "anterior": h8|"", "expira_anterior": ISO|""}   se cambia con CAS = versión leída
+// huella8 = 4 primeros bytes del SHA-256 de los bytes de la clave, en hex (igual que CorrelationWriter::fingerprint
+// del ml-detector). En el log solo sale la huella, nunca la clave.
+//
+// Reglas (decisiones de Alonso DAY310/DAY313/DAY314):
+//   - Un único mutex para leer-o-crear y rotar: dos primeras peticiones no crean dos claves. Entre procesos (PR2, HA)
+//     lo garantiza el CAS: si otro creó o rotó antes, se relee y se usa lo suyo.
+//   - Almacén no disponible: se sirve la última ventana conocida (desde_copia = true); sin copia, NoDisponible (503) y
+//     NUNCA se genera una clave que no quede guardada. Rotar exige el almacén (503).
+//   - Enfriamiento: no se rota sin force antes de min_rotation_interval_seconds desde que se creó la clave activa
+//     (medido en el almacén: vale tras un reinicio y entre instancias). Como min_rotation >= grace, la anterior ya
+//     caducó cuando llega la siguiente rotación: nunca hay más de dos claves válidas.
+//   - Avisos periódicos: [ETCD-CLAVES-MEMORIA] (modo memoria) y [ETCD-VAULT-NO-DISPONIBLE] cada aviso_intervalo_s;
+//     [ETCD-VAULT-RECUPERADO] al volver.
+#include "etcd_server/etcd_server_claves.hpp"
+#include <atomic>
+#include <ctime>
+#include <functional>
+#include <iostream>
+#include <map>
 #include <memory>
-#include <chrono>
-#include <nlohmann/json.hpp>
-#include "spdlog/spdlog.h"
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
 
 namespace etcd_server {
 
-/**
- * @brief HMAC Key structure with grace period metadata
- */
-struct HMACKey {
-    std::string key_data;                              // Hex-encoded key bytes
-    std::chrono::system_clock::time_point created_at;  // Creation timestamp
-    std::chrono::system_clock::time_point expires_at;  // Expiration timestamp (created_at + grace_period after rotation)
-    bool is_active;                                     // true = current key, false = grace period only
-    std::string component;                              // Component name (e.g., "ml-detector")
+struct SecretsConfig {
+    int grace_period_seconds = 300;
+    int default_key_length_bytes = 32;
+    int min_rotation_interval_seconds = 300;
 };
 
-/**
- * @brief Manages HMAC secrets for log integrity with zero-downtime rotation
- *
- * Features:
- * - HMAC-SHA256 key generation (256-bit)
- * - Key rotation with configurable grace period
- * - System-wide grace period (NO per-component override)
- * - All config from JSON (zero hardcoding)
- *
- * Architecture:
- * - Reads config from nlohmann::json (etcd_server.json)
- * - Grace period applies to ALL components
- * - Old keys valid for grace_period_seconds after rotation
- *
- * Via Appia Quality: Piano piano, cada fase 100% testeada
- */
+struct ClaveHMAC {
+    std::string hex;           // la clave (hex): SOLO para la respuesta HTTP al componente autorizado
+    std::string huella;        // 8 hex
+    std::time_t creada = 0;
+    std::time_t expira = 0;    // 0 = activa (no caduca)
+    bool activa = false;
+};
+
+enum class ResultadoClaves { Ok, NoDisponible, Enfriamiento, Conflicto, NombreInvalido };
+
 class SecretsManager {
 public:
-    /**
-     * @brief Constructor with nlohmann::json configuration
-     *
-     * @param config JSON object from etcd_server.json
-     *
-     * Required config structure:
-     * {
-     *   "secrets": {
-     *     "grace_period_seconds": 300,
-     *     "rotation_interval_hours": 168,
-     *     "default_key_length_bytes": 32
-     *   }
-     * }
-     */
-    struct Config {
-        bool enabled = true;
-        int default_key_length = 32;
-        int rotation_interval_hours = 168;
-        bool auto_generate_on_startup = true;
+    using Reloj = std::function<std::time_t()>;
+    using Generador = std::function<std::string(size_t bytes)>;  // devuelve hex
 
-        // Day 54: AÑADIR ESTA LÍNEA
-        int grace_period_seconds = 300;
-		// Day 56: Cooldown window (ADR-004)
-    	int min_rotation_interval_seconds = 300;
-    };
+    SecretsManager(const SecretsConfig& cfg, std::unique_ptr<argus::claves::ISecretStore> almacen, bool modo_memoria,
+                   int aviso_intervalo_s, int sondeo_s, Reloj reloj = [] { return std::time(nullptr); },
+                   std::ostream& log = std::cout, Generador generador = {});
+    ~SecretsManager();
+    SecretsManager(const SecretsManager&) = delete;
+    SecretsManager& operator=(const SecretsManager&) = delete;
 
-    explicit SecretsManager(const nlohmann::json& config);
+    // GET /secrets/{c}: la activa; si no hay ninguna (y el almacén responde), la crea
+    ResultadoClaves activa(const std::string& cn, ClaveHMAC& out, bool& desde_copia);
+    // POST /secrets/rotate/{c}: reintentar_s se rellena con Enfriamiento
+    ResultadoClaves rotar(const std::string& cn, bool force, ClaveHMAC& nueva, int& reintentar_s);
+    // GET /secrets/valid/{c}: activa + anterior si no ha caducado (activa primero). Sin clave todavía: Ok y vacío
+    ResultadoClaves validas(const std::string& cn, std::vector<ClaveHMAC>& out, bool& desde_copia);
 
-    /**
-     * @brief Generate new HMAC key for component
-     *
-     * @param component Component name (e.g., "ml-detector")
-     * @return HMACKey Generated key with metadata
-     */
-    HMACKey generate_hmac_key(const std::string& component);
+    // Arranque: un sondeo del almacén con su línea de log ([ETCD-VAULT] conectado | [ETCD-VAULT-NO-DISPONIBLE])
+    void comprobar_al_arrancar();
+    // Una pasada de avisos periódicos y sondeo si está caído (pública para los tests; el monitor la llama cada 1 s)
+    void revisar();
+    void arrancar_monitor();
+    void parar_monitor();
 
-    /**
- 	* @brief Rotate HMAC key with grace period and cooldown enforcement
- 	*
- 	* Old key marked with:
- 	* - is_active = false
- 	* - expires_at = now + grace_period_seconds
- 	*
- 	* Cooldown: Rotation rejected if last rotation < min_rotation_interval_seconds ago
- 	*
- 	* @param component Component name
- 	* @param force Emergency override (bypasses cooldown, requires logging)
- 	* @return HMACKey New active key
- 	* @throws std::runtime_error if cooldown not elapsed and force=false
- 	*/
-	HMACKey rotate_hmac_key(const std::string& component, bool force = false);
+    bool almacen_disponible();
+    int get_grace_period_seconds() const { return cfg_.grace_period_seconds; }
 
-    /**
-     * @brief Get current active key for component
-     *
-     * @param component Component name
-     * @return HMACKey Active key (is_active = true)
-     */
-    HMACKey get_hmac_key(const std::string& component);
-
-    /**
-     * @brief List all keys for component (active + grace + expired)
-     *
-     * @param component Component name
-     * @return std::vector<HMACKey> All keys, sorted by creation time (newest first)
-     */
-    std::vector<HMACKey> list_hmac_keys(const std::string& component);
-
-    /**
-     * @brief Get all valid keys (active + grace period, excluding expired)
-     *
-     * @param component Component name
-     * @param now Current time (for testing)
-     * @return std::vector<HMACKey> Valid keys, sorted (active first, then by age)
-     */
-    std::vector<HMACKey> get_valid_keys(
-        const std::string& component,
-        std::chrono::system_clock::time_point now = std::chrono::system_clock::now()
-    );
-
-    /**
-     * @brief Check if key is still valid (not expired)
-     *
-     * @param key Key to check
-     * @param now Current time (for testing)
-     * @return bool True if now < expires_at
-     */
-    bool is_key_valid(
-        const HMACKey& key,
-        std::chrono::system_clock::time_point now = std::chrono::system_clock::now()
-    );
-
-    /**
-     * @brief Get configured grace period
-     *
-     * @return int Grace period in seconds
-     */
-    int get_grace_period_seconds() const { return grace_period_seconds_; }
-
-	/**
-     * @brief Format time_point to ISO8601 string
-     */
-    std::string format_time(std::chrono::system_clock::time_point tp);
+    static std::string huella(const std::string& hex);
+    static std::string iso(std::time_t t);
+    static bool desde_iso(const std::string& s, std::time_t& t);
 
 private:
-    std::shared_ptr<spdlog::logger> logger_;
+    struct Ventana {
+        std::string activa, anterior;
+        std::time_t expira_anterior = 0;
+        int version = 0;
+    };
+    using Estado = argus::claves::Estado;
 
-    // Configuration (immutable after construction, from JSON)
-    const int grace_period_seconds_;       // System-wide grace period
-    const int rotation_interval_hours_;
-    const int default_key_length_bytes_;
-    const int min_rotation_interval_seconds_;
+    Estado leer_ventana_locked(const std::string& cn, Ventana& v, bool permitir_copia, bool& desde_copia);
+    Estado leer_clave_locked(const std::string& cn, const std::string& h, ClaveHMAC& out);
+    Estado crear_clave_locked(const std::string& cn, ClaveHMAC& out);
+    Estado anotar(Estado e);
+    std::string generar(size_t bytes);
 
+    SecretsConfig cfg_;
+    std::unique_ptr<argus::claves::ISecretStore> almacen_;
+    const bool modo_memoria_;
+    const int aviso_, sondeo_;
+    Reloj reloj_;
+    std::ostream& log_;
+    Generador generador_;
 
-    // In-memory storage (TODO Day 55: Integrate with actual etcd)
-    std::map<std::string, std::vector<HMACKey>> keys_storage_;
-    std::mutex storage_mutex_;
-    std::map<std::string, std::chrono::system_clock::time_point> last_rotation_;
+    std::mutex m_;
+    std::map<std::string, Ventana> ventanas_;   // última ventana conocida por CN (la copia)
+    std::map<std::string, ClaveHMAC> claves_;   // "<CN>/<huella>" -> clave (inmutables: se guardan para siempre)
+    bool disponible_ = true;
+    std::time_t caida_desde_ = 0, ultimo_aviso_caida_ = 0, ultimo_aviso_memoria_ = 0, ultimo_sondeo_ = 0;
+    bool aviso_memoria_dado_ = false;
 
-
-    /**
-     * @brief Store key in memory (TODO: Replace with etcd)
-     */
-    void store_key(const HMACKey& key);
-
-    /**
-     * @brief Generate random bytes for key material
-     */
-    std::vector<uint8_t> generate_random_bytes(size_t length);
-
-    /**
-     * @brief Parse ISO8601 string to time_point
-     */
-    std::chrono::system_clock::time_point parse_time(const std::string& time_str);
-
-    /**
-     * @brief Convert bytes to hex string
-     */
-    static std::string bytes_to_hex(const std::vector<uint8_t>& bytes);
+    std::atomic<bool> monitor_activo_{false};
+    std::thread monitor_;
 };
 
-} // namespace etcd_server
+}  // namespace etcd_server

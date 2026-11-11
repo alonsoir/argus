@@ -35,6 +35,15 @@ $1 == "S" {
   p50 = index(mem, "192.168.100.50:")
   if (index(mem, "192.168.100.61:") > 0) n61++
   if (index(mem, "192.168.100.51:") > 0) n51++
+  # [PROTEGIDOS-C7-D320] .20 (VM etcd, infraestructura): nunca en el blacklist; su contador en el set de protegidos
+  if (index(mem, "192.168.100.20:") > 0) n20++
+  pr = $5; sub(/^prot=/, "", pr); c20 = -1
+  q = index(pr, "192.168.100.20,")
+  if (q) { s20 = substr(pr, q); sub(/;.*/, "", s20); split(s20, z, ":"); if (z[2] ~ /^[0-9]+$/) c20 = z[2] + 0 }
+  if (c20 >= 0 && t >= mk["inicio_ataque1"] && t <= mk["fin_ataque2"]) {
+    if (!v20) { v20 = 1; c20_ini = c20 }
+    c20_fin = c20
+  }
   to50 = ""; co50 = ""
   if (p50) { s = substr(mem, p50); sub(/;.*/, "", s); split(s, b, ":"); to50 = b[2]; co50 = b[3] }
   ns++
@@ -61,7 +70,9 @@ END {
   printf "C4 %s .50 sale %s s tras fin_ataque1 (ventana [%d, %d]; escalon 1 = 60 s; strikes=1 al entrar)\n", v(c4), (s1 ? sprintf("%.1f", s1 - fa1) : "no sale"), SAL1_MIN, SAL1_MAX
   c5 = (e2 > 0 && co_e2 ~ /strikes=2/ && to_e2 + 0 > 60 && to_e2 + 0 <= 120 && s2 > 0 && s2 - fa2 >= SAL2_MIN && s2 - fa2 <= SAL2_MAX)
   printf "C5 %s ataque 2: entra %s s tras inicio_ataque2 con timeout=%s %s; sale %s s tras fin_ataque2 (ventana [%d, %d]; escalon 2 = 120 s)\n", v(c5), (e2 ? sprintf("%.1f", e2 - ia2) : "nunca"), to_e2, co_e2, (s2 ? sprintf("%.1f", s2 - fa2) : "no sale"), SAL2_MIN, SAL2_MAX
-  todo = c1 && c2 && c3 && c4 && c5
+  c7 = (n20 == 0 && v20 && c20_fin > c20_ini)
+  printf "C7 %s .20 (infraestructura) en el blacklist en %d muestras; su entrada del set de protegidos %s durante los ataques\n", v(c7), n20, (v20 ? sprintf("%d -> %d paquetes", c20_ini, c20_fin) : "no aparece en el muestreo")
+  todo = c1 && c2 && c3 && c4 && c5 && c7
   printf "RESULTADO %s\n", (todo ? "PASA" : "FALLA")
   exit (todo ? 0 : 1)
 }

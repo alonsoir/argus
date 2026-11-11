@@ -1,0 +1,31 @@
+# provisioning/wazuh/argus/tests/casos_reglas.tsv — [VIGILANCIA-D321] un caso por regla de ../rules/argus_rules.xml,
+# más los que NO deben alertar. Columnas (tabulador): nombre, regla esperada, nivel esperado, línea tal como la recibe el
+# manager. Líneas reales del lab cuando las hay (Vault, DAY321 M4; [PROTEGIDOS-*], logs del firewall DAY320-321) y, si
+# no, el formato exacto del código. Lo ejecuta scripts/vigilancia/test_reglas_wazuh.sh con wazuh-logtest.
+divergencia_set	100511	10	[PROTEGIDOS-DIVERGENCIA] set ml_defender_protegidos != manifiesto version 9: sobran=[10.66.6.6/32,eth2] faltan=[]
+divergencia_reglas	100511	10	[PROTEGIDOS-DIVERGENCIA] reglas: falta el RETURN de protegidos en ML_DEFENDER_TEST
+reconciliado	100512	3	[PROTEGIDOS-RECONCILIADO] set ml_defender_protegidos = manifiesto version 9 (comprobado tras volver a leer)
+spoofing	100513	12	[PROTEGIDOS-SPOOFING] origen protegido falsificado: interfaz=+20 mac=+0 (total interfaz=20 mac=0) modo=descarta; evidencia: journalctl -k | grep ARGUS-SPOOF
+manifiesto_rechazado	100514	12	[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=firma firma no verificable con ninguna clave compilada (etcd-server; se conserva la version 9)
+sin_manifiesto	100515	8	[PROTEGIDOS-SIN-MANIFIESTO] sin manifiesto verificado (hospital=hospital-lab planta=lab-vagrant caché=/var/lib/ml-defender/firewall/protegidos.manifiesto): mitigacion real BLOQUEADA (candado); sombra; ningún rango protegido
+ruta	100516	8	[PROTEGIDOS-RUTA] intranet 192.168.100.63/32 eth3: esa red no se cuenta ni se descarta (periódico)
+vigia_error	100517	12	[PROTEGIDOS-VIGIA] ERROR al reconciliar: ipset swap falló (rc=1)
+vigia_resumen_sin_alerta	100510	0	[PROTEGIDOS-VIGIA] comprobaciones=120 divergencias=0 reconciliaciones=0 fallos=0
+antispoof_error	100518	10	[PROTEGIDOS-ANTISPOOF] ERROR al aplicar (manifiesto version 9 -> 10): iptables-restore rc=1
+antispoof_no_instalado	100518	10	[PROTEGIDOS-ANTISPOOF] NO instalado: nombres que chocan con protegidos.set_name (periódico)
+antispoof_resumen_sin_alerta	100510	0	[PROTEGIDOS-ANTISPOOF] modo=descarta version=11 redes=3 spoofing_interfaz=0 spoofing_mac=0 sin_ruta=0
+rp_filter_sin_alerta	100510	0	[PROTEGIDOS-RP-FILTER] eth2=0 (all=0 if=0, sin filtro); el kernel usa max(all, interfaz): 0 sin filtro, 1 estricto, 2 laxo; solo se informa, no se cambia (H-F)
+vault_audit_request	100520	12	Nov  9 08:45:05 argus-etcd vault[528]: 2026-11-09T08:45:05.105Z [ERROR] audit: log request underlying pipeline error(s): error="error writing file for sink \"/var/log/vault/audit.log\": unable to re-open file for sink \"/var/log/vault/audit.log\": unable to open file for sink \"/var/log/vault/audit.log\": open /var/log/vault/audit.log: operation not permitted"
+vault_audit_response	100520	12	Nov  9 08:45:05 argus-etcd vault[528]: 2026-11-09T08:45:05.124Z [ERROR] audit: log response underlying pipeline error(s): error="error writing file for sink \"/var/log/vault/audit.log\": unable to open file for sink \"/var/log/vault/audit.log\": unable to open file for sink \"/var/log/vault/audit.log\": open /var/log/vault/audit.log: operation not permitted"
+vault_info_sin_alerta	-	-	Nov  9 08:45:05 argus-etcd vault[528]: 2026-11-09T08:45:05.300Z [INFO]  core: successful mount: namespace="" path=argus-transit/ type=transit
+spoof_if	100530	12	Nov  9 08:46:01 argus-defender kernel: ARGUS-SPOOF-IF IN=veth-d320a OUT= MAC=02:00:00:00:00:02:02:00:00:00:00:01:08:00 SRC=192.168.100.20 DST=192.168.100.1 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=1 DF PROTO=ICMP TYPE=8 CODE=0 ID=7 SEQ=1
+spoof_mac	100530	12	Nov  9 08:46:02 argus-defender kernel: ARGUS-SPOOF-MAC IN=eth2 OUT= MAC=08:00:27:aa:bb:cc:08:00:27:11:22:33:08:00 SRC=192.168.100.62 DST=192.168.100.1 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=2 DF PROTO=ICMP TYPE=8 CODE=0 ID=8 SEQ=1
+disco_ok_sin_alerta	100540	0	Nov  9 09:00:00 argus-etcd argus-disco[900]: ARGUS-DISCO ruta=/var/log/vault uso=3 umbral=75 estado=OK
+disco_alto	100541	10	Nov  9 09:00:00 argus-etcd argus-disco[900]: ARGUS-DISCO ruta=/var/log/vault uso=81 umbral=75 estado=ALTO
+disco_error	100542	8	Nov  9 09:00:00 argus-etcd argus-disco[900]: ARGUS-DISCO-ERROR ruta=/var/log/vault: [Errno 2] No such file or directory
+disco_config_sin_alerta	100540	0	Nov  9 09:00:00 argus-etcd argus-disco[900]: ARGUS-DISCO-CONFIG ruta=/var/log/vault (fichero) umbral_pct=75 (fichero) periodo_s=60 (fichero)
+disco_config_error	100542	8	Nov  9 09:00:00 argus-etcd argus-disco[900]: ARGUS-DISCO-ERROR config=/etc/argus-vigilancia/disco.json: umbral_pct=0 no vale (entero en [1, 99]); se usa el defecto 75
+falco_critical	100551	12	{"hostname":"argus-etcd","output":"10:00:00.000000000: Critical aRGus lectura de clave por un proceso ajeno (proc=/usr/bin/cat padre=/usr/bin/sudo fichero=/etc/argus-pki/etcd-server.key)","priority":"Critical","rule":"argus_lab_clave_leida_ajeno","source":"syscall","tags":["argus"],"time":"2026-11-09T10:00:00.000000000Z"}
+falco_warning	100552	8	{"hostname":"argus-defender","output":"10:00:00.000000000: Warning aRGus ...","priority":"Warning","rule":"argus_lab_prueba_warning","source":"syscall","tags":["argus"],"time":"2026-11-09T10:00:00.000000000Z"}
+falco_notice	100553	4	{"hostname":"argus-etcd","output":"10:00:00.000000000: Notice aRGus lectura administrativa de clave (proc=/usr/local/bin/etcdctl)","priority":"Notice","rule":"argus_lab_clave_leida_admin","source":"syscall","tags":["argus"],"time":"2026-11-09T10:00:00.000000000Z"}
+falco_ajena_sin_alerta_argus	-	-	{"hostname":"argus-etcd","output":"x","priority":"Critical","rule":"Read sensitive file untrusted","source":"syscall","tags":[],"time":"2026-11-09T10:00:00.000000000Z"}

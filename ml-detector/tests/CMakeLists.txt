@@ -228,7 +228,8 @@ if(GTest_FOUND AND
 endif()
 
 # ── test_etcd_client_hmac ─────────────────────────────────────────────────────
-# etcd_client.cpp depends on: httplib.h (header-only), nlohmann_json, crypto_transport
+# [ETCD-CLIENTE-D316] etcd-server falso = httplib::SSLServer con PKI desechable (openssl en /tmp, E2).
+# CPPHTTPLIB_OPENSSL_SUPPORT igual que en libetcd_client para que httplib.h sea el mismo en ambos lados (ODR).
 if(GTest_FOUND AND
         EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/integration/test_etcd_client_hmac.cpp")
 
@@ -238,7 +239,9 @@ if(GTest_FOUND AND
     )
     target_include_directories(test_etcd_client_hmac PRIVATE
             /usr/local/include   # ← httplib.h para MockEtcdServer
+            ${ETCD_CLIENT_INCLUDE_DIR}
     )
+    target_compile_definitions(test_etcd_client_hmac PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
     target_link_libraries(test_etcd_client_hmac PRIVATE
             ${ETCD_CLIENT_LIB}
             ${CRYPTO_TRANSPORT_LIB}

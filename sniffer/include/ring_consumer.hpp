@@ -100,11 +100,10 @@ class RingBufferConsumer {
 public:
     using EventCallback = std::function<void(const SimpleEvent&)>;
 
-    // 🎯 DAY 29: Constructor with encryption seed
+    // [ETCD-CLIENTE-B1-D316] G5: sin el parámetro encryption_seed (ignorado desde DAY98; cifra SeedClient, ADR-013)
     explicit RingBufferConsumer(
         const SnifferConfig& config,
-        const FastDetectorConfig& fast_detector_config = FastDetectorConfig{},
-        const std::string& encryption_seed = ""
+        const FastDetectorConfig& fast_detector_config = FastDetectorConfig{}
     );
 
     ~RingBufferConsumer();

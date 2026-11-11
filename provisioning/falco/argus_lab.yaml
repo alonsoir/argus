@@ -1,0 +1,139 @@
+# provisioning/falco/argus_lab.yaml — [VIGILANCIA-D321] ADR-060 8e.4d: reglas de Falco de aRGus para el lab (VM etcd y
+# defender). Las instala scripts/vigilancia/falco_instalar.sh en /etc/falco/rules.d/; son las ÚNICAS que carga Falco
+# (argus_salida.yaml). Sus eventos van en JSON a /var/log/falco/eventos.json, de ahí al agente de Wazuh y al manager
+# (reglas 100550-100553).
+#
+# Todo por RUTA (proc.exepath / proc.pexepath), nunca por nombre: el kernel corta el nombre a 15 caracteres
+# (firewall-acl-agent -> firewall-acl-ag), medido DAY321; las reglas de hardened que comparan nombres nunca vieron al
+# firewall (DEBT-HARDENED-FALCO-RUTAS-001).
+#
+# Las listas de permitidos salen de MEDIR el lab (scripts/etcd_ha/d321_medir_falco_hijos.sh v2, DAY321: pipeline-stop,
+# pipeline-start, pipeline-status, lab-e2e-mitigacion con la mitigación real, pipeline-start), no de leer el código:
+#   hijos:    firewall-acl-agent -> /usr/sbin/ipset (513), /usr/sbin/xtables-nft-multi (268, como iptables*),
+#             /usr/bin/ip (40); sniffer -> /usr/bin/dash (6: sh -c sysctl, DEBT-SNIFFER-SYSTEM-SYSCTL-001);
+#             etcd-server, vault, etcd y ml-detector: ninguno.
+#   lecturas: cada servidor sus claves y su semilla; etcdctl y curl con sudo (pipeline-status) la del etcd-server;
+#             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem.
+# Cualquier otra cosa es CRITICAL. Coste: Falco filtra en el kernel por tipo de evento (execve y open*), O(1) por evento.
+
+# ── Procesos vigilados, por ruta ───────────────────────────────────────────────────────────────────────────────────
+- macro: argus_lab_es_firewall
+  condition: proc.exepath glob "/vagrant/firewall-acl-agent/build-*/firewall-acl-agent"
+- macro: argus_lab_es_sniffer
+  condition: proc.exepath glob "/vagrant/sniffer/build-*/sniffer"
+- macro: argus_lab_es_ml_detector
+  condition: proc.exepath glob "/vagrant/ml-detector/build-*/ml-detector"
+- macro: argus_lab_es_etcd_server
+  condition: proc.exepath = /opt/argus/etcd-server/bin/etcd-server
+- macro: argus_lab_es_etcd
+  condition: proc.exepath = /usr/local/bin/etcd
+- macro: argus_lab_es_vault
+  condition: proc.exepath = /usr/bin/vault
+- macro: argus_lab_es_fim_wazuh
+  condition: proc.exepath = /var/ossec/bin/wazuh-syscheckd
+
+# [VAULT-ARRANQUE-D322] el desellado del Vault del lab (provisioning/vault/argus-vault-unseal, identidad propia
+# CN=argus-vault-unseal sin políticas en Vault): lo lanza systemd (argus-vault-unseal.service), así que el bash del script
+# es hijo de pid 1 y cada curl es hijo directo del script. Solo su clave: la del etcd-server ya no la usa.
+- macro: argus_lab_es_desellado
+  condition: >
+    (proc.exepath = /usr/bin/curl and proc.pexepath = /usr/bin/bash and proc.apid[2] = 1 and
+     fd.name = /etc/argus-pki/argus-vault-unseal.key)
+
+- macro: argus_lab_padre_vigilado
+  condition: >
+    (proc.pexepath glob "/vagrant/firewall-acl-agent/build-*/firewall-acl-agent" or
+     proc.pexepath glob "/vagrant/sniffer/build-*/sniffer" or
+     proc.pexepath glob "/vagrant/ml-detector/build-*/ml-detector" or
+     proc.pexepath = /opt/argus/etcd-server/bin/etcd-server or
+     proc.pexepath = /usr/local/bin/etcd or
+     proc.pexepath = /usr/bin/vault)
+
+# ── 1. Hijo inesperado de un proceso vigilado ──────────────────────────────────────────────────────────────────────
+- macro: argus_lab_hijo_permitido
+  condition: >
+    (proc.pexepath glob "/vagrant/firewall-acl-agent/build-*/firewall-acl-agent" and
+      (proc.exepath in (/usr/sbin/ipset, /usr/bin/ip) or
+       (proc.exepath = /usr/sbin/xtables-nft-multi and proc.name in (iptables, iptables-save, iptables-restore)))) or
+    (proc.pexepath glob "/vagrant/sniffer/build-*/sniffer" and proc.exepath = /usr/bin/dash and
+      proc.cmdline in ("sh -c sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1",
+                       "sh -c sysctl -w net.ipv6.conf.all.forwarding=1 > /dev/null 2>&1"))
+
+- rule: argus_lab_hijo_inesperado
+  desc: Un componente de aRGus, etcd o Vault lanza un proceso que no está en la lista medida (posible ejecución de órdenes)
+  condition: evt.type in (execve, execveat) and argus_lab_padre_vigilado and not argus_lab_hijo_permitido
+  output: >
+    aRGus hijo inesperado (padre=%proc.pexepath hijo=%proc.exepath cmd=%proc.cmdline usuario=%user.name)
+  priority: CRITICAL
+  tags: [argus, exec, adr-060]
+
+# ── 2. Lectura de una clave o una semilla ──────────────────────────────────────────────────────────────────────────
+# [VAULT-ARRANQUE-D322] fd.num>=0: solo un open que TUVO ÉXITO (como la macro open_read del reglamento oficial de Falco).
+# Medido DAY322: GNU install hace openat(destino, O_RDONLY|O_PATH|O_DIRECTORY) para saber si es un directorio; falla
+# (ENOENT/ENOTDIR), no lee nada y daba un CRITICAL al instalar una clave.
+- macro: argus_lab_lee_fichero
+  condition: evt.type in (open, openat, openat2) and evt.is_open_read=true and fd.typechar=f and fd.num>=0
+
+- macro: argus_lab_fichero_secreto
+  condition: >
+    (fd.name glob "/etc/argus-pki/*.key" or fd.name glob "/etc/vault.d/tls/*.key" or
+     fd.name glob "/etc/etcd/tls/*.key" or fd.name glob "/etc/ml-defender/*/seed.bin" or
+     fd.name glob "/etc/ml-defender/*/private.pem")
+
+# Cada dueño, solo lo suyo
+- macro: argus_lab_lectura_del_dueno
+  condition: >
+    (argus_lab_es_etcd_server and fd.name in (/etc/argus-pki/etcd-server.key, /etc/ml-defender/etcd-server/seed.bin,
+                                              /etc/ml-defender/etcd-server/private.pem)) or
+    (argus_lab_es_etcd and fd.name = /etc/etcd/tls/etcd.key) or
+    (argus_lab_es_vault and fd.name glob "/etc/vault.d/tls/*.key") or
+    (argus_lab_es_firewall and fd.name in (/etc/argus-pki/firewall-acl-agent.key,
+                                           /etc/ml-defender/firewall-acl-agent/seed.bin,
+                                           /etc/ml-defender/firewall-acl-agent/private.pem)) or
+    (argus_lab_es_sniffer and fd.name in (/etc/argus-pki/sniffer.key, /etc/ml-defender/sniffer/seed.bin,
+                                          /etc/ml-defender/sniffer/private.pem)) or
+    (argus_lab_es_ml_detector and fd.name in (/etc/argus-pki/ml-detector.key, /etc/ml-defender/ml-detector/seed.bin,
+                                              /etc/ml-defender/ml-detector/private.pem)) or
+    argus_lab_es_fim_wazuh or
+    argus_lab_es_desellado
+
+# Herramientas de administración medidas (trazas de bajo nivel, no alertas)
+- macro: argus_lab_lectura_admin
+  condition: >
+    (proc.exepath in (/usr/local/bin/etcdctl, /usr/bin/curl) and proc.pname = sudo and
+     fd.name = /etc/argus-pki/etcd-server.key) or
+    (proc.exepath = /usr/bin/openssl and fd.name glob "/etc/ml-defender/*/private.pem")
+
+- rule: argus_lab_clave_leida_ajeno
+  desc: Una clave o una semilla de aRGus la lee un proceso que no es su dueño ni una herramienta de administración medida
+  condition: argus_lab_lee_fichero and argus_lab_fichero_secreto and not argus_lab_lectura_del_dueno and not argus_lab_lectura_admin
+  output: >
+    aRGus lectura de clave por un proceso ajeno (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name
+    usuario=%user.name cmd=%proc.cmdline cmd_padre=%proc.pcmdline pid_abuelo=%proc.apid[2])
+  priority: CRITICAL
+  tags: [argus, secretos, adr-060]
+
+- rule: argus_lab_clave_leida_admin
+  desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify)
+  condition: argus_lab_lee_fichero and argus_lab_fichero_secreto and argus_lab_lectura_admin
+  output: >
+    aRGus lectura administrativa de clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name usuario=%user.name
+    cmd_padre=%proc.pcmdline pid_abuelo=%proc.apid[2])
+  priority: NOTICE
+  tags: [argus, secretos, admin, adr-060]
+
+# ── 3. Intento fallido de leer una clave ───────────────────────────────────────────────────────────────────────────
+# [VIGILANCIA-E2E-D322] (decisión de Alonso, DAY322) root lee cualquier clave: un EACCES o un EPERM solo lo da un proceso
+# SIN privilegios que intenta llegar a una (un servicio comprometido, una web shell) antes de escalar. Solo esos dos
+# errores: ENOENT o ENOTDIR (como el sondeo O_PATH de GNU install) no son un intento de leer. /etc/argus-pki es 0700
+# root: el open falla al atravesar el directorio; fd.name es la ruta pedida (lab-e2e-vigilancia, caso C6).
+- rule: argus_lab_clave_intento_fallido
+  desc: Un proceso intenta leer una clave o una semilla de aRGus y el kernel se lo niega (EACCES o EPERM)
+  condition: >
+    evt.type in (open, openat, openat2) and evt.is_open_read=true and fd.num=-1 and evt.res in (EACCES, EPERM) and
+    argus_lab_fichero_secreto
+  output: >
+    aRGus intento fallido de leer una clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name
+    usuario=%user.name res=%evt.res cmd=%proc.cmdline)
+  priority: WARNING
+  tags: [argus, secretos, intento, adr-060]

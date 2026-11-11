@@ -2,7 +2,7 @@
 #ifndef FIREWALL_ETCD_CLIENT_HPP
 #define FIREWALL_ETCD_CLIENT_HPP
 
-#include <etcd_client/etcd_client.hpp>  // ✅ Day 59: For ServicePaths
+#include <etcd_client/etcd_client.hpp>  // etcd_client::Config
 #include <string>
 #include <memory>
 #include <optional>
@@ -20,10 +20,10 @@ namespace mldefender::firewall {
     public:
         /**
          * @brief Construct etcd client adapter
-         * @param endpoint etcd server endpoint (e.g., "localhost:2379")
+         * @param base bloque etcd ya leído por etcd_client::leer_bloque_etcd() (direcciones https y TLS)
          * @param component_name Component identifier (e.g., "firewall-acl-agent")
          */
-        EtcdClient(const std::string& endpoint, const std::string& component_name);
+        EtcdClient(const etcd_client::Config& base, const std::string& component_name);  // [ETCD-CLIENTE-D316]
 
         ~EtcdClient();
 
@@ -32,59 +32,24 @@ namespace mldefender::firewall {
         EtcdClient& operator=(const EtcdClient&) = delete;
 
         /**
-         * @brief Initialize connection and verify server availability
-         * @return true if initialization successful
+         * @brief [ETCD-CLIENTE-B1-D316] Arranca el mantenedor de la librería y vuelve enseguida (G1-G3, DAY316)
+         * @param ruta_config JSON con el que arrancó el firewall (-c); se sube al etcd-server en cada registro
          */
-        bool initialize();
+        void arrancar(const std::string& ruta_config);
 
         /**
-         * @brief Register service with etcd-server and upload config
-         * @return true if registration successful
+         * @brief Clave HMAC del etcd-server
+         * @param key_path p. ej. "/secrets/firewall-acl-agent" (solo exige el certificado con ese CN, no el registro)
+         * @return 32 bytes, o nullopt si no hay clave o no responde ningún etcd-server
          */
-        bool registerService();
-
-        /**
-        * @brief Get crypto seed from etcd-server
-        * @return Crypto seed in hex format (64 chars)
-        */
-        std::string get_crypto_seed() const;
-
-        /**
-     * @brief Get HMAC key from etcd-server (Day 58)
-     * @param key_path Path to key in etcd (e.g., "/secrets/firewall/log_hmac_key")
-     * @return HMAC key as bytes (32 bytes), or nullopt if not found
-     */
         std::optional<std::vector<uint8_t>> get_hmac_key(const std::string& key_path);
 
-        /**
-         * @brief Compute HMAC-SHA256 signature (Day 58)
-         * @param data Data to sign (e.g., CSV line)
-         * @param key HMAC key (32 bytes)
-         * @return HMAC signature as hex string (64 chars)
-         */
-        std::string compute_hmac_sha256(const std::string& data,
-                                        const std::vector<uint8_t>& key);
+        /// [PROTEGIDOS-MANIFIESTO-D318] GET /v1/protegidos: status HTTP (0 = nadie respondió, -1 = sin cliente) y cuerpo
+        int get_protegidos(std::string& cuerpo);
 
-        /**
-         * @brief Convert bytes to hex string (Day 58)
-         * @param bytes Binary data
-         * @return Hex-encoded string
-         */
-        std::string bytes_to_hex(const std::vector<uint8_t>& bytes);
-
-        // ============================================================================
-        // Day 59: Service Discovery
-        // ============================================================================
-
-        /**
-         * @brief Get service discovery paths from etcd-server
-         *
-         * Returns paths where this component should find HMAC keys, crypto tokens, etc.
-         * These paths are received during component registration and owned by etcd-server.
-         *
-         * @return ServicePaths structure with paths, or invalid paths if not registered
-         */
-        etcd_client::ServicePaths get_service_paths() const;
+        /// [LATIDO-DATOS-D321] ADR-060 8e.4c (H-H): dato que viaja en cada latido (p. ej. protegidos_version); false si
+        /// no hay cliente o no cumple la regla de libs/latido (la librería lo dice en el log)
+        bool poner_dato_latido(const std::string& clave, int64_t valor);
     private:
         struct Impl;
         std::unique_ptr<Impl> pImpl;

@@ -113,6 +113,15 @@ add_test(NAME compression COMMAND test_compression)
 add_test(NAME encryption COMMAND test_encryption)
 add_test(NAME pipeline COMMAND test_pipeline)
 add_test(NAME hmac_client COMMAND test_hmac_client)
+
+# [ETCD-CLIENTE-D316] DEBT-ETCD-HA-TLS-RAFT-001 paso 5: lector único del bloque etcd (F1) y transporte HTTPS con lista
+# de direcciones (C1, F3). E2: genera su propia CA desechable con openssl en un directorio temporal y la borra.
+# Necesita CPPHTTPLIB_OPENSSL_SUPPORT para sus servidores falsos (httplib::SSLServer), igual que la librería.
+add_executable(test_etcd_cliente_tls test_etcd_cliente_tls.cpp)
+target_link_libraries(test_etcd_cliente_tls PRIVATE etcd_client OpenSSL::SSL OpenSSL::Crypto)
+target_include_directories(test_etcd_cliente_tls PRIVATE ${CMAKE_SOURCE_DIR}/include /usr/local/include)
+target_compile_definitions(test_etcd_cliente_tls PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
+add_test(NAME etcd_cliente_tls COMMAND test_etcd_cliente_tls)
 # add_test(NAME hmac_grace_period COMMAND test_etcd_client_hmac_grace_period)  # Disabled - requires GTest
 
 # Note: test_hmac_integration_client requires etcd-server running,

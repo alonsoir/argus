@@ -93,6 +93,7 @@ target_include_directories(etcd_client
         $<INSTALL_INTERFACE:include>
         PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/../libs/latido/include   # [LATIDO-DATOS-D321] regla única de los datos del latido
         ${CRYPTO_TRANSPORT_INCLUDE}
         ${SEED_CLIENT_INCLUDE_DIR}
         ${LZ4_INCLUDE_DIRS}
@@ -111,6 +112,9 @@ target_compile_options(etcd_client
         -Wextra
         -Wpedantic
 )
+# [ETCD-CLIENTE-D316] HTTPS con certificado de cliente hacia el etcd-server. PRIVATE: httplib.h solo lo incluye
+# src/http_client.cpp (la cabecera pública no lo expone), así que no hay riesgo ODR con quien enlace la librería.
+target_compile_definitions(etcd_client PRIVATE CPPHTTPLIB_OPENSSL_SUPPORT)
 
 # ============================================================================
 # Link Libraries

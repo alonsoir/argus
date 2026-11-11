@@ -185,21 +185,8 @@ DetectorConfig ConfigLoader::load() {
     // ========================================
     // ETCD
     // ========================================
-    {
-        auto& etcd = json_["etcd"];
-        config.etcd.enabled = get_required<bool>(etcd, "enabled", "etcd");
-        config.etcd.endpoints = get_required<std::vector<std::string>>(etcd, "endpoints", "etcd");
-        config.etcd.connection_timeout_ms = get_required<int>(etcd, "connection_timeout_ms", "etcd");
-        config.etcd.retry_attempts = get_required<int>(etcd, "retry_attempts", "etcd");
-        config.etcd.retry_interval_ms = get_required<int>(etcd, "retry_interval_ms", "etcd");
-        config.etcd.crypto_token_path = get_required<std::string>(etcd, "crypto_token_path", "etcd");
-        config.etcd.config_sync_path = get_required<std::string>(etcd, "config_sync_path", "etcd");
-        config.etcd.service_registration_path = get_required<std::string>(etcd, "service_registration_path", "etcd");
-        config.etcd.required_for_encryption = get_required<bool>(etcd, "required_for_encryption", "etcd");
-        config.etcd.fallback_mode = get_required<std::string>(etcd, "fallback_mode", "etcd");
-        config.etcd.heartbeat_interval_seconds = get_required<int>(etcd, "heartbeat_interval_seconds", "etcd");
-        config.etcd.lease_ttl_seconds = get_required<int>(etcd, "lease_ttl_seconds", "etcd");
-    }
+    // [ETCD-CLIENTE-D316] F1: el bloque viaja entero a la librería (un solo lector para los tres componentes)
+    config.etcd.bloque = json_.contains("etcd") ? json_["etcd"] : nlohmann::json();
     
     // ========================================
     // Threading

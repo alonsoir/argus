@@ -132,7 +132,8 @@ public:
     /**
      * @brief Append CSV log with HMAC signature (Day 58 - synchronous, simple)
      *
-     * Writes to: output_dir/firewall_blocks.csv
+     * [FW-CSV-CLAVE-B2-D316] G4 a: un fichero por clave, output_dir/firewall_blocks-<AAAAMMDDTHHMMSSZ>-<huella>.csv;
+     * con otra clave se cierra y se abre otro ([FW-CSV-FICHERO]). Así cada fila se verifica con la clave del nombre.
      * Format: timestamp,src_ip,dst_ip,threat_type,action,confidence,hmac
      *
      * @param event Event to log
@@ -166,7 +167,13 @@ public:
         return total_dropped_.load();
     }
 
+    // [FW-CSV-CLAVE-B2-D316] CSV en uso (vacío si aún no se ha escrito ninguna fila)
+    std::string csv_actual() const;
+
 private:
+    mutable std::mutex csv_m_;     // [FW-CSV-CLAVE-B2-D316] append_csv_log se llama desde más de un hilo
+    std::string csv_huella_;
+    std::string csv_ruta_;
     // Configuration
     std::string output_dir_;
     size_t max_queue_size_;

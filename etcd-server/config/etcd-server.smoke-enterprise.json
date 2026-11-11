@@ -1,0 +1,208 @@
+{
+  "_doc": "[ETCD-SMOKE-D317] SOLO para los Actos I y III de emecas++ (test-e2e-vault, vault-fault-inject): etcd-server build-vault en el defender contra el Vault dev, HTTP solo en 127.0.0.1, registro y claves en memoria. No es la configuraci\u00f3n de ning\u00fan despliegue; desaparece con DEBT-VAULT-ENTERPRISE-SMOKE-VM-001. [ETCD-CONFIG-D312] El JSON es la ley: si un campo de server/secrets/heartbeat falta, tiene otro tipo o est\u00e1 fuera de rango, el etcd-server avisa con [CONFIG-DEFAULT] y usa el defecto (el valor de este fichero). Comprobar sin arrancar: etcd-server -c RUTA --check-config. Bloques tls y authz [ETCD-AUTHZ-D313]: ver su _doc.",
+  "server": {
+    "_doc": "host: IPv4 con puntos (0.0.0.0 = todas). port: entero [1024, 65535].",
+    "port": 2379,
+    "host": "127.0.0.1"
+  },
+  "tls": {
+    "_doc": "modo: \"mtls\" (HTTPS con certificado de cliente obligatorio, CA = ca_file; autorizaci\u00f3n por la tabla authz) o \"http\" (HTTP en claro sin autenticaci\u00f3n: SOLO para el smoke enterprise de emecas++, etcd-server.smoke-enterprise.json, DEBT-VAULT-ENTERPRISE-SMOKE-VM-001; avisa con [ETCD-TLS-DESACTIVADO] al arrancar y cada aviso_http_intervalo_s). Un modo ausente o mal escrito va a \"mtls\": una errata nunca rebaja a HTTP. ca_file, cert_file, key_file: rutas absolutas; en mtls, si no se pueden leer o no valen, el etcd-server NO arranca ([ETCD-TLS-FATAL]). aviso_http_intervalo_s: entero [10, 3600].",
+    "modo": "http",
+    "ca_file": "/etc/argus-pki/ca.crt",
+    "cert_file": "/etc/argus-pki/etcd-server.crt",
+    "key_file": "/etc/argus-pki/etcd-server.key",
+    "aviso_http_intervalo_s": 60
+  },
+  "authz": {
+    "_doc": "Solo con tls.modo=mtls. Denegar por defecto: lo que no casa con ninguna regla es 403 y [ETCD-AUTHZ-DENEGADO]. Regla: {metodo: GET|POST|PUT|DELETE, ruta: plantilla por segmentos que empieza por / (literales [A-Za-z0-9._-]{1,63}; {c} = un segmento [a-z0-9-]{1,63}, como mucho uno), permitir: lista de \"propio\" (CN del certificado == {c}; exige {c}), \"ou:<rol>\" (OU del certificado) o \"cualquiera\" (cualquier certificado de la CA)}. Se permite si alguna regla que casa lo permite. Identidad: exactamente un CN (instancia) y un OU (rol) con forma [a-z0-9-]{1,63}. Una regla mal formada invalida la tabla ENTERA: se avisa de cada error y se usa la tabla por defecto (la de este fichero).",
+    "reglas": [
+      {
+        "metodo": "GET",
+        "ruta": "/health",
+        "permitir": [
+          "cualquiera"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/register",
+        "permitir": [
+          "cualquiera"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/unregister",
+        "permitir": [
+          "cualquiera"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/v1/heartbeat/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "PUT",
+        "ruta": "/v1/config/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/config/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "PUT",
+        "ruta": "/config/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/secrets/{c}",
+        "permitir": [
+          "propio"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/secrets/valid/{c}",
+        "permitir": [
+          "propio",
+          "ou:bronze-to-gold-converter"
+        ]
+      },
+      {
+        "metodo": "POST",
+        "ruta": "/secrets/rotate/{c}",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/components",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/validate",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/info",
+        "permitir": [
+          "ou:admin"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/v1/protegidos",
+        "permitir": [
+          "ou:firewall-acl-agent",
+          "ou:argus-infra"
+        ]
+      },
+      {
+        "metodo": "PUT",
+        "ruta": "/v1/protegidos",
+        "permitir": [
+          "ou:argus-infra"
+        ]
+      },
+      {
+        "metodo": "GET",
+        "ruta": "/v1/protegidos/v/{c}",
+        "permitir": [
+          "ou:argus-infra"
+        ]
+      }
+    ]
+  },
+  "protegidos": {
+    "_doc": "[PROTEGIDOS-MANIFIESTO-D318] ADR-060 8e.3b. hospital_id: el hospital al que sirve ESTE etcd-server ([a-z0-9-], de 1 a 64); sin valor sano por defecto: ausente o mal formado = [CONFIG-DEFAULT] y GET/PUT /v1/protegidos responden 503. Ansible (make deploy-configs) lo escribe desde argus_hospital_id del inventario. GET /v1/protegidos da el sobre vigente (firewall-acl-agent, argus-infra); PUT /v1/protegidos solo con certificado OU=argus-infra: el etcd-server verifica firma (clave publica compilada, la misma que el firewall), formato, limites, hospital y version > la vigente antes de guardarlo en etcd (protegidos/vigente y protegidos/v/<N>). [PROTEGIDOS-MANIFIESTO-D319] GET /v1/protegidos/v/{n} solo con certificado OU=argus-infra: la versi\u00f3n n del hist\u00f3rico tal cual (n: decimal >= 1 sin ceros a la izquierda; 404 si no existe), para el diff y el deshacer de argus-infra.",
+    "hospital_id": "hospital-lab"
+  },
+  "almacen": {
+    "_doc": "[ETCD-REGISTRO-D313] Almac\u00e9n del registro de componentes. modo: \"etcd\" (el etcd real por gRPC con TLS; etcd es la \u00fanica verdad: con etcd ca\u00eddo las lecturas salen de la \u00faltima copia en memoria y las escrituras dan 503, avisando [ETCD-ALMACEN-NO-DISPONIBLE] cada aviso_intervalo_s) o \"memoria\" (sin persistencia: SOLO para el smoke enterprise de emecas++, etcd-server.smoke-enterprise.json, DEBT-VAULT-ENTERPRISE-SMOKE-VM-001; avisa [ETCD-ALMACEN-MEMORIA]). Un modo ausente o mal escrito va a \"etcd\". [ETCD-ALMACEN-FATAL-D315] endpoints, prefijo, ca_file, cert_file y key_file NO tienen defecto en modo etcd: ausentes o mal formados son [ETCD-ALMACEN-FATAL] y el etcd-server no arranca (en modo memoria no se usan). endpoints y prefijo los pone Ansible desde el inventario del despliegue (make deploy-configs). endpoints: lista de 1 a 7 \"https://IPv4:puerto\", sin repetir, con TODOS los miembros etcd del despliegue. ca_file, cert_file, key_file: rutas absolutas (el CN del certificado es el usuario RBAC de etcd). prefijo: empieza y acaba en /, [a-z0-9-/], hasta 64, sin //; uno por despliegue (p. ej. /argus/<hospital>/<planta>/). timeout_ms: entero [100, 30000]. aviso_intervalo_s: entero [10, 3600]. reconexion_max_ms: entero [100, 60000], intervalo m\u00ednimo entre canales gRPC nuevos tras un fallo (un canal que ha fallado tarda ~30 s en volver a usar etcd; uno nuevo, menos de 1 s). Claves: <prefijo>registro/<CN>, <prefijo>latido/<CN>, <prefijo>epoca. Un componente sin latido durante heartbeat.interval_seconds * timeout_multiplier se marca muerto (no se borra) y su siguiente latido lo revive.",
+    "modo": "memoria",
+    "endpoints": [
+      "https://127.0.0.1:2381"
+    ],
+    "ca_file": "/etc/argus-pki/ca.crt",
+    "cert_file": "/etc/argus-pki/etcd-server.crt",
+    "key_file": "/etc/argus-pki/etcd-server.key",
+    "prefijo": "/argus/",
+    "timeout_ms": 2000,
+    "aviso_intervalo_s": 60,
+    "reconexion_max_ms": 1000
+  },
+  "almacen_claves": {
+    "_doc": "[ETCD-CLAVES-D314] Almac\u00e9n de las claves HMAC del bronce (ventana de dos). modo: \"vault\" (Vault kv v2 por HTTPS con certificado de cliente; montaje con cas_required=true: cada clave <CN>/<huella8> se escribe una vez y nunca se borra; <CN>/ventana = {activa, anterior, expira_anterior} se cambia con CAS) o \"memoria\" (sin persistencia: SOLO para el smoke enterprise de emecas++, etcd-server.smoke-enterprise.json, DEBT-VAULT-ENTERPRISE-SMOKE-VM-001; avisa [ETCD-CLAVES-MEMORIA] cada aviso_intervalo_s). Un modo ausente o mal escrito va a \"vault\". vault_addrs: lista de 1 a 7 \"https://IPv4:puerto\" sin repetir; ca_file, cert_file, key_file: rutas absolutas (el CN del certificado hace el login en auth cert). SIN DEFECTO en modo vault: ausentes, mal formados o ilegibles = [ETCD-VAULT-FATAL] y el etcd-server no arranca. montaje y rol_login: [a-z0-9-], de 1 a 64. timeout_ms: entero [100, 30000] por petici\u00f3n. reintentos_por_direccion: entero [1, 10]; espera_inicial_ms: entero [10, 10000], dobla en cada reintento hasta espera_max_ms: entero [100, 60000] (>= espera_inicial_ms); agotada una direcci\u00f3n se pasa a la siguiente; agotada la lista, [ETCD-VAULT-NO-DISPONIBLE] con el error de cada una, se sirve la \u00faltima ventana conocida (sin ella /secrets da 503 y no se genera ninguna clave), rotar da 503, y se vuelve a probar cada sondeo_s: entero [1, 300]. aviso_intervalo_s: entero [10, 3600].",
+    "modo": "memoria",
+    "vault_addrs": [
+      "https://127.0.0.1:8200"
+    ],
+    "ca_file": "/etc/argus-pki/ca.crt",
+    "cert_file": "/etc/argus-pki/etcd-server.crt",
+    "key_file": "/etc/argus-pki/etcd-server.key",
+    "montaje": "argus-hmac",
+    "rol_login": "etcd-server",
+    "timeout_ms": 2000,
+    "reintentos_por_direccion": 3,
+    "espera_inicial_ms": 200,
+    "espera_max_ms": 2000,
+    "sondeo_s": 5,
+    "aviso_intervalo_s": 60
+  },
+  "identity": {
+    "_comment": "ADR-013 \u2014 provision.sh es el \u00fanico responsable de crear estas claves.",
+    "_phase": "PHASE 1: seed.bin en claro (chmod 0600). PHASE 2: seed.enc via seed-client.",
+    "component_id": "etcd-server",
+    "keys_dir": "/etc/ml-defender/etcd-server",
+    "public_key": "/etc/ml-defender/etcd-server/public.pem",
+    "private_key": "/etc/ml-defender/etcd-server/private.pem",
+    "seed_bin": "/etc/ml-defender/etcd-server/seed.bin"
+  },
+  "heartbeat": {
+    "_doc": "Enteros. interval_seconds [1, 3600], timeout_multiplier [2, 10], check_interval_seconds [1, 3600]. Regla: check_interval_seconds <= interval_seconds * timeout_multiplier (si no, los tres van a defecto).",
+    "interval_seconds": 30,
+    "timeout_multiplier": 3,
+    "check_interval_seconds": 10
+  },
+  "secrets": {
+    "_doc": "HMAC (ADR-004). Enteros. default_key_length_bytes [32, 64], grace_period_seconds [1, 86400], min_rotation_interval_seconds [1, 86400]. Regla: min_rotation_interval_seconds >= grace_period_seconds (si no, los dos van a defecto).",
+    "default_key_length_bytes": 32,
+    "grace_period_seconds": 300,
+    "min_rotation_interval_seconds": 300
+  },
+  "alerting": {
+    "enabled": false,
+    "providers": [
+      {
+        "type": "discord",
+        "enabled": false,
+        "webhook_url": ""
+      },
+      {
+        "type": "telegram",
+        "enabled": false,
+        "bot_token": "",
+        "chat_id": ""
+      }
+    ]
+  }
+}

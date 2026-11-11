@@ -5,6 +5,7 @@
 // Forward declaration de la librería etcd-client
 namespace etcd_client {
     class EtcdClient;
+    struct Config;
 }
 
 namespace sniffer {
@@ -15,25 +16,12 @@ namespace sniffer {
      */
     class EtcdClient {
     public:
-        EtcdClient(const std::string& endpoint, const std::string& component_name);
+        EtcdClient(const etcd_client::Config& base, const std::string& component_name);  // [ETCD-CLIENTE-D316]
         ~EtcdClient();
 
-        // Core API
-        bool initialize();
-        bool is_connected() const;
-        bool registerService();
-        bool unregisterService();
-
-        // Configuration management
-        bool upload_full_config(const std::string& config_json);
-        bool get_component_config(const std::string& component_name);
-
-        // Status and monitoring
-        bool get_pipeline_status();
-        std::string get_encryption_status();
-
-        // 🎯 DAY 29: Get encryption seed for crypto-transport
-        std::string get_encryption_seed() const;
+        // [ETCD-CLIENTE-B1-D316] Arranca el mantenedor de la librería y vuelve enseguida (G1-G3, DAY316). ruta_config: el
+        // JSON con el que arrancó el sniffer (-c); se sube al etcd-server en cada registro.
+        void arrancar(const std::string& ruta_config);
 
     private:
         struct Impl;

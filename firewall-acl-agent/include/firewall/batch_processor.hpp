@@ -39,7 +39,7 @@
 #include <functional>
 
 #include <optional>  // DAY277-NEVER-PERMANENT
-#include "firewall/ddos_protegidos.hpp"  // [DDOS-MITIGACION-B2-D302] barrera de protegidos
+#include "protegidos/rangos.hpp"  // [DDOS-MITIGACION-B2-D302] barrera de protegidos
 
 namespace mldefender::firewall {
 
@@ -87,7 +87,6 @@ struct BatchProcessorConfig {
 
     // IPSet names
     std::string blacklist_ipset{"ml_defender_blacklist"};
-    std::string whitelist_ipset{"ml_defender_whitelist"};
 
     // Performance tuning
     size_t max_pending_ips{10000};           ///< Max IPs in queue before backpressure
@@ -282,7 +281,7 @@ public:
     /// DAY302: el pipeline ha visto actuar a la IP). Misma barrera. Toma mutex_.
     ResultadoEpisodio renovar_episodio(const std::string& ip);
     /// [DDOS-MITIGACION-B2-D302] Rangos que NUNCA entran en la blacklist (vacio = sin barrera). Toma mutex_.
-    void set_rangos_protegidos(const RangosProtegidos& rangos);
+    void set_rangos_protegidos(const ::argus::protegidos::RangosProtegidos& rangos);
     /// [DDOS-MITIGACION-B2-D302] Rechazos de la barrera (entrada + flush) desde el arranque. Toma mutex_.
     uint64_t rechazos_protegidos() const;
     /// [DDOS-MITIGACION-B2-D302] Latido: flush si toca por tamano o por tiempo. Devuelve IPs enviadas.
@@ -337,7 +336,7 @@ private:
     /// flush fallido la reutilizan (no suman strikes). Se vacia con pending_ips_.
     /// Guardado por mutex_.
     std::unordered_map<std::string, std::optional<uint32_t>> pending_penalty_;
-    RangosProtegidos rangos_protegidos_;     ///< [DDOS-MITIGACION-B2-D302] barrera; guardado por mutex_
+    ::argus::protegidos::RangosProtegidos rangos_protegidos_;     ///< [DDOS-MITIGACION-B2-D302] barrera; guardado por mutex_
     uint64_t rechazos_protegidos_{0};        ///< [DDOS-MITIGACION-B2-D302] guardado por mutex_
     /// [DDOS-MITIGACION-B2-D302] comun a bloquear_episodio / renovar_episodio
     ResultadoEpisodio encolar_episodio(const std::string& ip, bool nuevo_strike);

@@ -93,20 +93,10 @@ struct DetectorConfig {
         } encryption;
     } transport;
     
-    // ETCD
+    // ETCD [ETCD-CLIENTE-D316] F1: el bloque tal cual; lo lee y valida etcd_client::leer_bloque_etcd() al arrancar
+    // (antes: 12 campos obligatorios con get_required, 7 de ellos sin ningún uso)
     struct {
-        bool enabled;
-        std::vector<std::string> endpoints;
-        int connection_timeout_ms;
-        int retry_attempts;
-        int retry_interval_ms;
-        std::string crypto_token_path;
-        std::string config_sync_path;
-        std::string service_registration_path;
-        bool required_for_encryption;
-        std::string fallback_mode;
-        int heartbeat_interval_seconds;
-        int lease_ttl_seconds;
+        nlohmann::json bloque;
     } etcd;
     
     // Threading
