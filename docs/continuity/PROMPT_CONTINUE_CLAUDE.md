@@ -1,58 +1,80 @@
-# Prompt de continuidad — DAY320 (tras DAY319, viernes 2026-11-06)
+# aRGus NDR — continuidad para DAY324
 
-Hola, Claude. Soy Alonso (aRGus NDR). Seguimos con DEBT-ETCD-HA-TLS-RAFT-001, rama `feat/etcd-mtls-vault`, y dentro con
-DEBT-FW-MANIFIESTO-PROTEGIDOS-001 (ADR-060). Responde en español. Lee ADR-060 entero y el final de `docs/BACKLOG.md`.
-Comprueba con `git log --oneline -5` que HEAD es el commit de docs de DAY319 (posterior a `6b88a0c84`). **DAY320 empieza en 8e.3e.**
+**PR1 de DEBT-ETCD-HA-TLS-RAFT-001 cerrado**: `feat/etcd-mtls-vault` mergeada a main (PR #153, `0479e69d9`), con
+**EMECAS+++ PROFILE=production desde cero en verde** (DAY323, 4h02m, sobre `443fffb96`). ADR-060 (manifiesto firmado de
+rangos protegidos) y BACKLOG al día. Etiqueta `pre-release-etcd-mtls-vault-0.0.10` sobre el merge. README de la
+portada actualizado en `docs/readme-etcd-mtls-vault` (PR aparte, solo documentación).
 
-## Hecho DAY319 (3 commits, 05:37-07:30)
-| commit | qué |
-|---|---|
-| a831c44b0 | 8e.3d-0 etcd-server: `GET /v1/protegidos/v/{n}` (solo ou:argus-infra; 400/404/503), 16 reglas authz |
-| 6b88a0c84 | 8e.3d `tools/argus-infra/` (Python 3.11 stdlib): init/list/add/del/diff/verificar/deshacer; `argus-infra.lab.json`, `plantillas/hospital-lab.json`, tests unittest, aprovisionador `argus-infra` de la VM etcd (run: always), `make test-argus-infra` |
+## Dónde lo dejamos (DAY323, miércoles 11 de noviembre, 06:38-22:30)
+Commits del DAY323, todos subidos:
+- `d44e0a2d0` Suricata: la provisión lo reinicia con reglas y yaml ya escritos y comprueba eth1 y firmas > 0 [SURICATA-ARRANQUE-D323]
+- `6387cfd75` un solo reloj: suricata, zeek y wazuh toman la hora del defender (provisión lab-ntp); lab-clock-step
+  recorre LAB_CLOCK_VMS y mitre-check lo exige [LAB-NTP-SENSORES-D323]
+- `2fcac3ce9` mitre-check: una ventana [T0,T1] del reloj del defender para los tres sensores (scripts/mitre_ventana.py),
+  Zeek a prueba de rotación (scripts/mitre_zeek_cosecha.sh), el veredicto exige el ataque por sensor, ningún FATAL en
+  silencio; test-mitre-ventana (15 casos) [MITRE-VENTANA-D323]
+- `2f74f5047` Jenkins: clave del repositorio desde pkg.jenkins.io por huella (scripts/jenkins/jenkins_instalar.sh,
+  provisioning/jenkins/CLAVE); si no se instala, rc 3, aviso, repositorio retirado y el up sigue [JENKINS-CLAVE-D323]
+- `95d349c89` los sensores .10 .11 .12 como infraestructura en la plantilla del manifiesto [PROTEGIDOS-SENSORES-D323]
+- `443fffb96` el veredicto de protegidos saca la infraestructura del manifiesto que aplica el firewall [PROTEGIDOS-SENSORES-D323]
+- `2859bed0a` `[EMECAS-PROGRESO-D323]` (la cabecera de emecas-progreso para su reloj en el fallo) y `e9eb4581e` el de
+  documentación (DAY322 y DAY323 en BACKLOG; 8e.5 en ADR-060)
+- `0479e69d9` merge del PR #153 a main; etiqueta `pre-release-etcd-mtls-vault-0.0.10` sobre él (como las anteriores,
+  cada una en el merge de su PR)
+- README de la portada (DAY323, al final del día): tabla de etiquetas desde el paper, sección «Control plane», puerta de
+  calidad con seis VMs y el resultado del DAY323, límites y «What comes next» al día; prompt de continuidad corregido
 
-Decisiones de Alonso DAY319 (G-A..G-G): configuración `/etc/argus-infra/argus-infra.json` sin defecto sano para la
-identidad (solo `timeout_s` [1,120] 10); plantilla separada (límites siempre de la configuración); historial por ruta nueva
-del etcd-server (G-C); confirmación tecleando el número de versión (`--si` para bootstrap); orden de cada cambio: login
-Vault, vigente validado (reglas portadas + transit verify), N+1, diff, confirmar, sign, verify, PUT, GET byte a byte,
-revoke-self. Salidas 0/1/2/3 (3 = rechazo del etcd-server).
+Cuatro corridas de EMECAS+++ desde cero el DAY323, cada parada con su causa medida, su arreglo probado aparte y su commit:
+1. mitre-check: Suricata con 0 alertas (corría con la config de fábrica: eth0, 0 firmas); además el eve.json se leía
+   entero (el 04-nov pasó con alertas del 3-nov), la rotación horaria de Zeek se comía el barrido y un FATAL del loader
+   acababa en rc 0. Y cada sensor con su propio reloj de Internet.
+2. vagrant-up: el keyserver de la clave de Jenkins no respondió (errores a /dev/null, «✅ Jenkins instalado» falso).
+3. lab-e2e-protegidos P2: con la hora del defender, el NTP de los sensores a .1 entraba en el episodio DDoS.
+4. PASA: mitre-check con argus 1777 (1253 del ataque), Suricata 31 (31), Zeek 1114 (1068), 1080 corroborados.
 
-Cambio sobre G-D, medido: `firmante` = `<cn> entidad=<entity_id de Vault>` (<= 64 caracteres) porque el etcd-server y el
-firewall cortan a 64 con `saneado()`; con el formato largo el entity_id se perdía.
+## Primero, DAY324
+1. `git status -sb`, `git log -3 --oneline` y `git tag --sort=-creatordate | head -3` (Mac): main al día con origin;
+   el PR del README mergeado (si no, revisarlo y mergearlo); la etiqueta 0.0.10 en `0479e69d9`. Siguen sin commit los
+   parcheadores de `scripts/etcd_ha/d3*` y `scripts/d31*` y dos `__pycache__/`. Borrar la rama vieja
+   (`git branch -d feat/etcd-mtls-vault`, `git push origin --delete feat/etcd-mtls-vault`) si sigue.
+2. Pendiente del PR1 que no entró: el README del etcd-server (`etcd-server/README.md` no existe): qué hace (mTLS,
+   autorización por OU/CN, registro y latidos en etcd, claves HMAC en Vault, rutas del manifiesto), cómo se despliega en
+   la VM etcd y qué hace si etcd o Vault caen. Leer antes el JSON del etcd-server y el ADR-060. PR pequeño de
+   documentación.
+3. Empezar el PR2 (abajo): primero medir; diseño antes de código.
 
-## Medido
-- Banco: etcd-server 8/8 (native y skylake), 4 mutaciones; unittest 19/19; diferencial C++ (libs/protegidos) vs Python con
-  8000 cargas, 0 discrepancias (mutación detectada: 94); E2E 43/43 x3; 12 mutaciones de argus-infra detectadas.
-- Lab: `pipeline-build` rc 0; etcd-server ctest 8/8; `etcd-vm-deploy` SANO; `regla 16/16`; huella 52ba6180cf5e8e9a en
-  argus-infra, etcd-server y firewall; `make test-argus-infra` 19 OK; publicadas v1..v4. Firewall: al arrancar
-  `[PROTEGIDOS-MANIFIESTO] verificado version=3 ... entradas=2 (infraestructura=1 intranet=1 ...) (etcd-server)`, caché
-  1036 B y `.version`=3; en vivo `[INFRA-CAMBIO] version 3 -> 4 ... altas=[intranet 192.168.100.62/32 eth2] bajas=[]`.
-  Primera prueba real de 8e.3c: PASA. Al cierre: `deshacer 1` firmó la v5 (contenido de la plantilla) y el firewall
-  registró `[INFRA-CAMBIO] version 4 -> 5 ... bajas=[intranet 192.168.100.62/32 eth2]`. Lab vigente: v5.
-- Notas: `[INFRA-CAMBIO]` solo sale si había vigente (con la v1 no). La VM etcd es `autostart: false`: `vagrant up etcd`
-  antes de `etcd-vm-deploy`. `pgrep` sin `-f` no casa nombres de más de 15 caracteres.
+## Después (en este orden, decidido por Alonso)
+1. PR2 (HA): ≥3 nodos etcd (caída de uno, reelección, cuánto tardan en sincronizar; apagar todos y encender uno a uno),
+   Vault en HA y su Ansible, nº de nodos en el inventario + plantilla Jinja2 de etcd.conf.yml. En PRs pequeños.
+2. Después del PR2: la «dieta de adelgazamiento» (código deprecado fuera; Trivy).
+   Más tarde (toca Jenkins y exige otro EMECAS): DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001 (queda el JDK de Jenkins por
+   SDKMAN sin verificar, libsodium, el origen del sha de etcd, la huella de Wazuh sin publicar).
+   Deudas sin orden: DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001,
+   DEBT-HARDENED-FALCO-RUTAS-001, DEBT-VAULT-SELLADO-ALERTA-001, DEBT-CTU-START-VENTANA-001 (nueva),
+   DEBT-DDOS-COLATERAL-LEGITIMO-001 (nueva).
 
-## Lo que queda, por orden
-1. **8e.3e** borrar `set/get/del/list_keys` del etcd-client (`/kv/...`) tras `git grep` de usos.
-2. **Docs de 8e.3** (ADR-060: F-C con la ruta del historial, G-A..G-G, firmante corto; BACKLOG con las medidas de arriba).
-3. **8e.4** vigilancia (kernel <-> manifiesto, antispoofing raw PREROUTING, MAC, rp_filter, versión en latido y
-   pipeline-status, Falco/Wazuh, alarma de disco del audit de Vault 75 %).
-4. **8e.5** bootstrap con `argus-infra init --si` (.20 y .61), reescribir `d303_veredicto_protegidos.sh` (P1-P6),
-   meter `test-argus-infra` en EMECAS.
-5. **EMECAS+++ PROFILE=production**: rc 0, `lab-e2e-protegidos` P1-P6 PASA, Acto IV con `err_to_row=0`.
-6. **Cierre del PR1**: comprobar que el arranque del lab levanta la VM etcd (DAY319: `vagrant up` a secas no, es
-   `autostart: false`; el plan de DAY316 pedía `make up` con la VM etcd), README del etcd-server (DAY311), push y PR.
-   Lo demás (HA de 3 nodos, Vault HA, Ansible de Vault, transacción de etcd en el PUT) es PR2.
+## Decisiones de Alonso del DAY323
+- Un solo reloj para el lab, el del defender: si un sensor no va con él es un bug operacional y la prueba falla
+  diciéndolo, no lo compensa. El grafo del día lleva solo datos de esa sesión.
+- Se arregla todo lo que para EMECAS; cada arreglo se prueba aparte y, con todos probados, EMECAS+++ desde cero.
+- Jenkins se arregla con la clave del mantenedor por huella; si no se instala, el up sigue (EMECAS no usa Jenkins; las
+  claves del lab las crean los aprovisionadores de Vagrant) sin dejar un repositorio roto.
+- Los sensores del lab son infraestructura del NDR (plantilla del manifiesto, MAC vacía).
+- DEBT-DDOS-COLATERAL-LEGITIMO-001: al afrontarla, primero medir qué ve el modelo; «van a ser las dos cosas, como
+  mínimo» (benigno de servicio en el entrenamiento, en los dos sentidos, sin que el puerto solo decida; umbral de
+  evidencia por origen en la atribución del episodio). «No descartemos alguna sorpresa».
 
-## Banco de Claude (contenedor; si es nuevo, rehacer)
-Chroot Debian 12 en `/srv/banco` (debootstrap minbase + `gcc g++` de Debian para el plugin LTO de `ar`, `cppzmq-dev`),
-libsodium 1.0.19, httplib v0.63.0, etcd-cpp-apiv3 v0.15.3, Vault 2.2.1, etcd 3.6.16, PKI con `d312_pki.sh init`, identidad
-del etcd-server (seed.bin 32 B + par ed25519). Scripts: `/root/banco_plano.sh arrancar hospital-lab` (etcd + Vault como
-la VM), `/root/banco_es.sh ARBOL ETIQUETA` (MARCH, LIBS=1), `/root/e2e_8e3d.sh`, `/root/mut_8e3d.py`, `/root/mut_es.sh`,
-`/root/dif/{arnes.cpp,dif.py,verifica_sobre.cpp}`. Generador de parcheadores `/home/claude/gen/generar.py VIEJO NUEVO
-SALIDA "cabecera" RUTAS...` (funde trozos solapados).
-
-## Reglas
-Las de siempre: medir, no votar; predicción escrita antes; si no da, parar. Banco con opciones de production, native y
-skylake, dos veces, mutaciones. Pipeline completo. Parcheadores `--check`/`--apply`, todo o nada, idempotentes, sha256, a
-`scripts/etcd_ha/`. Comandos exactos, uno por bloque, diciendo dónde. Repo de solo lectura para Claude; Claude propone
-el `git commit -m`.
+## A tener presente
+- Regla del DAY323 para lo nuevo: cada operación comprueba su efecto concreto, sobre estado nuevo, y se prueba también
+  que falla cuando debe. Lo esperado en un test sale de la fuente (manifiesto, plantilla), nunca de una lista a mano.
+- Claude: entregar siempre los ficheros COMPLETOS en el `cat > f <<'EOF'`, nunca un marcador (DAY323 se colaron dos).
+  Si un fichero empieza por línea en blanco, decirlo (cuenta en el sha256).
+- Propuesta sin decidir (de Claude, DAY323): poder reanudar EMECAS desde un hito con instantáneas de Vagrant, solo para
+  probar arreglos; el cierre siempre desde cero.
+- mitre-check tarda ahora ~14 min (espera ~2 min al archivado de Zeek, tests y relojes). EMECAS+++ entera ~4 h; con
+  tiempos guardados, `make emecas-progreso` ya da porcentaje.
+- Horas de las VMs en UTC (Alonso en Europe/Madrid, UTC+1): decirlo al mostrarlas.
+- RAM: las seis VMs ocupan ~19 GB de RSS de 32; la swap va justa en EMECAS.
+- git en el Mac con `core.fileMode=false` (los scripts nuevos quedan 100644; se lanzan con bash/python3).
+- El banco de Claude es nuevo en cada sesión: Falco 0.43.1, Vault 2.2.1 y la clave de Jenkins
+  (5E386EAD…7198F4B714ABFC68) se descargan y verifican en el lab, nunca los pasa Claude.
