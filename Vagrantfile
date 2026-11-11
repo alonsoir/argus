@@ -1339,8 +1339,15 @@ BASHRC_EOF
 
       suricata --build-info | grep -i "version" || true
 
-      suricata-update --no-reload || true
-      echo "Rules: $(find /var/lib/suricata/rules -name '*.rules' 2>/dev/null | head -1)"
+      # [SURICATA-ARRANQUE-D323] reglas ET Open: hasta 3 intentos; sin reglas la provisión FALLA. Antes era `|| true` y
+      # un fallo de descarga habría pasado en silencio, con Suricata vivo y ciego (0 firmas, medido DAY323).
+      REGLAS=/var/lib/suricata/rules/suricata.rules
+      for intento in 1 2 3; do
+        suricata-update --no-reload && [ -s "$REGLAS" ] && break
+        echo "⚠️  [SURICATA-ARRANQUE] suricata-update, intento $intento: sin reglas; reintento en 10 s"; sleep 10
+      done
+      [ -s "$REGLAS" ] || { echo "❌ [SURICATA-ARRANQUE] sin reglas tras 3 intentos de suricata-update"; exit 1; }
+      echo "Rules: $REGLAS ($(wc -l < "$REGLAS") líneas)"
 
       sed -i 's/- interface: eth0/- interface: eth1/' /etc/suricata/suricata.yaml
       ip link set eth1 promisc on || true
@@ -1355,6 +1362,26 @@ BASHRC_EOF
 
       mkdir -p /var/log/suricata
       chown -R suricata:suricata /var/log/suricata 2>/dev/null || true
+
+      # [SURICATA-ARRANQUE-D323] apt-get install arranca Suricata con la configuración de fábrica (eth0, 0 firmas) y las
+      # reglas y los sed de arriba solo valen al reiniciarlo. Medido DAY323 en una VM nueva: proceso de las 06:11:50,
+      # reglas de las 06:12:15, yaml de las 06:12:58, ningún reinicio -> capturaba en eth0 con 0 firmas y mitre-check
+      # dio 0 alertas. Se reinicia y se comprueba en el log del proceso NUEVO (líneas con su pid): eth1 y firmas > 0.
+      systemctl restart suricata
+      SURI_ESPERA_S=180   # cargar 53 345 firmas tardó 28 s (DAY323); margen para un Mac cargado
+      SURI_LOG=/var/log/suricata/suricata.log
+      PID=0; OK=""
+      for i in $(seq 1 $SURI_ESPERA_S); do
+        PID=$(systemctl show -p MainPID --value suricata)
+        if [ "$PID" != "0" ] && grep -F "[$PID - " "$SURI_LOG" 2>/dev/null | grep -q 'Engine started'; then OK=1; break; fi
+        sleep 1
+      done
+      [ -n "$OK" ] || { echo "❌ [SURICATA-ARRANQUE] Suricata (pid $PID) sin 'Engine started' en $SURI_ESPERA_S s"; tail -n 20 "$SURI_LOG"; exit 1; }
+      LINEAS=$(grep -F "[$PID - " "$SURI_LOG")
+      FIRMAS=$(echo "$LINEAS" | grep -o '[0-9]* signatures processed' | tail -n 1 | cut -d' ' -f1)
+      echo "$LINEAS" | grep -q 'eth1: creating' || { echo "❌ [SURICATA-ARRANQUE] pid $PID no captura en eth1:"; echo "$LINEAS" | grep -i 'creating'; exit 1; }
+      [ "${FIRMAS:-0}" -gt 0 ] || { echo "❌ [SURICATA-ARRANQUE] pid $PID con ${FIRMAS:-0} firmas"; exit 1; }
+      echo "✅ [SURICATA-ARRANQUE] pid $PID captura en eth1 con $FIRMAS firmas"
 
       echo "=== Suricata ready ==="
       suricata --build-info | grep -iE "version|AF_PACKET|PCAP" || true
