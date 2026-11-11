@@ -282,7 +282,9 @@ compila sin la clave pública). EMECAS se pasa al final, con todos los commits d
     tres commits: **8e.4d-1** (hecho, 464c733bc) el manager; **8e.4d-2** (hecho DAY321) los sensores; **8e.4d-3** (hecho DAY322, 9aea549ba) el E2E.
     Antes de 8e.4d-3, lo que la vigilancia destapó el DAY322: el arranque de Vault sin Vagrant (31ae20e62, 3cb29fee0;
     ver «8e.4d, DAY322» en la sección 7).
-- **8e.5** Bootstrap del lab con `argus-infra` (.20 y .61), veredicto P1–P6, EMECAS+++.
+- **8e.5** (hecho DAY322, aae32596d) Bootstrap del lab con `argus-infra`, veredicto P1–P6. Desde DAY323 la plantilla
+    lleva también los sensores .10, .11 y .12 como infraestructura (95d349c89). EMECAS+++ desde cero en verde el DAY323
+    (ver «8e.5, DAY322-323» en la sección 7).
 
 ## 6. Diseño fino de 8e.1 (cerrado DAY318)
 
@@ -692,3 +694,15 @@ de Alonso: C4 provoca su propia divergencia; C8 midió primero y después es cri
 `VIG_C8_MAX_TRAZAS` (defecto 60, parámetro porque otro despliegue puede necesitar más) y todas llegan al manager.
 Medido: 14 trazas y 14 alertas (se predijeron ~255: cada `etcdctl` espera su timeout y en 36 s caben un par de vueltas),
 menos que un `pipeline-status` sano (17): no hace falta agruparlas. Dos corridas en PASA.
+
+**8e.5, DAY322-323: bootstrap del manifiesto y EMECAS+++ desde cero [PROTEGIDOS-BOOTSTRAP-D322] [PROTEGIDOS-SENSORES-D323].**
+El bootstrap firma la versión 1 desde la plantilla del lab (`argus-infra init --desde … --si`; rc 4 propio si ya hay un
+manifiesto, que el bootstrap da por bueno) y lab-e2e-protegidos la exige en P1-P6. Las paradas de EMECAS+++ desde cero
+del DAY322 (antispoof con lo esperado escrito a mano, R3 contando flujos ajenos, el grupo del agente de Wazuh, C7 en
+una VM nueva) y del DAY323 (Suricata sin reglas ni interfaz, un reloj por sensor, la ventana MITRE, la clave de Jenkins,
+el NTP de los sensores dentro del episodio DDoS) están medidas una a una en `docs/BACKLOG.md`. La que toca a este ADR:
+con la hora del defender, el NTP de los sensores (.10, .11, .12) a .1 caía dentro del ataque UDP y entraba en
+`origenes=`; los sensores son infraestructura del NDR y entran en la plantilla (MAC vacía, decisión de Alonso), y el
+veredicto saca la infraestructura del manifiesto que aplica el firewall, no de una lista fija. El fondo (tráfico
+legítimo hacia la víctima dentro del episodio) es DEBT-DDOS-COLATERAL-LEGITIMO-001. Resultado: EMECAS+++ desde cero
+PASA el DAY323 (4h02m, sobre 443fffb96).
