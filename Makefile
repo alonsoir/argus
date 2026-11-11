@@ -3200,10 +3200,19 @@ test-firewall-perf:
 # emecas/emecas++ sin cambios. Cuando exista Eslabon 1 (Flujo A/B, Landing
 # Zone), este target gana sus propios Actos rio-abajo sin tocar emecas/emecas++.
 # ══════════════════════════════════════════════════════════════════════════
+# [MITRE-VENTANA-D323] tests de scripts/mitre_ventana.py y scripts/mitre_zeek_cosecha.sh con datos fabricados a partir
+# de lo medido DAY323 (rotación de Zeek de las 10:00, eve.json de dos corridas, archivado de zeekctl en segundo plano,
+# .gz cortado). Se lanza en la VM zeek (GNU date); no toca Zeek. mitre-check lo pasa antes de la corrida.
+.PHONY: test-mitre-ventana
+test-mitre-ventana:
+	@vagrant ssh zeek -c "bash /vagrant/scripts/test_mitre_ventana.sh"
+
 # [EMECAS-TODO-D317] Acto IV (río abajo, ADR-058): los tres adapters recompilados desde cero y probados (no se usan
 # binarios de VMs que ya no existen), pipeline arrancado y MITRE -> grafo con veredicto (scripts/mitre_veredicto.sh).
 .PHONY: mitre-check
 mitre-check:
+	@echo "[MITRE-CHECK] $$(date '+%T') tests de la ventana y de la cosecha de Zeek (log: /tmp/argus_mitre_check_tests.txt)"
+	@$(MAKE) --no-print-directory test-mitre-ventana > /tmp/argus_mitre_check_tests.txt 2>&1 || { tail -n 20 /tmp/argus_mitre_check_tests.txt; echo "[MITRE-VEREDICTO] FALLA: test-mitre-ventana"; exit 1; }
 	@# [LAB-NTP-SENSORES-D323] un solo reloj: el grafo del día junta los tres sensores por ventana de tiempo; si una VM
 	@# de la corrida no va con el defender (< LAB_CLOCK_MAX_OFFSET_S), es un fallo operacional y mitre-check FALLA
 	@echo "[MITRE-CHECK] $$(date '+%T') 0/3 relojes del lab: defender y client suricata zeek (log: /tmp/argus_mitre_check_reloj.txt)"
