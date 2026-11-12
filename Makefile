@@ -2324,6 +2324,11 @@ etcd-cluster-deploy:
 test-etcd-cluster:
 	@bash scripts/etcd_ha/test_etcd_cluster.sh
 
+# [ALMACEN-ESCRIBE-D324] etcd-vm-check da NO SANO si el etcd-server no escribe en etcd (sin VMs: el script de verdad
+# con sudo/systemctl/curl/etcdctl de mentira; 6 casos de latido fresco, viejo, ausente, sin respuesta y del JSON)
+test-vm-estado-almacen:
+	@bash scripts/etcd_ha/test_vm_estado_almacen.sh
+
 # Informe (rc 0 siempre)
 etcd-vm-estado:
 	@vagrant ssh control-1 -c "bash $(ETCD_VM_ESTADO)"

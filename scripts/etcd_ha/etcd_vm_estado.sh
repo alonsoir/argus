@@ -3,6 +3,10 @@
 # Se ejecuta EN LA VM etcd como vagrant (hace sudo dentro): vagrant ssh control-1 -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh"
 #   - etcd-server: unidad systemd activa y GET /health por mTLS (certificado del propio etcd-server, regla «cualquiera»)
 #   - etcd: por cada miembro (etcdctl member list: con el PR2 salen todos), sano o no, líder, term y retraso respecto al líder
+#   - almacén ([ALMACEN-ESCRIBE-D324]): el etcd-server ESCRIBE en etcd. /health solo dice que el proceso responde (da 200
+#     aunque no alcance etcd, medido DAY324). Prueba del efecto: su propio latido (<prefijo>latido/etcd-server, que pone al
+#     arrancar y cada heartbeat.interval_seconds) tiene como mucho interval_seconds * timeout_multiplier s, el plazo en
+#     que él mismo daría por muerto a un componente (del JSON; ausentes o mal: 30 y 3, avisando, como el etcd-server).
 #   - vault-hmac: por cada dirección de almacen_claves.vault_addrs, /v1/sys/health (200 activo, 429 en espera, 503 sellado)
 #   - protegidos ([LATIDO-DATOS-D321] ADR-060 8e.4c, H-H): la versión publicada (<prefijo>protegidos/vigente, que el
 #     etcd-server solo escribe tras verificar la firma) frente a la protegidos_version que cada componente manda en su
@@ -50,10 +54,20 @@ a, c, t, s = j["almacen"], j["almacen_claves"], j["tls"], j["server"]
 print(",".join(a["endpoints"])); print(a["ca_file"]); print(a["cert_file"]); print(a["key_file"])
 print(" ".join(c["vault_addrs"])); print(c["ca_file"]); print(c["cert_file"]); print(c["key_file"])
 print(t["ca_file"]); print(t["cert_file"]); print(t["key_file"]); print(s["port"]); print(a["prefijo"])
+# [ALMACEN-ESCRIBE-D324] plazo del latido propio: los mismos rangos y defectos que el etcd-server (etcd_server_config.hpp)
+hb = j.get("heartbeat") if isinstance(j.get("heartbeat"), dict) else {}
+def ent(k, d, lo, hi):
+    v = hb.get(k)
+    if v is None: return d, "%s=%d (defecto: ausente)" % (k, d)
+    if not isinstance(v, int) or isinstance(v, bool) or not lo <= v <= hi:
+        return d, "%s=%d (defecto: %r mal formado, entero en [%d, %d])" % (k, d, v, lo, hi)
+    return v, "%s=%d (JSON)" % (k, v)
+i, oi = ent("interval_seconds", 30, 1, 3600); m, om = ent("timeout_multiplier", 3, 2, 10)
+print(i * m); print("heartbeat." + oi + " x heartbeat." + om)
 PY
 ) || { echo "  ❌ etcd-server:   STOPPED [VM etcd: $JSON ilegible o sin almacen/almacen_claves/tls/server]"; [ "$ESTRICTO" = si ] && exit 1 || exit 0; }
 { read -r A_EP; read -r A_CA; read -r A_CRT; read -r A_KEY; read -r V_ADDRS; read -r V_CA; read -r V_CRT; read -r V_KEY
-  read -r T_CA; read -r T_CRT; read -r T_KEY; read -r PUERTO; read -r PREFIJO; } <<< "$CFG"
+  read -r T_CA; read -r T_CRT; read -r T_KEY; read -r PUERTO; read -r PREFIJO; read -r HB_LIM; read -r O_HB; } <<< "$CFG"
 
 evaluar() {  # deja el informe en INFORME y SANO=si|no
   local ok=si l
@@ -111,6 +125,34 @@ print("SI" if ok else "NO")
 print("  %s etcd:          %d/%d miembros sanos, líder %s (term %s), retraso máx %d entradas (límite %d)" % (
     "✅" if ok else "❌", n_sanos, len(miembros), nombre_lider, term, rmax_visto, rmax))
 for x in lineas: print(x)
+PY
+)
+  [ "$(printf '%s\n' "$l" | head -n 1)" = SI ] || ok=no
+  INFORME+="$(printf '%s\n' "$l" | tail -n +2)"$'\n'
+  # [ALMACEN-ESCRIBE-D324] el etcd-server escribe en etcd: su latido propio es reciente
+  local yo
+  yo=$($E get "${PREFIJO}latido/etcd-server" 2>/dev/null)
+  l=$(python3 - "$(date +%s)" "$HB_LIM" "$O_HB" "$PREFIJO" "$yo" <<'PY'
+import base64, json, sys
+ahora, lim, origen, pref = int(sys.argv[1]), int(sys.argv[2]), sys.argv[3], sys.argv[4]
+clave = pref + "latido/etcd-server"
+try:
+    r = json.loads(sys.argv[5])
+except Exception:
+    print("NO"); print("  ❌ almacén:       etcd no responde a la lectura de %s" % clave); sys.exit()
+kvs = r.get("kvs") or []
+if not kvs:
+    print("NO"); print("  ❌ almacén:       el etcd-server no ha escrito su latido (%s ausente): no alcanza etcd"
+                     " (journalctl -u ml-defender-etcd-server: ETCD-ALMACEN-NO-DISPONIBLE)" % clave); sys.exit()
+try:
+    ultimo = int(json.loads(base64.b64decode(kvs[0]["value"])).get("ultimo"))
+except Exception as e:
+    print("NO"); print("  ❌ almacén:       %s ilegible: %s" % (clave, str(e)[:120])); sys.exit()
+hace = max(0, ahora - ultimo)
+if hace <= lim:
+    print("SI"); print("  ✅ almacén:       el etcd-server escribe en etcd (latido propio hace %d s, límite %d s: %s)" % (hace, lim, origen))
+else:
+    print("NO"); print("  ❌ almacén:       latido propio del etcd-server de hace %d s (límite %d s: %s): no escribe en etcd" % (hace, lim, origen))
 PY
 )
   [ "$(printf '%s\n' "$l" | head -n 1)" = SI ] || ok=no
