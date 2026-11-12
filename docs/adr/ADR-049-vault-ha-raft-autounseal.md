@@ -1,6 +1,6 @@
 # ADR-049 — Vault HA con Raft nativo y roadmap auto-unseal
 
-- **Estado:** En preparación (implementación post-FEDER)
+- **Estado:** En revisión (DAY324): se implementa en el PR2 de DEBT-ETCD-HA-TLS-RAFT-001; ver «Revisión DAY324» al final
 - **Fecha:** 2026-05-23
 - **Autor:** Alonso Isidoro Román
 - **Revisores:** Consejo de Sabios (pendiente votación formal)
@@ -113,3 +113,44 @@ En caso de Vault sellado, Falco debe distinguir el estado sealed del stopped y n
 - Las pruebas de caos de DAY 161 se ejecutan sobre Vault single-node transitorio y establecen la línea base de comportamiento.
 - Las reglas Falco deben distinguir Vault stopped de Vault sealed desde el principio — no es un refinamiento posterior.
 - El posicionamiento comercial de soberanía digital de aRGus queda reforzado por esta decisión: ningún secreto del hospital depende de infraestructura de terceros.
+
+---
+
+## Revisión DAY324 (decisiones de Alonso; PR2 de DEBT-ETCD-HA-TLS-RAFT-001)
+
+Donde esta revisión contradiga a las secciones anteriores, manda la revisión. Va con la revisión DAY324 de ADR-048.
+
+### Qué se mantiene
+
+- Raft integrado de Vault, tres nodos, un fallo tolerado. Sin Consul, sin ZooKeeper, sin Cloud KMS.
+- Sellado y parado son estados distintos y se avisan distinto (DEBT-VAULT-SELLADO-ALERTA-001 sigue abierta).
+
+### Qué cambia
+
+1. **Un nodo Vault en cada VM del clúster etcd.** Lo ideal serían VMs aparte; no hay RAM para ello (medido DAY324,
+   ADR-048). Consecuencia: perder una VM es perder a la vez un miembro etcd y un nodo Vault; con tres VMs se tolera una.
+2. **Unión al clúster.** `storage "raft"` con `node_id` propio y `retry_join` con las tres direcciones; `api_addr` y
+   `cluster_addr` en la IP de la LAN. El 8200 y el 8201 escuchan también en la LAN, aceptados solo desde los otros dos
+   nodos (nftables), con mTLS y certificados con la IP de cada nodo en el SAN. Todo sale del inventario y de una
+   plantilla (el Ansible de Vault), como etcd.
+3. **Desellado.** Las fases FEDER ya no aplican. Hoy (medido DAY324): Shamir 1 de 1 y desellado «c» de laboratorio,
+   con la clave en `/etc/vault.d/unseal.key` (root, 0600), que tras un corte de luz desella solo. En raft, cada nodo se
+   desella con las mismas claves. En el laboratorio, la clave viaja de la VM etcd a las otras dos por un tubo ssh
+   verificado con sha256, como la identidad del etcd-server en `d312_etcd_vm_deploy.sh`: nunca por `/vagrant` ni por
+   el disco del Mac. Es una simplificación de laboratorio y se escribe como tal. Producción: sin decidir entre Shamir
+   repartido entre personas y un HSM (YubiHSM2 por PKCS#11; DEBT-VAULT-AUTOUNSEAL-001 sigue).
+4. **Quién habla con Vault.** El etcd-server (claves HMAC del bronce: kv `argus-hmac`, `auth cert`) y `argus-infra`
+   (transit: firma del manifiesto, token atado a 127.0.0.1). El etcd-server lleva en `almacen_claves.vault_addrs` las
+   tres direcciones, la de su VM primero. Un nodo en espera reenvía la petición al activo: hay que medir que
+   `token_bound_cidrs` de `argus-infra` sigue viendo 127.0.0.1 cuando el nodo local no es el activo.
+5. **«Estado transitorio».** Lo medido el DAY324: Vault volvió y se desselló solo tras el apagado sucio.
+
+### Qué se mide en el PR2
+
+Cada medida con su predicción escrita antes y su criterio fijado por Alonso.
+
+- Caída del nodo activo: tiempo hasta el activo nuevo. Mientras tanto, el etcd-server sirve la última ventana
+  conocida y rotar da 503 (comportamiento de hoy con Vault caído).
+- Un nodo que vuelve: se desella y se pone al día (índice aplicado igual al del activo).
+- Los tres apagados y encendidos uno a uno, como etcd.
+- Firma del manifiesto con `argus-infra` con el nodo local en espera.
