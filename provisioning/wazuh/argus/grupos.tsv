@@ -1,4 +1,4 @@
 # provisioning/wazuh/argus/grupos.tsv — [VIGILANCIA-D321] agente de Wazuh (nombre con el que se registra: AGENT_NAME del
 # Vagrantfile) y su grupo (provisioning/wazuh/argus/shared/<grupo>/agent.conf). Separado por tabulador.
 defender	argus-defender
-etcd	argus-etcd
+control-1	argus-control

@@ -95,7 +95,7 @@ paso()  { echo; echo "=== [$(date +%T)] $*"; }
 falla() { echo; echo "PARADA [$(date +%T)]: $*"; exit 1; }
 def()   { vagrant ssh defender -c "$1" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]'; return "${PIPESTATUS[0]}"; }
 cli()   { vagrant ssh client -c "$1" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]'; return "${PIPESTATUS[0]}"; }
-vme()   { vagrant ssh etcd -c "$1" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]'; return "${PIPESTATUS[0]}"; }
+vme()   { vagrant ssh control-1 -c "$1" 2>/dev/null | tr -d '\r' | grep -v '^\[argus\]'; return "${PIPESTATUS[0]}"; }
 marca() { def "echo \"$1 \$(date +%s.%N)\" >> $D/tiempos.txt"; }
 PARAR_TRAFICO="if [ -f $PID ]; then sudo kill \$(cat $PID) 2>/dev/null; rm -f $PID; fi; sudo pkill -x tcpreplay 2>/dev/null; for i in 1 2 3 4 5; do pgrep -x tcpreplay > /dev/null || break; sleep 1; done; pgrep -x tcpreplay > /dev/null && echo 'AVISO: queda tcpreplay vivo' || echo 'tráfico parado'"
 limpiar() {

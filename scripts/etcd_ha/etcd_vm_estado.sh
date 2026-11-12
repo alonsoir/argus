@@ -1,6 +1,6 @@
 #!/bin/bash
 # etcd_vm_estado.sh — DAY317, paso 6b/6c de DEBT-ETCD-HA-TLS-RAFT-001: estado REAL de la VM etcd (no solo procesos).
-# Se ejecuta EN LA VM etcd como vagrant (hace sudo dentro): vagrant ssh etcd -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh"
+# Se ejecuta EN LA VM etcd como vagrant (hace sudo dentro): vagrant ssh control-1 -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh"
 #   - etcd-server: unidad systemd activa y GET /health por mTLS (certificado del propio etcd-server, regla «cualquiera»)
 #   - etcd: por cada miembro (etcdctl member list: con el PR2 salen todos), sano o no, líder, term y retraso respecto al líder
 #   - vault-hmac: por cada dirección de almacen_claves.vault_addrs, /v1/sys/health (200 activo, 429 en espera, 503 sellado)

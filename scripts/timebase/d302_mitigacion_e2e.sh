@@ -60,7 +60,7 @@ read -r AS SR SI SM < <(python3 -c 'import json,sys; a = json.load(open(sys.argv
 echo "    blacklist=$BL whitelist=$WL cadena=$CHAIN antispoof=$AS sets=$SR,$SI,$SM"
 # [PROTEGIDOS-C7-D320] C7 (ADR-060, el escenario del DAY317): la VM etcd tiene que estar arriba, con su chrony
 # contra el defender durante el ataque NTP; sin ella la prueba de que .20 nunca entra en el blacklist no vale nada.
-vagrant status etcd 2>/dev/null | grep -qE '^etcd +running' || falla "la VM etcd no esta arriba (vagrant up etcd): C7 necesita su trafico"
+vagrant status control-1 2>/dev/null | grep -qE '^control-1 +running' || falla "la VM etcd no esta arriba (vagrant up control-1): C7 necesita su trafico"
 paso "2 pipeline-stop y comprobacion"
 make pipeline-stop > "/tmp/${N}_stop0.txt" 2>&1 || falla "pipeline-stop"
 vagrant ssh defender -c "DIA=$DIA bash $H vivos" || falla "quedan procesos vivos"

@@ -4,7 +4,7 @@
 Si el disco del audit se llena, Vault deja de responder (un audit device que no puede escribir bloquea las peticiones):
 hay que verlo venir. Cada periodo_s mide la partición de `ruta` (como df: usado / (usado + disponible para usuarios),
 redondeado hacia arriba) y escribe UNA línea por stdout, que systemd lleva al journal con SyslogIdentifier=argus-disco
-y el agente de Wazuh envía al manager (provisioning/wazuh/argus/shared/argus-etcd/agent.conf):
+y el agente de Wazuh envía al manager (provisioning/wazuh/argus/shared/argus-control/agent.conf):
 
   ARGUS-DISCO ruta=<ruta> uso=<pct> umbral=<pct> estado=OK|ALTO      decoder argus-disco-campos; ALTO -> regla 100541
   ARGUS-DISCO-ERROR <qué>: <detalle>                                regla 100542 (medida o configuración imposibles)

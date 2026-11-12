@@ -68,10 +68,10 @@ marca() {  # punto de partida de un caso en el alerts.json
 alerta() {  # agente espera_s regla [texto]
   V wazuh "bash $HW esperar $DESDE $INODO $2 $1 $3 '${4:-}'" > "$T"; pinta
 }
-etcd() { V etcd "bash $HE $*" > "$T"; pinta; }
+etcd() { V control-1 "bash $HE $*" > "$T"; pinta; }
 fin() {
   log "TRAP: restaurando la VM etcd"
-  V etcd "bash $HE restaurar" > "$T"; pinta
+  V control-1 "bash $HE restaurar" > "$T"; pinta
   rm -f "$T"
 }
 trap fin EXIT
@@ -108,16 +108,16 @@ marca; etcd clave-intento; alerta etcd "$ESPERA" 100552 argus_lab_clave_intento_
 
 log "C8 trazas de un etcd-vm-check con etcd parado (máximo $C8_MAX, y todas en el manager)"
 marca; D8=$DESDE; I8=$INODO
-V etcd "bash $HE falco-lineas" > "$T"; pinta; L8=$(valor LINEAS)
+V control-1 "bash $HE falco-lineas" > "$T"; pinta; L8=$(valor LINEAS)
 if ! [[ "$L8" =~ ^[0-9]+$ ]]; then
   echo "  ❌ C8 sin el nº de líneas de partida de Falco: no se mide"; FALLOS=$((FALLOS + 1))
 else
   etcd etcd-parar
   t0=$SECONDS
-  V etcd "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh --estricto --esperar $ESPERA_ETCD" > "$DM/c8_etcd_vm_check.txt"
+  V control-1 "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh --estricto --esperar $ESPERA_ETCD" > "$DM/c8_etcd_vm_check.txt"
   log "   etcd-vm-check con etcd parado: $(( SECONDS - t0 )) s ($DM/c8_etcd_vm_check.txt)"
   etcd etcd-arrancar
-  V etcd "bash /vagrant/scripts/etcd_ha/d322_medir_falco_admin.sh $L8" > "$DM/c8_falco.txt"
+  V control-1 "bash /vagrant/scripts/etcd_ha/d322_medir_falco_admin.sh $L8" > "$DM/c8_falco.txt"
   log "   Falco (VM etcd), eventos desde la línea $L8:"; grep -E '^ +[0-9]+ ' "$DM/c8_falco.txt" | sed 's/^/     /'
   F8=$(grep -E '^ +[0-9]+  argus_lab_clave_leida_admin \(Notice\)$' "$DM/c8_falco.txt" | awk '{print $1}' | head -n 1)
   F8=${F8:-0}

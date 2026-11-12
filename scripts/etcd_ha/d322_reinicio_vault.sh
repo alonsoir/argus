@@ -28,7 +28,7 @@ entero() {  # nombre valor defecto min max -> VAL
 entero D322_ESPERA_ARRANQUE_S "${D322_ESPERA_ARRANQUE_S:-}" 300 60 900; ESPERA_ARRANQUE=$VAL
 entero D322_ESPERA_VAULT_S "${D322_ESPERA_VAULT_S:-}" 60 10 300; ESPERA_VAULT=$VAL
 T=$(mktemp /tmp/d322_vault.XXXXXX)
-V() { vagrant ssh etcd -c "$*" 2>/dev/null | tr -d '\r'; }
+V() { vagrant ssh control-1 -c "$*" 2>/dev/null | tr -d '\r'; }
 FALLOS=0; PREPARADO=no; REINICIADO=no
 pinta() {  # lee $T: muestra las líneas D322 y cuenta las FALLA
   local l
@@ -61,7 +61,7 @@ V "bash $H preparar" > "$T"; pinta
 PREPARADO=si
 
 log "3 sudo systemctl reboot (sin Vagrant; boot_id anterior $BOOT0)"
-vagrant ssh etcd -c "sudo systemctl reboot" > /dev/null 2>&1 || true
+vagrant ssh control-1 -c "sudo systemctl reboot" > /dev/null 2>&1 || true
 T0=$SECONDS; B=""
 while [ $(( SECONDS - T0 )) -lt "$ESPERA_ARRANQUE" ]; do
   sleep 5

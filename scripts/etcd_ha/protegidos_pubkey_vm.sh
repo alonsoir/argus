@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # protegidos_pubkey_vm.sh — DAY318, ADR-060 8e.2 [PROTEGIDOS-PUBKEY-D318]. Se ejecuta EN LA VM etcd como root:
-#   vagrant ssh etcd -c "sudo bash /vagrant/scripts/etcd_ha/protegidos_pubkey_vm.sh"
+#   vagrant ssh control-1 -c "sudo bash /vagrant/scripts/etcd_ha/protegidos_pubkey_vm.sh"
 # Lee la clave PÚBLICA del manifiesto de protegidos (Vault transit, argus-transit/keys/<clave>) con el certificado de
 # argus-infra (rol argus-infra-admin: firmar, verificar y leer esa clave, nada más) y la imprime en hex.
 # Salida (stdout), tres líneas que lee protegidos_pubkey.sh en el Mac:
@@ -12,7 +12,7 @@ set -u
 TAG=PROTEGIDOS-PUBKEY
 falla() { echo "[$TAG] FALLA: $*" >&2; exit 1; }
 CLAVE_F=/etc/vault.d/argus-protegidos.clave
-[ -s "$CLAVE_F" ] || falla "falta $CLAVE_F (Vault sin transit de ADR-060: desde el Mac, vagrant destroy -f etcd && vagrant up etcd)"
+[ -s "$CLAVE_F" ] || falla "falta $CLAVE_F (Vault sin transit de ADR-060: desde el Mac, vagrant destroy -f control-1 && vagrant up control-1)"
 CLAVE=$(tr -d '\n' < "$CLAVE_F")
 [[ "$CLAVE" =~ ^protegidos-[a-z0-9-]{1,64}$ ]] || falla "nombre de clave '$CLAVE' mal formado en $CLAVE_F"
 CA=/etc/vault.d/tls/ca.crt

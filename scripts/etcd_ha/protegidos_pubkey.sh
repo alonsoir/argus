@@ -12,7 +12,7 @@ TAG=PROTEGIDOS-PUBKEY
 falla() { echo "[$TAG] FALLA: $*" >&2; exit 1; }
 DESTINO=/etc/ml-defender/firewall-acl-agent/protegidos_pubkey_actual.hex
 SIGUIENTE=/etc/ml-defender/firewall-acl-agent/protegidos_pubkey_siguiente.hex
-CRUDO=$(vagrant ssh etcd -c "sudo bash /vagrant/scripts/etcd_ha/protegidos_pubkey_vm.sh" 2>/tmp/argus_protegidos_pubkey_err.txt)
+CRUDO=$(vagrant ssh control-1 -c "sudo bash /vagrant/scripts/etcd_ha/protegidos_pubkey_vm.sh" 2>/tmp/argus_protegidos_pubkey_err.txt)
 RC=$?
 SAL=$(printf '%s\n' "$CRUDO" | tr -d '\r')
 CLAVE=$(printf '%s\n' "$SAL" | sed -n 's/^PROTEGIDOS_CLAVE=\(protegidos-[a-z0-9-]*\)$/\1/p')

@@ -1,6 +1,6 @@
 # provisioning/vigilancia/argus-disco.service — [VIGILANCIA-D321] ADR-060 8e.4d: uso del disco del audit de Vault
 # (scripts/vigilancia/argus_disco.py). Lo instala scripts/vigilancia/argus_disco_instalar.sh en la VM etcd.
-# Sus líneas van al journal como argus-disco; el agente de Wazuh las envía (grupo argus-etcd).
+# Sus líneas van al journal como argus-disco; el agente de Wazuh las envía (grupo argus-control).
 # Sin privilegios: statvfs solo necesita llegar a la ruta, no leerla (DynamicUser, sistema de ficheros en solo lectura).
 [Unit]
 Description=aRGus: uso del disco del audit de Vault (argus-disco)

@@ -10,7 +10,7 @@ los piden por su API, no a etcd ni a Vault.
 
 ## Dónde corre
 
-En la VM `etcd` del laboratorio (192.168.100.20), como servicio systemd `ml-defender-etcd-server.service`, junto a
+En la VM `control-1` del laboratorio (192.168.100.20), como servicio systemd `ml-defender-etcd-server.service`, junto a
 etcd y Vault, que escuchan solo en 127.0.0.1 (etcd en el 2381 por HTTPS, Vault en el 8200 por HTTPS).
 
 | Qué | Dónde |

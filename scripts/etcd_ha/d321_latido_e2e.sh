@@ -72,7 +72,7 @@ trap 'exit 130' INT TERM
 
 paso "1 comprobaciones previas y ritmos del JSON"
 git diff --quiet -- "$JSON" || falla "$JSON tiene cambios sin commit: no se toca"
-vagrant status etcd 2>/dev/null | grep -qE "^etcd +running" || falla "la VM etcd no está arriba (vagrant up etcd)"
+vagrant status control-1 2>/dev/null | grep -qE "^control-1 +running" || falla "la VM etcd no está arriba (vagrant up control-1)"
 read -r HB CS < <(python3 - "$JSON" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding="utf-8"))

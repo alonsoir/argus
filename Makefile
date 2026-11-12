@@ -351,22 +351,22 @@ lab-clock-step:
 	@echo "[LAB-CLOCK-STEP] OK: defender y $(LAB_CLOCK_VMS) alineados"
 
 up-argus:
-	@vagrant up defender client etcd
+	@vagrant up defender client control-1
 
 up-suricata:
 	@cd experiments/suricata-comparative && vagrant up suricata client
 
 up:
-	@vagrant up defender client suricata zeek wazuh etcd
+	@vagrant up defender client suricata zeek wazuh control-1
 
 halt-argus:
-	@vagrant halt defender client etcd
+	@vagrant halt defender client control-1
 
 halt-suricata:
 	@cd experiments/suricata-comparative && vagrant halt
 
 halt:
-	@vagrant halt defender client suricata zeek wazuh etcd
+	@vagrant halt defender client suricata zeek wazuh control-1
 
 destroy:
 	@vagrant destroy -f
@@ -923,7 +923,7 @@ pipeline-status:
 	@echo "║  📊 ML Defender Pipeline Status (via TMUX + pgrep)        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@# [ETCD-VM-D317] VM etcd: etcd-server (systemd + /health), cada miembro etcd (sano, líder, retraso) y Vault de las claves HMAC
-	@vagrant ssh etcd -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh" 2>/dev/null | grep -E '^  (✅|❌|⚠️)|^       - ' || echo '  ❌ etcd-server:   STOPPED [VM etcd parada o inalcanzable: vagrant up etcd]'
+	@vagrant ssh control-1 -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh" 2>/dev/null | grep -E '^  (✅|❌|⚠️)|^       - ' || echo '  ❌ etcd-server:   STOPPED [VM etcd parada o inalcanzable: vagrant up control-1]'
 	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
 	  EBPF=0; PCAP=0; \
@@ -1298,7 +1298,7 @@ emecas:
 	@$(EMECAS_PASO) vagrant-destroy -- vagrant destroy -f
 	@$(EMECAS_PASO) clean-host-builds -- $(MAKE) clean-host-builds
 	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
-	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh etcd
+	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh control-1
 	@$(EMECAS_PASO) sello-inicio -- vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	@$(EMECAS_PASO) bootstrap -- $(MAKE) bootstrap
 	@$(EMECAS_PASO) emecas-frescura -- $(MAKE) emecas-frescura
@@ -2265,7 +2265,7 @@ protegidos-pubkey:
 # hospital-lab.json: .20 en infraestructura con su MAC, .61 en intranet). Idempotente (decisión de Alonso DAY322): rc 0
 # firmada; rc 4 ya había un manifiesto publicado y no se toca; cualquier otro código para el bootstrap.
 protegidos-bootstrap:
-	@vagrant ssh etcd -c "sudo /usr/local/sbin/argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json --si; echo ARGUS_INFRA_RC=\$$?" > /tmp/argus_protegidos_bootstrap.txt 2>&1; \
+	@vagrant ssh control-1 -c "sudo /usr/local/sbin/argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json --si; echo ARGUS_INFRA_RC=\$$?" > /tmp/argus_protegidos_bootstrap.txt 2>&1; \
 	grep -v -e '^\[argus\]' -e '^ARGUS_INFRA_RC=' /tmp/argus_protegidos_bootstrap.txt; \
 	rc=$$(tr -d '\r' < /tmp/argus_protegidos_bootstrap.txt | sed -n 's/^ARGUS_INFRA_RC=\([0-9]*\)$$/\1/p' | tail -n 1); \
 	case "$$rc" in \
@@ -2278,13 +2278,17 @@ protegidos-bootstrap:
 # Vault) con el Python de la VM etcd, donde vive la herramienta: el validador portado de libs/protegidos, la
 # configuración, la plantilla del laboratorio, el diff y la política.
 test-argus-infra:
-	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
+	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
 
 # [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
 # agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el
 # aprovisionador argus-vigilancia del Vagrantfile. La versión del manager sale de provisioning/wazuh/VERSION.
 vigilancia-manager-deploy:
 	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/wazuh_manager_desplegar.sh"
+
+# [PLANO-CONTROL-D324] comprobaciones estáticas del plano de control (Mac, sin VMs): scripts/etcd_ha/test_plano_control.py
+test-plano-control:
+	@python3 -I scripts/etcd_ha/test_plano_control.py
 
 # Cada regla de aRGus contra su línea de provisioning/wazuh/argus/tests/casos_reglas.tsv, con wazuh-logtest en el manager
 test-vigilancia-reglas:
@@ -2293,38 +2297,38 @@ test-vigilancia-reglas:
 # [VIGILANCIA-D321] tests de argus-disco (unittest, biblioteca estándar) con el Python de la VM etcd, donde corre:
 # configuración (rangos, tipos, defectos), medida como df y las líneas que leen el decoder y las reglas de Wazuh
 test-vigilancia-disco:
-	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/scripts/vigilancia/test_argus_disco.py"
+	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/scripts/vigilancia/test_argus_disco.py"
 
 # Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
 etcd-vm-deploy:
 	@bash scripts/etcd_ha/d312_etcd_vm_deploy.sh $(PROFILE)
 	@$(MAKE) --no-print-directory deploy-configs
-	@vagrant ssh etcd -c "sudo systemctl restart $(ETCD_VM_UNIDAD)"
+	@vagrant ssh control-1 -c "sudo systemctl restart $(ETCD_VM_UNIDAD)"
 	@$(MAKE) --no-print-directory etcd-vm-check
 
 # Informe (rc 0 siempre)
 etcd-vm-estado:
-	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO)"
+	@vagrant ssh control-1 -c "bash $(ETCD_VM_ESTADO)"
 
 # Estricto (EMECAS): rc 1 si etcd-server, algún miembro etcd o Vault no están sanos tras ETCD_VM_ESPERA_S
 etcd-vm-check:
-	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)"
+	@vagrant ssh control-1 -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)"
 
 # pipeline-start: informa y, si no está sano (o la VM está parada), avisa claro y sigue (decisión 4 de Alonso, DAY317)
 etcd-vm-aviso:
-	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)" > /tmp/argus_etcd_vm_aviso.txt 2>&1; rc=$$?; \
+	@vagrant ssh control-1 -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)" > /tmp/argus_etcd_vm_aviso.txt 2>&1; rc=$$?; \
 	  cat /tmp/argus_etcd_vm_aviso.txt; \
 	  if [ $$rc -ne 0 ]; then \
 	    echo "[ETCD-VM-AVISO] la VM etcd NO está sana (o está parada): los componentes arrancan y protegen, pero sin clave HMAC no"; \
-	    echo "[ETCD-VM-AVISO] firman bronce ni CSV hasta que vuelvan etcd-server, etcd y Vault. Ver: make etcd-vm-estado; VM parada: vagrant up etcd"; \
+	    echo "[ETCD-VM-AVISO] firman bronce ni CSV hasta que vuelvan etcd-server, etcd y Vault. Ver: make etcd-vm-estado; VM parada: vagrant up control-1"; \
 	  fi
 
 etcd-server-start:  # [ETCD-VM-D317] arranca el servicio de la VM etcd y exige que quede sano
-	@vagrant ssh etcd -c "sudo systemctl start $(ETCD_VM_UNIDAD)"
+	@vagrant ssh control-1 -c "sudo systemctl start $(ETCD_VM_UNIDAD)"
 	@$(MAKE) --no-print-directory etcd-vm-check
 
 etcd-server-stop:  # [ETCD-VM-D317] para el servicio de la VM etcd (Restart=always no lo relanza tras un stop explícito)
-	@vagrant ssh etcd -c "sudo systemctl stop $(ETCD_VM_UNIDAD); echo \"etcd-server de la VM etcd: \$$(systemctl is-active $(ETCD_VM_UNIDAD))\""
+	@vagrant ssh control-1 -c "sudo systemctl stop $(ETCD_VM_UNIDAD); echo \"etcd-server de la VM etcd: \$$(systemctl is-active $(ETCD_VM_UNIDAD))\""
 
 # ============================================================================
 # TSAN Validation Suite (Day 48 Phase 0)

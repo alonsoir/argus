@@ -1133,7 +1133,7 @@ BASHRC_EOF
     # [DEPLOY-SSH-D315] DEBT-ANSIBLE-DEPLOY-CONFIGS-001 paso 2a: clave de despliegue de Ansible/Jenkins (Jenkins corre
     # como root en dev). Se genera aquí y la privada nunca sale del defender; solo la pública se deja en
     # /vagrant/dist/deploy/ (fuera de git) para que la VM etcd la autorice (provisioner deploy-access). run: always: si el
-    # defender se rehace, la clave nueva se publica y basta con: vagrant provision etcd --provision-with deploy-access
+    # defender se rehace, la clave nueva se publica y basta con: vagrant provision control-1 --provision-with deploy-access
     defender.vm.provision "shell", name: "deploy-key", run: "always", inline: <<-'DEPLOY_KEY'
       set -e
       K=/root/.ssh/argus_deploy_ed25519
@@ -1600,13 +1600,13 @@ BASHRC_EOF
   # [VM-ETCD-D312] DEBT-ETCD-HA-TLS-RAFT-001, PR1 (un nodo). docs/ml-heads/day312_diseno.md
   # El etcd-server sale del defender (decisión de Alonso DAY312). Solo el defender habla con el 2379.
   # ════════════════════════════════════════════════════════════════════════════
-  config.vm.define "etcd", autostart: false do |etcd|
+  config.vm.define "control-1", autostart: false do |etcd|
     etcd.vm.box         = "debian/bookworm64"
     etcd.vm.box_version = "12.20240905.1"
-    etcd.vm.hostname    = "argus-etcd"
+    etcd.vm.hostname    = "argus-control-1"
 
     etcd.vm.provider "virtualbox" do |vb|
-      vb.name   = "argus-etcd"
+      vb.name   = "argus-control-1"
       vb.memory = "1536"  # [VIGILANCIA-D321] +512: Falco (medido DAY321: 114-149 MB de RSS) y el agente de Wazuh
       vb.cpus   = 2
       vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
@@ -1827,12 +1827,12 @@ POL
         echo "✅ vault-server: argus-hmac/ con cas_required=true (escritura sin CAS rechazada)"
       else
         echo "❌ vault-server: escritura sin CAS dio HTTP $SONDA (se esperaba 400): el montaje no tiene cas_required."
-        echo "   Vault inicializado antes de DAY314. Desde el Mac: vagrant destroy -f etcd && vagrant up etcd"; exit 1
+        echo "   Vault inicializado antes de DAY314. Desde el Mac: vagrant destroy -f control-1 && vagrant up control-1"; exit 1
       fi
       # [PROTEGIDOS-PUBKEY-D318] sonda en cada aprovisionamiento: con el certificado de argus-infra se lee la clave del
       # manifiesto (ed25519, no exportable, sin borrado), y esa lectura tiene que aparecer en los dos audit devices. Un
       # Vault inicializado antes de DAY318 no tiene transit y, con el root revocado, no se puede añadir: se rehace.
-      REHACER="Desde el Mac: vagrant destroy -f etcd && vagrant up etcd"
+      REHACER="Desde el Mac: vagrant destroy -f control-1 && vagrant up control-1"
       [ -s /etc/vault.d/argus-protegidos.clave ] || { echo "❌ vault-server: Vault sin argus-transit (inicializado antes de DAY318). $REHACER"; exit 1; }
       HAY=$(cat /etc/vault.d/argus-protegidos.clave)
       [ "$HAY" = "$CLAVE_PROT" ] || { echo "❌ vault-server: este Vault firma con $HAY y el despliegue pide $CLAVE_PROT (argus_hospital_id). Un Vault por hospital. $REHACER"; exit 1; }
@@ -1985,8 +1985,8 @@ UNIT
       echo 'argus-deploy ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/argus-deploy
       chmod 0440 /etc/sudoers.d/argus-deploy
       visudo -cf /etc/sudoers.d/argus-deploy > /dev/null
-      echo "192.168.100.20 $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)" > /vagrant/dist/deploy/known_hosts_etcd
-      echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_etcd"
+      echo "192.168.100.20 $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)" > /vagrant/dist/deploy/known_hosts_control-1
+      echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_control-1"
     DEPLOY_ACCESS
 
     # [ETCD-SERVER-UNIT-D317] DEBT-ETCD-HA-TLS-RAFT-001 paso 6a (decisión 5 de Alonso, DAY317): el etcd-server corre aquí como
@@ -2092,12 +2092,12 @@ UNIT
 
     # [VIGILANCIA-D321] ADR-060 8e.4d (H-I): los sensores de la VM etcd, todo o nada cada uno y run: always (con todo ya
     # puesto no cambian nada). Falco desde su apt firmado (provisioning/falco/VERSION) con las reglas de aRGus;
-    # argus-disco (uso del disco del audit de Vault); el agente de Wazuh (grupo argus-etcd: lo asigna el manager en
+    # argus-disco (uso del disco del audit de Vault); el agente de Wazuh (grupo argus-control: lo asigna el manager en
     # make vigilancia-manager-deploy, provisioning/wazuh/argus/grupos.tsv).
     etcd.vm.provision "shell", name: "falco", run: "always", inline: "bash /vagrant/scripts/vigilancia/falco_instalar.sh"
     etcd.vm.provision "shell", name: "argus-disco", run: "always",
       inline: "bash /vagrant/scripts/vigilancia/argus_disco_instalar.sh"
-    etcd.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "etcd"},
+    etcd.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "control-1"},
       inline: WAZUH_AGENT_INSTALL
 
   end  # End etcd VM
