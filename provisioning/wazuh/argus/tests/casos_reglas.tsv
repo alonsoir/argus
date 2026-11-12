@@ -20,10 +20,12 @@ vault_audit_response	100520	12	Nov  9 08:45:05 argus-control-1 vault[528]: 2026-
 vault_info_sin_alerta	-	-	Nov  9 08:45:05 argus-control-1 vault[528]: 2026-11-09T08:45:05.300Z [INFO]  core: successful mount: namespace="" path=argus-transit/ type=transit
 spoof_if	100530	12	Nov  9 08:46:01 argus-defender kernel: ARGUS-SPOOF-IF IN=veth-d320a OUT= MAC=02:00:00:00:00:02:02:00:00:00:00:01:08:00 SRC=192.168.100.20 DST=192.168.100.1 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=1 DF PROTO=ICMP TYPE=8 CODE=0 ID=7 SEQ=1
 spoof_mac	100530	12	Nov  9 08:46:02 argus-defender kernel: ARGUS-SPOOF-MAC IN=eth2 OUT= MAC=08:00:27:aa:bb:cc:08:00:27:11:22:33:08:00 SRC=192.168.100.62 DST=192.168.100.1 LEN=84 TOS=0x00 PREC=0x00 TTL=64 ID=2 DF PROTO=ICMP TYPE=8 CODE=0 ID=8 SEQ=1
-disco_ok_sin_alerta	100540	0	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO ruta=/var/log/vault uso=3 umbral=75 estado=OK
-disco_alto	100541	10	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO ruta=/var/log/vault uso=81 umbral=75 estado=ALTO
+disco_ok_sin_alerta	100540	0	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO ruta=/var/log/vault,/var/lib/etcd uso=3 umbral=75 estado=OK
+disco_alto	100541	10	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO ruta=/var/log/vault,/var/lib/etcd uso=81 umbral=75 estado=ALTO
 disco_error	100542	8	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO-ERROR ruta=/var/log/vault: [Errno 2] No such file or directory
-disco_config_sin_alerta	100540	0	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO-CONFIG ruta=/var/log/vault (fichero) umbral_pct=75 (fichero) periodo_s=60 (fichero)
+disco_error_sin_vault	100542	8	Nov  9 09:00:00 argus-control-2 argus-disco[900]: ARGUS-DISCO-ERROR ruta=/var/log/vault: [Errno 2] No such file or directory: '/var/log/vault'
+disco_ok_etcd_sin_alerta	100540	0	Nov  9 09:00:00 argus-control-2 argus-disco[900]: ARGUS-DISCO ruta=/var/lib/etcd uso=3 umbral=75 estado=OK
+disco_config_sin_alerta	100540	0	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO-CONFIG rutas=/var/log/vault,/var/lib/etcd (fichero) umbral_pct=75 (fichero) periodo_s=60 (fichero)
 disco_config_error	100542	8	Nov  9 09:00:00 argus-control-1 argus-disco[900]: ARGUS-DISCO-ERROR config=/etc/argus-vigilancia/disco.json: umbral_pct=0 no vale (entero en [1, 99]); se usa el defecto 75
 falco_critical	100551	12	{"hostname":"argus-control-1","output":"10:00:00.000000000: Critical aRGus lectura de clave por un proceso ajeno (proc=/usr/bin/cat padre=/usr/bin/sudo fichero=/etc/argus-pki/etcd-server.key)","priority":"Critical","rule":"argus_lab_clave_leida_ajeno","source":"syscall","tags":["argus"],"time":"2026-11-09T10:00:00.000000000Z"}
 falco_warning	100552	8	{"hostname":"argus-defender","output":"10:00:00.000000000: Warning aRGus ...","priority":"Warning","rule":"argus_lab_prueba_warning","source":"syscall","tags":["argus"],"time":"2026-11-09T10:00:00.000000000Z"}
