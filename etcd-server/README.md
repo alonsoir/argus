@@ -58,7 +58,7 @@ publicar el manifiesto; `argus-infra` solo puede publicar el manifiesto.
 ### 2. Registro y latidos en etcd (`almacen`, `heartbeat`)
 
 - Claves en etcd, bajo el `prefijo` del despliegue (uno por despliegue, p. ej. `/argus/<hospital>/<planta>/`):
-  `<prefijo>registro/<CN>`, `<prefijo>latido/<CN>`, `<prefijo>epoca`.
+  `<prefijo>registro/<CN>` y `<prefijo>latido/<CN>`.
 - El etcd-server entra en etcd por gRPC con TLS; el CN de su certificado es su usuario RBAC (rol `argus-rw`, solo
   lectura y escritura bajo `/argus/`).
 - Un componente sin latido durante `heartbeat.interval_seconds × timeout_multiplier` se marca muerto (no se borra);
