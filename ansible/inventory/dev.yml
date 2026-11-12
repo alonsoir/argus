@@ -20,6 +20,20 @@ all:
           # queda con la primera opción (medido DAY315: con una huella falsa conectaba igual)
           ansible_host_key_checking: true
           ansible_ssh_common_args: "-o UserKnownHostsFile=/vagrant/dist/deploy/known_hosts_control-1 -o StrictHostKeyChecking=yes"
+        # [PLANO-CONTROL-D324] los demás nodos del plano de control (argus_control_nodos del group_vars; el test
+        # make test-plano-control exige que coincidan). Aún no están en etcd_servers: su etcd-server llega en el PR2d.
+        control-2:
+          ansible_host: 192.168.100.21
+          ansible_user: argus-deploy
+          ansible_ssh_private_key_file: /root/.ssh/argus_deploy_ed25519
+          ansible_host_key_checking: true
+          ansible_ssh_common_args: "-o UserKnownHostsFile=/vagrant/dist/deploy/known_hosts_control-2 -o StrictHostKeyChecking=yes"
+        control-3:
+          ansible_host: 192.168.100.22
+          ansible_user: argus-deploy
+          ansible_ssh_private_key_file: /root/.ssh/argus_deploy_ed25519
+          ansible_host_key_checking: true
+          ansible_ssh_common_args: "-o UserKnownHostsFile=/vagrant/dist/deploy/known_hosts_control-3 -o StrictHostKeyChecking=yes"
     etcd_servers:
       hosts:
         control-1:

@@ -18,3 +18,18 @@ argus_prefijo: "/argus/"
 # (argus-transit/keys/protegidos-<hospital>, una por hospital) y es el hospital_id del manifiesto. Formato: [a-z0-9-],
 # de 1 a 64. Sin defecto en ningún sitio: el Vagrantfile para si falta. Lab: hospital-lab (decisión de Alonso DAY318).
 argus_hospital_id: "hospital-lab"
+
+# [PLANO-CONTROL-D324] nodos del plano de control del laboratorio (ADR-048/049, revisión DAY324): una VM por nodo con
+# etcd + Vault + etcd-server. La única fuente: la leen el Vagrantfile y el inventario (make test-plano-control comprueba
+# que coinciden), con la validación de scripts/etcd_ha/nodos_control.rb (formato y límites en su cabecera). Sin
+# defecto: una lista ausente o mal formada para Vagrant. El primero es control-1 en .20 (el resto del laboratorio lo da
+# por hecho hasta el PR2d). MAC fija: el manifiesto de protegidos ata cada IP de infraestructura a su MAC.
+argus_control_nodos:
+  - { nombre: control-1, ip: 192.168.100.20, mac: "080027A20020" }
+  - { nombre: control-2, ip: 192.168.100.21, mac: "080027A20021" }
+  - { nombre: control-3, ip: 192.168.100.22, mac: "080027A20022" }
+# Memoria y CPU de cada nodo. memoria_mb: entero [768, 4096]; medido DAY324 en la VM etcd: picos de los servicios
+# ~510 MB (vault 234, falco 121, etcd 64, wazuh-agent 58, etcd-server 30); 1024 hasta medir el pico del
+# aprovisionamiento y de un EMECAS+++. cpus: entero [1, 4].
+argus_control_memoria_mb: 1024
+argus_control_cpus: 2

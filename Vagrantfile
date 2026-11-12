@@ -146,6 +146,16 @@ unless ARGUS_HOSPITAL_ID.match?(/\A[a-z0-9-]{1,64}\z/)
         "(formato: [a-z0-9-], de 1 a 64 caracteres; p. ej. hospital-lab)"
 end
 
+# [PLANO-CONTROL-D324] nodos del plano de control (etcd + Vault + etcd-server; ADR-048/049, revisión DAY324), del mismo
+# group_vars: scripts/etcd_ha/nodos_control.rb los valida (formato y límites en su cabecera). Sin lista válida Vagrant
+# para aquí: es la identidad de la infraestructura del laboratorio y no tiene defecto sano.
+require File.join(__dir__, "scripts", "etcd_ha", "nodos_control")
+ARGUS_CONTROL, errores_control, avisos_control = ArgusNodosControl.cargar(ARGUS_GROUP_VARS, File.join(__dir__, "Vagrantfile"))
+avisos_control.each { |a| warn "[PLANO-CONTROL-D324] AVISO #{a}" }
+unless errores_control.empty?
+  abort "[PLANO-CONTROL-D324] #{ARGUS_GROUP_VARS}:\n  " + errores_control.join("\n  ")
+end
+
 Vagrant.configure("2") do |config|
 
   # [APT-ESPERA-D317] determinismo de EMECAS: en una VM recién arrancada, unattended-upgrades coge el bloqueo de dpkg y un
@@ -1600,15 +1610,20 @@ BASHRC_EOF
   # [VM-ETCD-D312] DEBT-ETCD-HA-TLS-RAFT-001, PR1 (un nodo). docs/ml-heads/day312_diseno.md
   # El etcd-server sale del defender (decisión de Alonso DAY312). Solo el defender habla con el 2379.
   # ════════════════════════════════════════════════════════════════════════════
-  config.vm.define "control-1", autostart: false do |etcd|
+  # [PLANO-CONTROL-D324] una VM por nodo de ARGUS_CONTROL (sin reindentar el bloque: sus heredocs llevan ficheros
+  # cuyo sangrado importa). El primero (control-1) lleva todo lo de hoy; los demás, de momento, la base (reloj,
+  # nftables) y el acceso de despliegue: etcd en clúster (paso 4), Vault (PR2c), etcd-server (PR2d), vigilancia (paso 6).
+  ARGUS_CONTROL["nodos"].each_with_index do |nodo, i_nodo|
+  primero = i_nodo.zero?
+  config.vm.define nodo["nombre"], autostart: false do |etcd|
     etcd.vm.box         = "debian/bookworm64"
     etcd.vm.box_version = "12.20240905.1"
-    etcd.vm.hostname    = "argus-control-1"
+    etcd.vm.hostname    = "argus-#{nodo["nombre"]}"
 
     etcd.vm.provider "virtualbox" do |vb|
-      vb.name   = "argus-control-1"
-      vb.memory = "1536"  # [VIGILANCIA-D321] +512: Falco (medido DAY321: 114-149 MB de RSS) y el agente de Wazuh
-      vb.cpus   = 2
+      vb.name   = "argus-#{nodo["nombre"]}"
+      vb.memory = ARGUS_CONTROL["memoria_mb"].to_s  # [PLANO-CONTROL-D324] del group_vars (DAY324: ~510 MB de picos)
+      vb.cpus   = ARGUS_CONTROL["cpus"]
       vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
       vb.customize ["modifyvm", :id, "--nictype2", "virtio"]
       vb.customize ["modifyvm", :id, "--ioapic", "on"]
@@ -1620,8 +1635,8 @@ BASHRC_EOF
     # atar .20 a su MAC (tools/argus-infra/plantillas/hospital-lab.json): el antispoofing por MAC caza a quien, desde
     # la misma LAN, falsifique el origen de la VM etcd. Si se cambia aquí, cambiarla también en la plantilla.
     etcd.vm.network "private_network",
-      ip: "192.168.100.20",
-      mac: "080027A20020",
+      ip: nodo["ip"],
+      mac: nodo["mac"],
       virtualbox__intnet: "ml_defender_gateway_lan"
 
     etcd.vm.synced_folder ".", "/vagrant", type: "virtualbox",
@@ -1672,6 +1687,7 @@ NFT
     ETCD_BASE
 
 
+    if primero  # [PLANO-CONTROL-D324] PKI, Vault y etcd de un nodo: solo control-1 (etcd en clúster: paso 4; Vault: PR2c)
     # [VAULT-SERVER-D312] PKI: directorio de entrada 0700 y copia desde ARGUS_PKI_DIR (Mac); vault-server la instala y borra
     etcd.vm.provision "shell", name: "pki-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki"
     # [PROTEGIDOS-PUBKEY-D318] argus-infra: certificado que SOLO firma el manifiesto de protegidos (ver d312_pki.sh)
@@ -1968,13 +1984,18 @@ UNIT
       fi
       echo "✅ etcd-local: $($E endpoint status -w json | python3 -c 'import sys,json; s=json.load(sys.stdin)[0]["Status"]; print("version=%s lider=%s" % (s["version"], "si" if s["leader"] == s["header"]["member_id"] else "no"))')"
     ETCD_LOCAL
+    end  # if primero
+
     # [DEPLOY-SSH-D315] DEBT-ANSIBLE-DEPLOY-CONFIGS-001 paso 2a: usuario argus-deploy para Ansible/Jenkins desde el
     # defender. authorized_keys = SOLO la pública que dejó el provisioner deploy-key del defender (se reemplaza, no se
     # añade); sudo sin contraseña SOLO en el laboratorio (en producción, limitado a lo que se despliega); la huella de esta
     # VM se publica para que el defender la verifique (StrictHostKeyChecking=yes, nada se acepta a ciegas). run: always:
     # sigue a la clave del defender y a la huella de esta VM si cualquiera de las dos se rehace.
-    etcd.vm.provision "shell", name: "deploy-access", run: "always", inline: <<-'DEPLOY_ACCESS'
+    etcd.vm.provision "shell", name: "deploy-access", run: "always",
+      env: { "ARGUS_NODO" => nodo["nombre"], "ARGUS_NODO_IP" => nodo["ip"] }, inline: <<-'DEPLOY_ACCESS'
       set -e
+      [[ "${ARGUS_NODO:-}" =~ ^[a-z0-9-]{1,32}$ ]] && [[ "${ARGUS_NODO_IP:-}" =~ ^192\.168\.100\.[0-9]{1,3}$ ]] \
+        || { echo "❌ deploy-access: ARGUS_NODO='${ARGUS_NODO:-}' / ARGUS_NODO_IP='${ARGUS_NODO_IP:-}' ausentes o mal formados"; exit 1; }
       PUB=/vagrant/dist/deploy/argus_deploy_ed25519.pub
       [ -s "$PUB" ] || { echo "❌ deploy-access: falta $PUB (antes, desde el Mac: vagrant provision defender --provision-with deploy-key)"; exit 1; }
       grep -qE '^ssh-ed25519 [A-Za-z0-9+/=]+ argus-deploy@defender$' "$PUB" \
@@ -1985,10 +2006,11 @@ UNIT
       echo 'argus-deploy ALL=(ALL) NOPASSWD: ALL' > /etc/sudoers.d/argus-deploy
       chmod 0440 /etc/sudoers.d/argus-deploy
       visudo -cf /etc/sudoers.d/argus-deploy > /dev/null
-      echo "192.168.100.20 $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)" > /vagrant/dist/deploy/known_hosts_control-1
-      echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_control-1"
+      echo "$ARGUS_NODO_IP $(cut -d' ' -f1,2 /etc/ssh/ssh_host_ed25519_key.pub)" > "/vagrant/dist/deploy/known_hosts_$ARGUS_NODO"
+      echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_$ARGUS_NODO"
     DEPLOY_ACCESS
 
+    if primero  # [PLANO-CONTROL-D324] etcd-server, argus-infra y vigilancia: solo control-1 (PR2d y paso 6)
     # [ETCD-SERVER-UNIT-D317] DEBT-ETCD-HA-TLS-RAFT-001 paso 6a (decisión 5 de Alonso, DAY317): el etcd-server corre aquí como
     # servicio systemd, junto a etcd y Vault. El binario y el JSON NO los pone Vagrant (el binario se compila en el defender
     # tras bootstrap): los dejan d312_etcd_vm_deploy.sh y make deploy-configs. Sin ellos la unidad queda habilitada pero
@@ -2100,6 +2122,8 @@ UNIT
     etcd.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "control-1"},
       inline: WAZUH_AGENT_INSTALL
 
-  end  # End etcd VM
+    end  # if primero
+  end  # End VM del nodo de control
+  end  # each ARGUS_CONTROL [PLANO-CONTROL-D324]
 
 end  # End Vagrant configuration
