@@ -9577,3 +9577,32 @@ plantilla Jinja2 de `etcd.conf.yml`, en PRs pequeños. Después del PR2, la «di
 fuera; Trivy). Más tarde (toca Jenkins y exige otro EMECAS): DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001. Sin orden decidido:
 DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001, DEBT-HARDENED-FALCO-RUTAS-001,
 DEBT-VAULT-SELLADO-ALERTA-001, DEBT-CTU-START-VENTANA-001, DEBT-DDOS-COLATERAL-LEGITIMO-001.
+
+## DAY324 — residuos del repositorio y README del etcd-server
+
+### Hecho
+- Parcheadores de un solo uso DAY313-DAY323 (45, nunca en `main`) archivados en la rama
+  `archivo/parcheadores-d313-d323` (`42dd0d85e`), que no se mergea. Entraron en `main` por error con el PR #155 y
+  salieron con un commit nuevo en el PR #157. Las menciones en BACKLOG y `docs/ml-heads/day312_diseno.md` a
+  `scripts/d313_*`, `scripts/d314_*` y `scripts/etcd_ha/d317_6d_defender.py` se leen en esa rama:
+  `git show origin/archivo/parcheadores-d313-d323:archivo/parcheadores-D313-D323/<ruta>`.
+- ggshield: `.gitguardian.yaml` al formato v2 (`secret.ignored_paths`; con `paths_ignore` no se excluía ninguna ruta)
+  (PR #156). El aviso de `d317_6d_defender.py` era un falso positivo: los cuatro valores son sha256 de versiones de
+  `etcd_server_authz.hpp` y `secrets_manager.hpp` en la historia (`1e75d0618`, `0ddfe530d`, `86ab61607`).
+- `.gitignore`: `__pycache__/` y `*.pyc` en cualquier directorio, en lugar de tres reglas de una sola ruta
+  (`scripts/timebase/__pycache__` seguía sin ignorar; medido con `git check-ignore`) (PR #157).
+- `etcd-server/README.md` (pendiente del PR1): qué hace, rutas y roles, configuración, despliegue en la VM etcd y qué
+  pasa si cae etcd, Vault o el propio etcd-server.
+
+### DEBT-REPO-PYCACHE-TRACKED-001 — CERRADA DAY324 (PR #157)
+`protobuf/__pycache__/network_security_pb2.cpython-311.pyc` fuera del repositorio; lo ignora `.gitignore`.
+
+### DEBT-REPO-RESIDUOS-001 — ampliada DAY324
+- Hecho: `__pycache__` en `.gitignore` y parcheadores DAY313-DAY323 archivados (arriba).
+- Queda (para la «dieta» tras el PR2): unos 180 scripts de un solo uso con seguimiento en `scripts/etcd_ha/` y
+  `scripts/timebase/`. Antes de archivarlos, ver cuáles usan el Makefile, el Vagrantfile o el aprovisionamiento:
+  `make etcd-vm-deploy` llama a `scripts/etcd_ha/d312_etcd_vm_deploy.sh` y `lab-e2e-reinicio-etcd` a
+  `scripts/etcd_ha/d317_reinicio_vm.sh`; esos se quedan (y quizá merecen un nombre que no sea de un día).
+- `etcd-server/tests/test_secrets_manager.cpp`: su `add_executable` está comentado en `etcd-server/CMakeLists.txt`
+  (no se compila ni se ejecuta). Decidir: cablearlo o borrarlo.
+- Ramas viejas en el remoto: `chore/cleanup-temp-scripts` (14-may-2026) y `chore/preserve-scratch-scripts`.
