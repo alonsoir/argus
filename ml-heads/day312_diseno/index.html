@@ -1,0 +1,3481 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-heads/day312_diseno/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>DAY312 — Diseño del PR1 de DEBT-ETCD-HA-TLS-RAFT-001 (etcd-server en un nodo, HTTPS + mTLS, claves en Vault) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#day312-diseno-del-pr1-de-debt-etcd-ha-tls-raft-001-etcd-server-en-un-nodo-https-mtls-claves-en-vault" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              DAY312 — Diseño del PR1 de DEBT-ETCD-HA-TLS-RAFT-001 (etcd-server en un nodo, HTTPS + mTLS, claves en Vault)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-decisiones-de-alonso-day312" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Decisiones de Alonso (DAY312)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-medidas-ya-hechas-antes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Medidas ya hechas (antes)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-arquitectura-del-pr1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Arquitectura del PR1
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-pasos-con-su-prediccion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Pasos, con su predicción
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-preguntas-abiertas-para-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Preguntas abiertas para Alonso
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-ram-para-decidir-el-reparto-del-pr2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. RAM (para decidir el reparto del PR2)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day312-medidos-se-anaden-aparte-sin-reescribir-las-secciones-de-diseno-escritas-antes-de-medir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY312 (medidos; se añaden aparte, sin reescribir las secciones de diseño escritas antes de medir)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY312 (medidos; se añaden aparte, sin reescribir las secciones de diseño escritas antes de medir)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#r0-exposicion-del-vault-dev-del-defender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        R0. Exposición del Vault dev del defender
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#r1-paso-1-vm-etcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        R1. Paso 1, VM etcd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#r2-paso-2-vault-en-modo-servidor-en-la-vm-etcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        R2. Paso 2, Vault en modo servidor en la VM etcd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day312" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY312
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diseno-del-paso-4b-codigo-del-etcd-server-day312-escrito-antes-de-tocar-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diseño del paso 4b (código del etcd-server) — DAY312, escrito ANTES de tocar código
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diseño del paso 4b (código del etcd-server) — DAY312, escrito ANTES de tocar código">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#medido-para-este-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido para este diseño
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b0-decisiones-abiertas-para-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.0 Decisiones abiertas para Alonso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b1-configuracion-el-json-es-la-ley" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.1 Configuración: el JSON es la ley
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b2-arranque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.2 Arranque
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b3-https-mtls-y-autorizacion" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.3 HTTPS + mTLS y autorización
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b4-registro-configuracion-y-epoca-en-etcd" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.4 Registro, configuración y época en etcd
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b5-claves-hmac-en-vault-ventana-de-dos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.5 Claves HMAC en Vault (ventana de dos)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b6-fuera-codigo-muerto-o-peligroso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.6 Fuera (código muerto o peligroso)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b7-pruebas-y-predicciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.7 Pruebas y predicciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day313-paso-4b2-medidos-seccion-aparte-sin-reescribir-el-diseno-de-4b-escrito-antes-de-medir" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY313 — paso 4b.2 (medidos; sección aparte, sin reescribir el diseño de 4b escrito antes de medir)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY313 — paso 4b.2 (medidos; sección aparte, sin reescribir el diseño de 4b escrito antes de medir)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day313-antes-de-escribir-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY313, antes de escribir código)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-hace-4b2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que hace 4b.2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day313" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY313
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deudas-y-pendientes-nuevos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas y pendientes nuevos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day314-4b3-medido-en-el-laboratorio-y-paso-4b4-seccion-aparte-sin-reescribir-lo-anterior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY314 — 4b.3 medido en el laboratorio y paso 4b.4 (sección aparte, sin reescribir lo anterior)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY314 — 4b.3 medido en el laboratorio y paso 4b.4 (sección aparte, sin reescribir lo anterior)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#4b3-en-el-laboratorio-commit-a29942f" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.3 en el laboratorio (commit a29942f)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day314-antes-de-escribir-codigo-de-4b4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY314, antes de escribir código de 4b.4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-hace-4b4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que hace 4b.4
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medido-en-el-banco-debootstrap-bookworm-gcc-1220-opciones-de-production-vault-221-con-tls-mtls-y-auth-cert-como-la-vm-mas-cas_required" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido en el banco (debootstrap bookworm, GCC 12.2.0, opciones de production, Vault 2.2.1 con TLS, mTLS y auth cert como la VM, más cas_required)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day314" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY314
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deudas-y-pendientes-nuevos_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas y pendientes nuevos
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day315-debt-ansible-deploy-configs-001-pasos-1-3-y-4b6-seccion-aparte-sin-reescribir-lo-anterior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY315 — DEBT-ANSIBLE-DEPLOY-CONFIGS-001 pasos 1-3 y 4b.6 (sección aparte, sin reescribir lo anterior)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY315 — DEBT-ANSIBLE-DEPLOY-CONFIGS-001 pasos 1-3 y 4b.6 (sección aparte, sin reescribir lo anterior)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day315" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY315)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-1-fbd42be4" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 1 (fbd42be4)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pasos-2a-2c-58cb72ac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pasos 2a-2c (58cb72ac)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#paso-3-23c2e4f8" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Paso 3 (23c2e4f8)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#4b6-y-b4-68ebbdaa" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4b.6 y B4 (68ebbdaa)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medido-al-final-de-day315" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido al final de DAY315
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medido-jenkins-no-puede-hacer-preproduccion-hoy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido: Jenkins no puede hacer preproducción hoy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day315" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY315
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pendientes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pendientes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diseno-del-paso-5-libetcd_client-con-tls-y-lista-de-endpoints-day316-escrito-antes-de-tocar-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diseño del paso 5 (libetcd_client con TLS y lista de endpoints) — DAY316, escrito ANTES de tocar código
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diseño del paso 5 (libetcd_client con TLS y lista de endpoints) — DAY316, escrito ANTES de tocar código">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#medido-para-este-diseno_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido para este diseño
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day316" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY316)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#50-decisiones-abiertas-para-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.0 Decisiones abiertas para Alonso
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5a-libreria-etcd-client" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5a. Librería (etcd-client/)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5b-envoltorios-y-configuracion-sniffer-ml-detector-firewall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5b. Envoltorios y configuración (sniffer, ml-detector, firewall)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5c-fuera-c3-c4-d3" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5c. Fuera (C3, C4, D3)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#5d-pruebas-y-predicciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5d. Pruebas y predicciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day316-paso-5-decisiones-c4d3-y-e4-medidos-estado-deseado-seccion-aparte-sin-reescribir-el-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY316 — paso 5: decisiones, C4+D3 y E4 medidos, estado deseado (sección aparte, sin reescribir el diseño)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY316 — paso 5: decisiones, C4+D3 y E4 medidos, estado deseado (sección aparte, sin reescribir el diseño)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day316-despues-del-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY316, después del diseño)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#estado-deseado-alonso-day316-y-lo-que-cambia-de-lo-decidido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado deseado (Alonso, DAY316) y lo que cambia de lo decidido
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medido-contra-el-estado-deseado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido contra el estado deseado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#plan-revisado" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Plan revisado
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#c4-d3-medidos-commit-1e75d0618-17-ficheros-16-1131" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        C4 + D3 medidos (commit 1e75d0618, 17 ficheros, +16/-1131)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#e4-medido-commit-59d0fc592-52-1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        E4 medido (commit 59d0fc592, +52/-1)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#deudas-y-pendientes-nuevos-day316" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas y pendientes nuevos (DAY316)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day316" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY316
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day316-paso-5-commit-a-fe99a7e70-42-ficheros-1045-1068" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY316 — paso 5, commit A (fe99a7e70, 42 ficheros, +1045/-1068)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY316 — paso 5, commit A (fe99a7e70, 42 ficheros, +1045/-1068)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#que-entra" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qué entra
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#medido_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pendientes-del-paso-5" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pendientes del paso 5
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day316-commit-a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY316 (commit A)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diseno-del-commit-b-paso-5-day316-escrito-antes-de-tocar-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diseño del commit B (paso 5) — DAY316, escrito ANTES de tocar código
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diseño del commit B (paso 5) — DAY316, escrito ANTES de tocar código">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#medido-para-este-diseno-codigo-tras-fe99a7e70" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido para este diseño (código tras fe99a7e70)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day316_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY316)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b1-libreria-y-arranque" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B1 — librería y arranque
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b2-clave-del-firewall" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B2 — clave del firewall
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pruebas-y-predicciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pruebas y predicciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day316-commits-b1-370210a28-y-b2-cde7dd213-del-paso-5-seccion-aparte-sin-reescribir-el-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY316 — commits B1 (370210a28) y B2 (cde7dd213) del paso 5 (sección aparte, sin reescribir el diseño)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY316 — commits B1 (370210a28) y B2 (cde7dd213) del paso 5 (sección aparte, sin reescribir el diseño)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#b1-ningun-componente-sale-ni-espera-por-el-etcd-server-18-ficheros-935-810" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B1 — ningún componente sale ni espera por el etcd-server (18 ficheros, +935/-810)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#b2-clave-del-csv-del-firewall-cada-intervalo-y-un-csv-por-clave-16-ficheros-808-46" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        B2 — clave del CSV del firewall cada intervalo y un CSV por clave (16 ficheros, +808/-46)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day316-b1-b2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY316 (B1, B2)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diseno-del-paso-6-fuera-del-defender-etcd-server-de-la-vm-como-servicio-day317-escrito-antes-de-tocar-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diseño del paso 6 (fuera del defender; etcd-server de la VM como servicio) — DAY317, escrito ANTES de tocar código
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diseño del paso 6 (fuera del defender; etcd-server de la VM como servicio) — DAY317, escrito ANTES de tocar código">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#medido-para-este-diseno-solo-lectura-del-repo-mas-una-medida-en-el-laboratorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido para este diseño (solo lectura del repo, más una medida en el laboratorio)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day317" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY317)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#aclaraciones-day317-para-no-perderlas-en-el-pr2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Aclaraciones (DAY317) para no perderlas en el PR2
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6a-unidad-systemd-del-etcd-server-en-la-vm-vagrantfile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6a. Unidad systemd del etcd-server en la VM (Vagrantfile)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6b-makefile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6b. Makefile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6c-pipeline-status" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6c. pipeline-status
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6d-defender" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6d. Defender
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#commits-uno-por-cambio-logico-cada-uno-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Commits (uno por cambio lógico, cada uno medido)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#predicciones" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Predicciones
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day317-paso-6-seccion-aparte-sin-reescribir-el-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY317 — paso 6 (sección aparte, sin reescribir el diseño)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY317 — paso 6 (sección aparte, sin reescribir el diseño)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#6a-unidad-systemd-en-la-vm-etcd-8834cad88" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6a — unidad systemd en la VM etcd (8834cad88)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6b-makefile-y-etcd_vm_estadosh-4df098f34" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6b — Makefile y etcd_vm_estado.sh (4df098f34)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6c-pipeline-status-2e7cfea2a" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6c — pipeline-status (2e7cfea2a)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#6d-el-defender-deja-el-etcd-server-86ab61607" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6d — el defender deja el etcd-server (86ab61607)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day317" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY317
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pendientes_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pendientes
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#diseno-del-paso-7-reinicio-del-etcd-server-de-la-vm-con-el-pipeline-vivo-day317-escrito-antes-de-tocar-codigo" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Diseño del paso 7 (reinicio del etcd-server de la VM con el pipeline vivo) — DAY317, escrito ANTES de tocar código
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Diseño del paso 7 (reinicio del etcd-server de la VM con el pipeline vivo) — DAY317, escrito ANTES de tocar código">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#medido-para-este-diseno_2" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Medido para este diseño
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-day317_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso (DAY317)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#instrumento" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Instrumento
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#veredicto-y-predicciones-pasa-si-se-cumplen-todas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Veredicto y predicciones (PASA si se cumplen todas)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#resultados-day317-paso-7-seccion-aparte-sin-reescribir-el-diseno" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resultados DAY317 — paso 7 (sección aparte, sin reescribir el diseño)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Resultados DAY317 — paso 7 (sección aparte, sin reescribir el diseño)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#banco" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Banco
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#laboratorio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Laboratorio
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lecciones-day317-paso-7" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones DAY317 (paso 7)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#pendiente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pendiente
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="day312-diseno-del-pr1-de-debt-etcd-ha-tls-raft-001-etcd-server-en-un-nodo-https-mtls-claves-en-vault">DAY312 — Diseño del PR1 de DEBT-ETCD-HA-TLS-RAFT-001 (etcd-server en un nodo, HTTPS + mTLS, claves en Vault)</h1>
+<p>Base: <code>main</code> <code>cabac77</code> (merge PR #152, <code>pre-release-rag-logger-retire-0.0.9</code>). Inventario previo:
+<code>day312_inventario_etcd.md</code>. Este documento se escribe ANTES de medir; los resultados van en secciones aparte.</p>
+<h2 id="1-decisiones-de-alonso-day312">1. Decisiones de Alonso (DAY312)</h2>
+<ul>
+<li><strong>D1 = A.</strong> El etcd real como almacén (Raft y TLS nativos) y nuestro etcd-server como fachada HTTPS sin estado
+  propio, hablando con etcd por etcd-cpp-apiv3. Las claves HMAC no van a etcd: van a <strong>Vault</strong>, y el etcd-server las
+  recupera de Vault cuando hacen falta.</li>
+<li><strong>D2.</strong> mTLS: un certificado de cliente por componente; CA generada en el portátil, Jenkins orquesta y verifica
+  (igual que la semilla de ChaCha20). Autorización por ruta según la identidad del certificado.</li>
+<li><strong>D3.</strong> PR1 = un nodo (este documento). PR2 = HA con Raft. El re-registro tras 404 y el comportamiento idéntico de los
+  tres componentes van en la rama siguiente (DEBT-FW-HMAC-KEY-ALARM-001).</li>
+<li><strong>D4.</strong> El etcd-server sale del defender. HA real fuera del defender; el reparto de nodos del PR2 se decide con la
+  RAM medida (ver §6).</li>
+<li><strong>V1.</strong> Vault en modo servidor ya, con persistencia. Desellado <strong>c</strong> (clave de desellado en disco de la propia VM):
+  solo para el laboratorio, aRGus sigue sin estar sellado para producción. En producción se decidirá entre a (manual,
+  Shamir) y b (auto-unseal).</li>
+<li><strong>V2.</strong> Vault sale del defender y se va con el etcd-server a la VM nueva.</li>
+<li><strong>V3.</strong> En este PR solo las claves HMAC pasan al Vault en modo servidor. El resto de secretos (<code>secret/argus/crypto</code>,
+  <code>vendor-key</code>, token enterprise) en otro PR (deuda nueva DEBT-VAULT-REST-SECRETS-001).</li>
+</ul>
+<h2 id="2-medidas-ya-hechas-antes">2. Medidas ya hechas (antes)</h2>
+<ul>
+<li><strong>M0 (DAY312, Mac → client).</strong> Predicción: rc 0, HTTP 200, <code>initialized:true</code>, <code>sealed:false</code>.
+  Resultado: <code>hostname</code> = ml-client; <code>http=200</code>; <code>rc=0</code>; <code>initialized:true</code>, <code>sealed:false</code>, <code>version:2.2.1</code>.
+  <strong>PASA.</strong> Vault dev del defender se alcanza sin token desde la posición del atacante (192.168.100.1:8200), igual que
+  el 2379 (DAY311). Nueva deuda: DEBT-VAULT-DEV-EXPOSED-001 (se cierra con este PR al sacar Vault del defender).</li>
+<li>DAY311 (instrumento <code>scripts/bronze_key/d311_reinicio_etcd.sh</code>): tras reiniciar el etcd-server, claves nuevas (bronce
+  anterior no re-verificable), registro vacío, latidos 404 invisibles, log 200 frente a 404. Es el "antes" del paso 7.</li>
+</ul>
+<h2 id="3-arquitectura-del-pr1">3. Arquitectura del PR1</h2>
+<pre><code> defender (192.168.100.1)                          VM nueva &quot;etcd&quot; (propuesta 192.168.100.20)
+ ┌───────────────────────────┐   HTTPS + mTLS     ┌────────────────────────────────────────────┐
+ │ sniffer / ml-detector /   │ ─────────────────► │ etcd-server (fachada, :2379)               │
+ │ firewall (libetcd_client) │                    │   ├─ registro/config/época ─► etcd :2381   │
+ └───────────────────────────┘                    │   │        (TLS, solo 127.0.0.1)           │
+ Mac: mitre/ctu/custom_start                      │   └─ claves HMAC ─► Vault :8200            │
+   (curl con cert de admin)                       │            (TLS, auth por certificado,     │
+                                                  │             almacenamiento raft, 1 nodo)   │
+                                                  │ nftables: 2379 solo desde .1 .10 .11 .12   │
+                                                  └────────────────────────────────────────────┘
+</code></pre>
+<ul>
+<li>etcd y Vault solo los usa el etcd-server: escuchan en 127.0.0.1 de la VM nueva. Nada del pipeline les habla
+  directamente.</li>
+<li>Puerto del etcd real distinto de 2379 (que sigue siendo el de la fachada, para no tocar los JSON de los componentes
+  más que en el host): propuesta 2381 cliente / 2382 peer. En el JSON del etcd-server.</li>
+<li><strong>Claves HMAC en Vault KV v2</strong>, una entrada inmutable por clave (<code>argus-hmac/&lt;componente&gt;/&lt;huella8&gt;</code>) más un
+  puntero (<code>argus-hmac/&lt;componente&gt;/ventana</code> = {activa, anterior, expira_anterior}). Nunca se borra una clave: el
+  grafo debe poder re-verificarse años después (DAY310). Esto deja preparado DEBT-BRONZE-KEY-ID-001 sin hacerlo aquí.</li>
+<li>Autorización por ruta (identidad = CN del certificado de cliente):</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Ruta</th>
+<th>Quién</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>POST /register, /unregister, /v1/heartbeat/{c}, PUT /v1/config/{c}, GET/PUT /config/{c}</td>
+<td>solo el CN = {c}</td>
+</tr>
+<tr>
+<td>GET /secrets/{c}, GET /secrets/valid/{c}</td>
+<td>CN = {c}, y el conversor/verificador (CN propio) en lectura</td>
+</tr>
+<tr>
+<td>POST /secrets/rotate/{c}, PUT /v1/epoch, GET /components, /validate, /info</td>
+<td>solo CN admin</td>
+</tr>
+<tr>
+<td>GET /health</td>
+<td>cualquiera con certificado de la CA</td>
+</tr>
+<tr>
+<td>GET /seed, GET /secrets/keys</td>
+<td>se borran (muertas: ver inventario)</td>
+</tr>
+</tbody>
+</table>
+<p>Sin certificado válido: el TLS no llega a establecerse. Con certificado válido y ruta no permitida: 403 y línea
+  <code>[ETCD-AUTHZ-DENEGADO]</code> con CN, método y ruta.
+- Fuera en este PR (código muerto o peligroso): <code>auto_restart</code> + <code>system()</code>, <code>get_encryption_seed/key</code>,
+  <code>rotate_encryption_key</code>, <code>/seed</code>, <code>/secrets/keys</code>, el <code>HttpEtcdRegistrar</code> del etcd-server hacia sí mismo si el
+  registro deja de hacer falta (a comprobar), <code>etcd_client_base.cpp</code>, <code>etcd_client_manual.cpp</code>, <code>*.day54_*</code>
+  (DEBT-ETCD-CLIENT-DEAD-VARIANTS-001), etcd-cpp-api opcional del ml-detector (ningún fuente lo usa).
+- El JSON es la ley: <code>server.*</code>, <code>secrets.*</code>, <code>heartbeat.*</code>, rutas de certificados, direcciones de etcd y Vault, todo
+  leído por campo con <code>[CONFIG]</code>/<code>[CONFIG-DEFAULT]</code> (cierra DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001). Campos que hoy
+  no hacen nada y no se implementan aquí (<code>auto_restart</code>, <code>worker_threads</code> si no se cablea): <code>[CONFIG-OBSOLETO]</code> y
+  fuera del JSON.
+- Versiones fijadas: Vault (hoy sin fijar, se instaló 2.2.1), etcd, cpp-httplib (hoy <code>git clone</code> sin etiqueta).
+  <code>CPPHTTPLIB_OPENSSL_SUPPORT</code> igual en todo lo que enlace <code>libetcd_client.so</code> (riesgo ODR, ver inventario §3.10).
+- Vault no responde o sellado: el etcd-server sigue entregando la clave vigente que tenga en memoria, marca
+  <code>[ETCD-VAULT-NO-DISPONIBLE]</code> periódica (intervalo en el JSON) y no rota. Sin clave en memoria (arranque con Vault
+  caído): no entrega clave; el ml-detector ya da <code>[BRONCE-SIN-CLAVE]</code> y el firewall sigue actuando (D3 de DAY310).</p>
+<h2 id="4-pasos-con-su-prediccion">4. Pasos, con su predicción</h2>
+<p>Cada paso: antes/después, compilación completa en producción, <code>make test-components PROFILE=production</code> con las
+cinco líneas, y PARAR si algo no da lo predicho.</p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Paso</th>
+<th>Predicción escrita antes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Material: CA + certificados (etcd-server, sniffer, ml-detector, firewall, conversor, admin), script en el Mac, claves privadas fuera de git</td>
+<td><code>openssl verify -CAfile ca.pem</code> OK en los 6; ningún <code>.key</code> aparece en <code>git status</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td>VM "etcd" en el Vagrantfile (bookworm 12.20240905.1, RAM según §6), nftables</td>
+<td><code>vagrant up etcd</code> rc 0; desde el client, <code>curl</code> a :2379 → conexión rechazada o timeout; desde el defender, abierto</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Vault en modo servidor en la VM: listener TLS, almacenamiento raft (1 nodo), init 1/1, desellado c por systemd, auth cert, política solo-etcd-server</td>
+<td><code>vault status</code> → sealed false tras <code>vagrant reload etcd</code> sin intervención; escribir clave → reiniciar Vault → misma huella; desde el client :8200 no alcanzable</td>
+</tr>
+<tr>
+<td>3</td>
+<td>etcd 1 nodo en la VM, TLS, solo 127.0.0.1</td>
+<td><code>etcdctl endpoint health</code> (TLS) OK; put/get sobrevive a reinicio de etcd</td>
+</tr>
+<tr>
+<td>4</td>
+<td>etcd-server: JSON leído, HTTPS+mTLS, autorización, registro/config/época en etcd, claves en Vault con ventana de dos, log con el estado real, mutex/sin carrera, fuera el código muerto</td>
+<td>tests nuevos del etcd-server en verde; sin cert → TLS falla; cert de sniffer pidiendo /secrets/ml-detector → 403; latido de no registrado → log con 404</td>
+</tr>
+<tr>
+<td>5</td>
+<td>libetcd_client con TLS + certificado de cliente; JSON de los componentes apuntando a 192.168.100.20; scripts del lab con cert de admin</td>
+<td>pipeline-start: los 3 componentes registrados (GET /components con cert admin → 4 con el etcd-server); ml-detector <code>[BRONCE-CLAVE]</code> con huella</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Vault y etcd-server fuera del defender</td>
+<td>en el defender, nada escucha en 2379 ni 8200</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Repetir el instrumento de reinicio de DAY311 (adaptado a la VM nueva)</td>
+<td>tras reiniciar el etcd-server: misma huella de clave, bronce anterior verificable, registro conservado, latidos 200</td>
+</tr>
+<tr>
+<td>8</td>
+<td>EMECAS+++ production</td>
+<td>rc 0, 5/5 E2E con PASA, cinco líneas de test-components</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-preguntas-abiertas-para-alonso">5. Preguntas abiertas para Alonso</h2>
+<ul>
+<li>P1. Nombre e IP de la VM nueva (propuesta: <code>etcd</code>, 192.168.100.20, libre en el Vagrantfile).</li>
+<li>P2. Dónde viven en el Mac la CA y las claves privadas del lab (propuesta: directorio fuera del repo, p. ej.
+  <code>~/argus-pki/</code>, copiado a las VMs en el aprovisionamiento) y si Jenkins ya entra en este PR o en el de producción.</li>
+<li>P3. ¿El conversor bronce→oro y la verificación del grafo entran como CN propio con lectura de <code>/secrets/valid/{c}</code>?</li>
+</ul>
+<h2 id="6-ram-para-decidir-el-reparto-del-pr2">6. RAM (para decidir el reparto del PR2)</h2>
+<p>Hoy, con todo levantado: defender 8192 + client 1024 + suricata 2048 + zeek 2048 + wazuh 4096 = 17408 MB asignados.
+La VM nueva del PR1 suma lo que se mida (propuesta inicial 1024 MB). Para el PR2 hay dos caminos, a decidir con la RAM
+del Mac medida:
+- tres nodos en VMs pequeñas (si bookworm + etcd + Vault caben en ~512 MB; medir);
+- tres nodos en una sola VM, cada uno en su espacio de red (<code>ip netns</code>): Raft, caída de nodo y particiones medibles
+  de verdad; la caída de la VM entera no.</p>
+<h2 id="resultados-day312-medidos-se-anaden-aparte-sin-reescribir-las-secciones-de-diseno-escritas-antes-de-medir">Resultados DAY312 (medidos; se añaden aparte, sin reescribir las secciones de diseño escritas antes de medir)</h2>
+<p>Rama <code>feat/etcd-mtls-vault</code> (sobre <code>main</code> <code>cabac77</code>). Commits: <code>e7309db2</code> (Vault dev en loopback + diseño + PKI),
+<code>a3ad992d</code> (paso 1, VM etcd), <code>7df8914e</code> (paso 2, Vault en modo servidor).</p>
+<h3 id="r0-exposicion-del-vault-dev-del-defender">R0. Exposición del Vault dev del defender</h3>
+<ul>
+<li>M0 (client → 192.168.100.1:8200/v1/sys/health): predicción 200, <code>sealed:false</code>. Resultado: <code>ml-client</code>, 200,
+  <code>initialized:true</code>, <code>sealed:false</code>, 2.2.1. <strong>PASA</strong>. El Vault dev se alcanzaba sin token desde la posición del
+  atacante, con el token root <code>argus-dev-token</code> escrito en el repo público.</li>
+<li>M0-b, ¿algo de fuera del defender usa el 8200? Primera captura (180 s): <code>syn_total=0</code>, <strong>no válida</strong>: la ventana se
+  cerró antes de que <code>pipeline-start</code> llegara al <code>vault status</code> (diario: 07:56:41–07:59:41 CET; el arranque terminó
+  hacia las 08:00:30). Control positivo (30 s + <code>vault status</code>): 1 SYN desde 127.0.0.1, el instrumento ve loopback.
+  Repetición (600 s, parada + arranque + ~6 min): 1 SYN, desde 127.0.0.1 (el <code>vault status</code> del final). <strong>PASA</strong>:
+  0 SYN no-loopback. Además, el etcd-server no habla con Vault en la compilación actual (0 conexiones en su arranque
+  ni en su vigilancia cada 5 s). <code>git grep</code> coincide: todo lo que usa 127.0.0.1:8200 corre dentro del defender.</li>
+<li>Cambio (camino a, decisión de Alonso): Vault dev solo en 127.0.0.1 (Vagrantfile y Makefile), fuera el
+  forwarded_port 8200. Resultado tras <code>vagrant reload defender</code>: escucha solo <code>127.0.0.1:8200</code>; defender 200; client
+  <code>http=000</code> rc=7; Mac <code>http=000</code> rc=7; pipeline 4/4 RUNNING y <code>vault: RUNNING [dev]</code>. <strong>PASA</strong>.
+  DEBT-VAULT-DEV-EXPOSED-001 cerrada para el Vault dev; el resto de secretos del Vault dev sigue en el defender
+  hasta DEBT-VAULT-REST-SECRETS-001.</li>
+</ul>
+<h3 id="r1-paso-1-vm-etcd">R1. Paso 1, VM etcd</h3>
+<ul>
+<li><code>vagrant up etcd</code> rc=0; <code>etcd-base OK</code>, hora de 192.168.100.1, nftables <code>argus_etcd</code> cargada.</li>
+<li>Primera medida del cortafuegos: defender rc=7 (rechazo), predicho 200. <strong>PARADA</strong>. Hipótesis escritas antes de
+  mirar: H1 ventana de 120 s cerrada; H2 servidor de prueba muerto; H3 regla <code>reject</code>. Diario: servidor de prueba
+  07:54:06–07:56:06 UTC, <code>status=124</code> → H1. El rechazo prueba que el paquete del defender sí cruzaba nftables.</li>
+<li>Repetición (600 s): defender <code>http=200</code> rc=0; client <code>http=000</code> rc=28 (descartado). <strong>PASA</strong>.</li>
+</ul>
+<h3 id="r2-paso-2-vault-en-modo-servidor-en-la-vm-etcd">R2. Paso 2, Vault en modo servidor en la VM etcd</h3>
+<ul>
+<li>Versión medida en el defender: <code>2.2.1-1</code> (predicho). Fijada en <code>VAULT_INSTALL</code>, compartido por defender y etcd.</li>
+<li>Primer <code>vagrant provision etcd</code>: rc=1 sin ejecutar nada (<code>File provisioner: The following settings shouldn't
+  exist: name</code>). Corregido (<code>provision "pki-…", type: "file"</code>). Segundo: rc=0, Vault 2.2.1 (0e7c41b9, el mismo build
+  que el defender) instalado y fijado, inicializado 1/1, root revocado, <code>sealed=False storage=raft</code>.</li>
+<li><code>d312_vault_medir.sh</code>: M1-M6 <strong>PASA</strong> (login CN=etcd-server; escribir y releer; borrar 403; fuera de argus-hmac/
+  403; certificado de sniffer 400; sin certificado sin TLS, curl rc 55/56; escucha solo 127.0.0.1:8200; unseal.key
+  600 root). 8200 de la VM etcd desde defender y client: rc=28.</li>
+<li>Tras <code>vagrant reload etcd</code>, sin intervención: desellado, y <code>argus-hmac/d312/prueba</code> sigue con <code>d312abcd</code>
+  (<strong>persiste</strong>). La entrada de prueba no se puede borrar (política): queda como rastro de la medida.</li>
+<li>Defender: <code>vault-install</code> → <code>✅ Vault 2.2.1-1 ya instalado y fijado</code> (el cambio de sitio no altera nada).</li>
+<li>Residuo anotado: el paquete genera un certificado autofirmado en <code>/opt/vault/tls</code> que no se usa.</li>
+</ul>
+<h3 id="lecciones-day312">Lecciones DAY312</h3>
+<ul>
+<li>La predicción del hostname se saca del Vagrantfile: el defender no tiene <code>vm.hostname</code> y se llama <code>bookworm</code>.</li>
+<li>Un instrumento que puede no ver nada no refuta nada: control positivo antes de interpretar un 0.</li>
+<li>Las ventanas de medida, con margen amplio y la hora UTC en cada línea: 120 s no alcanzan a ritmo humano con
+  <code>vagrant ssh</code> (~15 s cada uno).</li>
+<li>Un parcheador se prueba sin los ficheros de trabajo de quien lo escribe (uno leía <code>/home/claude/work/…</code>).</li>
+<li>Una validación que pasa sobre una entrada vacía no vale: control negativo (nft sobre un fichero vacío daba OK).</li>
+<li>El aprovisionador <code>file</code> de Vagrant no admite <code>name:</code>; el nombre va como primer argumento con <code>type: "file"</code>.</li>
+<li>Un <code>grep</code> que busca un secreto lleva el secreto en sus argumentos: no se comprueba así.</li>
+</ul>
+<h2 id="diseno-del-paso-4b-codigo-del-etcd-server-day312-escrito-antes-de-tocar-codigo">Diseño del paso 4b (código del etcd-server) — DAY312, escrito ANTES de tocar código</h2>
+<p>Base: rama <code>feat/etcd-mtls-vault</code> en <code>b5227f85</code> (4a: el etcd-server actual corre en la VM etcd). Lo que sigue es la
+propuesta; las decisiones abiertas están en 4b.0 y nada se escribe hasta tenerlas.</p>
+<h3 id="medido-para-este-diseno">Medido para este diseño</h3>
+<ul>
+<li>etcd-cpp-apiv3 v0.15.3 (la que fija el Vagrantfile): <code>SyncClient(url, ca, cert, privkey, target_name_override)</code>
+  con TLS y certificado de cliente; <code>url</code> admite varios endpoints separados por coma (sirve para el PR2). Sus
+  dependencias de ejecución son todas paquetes Debian (gRPC 1.51, protobuf 32, cpprest 2.10, abseil): la herramienta
+  de despliegue de 4a las resuelve con <code>dpkg -S</code> sin cambios.</li>
+<li>La pasarela JSON de etcd 3.6.16 rechaza toda petición con certificado de cliente ("CommonName … will be ignored"):
+  con RBAC por CN, el etcd-server habla con etcd solo por gRPC.</li>
+<li><code>common/vault_client</code> es específico de la semilla de familia (token, libcurl, <code>fetch_seed</code>): no sirve tal cual
+  para KV v2 con auth por certificado.</li>
+</ul>
+<h3 id="4b0-decisiones-abiertas-para-alonso">4b.0 Decisiones abiertas para Alonso</h3>
+<ul>
+<li><strong>B1. Cliente de Vault.</strong> (a) clase pequeña nueva en el etcd-server sobre cpp-httplib <code>SSLClient</code> (ya enlazado,
+  sin dependencias nuevas): login por certificado + KV v2 leer/escribir; (b) extender <code>common/vault_transport</code>
+  (libcurl) con una interfaz nueva. Propuesta: a.</li>
+<li><strong>B2. Tabla de autorización por ruta en el JSON</strong> (el JSON es la ley; defectos iguales en el código; cada fila
+  registrada en el log al arrancar con <code>[CONFIG]</code>/<code>[CONFIG-DEFAULT]</code>) frente a fija en el código. Propuesta: JSON.</li>
+<li><strong>B3. Instancias del registro.</strong> Hoy el nombre con que se registra cada componente está fijo en su <code>main.cpp</code>. En
+  4b el etcd-server toma la identidad del certificado (CN = instancia, OU = rol) y <strong>rechaza</strong> un registro cuyo nombre
+  no coincida con el CN (403). Los componentes no cambian (CN = nombre actual). Propuesta: así.</li>
+<li><strong>B4. Clave HMAC del firewall</strong> pasa a <code>/secrets/firewall-acl-agent</code> (P4). Antes de cambiarlo: <code>git grep</code> de
+  quién verifica hoy el CSV del firewall con <code>/secrets/firewall</code>.</li>
+</ul>
+<h3 id="4b1-configuracion-el-json-es-la-ley">4b.1 Configuración: el JSON es la ley</h3>
+<p><code>etcd-server.json</code> pasa a tener, con rango y formato documentados en el propio JSON (<code>_doc</code>), y leído campo a campo:</p>
+<table>
+<thead>
+<tr>
+<th>Bloque</th>
+<th>Campos</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>server</code></td>
+<td><code>listen_host</code> (IPv4), <code>port</code> (1-65535)</td>
+</tr>
+<tr>
+<td><code>tls</code></td>
+<td><code>ca_file</code>, <code>cert_file</code>, <code>key_file</code> (rutas que deben existir)</td>
+</tr>
+<tr>
+<td><code>authz</code></td>
+<td>tabla ruta → identidades permitidas (CN propio, OU, <code>admin</code>)</td>
+</tr>
+<tr>
+<td><code>etcd</code></td>
+<td><code>endpoints</code> (lista https://…), <code>ca_file</code>, <code>cert_file</code>, <code>key_file</code>, <code>prefix</code> (<code>/argus/</code>), <code>timeout_ms</code></td>
+</tr>
+<tr>
+<td><code>vault</code></td>
+<td><code>addr</code>, <code>ca_file</code>, <code>cert_file</code>, <code>key_file</code>, <code>kv_mount</code> (<code>argus-hmac</code>), <code>cert_role</code> (<code>etcd-server</code>), <code>aviso_intervalo_s</code></td>
+</tr>
+<tr>
+<td><code>secrets</code></td>
+<td>los de hoy (<code>grace_period_seconds</code>, <code>rotation_interval_hours</code>, <code>default_key_length_bytes</code>, <code>min_rotation_interval_seconds</code>)</td>
+</tr>
+<tr>
+<td><code>heartbeat</code></td>
+<td><code>interval_seconds</code>, <code>timeout_multiplier</code>, <code>check_interval_seconds</code></td>
+</tr>
+</tbody>
+</table>
+<p>Campo ausente o mal formado → defecto (igual al del JSON) + aviso con campo, formato y límites; el log de arranque
+recoge la configuración efectiva completa y de dónde sale cada valor. Campos que no hacen nada (<code>auto_restart.*</code>,
+<code>security.*</code>, <code>server.worker_threads</code>, <code>secrets.storage</code>, <code>secrets.keys</code>) → <code>[CONFIG-OBSOLETO]</code> y fuera del JSON.
+Cierra DEBT-ETCD-SECRETS-CONFIG-HARDCODED-001. <code>--check-config</code> local: lee, valida, imprime la configuración
+efectiva y sale (rc 0 / 1).</p>
+<h3 id="4b2-arranque">4b.2 Arranque</h3>
+<p>Orden corregido: <code>/run/argus</code> antes del <code>AutonomyPublisher</code> (medido 4a). Sin Vault ni etcd alcanzables el proceso
+arranca igual y sirve lo que tenga (ver 4b.5), con aviso periódico; sin certificados TLS válidos no arranca
+(no hay forma segura de servir).</p>
+<h3 id="4b3-https-mtls-y-autorizacion">4b.3 HTTPS + mTLS y autorización</h3>
+<ul>
+<li><code>httplib::SSLServer</code> con la CA del lab y verificación del certificado de cliente obligatoria. Sin certificado
+  válido no hay TLS (no llega a ninguna ruta).</li>
+<li>Un único punto de autorización antes del enrutado (<code>set_pre_routing_handler</code>): CN y OU del certificado del par →
+  tabla <code>authz</code>. Denegado → 403 y <code>[ETCD-AUTHZ-DENEGADO] cn=… ou=… metodo=… ruta=…</code>.</li>
+<li>Rutas que se borran: <code>/seed</code>, <code>/secrets/keys</code> (sin uso; medido en el inventario).</li>
+<li><code>log_request</code> registra el estado REAL, después de decidir (DEBT-ETCD-HEARTBEAT-LOG-STATUS-001).</li>
+</ul>
+<h3 id="4b4-registro-configuracion-y-epoca-en-etcd">4b.4 Registro, configuración y época en etcd</h3>
+<p><code>ComponentRegistry</code> deja de guardar en un <code>unordered_map</code> sin mutex: interfaz <code>IRegistryStore</code> con dos
+implementaciones, <code>EtcdRegistryStore</code> (gRPC, prefijo <code>/argus/</code>) y <code>MemoriaRegistryStore</code> (solo tests). Claves:
+<code>/argus/registro/&lt;CN&gt;</code>, <code>/argus/config/&lt;CN&gt;</code>, <code>/argus/latido/&lt;CN&gt;</code>, <code>/argus/epoca</code>. El registro sobrevive a un
+reinicio del etcd-server (medido DAY311: hoy vuelve vacío).</p>
+<h3 id="4b5-claves-hmac-en-vault-ventana-de-dos">4b.5 Claves HMAC en Vault (ventana de dos)</h3>
+<ul>
+<li>Una entrada inmutable por clave: <code>argus-hmac/&lt;CN&gt;/&lt;huella8&gt;</code> = {clave, creada}; un puntero
+  <code>argus-hmac/&lt;CN&gt;/ventana</code> = {activa, anterior, expira_anterior}. Nunca se borra una clave (la política no lo
+  permite: medido M2d).</li>
+<li>Leer-o-crear bajo UN solo bloqueo (la carrera de DAY311: dos primeras peticiones podían crear dos claves).</li>
+<li>Caché en memoria de la ventana. Vault no disponible: se sirve la ventana en caché, <code>[ETCD-VAULT-NO-DISPONIBLE]</code>
+  cada <code>aviso_intervalo_s</code>, no se rota. Sin caché (arranque con Vault caído): no se sirve clave; el ml-detector ya da
+  <code>[BRONCE-SIN-CLAVE]</code> y el firewall sigue actuando.</li>
+<li>En el log, solo la huella (8 hex del SHA-256), nunca la clave.</li>
+</ul>
+<h3 id="4b6-fuera-codigo-muerto-o-peligroso">4b.6 Fuera (código muerto o peligroso)</h3>
+<p><code>auto_restart</code> + <code>system("systemctl restart …")</code>, <code>get_encryption_seed/key</code>, <code>rotate_encryption_key</code>,
+<code>set_compression_mode/set_encryption_mode</code> sin uso, el <code>HttpEtcdRegistrar</code> del etcd-server hacia sí mismo si deja de
+hacer falta (comprobar con <code>git grep</code> quién lee <code>/v1/epoch</code> aparte de él), <code>etcd_client_base.cpp</code>,
+<code>etcd_client_manual.cpp</code>, <code>*.day54_*</code> (DEBT-ETCD-CLIENT-DEAD-VARIANTS-001).</p>
+<h3 id="4b7-pruebas-y-predicciones">4b.7 Pruebas y predicciones</h3>
+<ul>
+<li>Tests unitarios nuevos del etcd-server (sin red): lectura del JSON (campo bueno, ausente, mal formado, fuera de
+  rango), tabla de autorización, ventana de dos con almacén falso (crear, rotar, expirar, Vault caído). Línea nueva
+  en <code>make test-components PROFILE=production</code>; las cinco de hoy (9/23/13/3/82) no cambian.</li>
+<li>En la VM etcd (instrumento nuevo <code>d312_es_medir.sh</code>): sin certificado → TLS falla; sniffer pide
+  <code>/secrets/ml-detector</code> → 403; ml-detector pide <code>/secrets/ml-detector</code> → 200 y huella; latido de no registrado →
+  log con 404; reinicio del etcd-server → misma huella y registro conservado.</li>
+<li>Compilación completa en producción con 0 diagnósticos.</li>
+</ul>
+<h2 id="resultados-day313-paso-4b2-medidos-seccion-aparte-sin-reescribir-el-diseno-de-4b-escrito-antes-de-medir">Resultados DAY313 — paso 4b.2 (medidos; sección aparte, sin reescribir el diseño de 4b escrito antes de medir)</h2>
+<p>Rama <code>feat/etcd-mtls-vault</code> sobre <code>7a666174</code>. Parcheador de un solo uso <code>d313_4b2_parche.py</code> v2 (sha256
+<code>b12e5e25…e170f</code>, no se commitea): 11 ficheros. Instrumentos nuevos: <code>scripts/etcd_ha/d313_es_vm.sh</code> (arrancar/parar
+en la VM etcd, con <code>--check-config</code> previo y tiempo de parada) y <code>scripts/etcd_ha/d313_es_medir.sh</code> (20 medidas desde
+el defender; nunca imprime una clave).</p>
+<h3 id="decisiones-de-alonso-day313-antes-de-escribir-codigo">Decisiones de Alonso (DAY313, antes de escribir código)</h3>
+<ul>
+<li><strong>T1 = modo <code>http</code> explícito para la transición.</strong> <code>tls.modo</code> en el JSON: <code>mtls</code> (defecto) o <code>http</code>. El JSON del
+  repo (defender, cuyos clientes siguen en HTTP hasta el paso 5) lleva <code>http</code> con aviso <code>[ETCD-TLS-DESACTIVADO]</code> al
+  arrancar y cada <code>tls.aviso_http_intervalo_s</code>. La VM etcd usa <code>etcd-server.etcd-vm.json</code> (<code>mtls</code>, mismo contenido
+  salvo <code>tls.modo</code>: lo comprueba un test). Un modo ausente o mal escrito va a <code>mtls</code>: una errata nunca rebaja a HTTP.
+  Con <code>mtls</code> y certificados ilegibles o inválidos el proceso no arranca (<code>[ETCD-TLS-FATAL]</code>, §4b.2). El modo <code>http</code>
+  se borra en el paso 6.</li>
+<li><strong>T3 = registro en proceso.</strong> <code>git grep</code>: <code>HttpEtcdRegistrar</code> solo lo usaba en producción el propio etcd-server
+  contra sí mismo (registro, latido cada 30 s, sondeo de <code>/v1/epoch</code> cada 2 s; el callback de época solo escribía en el
+  log). Fuera <code>HttpEtcdRegistrar</code> y <code>CryptoEpochCoordinator</code> del etcd-server (adelanta parte de 4b.6); se registra y
+  late directamente en su <code>ComponentRegistry</code>. <code>PUT</code>/<code>GET /v1/epoch</code> siguen como rutas.</li>
+</ul>
+<h3 id="lo-que-hace-4b2">Lo que hace 4b.2</h3>
+<ul>
+<li><code>httplib::SSLServer</code> con la CA del lab como CA de cliente (certificado de cliente obligatorio).</li>
+<li>Autorización en <code>set_pre_routing_handler</code> con la tabla <code>authz</code> del JSON (15 reglas; defecto idéntico en
+  <code>etcd_server_authz.hpp</code>, comprobado por test): plantillas por segmentos (<code>/secrets/{c}</code>, <code>{c}</code> = un segmento
+  <code>[a-z0-9-]{1,63}</code>), <code>permitir</code> = <code>propio</code> | <code>ou:&lt;rol&gt;</code> | <code>cualquiera</code>; denegar por defecto; una regla mal formada
+  invalida la tabla entera (defecto + aviso de cada error). Identidad: exactamente un CN y un OU con forma de nombre.</li>
+<li><code>[ETCD←]</code> desde <code>set_logger</code>, después de responder: status real, CN y OU (DEBT-ETCD-HEARTBEAT-LOG-STATUS-001).</li>
+<li>Servidor como miembro: <code>stop()</code> llama a <code>server_-&gt;stop()</code> (antes <code>listen()</code> no volvía nunca).</li>
+<li>Fuera <code>/seed</code> y <code>/secrets/keys</code> (sin regla: 403 con mTLS, 404 en http). Resumen <code>[CONFIG-DEFAULT]</code> con la ruta real
+  y el total de todos los bloques. <code>next_heartbeat_expected</code> desde <code>heartbeat.interval_seconds</code>. JSON de error de
+  <code>PUT /config</code> bien formado.</li>
+<li>Test nuevo <code>test_etcd_server_authz</code> (17 casos; tres mutaciones del código hacen fallar los suyos).</li>
+</ul>
+<h3 id="medido">Medido</h3>
+<ul>
+<li>M0 (defender): cpp-httplib <strong>0.63.0</strong> (clonado sin etiqueta). El código se probó con 0.12, 0.18, 0.26, 0.63 y 0.64.</li>
+<li>Primer <code>pipeline-start</code> tras el parche: <code>ETCD-TLS-DESACTIVADO</code> 0 veces, predicho ≥ 1. <strong>PARADA.</strong> Medido: el binario
+  no contenía la cadena (H1) y el JSON no tenía <code>tls</code>: el <code>--apply</code> no se había ejecutado (<code>--check</code>: 11 pendientes).</li>
+<li>Compilación con el parche v1: <strong>FALLA</strong> en <code>etcd_server_authz.hpp:312:70</code>, <code>-Werror=stringop-overflow=</code> de GCC 12 con
+  LTO. <strong>PARADA.</strong> Reproducido en un Debian 12 real (debootstrap; GCC 12.2.0, fmt 9.1, spdlog 1.10, libsodium 1.0.19,
+  httplib 0.63.0) con las opciones de production del Makefile; el original compila (control). Causa: falso positivo con
+  el temporal <code>const char* + std::string</code>; reescrito con dos <code>+=</code>. Parcheador v2: acepta la rama limpia o la v1
+  aplicada (solo reescribe ese fichero); probado en clones limpios (rama limpia, v1 aplicada, v1 + otro fichero
+  alterado → rechaza sin escribir).</li>
+<li><code>make pipeline-build PROFILE=production</code>: compila. <code>make test-components PROFILE=production</code>: 9 / 23 / 13 / <strong>5</strong> / 82,
+  todo verde (el etcd-server pasa de 4 a 5; la predicción «total 83» era errónea: 82 es otro componente y no cambia).</li>
+<li>Defender en modo <code>http</code>: <code>pipeline-start</code> 6/6 RUNNING, <code>/health</code> 200, 3 líneas <code>ETCD-TLS-DESACTIVADO</code>. <strong>PASA.</strong></li>
+<li>Despliegue: <code>d312_etcd_vm_deploy.sh</code> <strong>FALLA</strong> (<code>vagrant ssh-config</code>): la VM etcd estaba <code>aborted</code>. <strong>PARADA.</strong>
+  <code>VBox.log.1</code>: abierto 2026-10-30T08:47:32Z, cierre ordenado (<code>DESTROYING → TERMINATED</code>) a las 4 h 10 min 30 s =
+  12:58Z; <code>pmset</code>: el Mac arrancó a las 14:07:25 (13:07Z) con Setup Assistant = reinicio por actualización de macOS. El
+  resto de VMs se levantó con <code>make up</code>, que no incluye la VM etcd. Tras <code>vagrant up etcd</code>: Vault <code>Sealed false</code> sin
+  intervención, 2379 libre, despliegue <code>RESULTADO PASA</code> (6 de 6 ficheros, manifiesto OK, binario <code>e22cfcc1f31fe7b9</code>).</li>
+<li>VM etcd con <code>etcd-server.etcd-vm.json</code>: <code>--check-config</code> OK (<code>tls.modo=mtls</code>, 0 ficheros TLS ilegibles), escucha en
+  0.0.0.0:2379, 15 reglas, registrado en proceso.</li>
+<li><code>d313_es_medir.sh</code> desde el defender contra <code>https://192.168.100.20:2379</code>: <strong>20/20 PASA.</strong></li>
+<li>Sin TLS válido no hay respuesta HTTP: sin certificado (rc 56), certificado de otra CA (rc 56), <code>vault.crt</code> con solo
+    <code>serverAuth</code> (rc 56), HTTP en claro (rc 52).</li>
+<li>admin <code>/health</code> y <code>/components</code> 200; sniffer <code>/health</code> 200; sniffer <code>/secrets/sniffer</code> 200 y <code>/secrets/ml-detector</code>
+    403; latido de ml-detector sin registrar 404; admin <code>/seed</code> y <code>/secrets/keys</code> 403; sniffer rotar 403 y
+    <code>/components</code> 403; <code>/secrets/sniffer%2Fx</code> y <code>/secrets/sniffer/</code> 403; sniffer-2 (OU sniffer) <code>/secrets/sniffer</code> 403;
+    converter <code>/secrets/valid/ml-detector</code> 200 y <code>/secrets/ml-detector</code> 403; <code>/components</code> incluye <code>etcd-server</code>.</li>
+<li>Log de la VM etcd: 9 <code>[ETCD-AUTHZ-DENEGADO]</code> (predicho 9); el latido aparece como <code>status=404 | cn=ml-detector |
+  ou=ml-detector</code>; 0 cadenas de 64 hex. <strong>PASA.</strong></li>
+<li>Parada: 5,2 s tras SIGTERM, sin SIGKILL. Predicción inicial «&lt; 2 s» <strong>errónea</strong>: el monitor de latidos duerme
+  <code>heartbeat.check_interval_seconds</code> (10 s) antes de salir; corregida a ≤ 11 s antes de medir en el laboratorio
+  (medido en el entorno de prueba 2,3–10,4 s). Se arregla al reescribir <code>ComponentRegistry</code> (4b.3).</li>
+</ul>
+<h3 id="lecciones-day313">Lecciones DAY313</h3>
+<ul>
+<li>Probar lo que se va a compilar en el mismo sistema y con las mismas opciones: Debian 12, GCC 12 y production
+  (<code>-O3 -march=native -flto -Werror</code>). Un GCC 13 sin LTO no ve el falso <code>-Wstringop-overflow</code> de GCC 12.</li>
+<li>Un parcheador no se da por aplicado hasta que <code>--check</code> diga «ya aplicado (11/11)».</li>
+<li>Etiquetar el sitio de cada comando no basta: <code>bookworm</code> es el defender. Para la VM etcd, comandos del Mac con
+  <code>vagrant ssh etcd -c</code>.</li>
+<li><code>ssh -F &lt;(vagrant ssh-config …)</code> dentro de una tubería falla en zsh interactivo (<code>/dev/fd/12: Bad file
+  descriptor</code>); en bash, dentro de un script, funciona. En la terminal: fichero con <code>mktemp</code> y <code>rm</code> al terminar.</li>
+<li>Una VM nueva que no levanta <code>make up</code> puede quedarse caída sin que nadie lo vea (reinicio del Mac por actualización).</li>
+</ul>
+<h3 id="deudas-y-pendientes-nuevos">Deudas y pendientes nuevos</h3>
+<ul>
+<li>Fijar cpp-httplib en <code>v0.63.0</code> en el Vagrantfile.</li>
+<li><code>make up</code> debe levantar también la VM etcd (antes del paso 8).</li>
+<li><code>test_autonomy_integration</code> falló una vez en el bookworm de prueba (0,00 s) y no se repitió en 10 vueltas; el
+  <code>LastTest.log</code> se sobrescribió. Vigilar.</li>
+<li><code>tar</code> desde el Mac: <code>COPYFILE_DISABLE=1 tar --no-xattrs</code> (atributos <code>com.apple.provenance</code>).</li>
+</ul>
+<h2 id="resultados-day314-4b3-medido-en-el-laboratorio-y-paso-4b4-seccion-aparte-sin-reescribir-lo-anterior">Resultados DAY314 — 4b.3 medido en el laboratorio y paso 4b.4 (sección aparte, sin reescribir lo anterior)</h2>
+<h3 id="4b3-en-el-laboratorio-commit-a29942f">4b.3 en el laboratorio (commit <code>a29942f</code>)</h3>
+<ul>
+<li><code>--check</code> 16 listos, <code>--apply</code>, <code>--check</code> ya aplicado. <code>make pipeline-build PROFILE=production</code> y
+  <code>make test-components PROFILE=production</code>: 9 / 23 / 13 / <strong>6</strong> / 82, todo verde (predicho).</li>
+<li>Defender (<code>almacen.modo=memoria</code>): <code>[ETCD-ALMACEN-MEMORIA]</code> y <code>[ETCD-REGISTRO] registrado</code> para sniffer, ml-detector y
+  firewall-acl-agent. <strong>PASA.</strong> El log del etcd-server no lleva hora: el grep mezcla arranques (dos <code>registrado</code> por
+  componente y tres avisos de memoria) y no se puede saber cuál es de este. Deuda nueva
+  <strong>DEBT-ETCD-SERVER-LOG-TIMESTAMP-001</strong> (decisión de Alonso: parcheador aparte): 143 <code>std::cout/cerr</code> sin hora en
+  <code>src/</code> e <code>include/</code>; pasar a un logger con la hora como primer campo y el patrón en el JSON.</li>
+<li><code>d312_etcd_vm_deploy.sh production</code>: <strong>PASA</strong>, 5 librerías propias (+ <code>libetcd-cpp-api.so</code>) y 26 paquetes (gRPC 1.51,
+  protobuf 32, cpprest 2.10, abseil), binario <code>d6a20d782cf750bb</code>.</li>
+<li><code>d313_registro_medir.sh</code>: <strong>28/28 PASA</strong>. Etcd de vuelta: primer latido 200 en 0,7 s. Parada 0,07–0,12 s.</li>
+</ul>
+<h3 id="decisiones-de-alonso-day314-antes-de-escribir-codigo-de-4b4">Decisiones de Alonso (DAY314, antes de escribir código de 4b.4)</h3>
+<ul>
+<li><strong>V1</strong> cliente de Vault propio en el etcd-server (httplib::SSLClient; <code>common/vault_client</code> hace otra cosa: semilla,
+  token, solo lectura, curl, y lo usan otros componentes).</li>
+<li><strong>V2</strong> <code>cas_required=true</code> en el montaje <code>argus-hmac/</code> además del CAS en el código. La VM etcd se inicializó en DAY312
+  sin él y con el root revocado: se rehace (<code>vagrant destroy -f etcd &amp;&amp; vagrant up etcd</code>); hoy solo guarda
+  <code>argus-hmac/d312/prueba</code>.</li>
+<li><strong>V3</strong> <code>almacen_claves.modo = "memoria"</code> en el defender hasta el paso 6 (como <code>almacen.modo</code> y <code>tls.modo</code>).</li>
+<li><strong>V4</strong> buscar una clave antigua por huella (re-verificar el grafo años después) queda fuera; va con
+  DEBT-BRONZE-KEY-ID-001 («es una feature que pedirán los usuarios tras años en producción»).</li>
+<li><strong>JSON es la ley también para las direcciones</strong>, pero sin defecto: solo en dev se puede suponer algo escuchando en
+  localhost. En modo vault, <code>vault_addrs</code> (o una ruta de certificado) ausente, mal formada o ilegible =
+  <code>[ETCD-VAULT-FATAL]</code> y no se arranca (<code>--check-config</code> lo detecta antes). Con la configuración bien y Vault sin
+  responder: reintentos por dirección con espera creciente, luego la siguiente de la lista, luego aviso claro con el
+  error de cada una; el etcd-server arranca (el registro sirve) y sigue sondeando.</li>
+<li>Arrancar sin etcd-server: sigue siendo un dilema para Alonso («arrancar desprotegido es muy peligroso si un atacante ha
+  entrado en la DMZ»). Medido en el código: el cifrado ZMQ sale de <code>seed.bin</code> local, no de Vault ni del etcd-server; lo
+  que depende del etcd-server es el registro y la clave HMAC del bronce (y el conversor, que necesita
+  <code>/secrets/valid</code>). Pregunta abierta para el PR2; no toca 4b.4.</li>
+</ul>
+<h3 id="lo-que-hace-4b4">Lo que hace 4b.4</h3>
+<ul>
+<li><code>etcd_server_claves.hpp</code>: bloque <code>almacen_claves</code> del JSON (modo, <code>vault_addrs</code> 1–7 sin repetir, <code>ca_file</code>,
+  <code>cert_file</code>, <code>key_file</code>, <code>montaje</code>, <code>rol_login</code>, <code>timeout_ms</code>, <code>reintentos_por_direccion</code>, <code>espera_inicial_ms</code>,
+  <code>espera_max_ms</code> ≥ inicial, <code>sondeo_s</code>, <code>aviso_intervalo_s</code>), cada campo con su origen en <code>[ETCD-CLAVES]</code>; interfaz
+  <code>ISecretStore</code> (leer con versión, escribir con CAS; Ok, NoEncontrado, NoDisponible, Conflicto) y <code>MemoriaSecretStore</code>.</li>
+<li><code>vault_secret_store.cpp</code>: kv v2 por HTTPS con certificado de cliente; login <code>auth/cert</code> (token renovado a mitad de su
+  vida o ante un 403); lista de direcciones con reintentos; tras agotar la lista falla rápido, sin red, hasta que el
+  sondeo encuentra una (<code>[ETCD-VAULT-CAMBIO]</code> si cambia de dirección).</li>
+<li><code>SecretsManager</code> reescrito: <code>&lt;CN&gt;/&lt;huella8&gt;</code> = {clave, creada} escrita con CAS 0 y nunca borrada; <code>&lt;CN&gt;/ventana</code> =
+  {activa, anterior, expira_anterior} con CAS = versión leída. Un solo mutex para leer-o-crear y rotar (la carrera de
+  DAY311); entre instancias decide el CAS (se relee y se usa lo del otro: <code>[ETCD-CLAVES-CONCURRENTE]</code>; una rotación
+  concurrente da 409). Enfriamiento medido desde la creación de la activa, guardada en Vault (vale tras un reinicio y
+  entre instancias). Con el almacén caído: la última ventana conocida con sus dos claves (<code>desde_copia</code>), sin ella 503 y
+  ninguna clave generada; rotar 503. Fechas en UTC con <code>timegm</code> (antes <code>mktime</code>, hora local). La huella se calcula como
+  <code>CorrelationWriter::fingerprint</code> del ml-detector. En el log solo huellas.</li>
+<li>Rutas <code>/secrets/{c}</code>, <code>/secrets/valid/{c}</code>, <code>/secrets/rotate/{c}</code>: mismo formato (el ml-detector y el firewall leen
+  <code>key</code>), más <code>huella</code> y <code>desde_copia</code>; <code>expires_at</code> vacío en la activa (antes, <code>time_point::max</code> mal formateado).</li>
+<li>Vagrantfile <code>[VAULT-CAS-D314]</code>: <code>cas_required=true</code> al inicializar y sonda en cada aprovisionamiento (escribir sin CAS
+  con el certificado del etcd-server debe dar 400; si no, falla con el remedio).</li>
+<li>Tests: <code>test_almacen_claves</code> nuevo (22 casos); <code>test_secrets_manager_simple</code> y <code>test_hmac_integration</code> reescritos a la
+  API nueva con reloj inyectado (el primero pasa de 9 s de <code>sleep</code> a 0,01 s). Instrumento nuevo
+  <code>scripts/etcd_ha/d314_claves_medir.sh</code> (29 medidas, modo lab desde el Mac y local para el banco);
+  <code>d313_es_vm.sh</code> muestra también <code>[ETCD-CLAVES]</code>/<code>[ETCD-VAULT…]</code>.</li>
+</ul>
+<h3 id="medido-en-el-banco-debootstrap-bookworm-gcc-1220-opciones-de-production-vault-221-con-tls-mtls-y-auth-cert-como-la-vm-mas-cas_required">Medido en el banco (debootstrap bookworm, GCC 12.2.0, opciones de production, Vault 2.2.1 con TLS, mTLS y auth cert como la VM, más <code>cas_required</code>)</h3>
+<ul>
+<li>Control (4b.3 sin tocar): compila, ctest 6/6. Con 4b.4: compila con 0 diagnósticos del compilador (solo las notas de
+  <code>lto-wrapper</code> y el aviso de <code>ld</code> de libsodium .26/.23, iguales que el control), ctest <strong>7/7</strong>.</li>
+<li>kv v2 con <code>cas_required</code> y la política del etcd-server, medido con curl antes de escribir código (predicho todo): sin
+  <code>cas</code> 400; <code>cas=0</code> en ruta nueva 200; <code>cas=0</code> otra vez 400; <code>cas=1</code> 200 (versión 2); <code>cas=1</code> otra vez 400; DELETE 403;
+  ruta inexistente 404.</li>
+<li>Mutaciones: sin copia, CAS al rotar, sin enfriamiento, sin comprobar la huella, sin caducidad → cada una hace fallar su
+  test. «Generar con el almacén caído» resulta equivalente (la escritura de la clave también falla): el diseño ya lo
+  impide.</li>
+<li><code>d314_claves_medir.sh</code> local: 1ª pasada 29/29. <strong>PARADA</strong> en la 2ª (C10: <code>/secrets/valid</code> con Vault parado daba 503).
+  Causa: tras reiniciar, la copia tenía la ventana y la activa pero no la anterior. Test que lo reproduce escrito antes
+  del arreglo (falla), arreglo (al leer una ventana se cargan sus dos claves), test en verde. 3ª y 4ª: 28/29, C10 da 2
+  claves y la predicción decía 1: <strong>predicción errónea</strong> (solo vale con Vault vacío; en la pasada anterior se rotó hace
+  menos de 300 s). Corregida para predecir lo que había justo antes de parar Vault. 5ª y 6ª pasadas: <strong>29/29</strong>; 7ª sobre
+  un Vault limpio: <strong>29/29</strong>. Copia servida con Vault parado en 0,09–0,10 s; Vault de vuelta, 200 en 1,7–1,8 s; parada
+  0,17 s.</li>
+<li>Lista de direcciones (JSON modificado, predicho todo): sin <code>vault_addrs</code>, <code>--check-config</code> rc 1 y arranque rc 1 con
+  <code>[ETCD-VAULT-FATAL]</code>; primera dirección que rechaza → <code>[ETCD-VAULT-CAMBIO]</code> y 200; primera que no responde (timeout
+  500 ms) → escucha en 1,02 s y GET 200 en 0,06 s; ninguna → arranca, 503, y <code>[ETCD-VAULT-NO-DISPONIBLE]</code> con el error
+  de cada dirección.</li>
+<li>Sonda del Vagrantfile: contra un Vault sin <code>cas_required</code> (como la VM de hoy) ❌ con el remedio; contra uno nuevo ✅.</li>
+<li>Regresión <code>d313_es_medir.sh</code> contra el binario nuevo: 20/20.</li>
+<li>En el banco no hay etcd: se usó el JSON de la VM con <code>almacen.modo=memoria</code> (el registro lo midió 4b.3).</li>
+</ul>
+<h3 id="lecciones-day314">Lecciones DAY314</h3>
+<ul>
+<li>Un instrumento se pasa al menos dos veces seguidas: la primera pasada parte de un estado limpio y esconde lo que
+  depende de lo anterior (aquí, la clave anterior en la copia).</li>
+<li>Una predicción que depende del estado se escribe en función del estado medido justo antes, no como número fijo.</li>
+</ul>
+<h3 id="deudas-y-pendientes-nuevos_1">Deudas y pendientes nuevos</h3>
+<ul>
+<li>DEBT-ETCD-SERVER-LOG-TIMESTAMP-001 (arriba).</li>
+<li><code>almacen.endpoints</code> (etcd) aún tiene defecto <code>https://127.0.0.1:2381</code>; por la regla de hoy («direcciones sin
+  defecto») debería ser fatal en modo etcd. Decisión de Alonso pendiente.</li>
+<li>La pregunta de arrancar sin etcd-server (modo sin registro, con el cifrado ZMQ intacto) para el PR2.</li>
+<li>Rehacer la VM etcd para <code>cas_required</code> (V2) y volver a desplegar el etcd-server.</li>
+</ul>
+<h2 id="resultados-day315-debt-ansible-deploy-configs-001-pasos-1-3-y-4b6-seccion-aparte-sin-reescribir-lo-anterior">Resultados DAY315 — DEBT-ANSIBLE-DEPLOY-CONFIGS-001 pasos 1-3 y 4b.6 (sección aparte, sin reescribir lo anterior)</h2>
+<p>Rama <code>feat/etcd-mtls-vault</code>. Commits: <code>fbd42be4</code> (paso 1), <code>58cb72ac</code> (pasos 2a-2c: <code>[DEPLOY-SSH-D315]</code>,
+<code>[ETCD-CONFIG-ENTORNO-D315]</code>, <code>[INVENTARIO-FUERA-D315]</code>), <code>23c2e4f8</code> (paso 3: <code>[ETCD-ALMACEN-FATAL-D315]</code>) y <code>68ebbdaa</code>
+(4b.6: <code>[ETCD-B4-D315]</code>). Instrumentos nuevos en <code>scripts/etcd_ha/</code>: <code>d315_ansible_paso1.sh</code>, <code>d315_ansible_paso2a.sh</code>,
+<code>d315_ansible_paso2b.sh</code>, <code>d315_ansible_paso2c.sh</code>, <code>d315_paso3_codigo.sh</code>, <code>d315_paso3_medir.sh</code>, <code>d315_4b6.sh</code> y
+<code>d315_b4_medir.sh</code>. Todo a la primera salvo lo que se indica.</p>
+<h3 id="decisiones-de-alonso-day315">Decisiones de Alonso (DAY315)</h3>
+<ul>
+<li><code>deploy_configs.yml</code> conserva el nombre (lo llaman el Makefile y Jenkins); las variables de <code>group_vars</code> que solo
+  leían las plantillas viejas se borran.</li>
+<li>Clave de despliegue propia generada en el defender (modelo de producción: Jenkins con su clave hacia los nodos), no
+  la de Vagrant ni desde el Mac. <code>etcd-server.json</code> sale del tar de <code>d312</code>: ese fichero solo lo escribe Ansible.</li>
+<li>El repo es público: los inventarios reales viven fuera (operador o Jenkins) y dentro solo queda un ejemplo con datos
+  ficticios. Un inventario sin máquinas del etcd-server es un fallo con mensaje claro, nunca un éxito vacío.</li>
+<li>En modo etcd son fatales <code>almacen.endpoints</code>, <code>almacen.prefijo</code>, <code>ca_file</code>, <code>cert_file</code> y <code>key_file</code> (como
+  <code>vault_addrs</code>); endpoints repetidos cuentan como mal formado.</li>
+<li><code>crypto_token</code> fuera de los dos lados. <code>HttpEtcdRegistrar</code> y <code>CryptoEpochCoordinator</code> (common/, ADR-045): ningún
+  binario los usa y <code>/v1/epoch</code> no tiene consumidor; se decide en el paso 5.</li>
+<li>Preproducción de laboratorio como prueba FINAL (BACKLOG: fusionada en DEBT-LAB-PREPROD-TOPOLOGIAS-001).</li>
+<li>Cada commit marca con precisión lo que hace (un commit por cambio lógico).</li>
+</ul>
+<h3 id="paso-1-fbd42be4">Paso 1 (<code>fbd42be4</code>)</h3>
+<ul>
+<li>Fuera <code>ansible/templates/sniffer.json.j2</code> y <code>ml_detector_config.json.j2</code>, sus tareas y los <code>group_vars</code> duplicados;
+  <code>group_vars</code> pasa junto al inventario (<code>ansible/inventory/group_vars/</code>). Variables huérfanas borradas.</li>
+<li>Medido antes de cambiar: <code>make deploy-configs</code> SÍ cargaba variables (<code>-e @group_vars</code>) y habría sobrescrito los JSON
+  del repo.</li>
+</ul>
+<h3 id="pasos-2a-2c-58cb72ac">Pasos 2a-2c (<code>58cb72ac</code>)</h3>
+<ul>
+<li><strong>2a, clave de despliegue.</strong> Provisioner <code>deploy-key</code> en el defender (<code>/root/.ssh/argus_deploy_ed25519</code>: Jenkins
+  corre como root) y <code>deploy-access</code> en la VM etcd (usuario <code>argus-deploy</code>, sudo sin contraseña SOLO en el lab, huella
+  publicada en <code>/vagrant/dist/deploy/known_hosts_etcd</code>).
+  <strong>Cazado</strong>: <code>ansible.cfg</code> lleva <code>host_key_checking = False</code> y Ansible antepone <code>StrictHostKeyChecking=no</code>; con una
+  huella falsa en <code>known_hosts</code> conectaba igual. Arreglo: <code>ansible_host_key_checking: true</code> en el inventario.</li>
+<li><strong>2b, config del etcd-server por entorno.</strong> Play sobre <code>etcd_servers</code>: JSON del repo + <code>almacen.endpoints</code> y
+  <code>almacen.prefijo</code> del inventario (<code>etcd_almacen_endpoints</code>, <code>argus_prefijo</code>, sin defecto), escrito en
+  <code>/etc/ml-defender/etcd-server/etcd-server.json</code> con <code>validate: etcd-server --check-config</code> y <code>follow: false</code> (el
+  destino era un enlace a un JSON del repo). <code>d312</code> ya no copia <code>etcd-server.json</code>; <code>d313_es_vm.sh</code> lee por defecto el
+  desplegado.</li>
+<li><strong>2c, inventarios fuera.</strong> Ejemplo en <code>ansible/inventory/ejemplo-preprod/</code> con direcciones RFC 5737; fuera
+  <code>prod.yml</code>; <code>make deploy-configs-prod INVENTARIO=&lt;ruta&gt;</code> obligatorio; <code>ARGUS_INVENTARIO</code> obligatorio en main
+  (<code>Jenkinsfile.prod</code>); un inventario sin <code>etcd_servers</code> falla con <code>[ETCD-CONFIG-ENTORNO]</code>. <code>d312</code> con
+  <code>DPkg::Lock::Timeout=600</code> (medido: <code>unattended-upgrades</code> tenía dpkg justo tras arrancar la VM).</li>
+</ul>
+<h3 id="paso-3-23c2e4f8">Paso 3 (<code>23c2e4f8</code>)</h3>
+<p>En modo etcd, <code>endpoints</code>, <code>prefijo</code>, <code>ca_file</code>, <code>cert_file</code> y <code>key_file</code> ausentes o mal formados (y endpoints
+repetidos) = <code>[ETCD-ALMACEN-FATAL]</code> y no arranca; <code>--check-config</code> imprime <code>almacen_fatales=N</code>. En modo memoria solo
+avisa. Arranque sin endpoints medido: se niega en 0,04 s. Cierra la pendiente de DAY314 («<code>almacen.endpoints</code> aún
+tiene defecto <code>https://127.0.0.1:2381</code>»).</p>
+<h3 id="4b6-y-b4-68ebbdaa">4b.6 y B4 (<code>68ebbdaa</code>)</h3>
+<ul>
+<li>Antes, <code>/register</code> cortaba el nombre en el primer guion: <code>firewall-acl-agent</code> → <code>/secrets/firewall</code> → 403 con mTLS
+  (sin clave HMAC para su CSV). Ahora <code>/secrets/&lt;CN&gt;</code> y <code>/config/&lt;CN&gt;</code>. En el defender el firewall pasa de
+  <code>key_path=/secrets/firewall</code> a <code>/secrets/firewall-acl-agent</code> (32 bytes).</li>
+<li><code>crypto_token</code> fuera del servidor y de <code>ServicePaths::is_valid()</code> de etcd-client (no existe ninguna ruta <code>/crypto</code>).</li>
+<li>Borradas <code>etcd_client_base.cpp</code>, <code>etcd_client_manual.cpp</code>, <code>etcd_client.hpp.day54_hmac_only</code> y
+  <code>etcd_client.cpp.day54_broken</code> (cierra DEBT-ETCD-CLIENT-DEAD-VARIANTS-001).</li>
+<li>Un <code>grep -r</code> del parcheador de 4b.6 se dejó engañar por 9 <code>*.backup*</code> ignorados en <code>etcd-client/</code> y <code>etcd-server/</code>:
+  búsquedas siempre con <code>git grep</code>.</li>
+</ul>
+<h3 id="medido-al-final-de-day315">Medido al final de DAY315</h3>
+<ul>
+<li><code>make test-components PROFILE=production</code>: 9 / 23 / 13 / 7 / 82, todo verde.</li>
+<li><code>d313_registro_medir.sh</code> 28/28; <code>d314_claves_medir.sh</code> 29/29; <code>d315_paso3_medir.sh</code> 15/15 dos veces seguidas;
+  <code>d315_b4_medir.sh</code> 10/10 dos veces seguidas.</li>
+<li><code>d312_etcd_vm_deploy.sh</code> PASA (binario <code>6d837186</code>); <code>make deploy-configs</code> en dev: <code>etcd ok=7 changed=0</code>.</li>
+<li>JSON desplegado en la VM etcd = <code>etcd-server.etcd-vm.json</code> del repo (sha256 <code>3fedf9ad…</code>).</li>
+</ul>
+<h3 id="medido-jenkins-no-puede-hacer-preproduccion-hoy">Medido: Jenkins no puede hacer preproducción hoy</h3>
+<ul>
+<li><code>Jenkinsfile.dev</code>: los stages «Build .deb» (línea 96) y «Deploy Vagrant Test» (101) son solo un <code>echo</code> de
+  DEBT-PACKAGE-DEB-001 y DEBT-DEPLOY-VAGRANT-001 («deferred, skipping»).</li>
+<li><code>Jenkinsfile.prod</code>: <code>agent { label 'argus-server' }</code> (línea 14), un agente que no existe, y lanza <code>vagrant destroy -f
+  &amp;&amp; vagrant up</code> (líneas 40 y 123).</li>
+<li>El único componente con despliegue de binarios es el etcd-server (<code>d312_etcd_vm_deploy.sh</code>), y se lanza desde el Mac.</li>
+<li>DEBT-DEPLOY-VAGRANT-001 no tiene entrada propia en el BACKLOG: solo aparece en la lista de deudas de DAY167.</li>
+</ul>
+<h3 id="lecciones-day315">Lecciones DAY315</h3>
+<ul>
+<li>Una comprobación de huella que nadie ha visto fallar no comprueba nada: <code>ansible.cfg</code> la desactivaba en silencio.
+  Control negativo (huella falsa) antes de darla por buena.</li>
+<li>Antes de ejecutar un target que «solo despliega configuración», medir adónde escribe: el de DAY161 habría escrito
+  sobre los JSON del repo.</li>
+<li>Una VM recién arrancada puede tener dpkg cogido por <code>unattended-upgrades</code>: se espera el bloqueo, no se falla.</li>
+<li>Ficheros ignorados por git engañan a <code>grep -r</code>; <code>git grep</code> solo ve lo trackeado.</li>
+<li>El mensaje del commit del paso 1 (<code>fbd42be4</code>, «d315_ansible_paso1...») no dice qué hace. La historia no se
+  reescribe: queda descrito aquí y en el BACKLOG.</li>
+</ul>
+<h3 id="pendientes">Pendientes</h3>
+<ul>
+<li>RBAC de etcd por prefijo en producción: en el lab el rol del etcd-server cubre <code>readwrite /argus/</code>; con prefijos por
+  despliegue (<code>/argus/&lt;hospital&gt;/&lt;planta&gt;/</code>) el rol tiene que cubrirlos.</li>
+<li><code>d312</code>: 25 paquetes Debian hoy frente a 26 medidos DAY314; sin explicar.</li>
+<li><code>make up</code> no levanta la VM etcd (añadirla antes del paso 8); tras parar el Mac queda <code>aborted</code>: <code>vagrant up etcd</code>
+  (etcd y Vault vuelven solos; <code>argus-vault-unseal</code> desella). Para mirar Vault hace falta <code>sudo</code> y certificado de cliente.</li>
+<li>DEBT-ETCD-SERVER-LOG-TIMESTAMP-001; cpp-httplib sin fijar a <code>v0.63.0</code> en el Vagrantfile; <code>test_autonomy_integration</code>
+  (falló una vez DAY313); DEBT-CONFIG-JINJA2-PIPELINE-001 (mismo patrón para sniffer y ml-detector).</li>
+<li>Siguiente: paso 5 (libetcd_client con TLS y lista de endpoints para sniffer, ml-detector y firewall), empezando por
+  medir qué cliente usa cada uno; dentro, <code>get_encryption_seed()</code> contra <code>/seed</code> (borrada en 4b.2), los
+  <code>crypto_token_path</code> de sus JSON y la decisión sobre el ADR-045. Después pasos 6, 7 y 8.</li>
+</ul>
+<h2 id="diseno-del-paso-5-libetcd_client-con-tls-y-lista-de-endpoints-day316-escrito-antes-de-tocar-codigo">Diseño del paso 5 (libetcd_client con TLS y lista de endpoints) — DAY316, escrito ANTES de tocar código</h2>
+<p>Base: rama <code>feat/etcd-mtls-vault</code> en <code>0de22545</code> (docs de DAY315; el código es el de <code>68ebbdaa</code>). Todo lo de «Medido» sale
+de <code>git grep</code> y de leer los ficheros en esa base. Las decisiones abiertas están en 5.0 y no se escribe código hasta
+tenerlas.</p>
+<h3 id="medido-para-este-diseno_1">Medido para este diseño</h3>
+<ul>
+<li><strong>M1. Un solo cliente.</strong> Sniffer (<code>sniffer/src/userspace/etcd_client.cpp</code>), ml-detector (<code>ml-detector/src/etcd_client.cpp</code>)
+  y firewall (<code>firewall-acl-agent/src/core/etcd_client.cpp</code>) tienen cada uno su envoltorio (unas 215 líneas, casi
+  idénticos), todos sobre <code>etcd_client::EtcdClient</code> de <code>libetcd_client.so</code>. La librería habla con <code>httplib::Client</code> en
+  claro (<code>etcd-client/src/http_client.cpp</code> 38, 84, 130 y 180); <code>Config</code> solo tiene <code>host</code> y <code>port</code>
+  (<code>etcd_client.hpp</code> 36-39).</li>
+<li><strong>M2. <code>endpoints[0]</code>.</strong> Sniffer <code>main.cpp:334</code>, ml-detector <code>main.cpp:148</code>, firewall <code>main.cpp:403</code>. El envoltorio quita
+  <code>http://</code> y corta en el primer <code>:</code>: una URL <code>https://</code> no se puede parsear. Los cuatro JSON traen hoy <code>localhost:2379</code>
+  (el etcd-server del defender, en <code>tls.modo=http</code>).</li>
+<li><strong>M3. <code>etcd.endpoints</code> ausente</strong>, tres comportamientos: sniffer pone <code>localhost:2379</code> sin avisar
+  (<code>config_manager.cpp:454</code>); ml-detector, fatal (<code>get_required</code>, <code>config_loader.cpp:191</code>, como los otros 11 campos del
+  bloque, 190-200); firewall, vector vacío y después <code>endpoints[0]</code>: comportamiento indefinido (<code>config_loader.cpp:594</code>,
+  <code>main.cpp:403</code>). <code>enabled</code> tiene defecto <code>true</code> en el sniffer, es obligatorio en el ml-detector y vale <code>false</code> por
+  defecto en el firewall.</li>
+<li><strong>M4. Leídos y nunca aplicados</strong>: <code>connection_timeout_ms</code>, <code>retry_attempts</code> y <code>retry_interval_ms</code> (los tres JSON traen
+  5000 / 3 / 1000; ningún envoltorio los pasa a la librería, que usa su <code>timeout_seconds = 5</code> y 3 reintentos);
+  <code>config_sync_path</code>, <code>required_for_encryption</code>, <code>service_registration_path</code>, <code>fallback_mode</code> y
+  <code>heartbeat_interval_seconds</code> del bloque <code>etcd</code> (se guardan y nadie los lee; la librería late con su
+  <code>heartbeat_interval_seconds = 30</code> del código; <code>encryption.fallback_mode</code> del transporte es otro campo y no entra aquí);
+  <code>crypto_token_path</code> (sniffer con defecto, ml-detector obligatorio, el firewall ya no lo lee pero sigue en su JSON).</li>
+<li><strong>M5. Nadie llama a <code>/seed</code>.</strong> El sniffer lee <code>seed.bin</code> en local (<code>etcd_client.cpp:201</code>), pero su <code>main.cpp:704</code>
+  escribe «Encryption seed obtained from etcd-server» (falso). El <code>get_encryption_seed()</code> del ml-detector no tiene
+  ninguna llamada y acaba en <code>get_encryption_key()</code> de la librería, que devuelve <code>""</code> desde DAY98
+  (<code>etcd-client/src/etcd_client.cpp:711</code>). El único <code>"/seed"</code> del árbol es <code>common/vault_transport.cpp:50</code> (Vault, la
+  semilla de familia, no el etcd-server).</li>
+<li><strong>M6.</strong> En el ml-detector, <code>encryption_enabled = (el endpoint no empieza por "http://")</code>: con <code>https://</code> se activaría por
+  casualidad.</li>
+<li><strong>M7. ADR-045.</strong> <code>http_etcd_registrar.cpp</code> y <code>crypto_epoch_coordinator.cpp</code> se compilan dentro de <code>libcrypto_provider.so</code>
+  (<code>common/CMakeLists.txt</code> 57-62; cabeceras instaladas 143-145), que enlazan el etcd-server y el firewall. Ningún binario
+  usa esas clases. <code>IEtcdRegistrar</code> y <code>StubEtcdRegistrar</code> (<code>common/etcd_registrar.h/.cpp</code>) NO son ADR-045: los usa
+  <code>vault_client.cpp</code> y se quedan. Tests: <code>test_crypto_epoch_coordinator</code> solo prueba el coordinador;
+  <code>test_e2e_rotation</code> tiene 6 pruebas y solo T1 (<code>test_handle_reloads_on_epoch_change</code>) y T4
+  (<code>test_coordinator_epoch_id_propagates_to_wire</code>) usan el coordinador; T2, T3, T5 y T6 (ida y vuelta por el cable en
+  épocas 1 y 2, ventana de dos claves, centinela <code>0xFFFF</code> rechazado antes de descifrar, DEBT-CRYPTO-NEGATIVE-TEST-001) son
+  la única cobertura de la época en el cable (<code>test_wire_protocol</code> no la tiene). <code>common/tests/test_http_etcd_registrar.cpp</code>
+  es huérfano: ningún CMake lo compila.</li>
+<li><strong>M8. <code>/v1/epoch</code></strong> solo lo consumía el coordinador: rutas en <code>etcd_server.cpp</code> 489 y 498, dos reglas en
+  <code>etcd_server_authz.hpp</code> 175 y 185 y en los dos JSON del etcd-server, y una aserción en <code>test_etcd_server_authz.cpp:202</code>.</li>
+<li><strong>M9. ODR.</strong> <code>libetcd_client</code> se compila sin <code>CPPHTTPLIB_OPENSSL_SUPPORT</code>; <code>crypto_provider</code> lo exporta <code>PUBLIC</code>
+  (<code>common/CMakeLists.txt:107</code>) y el firewall enlaza las dos. En producción solo dos ficheros incluyen <code>httplib.h</code>:
+  <code>etcd-client/src/http_client.cpp</code> y <code>common/http_etcd_registrar.cpp</code> (este se borra con ADR-045). El etcd-server es otro
+  binario, con su propia definición <code>PRIVATE</code>.</li>
+<li><strong>M10. Otros consumidores de la librería.</strong> <code>tools/synthetic_sniffer_injector.cpp</code> y <code>synthetic_ml_output_injector.cpp</code>
+  (los usan los E2E del Makefile, 1424-1457) construyen <code>etcd_client::Config</code> a mano con <code>host</code>/<code>port</code>, defecto
+  <code>localhost:2379</code>, y solo hacen <code>connect()</code> + <code>register_component()</code> con los nombres <code>cpp_evolutionary_sniffer</code> y
+  <code>synthetic-ml-output</code>. Ningún E2E comprueba ese registro, y <code>cpp_evolutionary_sniffer</code> es un nombre que el etcd-server
+  ya rechaza (<code>test_registro_componentes.cpp:72</code>). Tests con servidor falso en HTTP: <code>etcd-client/tests</code> (6 ejecutables)
+  y <code>ml-detector/tests/integration/test_etcd_client_hmac.cpp</code> (<code>http://127.0.0.1:&lt;puerto&gt;</code>).</li>
+<li><strong>M11. Certificados en el defender.</strong> El Vagrantfile solo reparte la PKI (<code>ARGUS_PKI_DIR</code>, defecto <code>~/argus-pki</code>) a la VM
+  etcd (<code>/etc/argus-pki/</code>, líneas 1554-1577); al defender no le llega ningún certificado de componente.</li>
+<li><strong>M12. Scripts del lab.</strong> <code>mitre_start.sh:32</code>, <code>ctu_start.sh:38</code> y <code>custom_start.sh.template:31</code> sacan la clave HMAC del
+  ml-detector con <code>curl -s http://localhost:2379/secrets/ml-detector</code> (para el conversor). Con mTLS, <code>/secrets/ml-detector</code>
+  solo lo puede leer el CN <code>ml-detector</code>; el conversor tiene <code>/secrets/valid/{c}</code>.</li>
+</ul>
+<h3 id="decisiones-de-alonso-day316">Decisiones de Alonso (DAY316)</h3>
+<ul>
+<li><strong>C1.</strong> TLS y lista de endpoints en la librería, no en los tres envoltorios.</li>
+<li><strong>C2.</strong> Los envoltorios pasan la lista completa del JSON (fuera el parseo de <code>host:port</code>).</li>
+<li><strong>C3.</strong> Fuera <code>get_encryption_seed()</code> del ml-detector, <code>get_encryption_key()</code> de la librería y <code>crypto_token_path</code>
+  (JSON y cargadores). En el sniffer la función que lee <code>seed.bin</code> deja de llamarse «del etcd-server» y su log no lo dice.</li>
+<li><strong>C4.</strong> Fuera <code>HttpEtcdRegistrar</code> y <code>CryptoEpochCoordinator</code> (ADR-045), con lo medido en M7: se queda <code>IEtcdRegistrar</code>;
+  de <code>test_e2e_rotation</code> se van T1 y T4 y se quedan T2, T3, T5 y T6.</li>
+<li><strong>D1.</strong> En los componentes, <code>etcd.endpoints</code>, <code>ca_file</code>, <code>cert_file</code> y <code>key_file</code> ausentes o mal formados son fatales,
+  como el almacén del etcd-server (los rellena Jenkins desde el inventario): mensaje con campo, formato y límites, y el
+  proceso no arranca. El resto del bloque lleva defecto, aviso en el log y origen de cada valor.</li>
+<li><strong>D2.</strong> Fuera <code>etcd.enabled</code> (sin etcd-server el pipeline no arranca, DAY310).</li>
+<li><strong>D3.</strong> Fuera <code>GET</code> y <code>PUT /v1/epoch</code> y sus dos reglas de autorización.</li>
+<li>Regla general (DAY291/300/308, recordada DAY316): el JSON es la ley; ausente o mal formado → defecto validado + aviso
+  claro + el proceso sigue; la única excepción son las direcciones y credenciales que rellena el aprovisionamiento.</li>
+</ul>
+<h3 id="50-decisiones-abiertas-para-alonso">5.0 Decisiones abiertas para Alonso</h3>
+<ul>
+<li><strong>E1. Inyectores sintéticos (M10).</strong> (a) Quitarles etcd entero (<code>connect</code> + <code>register</code> y el enlace a la librería): no
+  firman nada, nadie comprueba su registro y con mTLS necesitarían un certificado falso. (b) Certificado propio y regla
+  de autorización. Propuesta: a, con la predicción de que los E2E sintéticos siguen dando PASA.</li>
+<li><strong>E2. Tests con servidor falso.</strong> (a) CA desechable generada por el propio test con <code>openssl</code> en un directorio
+  temporal (nada en el repo ni en <code>/vagrant</code>), servidor <code>httplib::SSLServer</code>; (b) material de prueba fijo en el repo.
+  Propuesta: a (el repo es público y no debe llevar claves, ni de prueba).</li>
+<li><strong>E3. Campos del bloque <code>etcd</code> sin efecto (M4).</strong> Propuesta: <code>heartbeat_interval_seconds</code> se APLICA (pasa a la
+  librería: 5-300, defecto 30, aviso y origen en el log); <code>config_sync_path</code>, <code>required_for_encryption</code>,
+  <code>service_registration_path</code> y <code>fallback_mode</code> del bloque <code>etcd</code>, fuera, como <code>crypto_token_path</code>.</li>
+<li><strong>E4. Certificados en el defender (M11).</strong> Propuesta: aprovisionador en el Vagrantfile, igual que el de la VM etcd,
+  desde <code>ARGUS_PKI_DIR</code> a <code>/etc/argus-pki/&lt;componente&gt;.{crt,key}</code> (<code>.key</code> 0600 root; los tres corren como root) más
+  <code>ca.crt</code>. Antes, medir en el Mac qué CN tiene el certificado del firewall (<code>firewall</code> o <code>firewall-acl-agent</code>).</li>
+<li><strong>E5. Scripts del lab (M12).</strong> Propuesta: entran en el paso 5. Leen con el certificado del conversor
+  (<code>bronze-to-gold-converter</code>) por <code>GET /secrets/valid/ml-detector</code> en <code>https://192.168.100.20:2379</code>. Antes, medir el
+  formato de esa respuesta (lista de claves con su huella) y cuál usa hoy el conversor.</li>
+</ul>
+<h3 id="5a-libreria-etcd-client">5a. Librería (<code>etcd-client/</code>)</h3>
+<ul>
+<li><code>Config</code>: fuera <code>host</code> y <code>port</code>; dentro <code>endpoints</code> (lista de <code>https://&lt;host&gt;:&lt;puerto&gt;</code>, 1-7, sin repetir),
+  <code>ca_file</code>, <code>cert_file</code>, <code>key_file</code>, <code>connection_timeout_ms</code>, <code>retry_attempts</code>, <code>retry_interval_ms</code> y (con E3)
+  <code>heartbeat_interval_seconds</code>.</li>
+<li>Transporte <code>httplib::SSLClient</code> con la CA del lab, certificado de cliente y verificación del certificado del servidor
+  (nombre incluido). Recorre la lista: <code>retry_attempts</code> intentos por dirección separados <code>retry_interval_ms</code>, luego la
+  siguiente. <code>[ETCD-CLIENTE-CAMBIO]</code> al cambiar de dirección y <code>[ETCD-CLIENTE-NO-DISPONIBLE]</code> con el error de cada una al
+  agotar la lista. Un <code>http://</code> en la lista es mal formado (D1): no hay vuelta a HTTP.</li>
+<li>Fuera <code>get_encryption_key()</code>. <code>CPPHTTPLIB_OPENSSL_SUPPORT</code> y OpenSSL en el CMake de la librería.</li>
+<li>Comportamiento si el etcd-server cae después de arrancar: el de hoy, sin cambios en este paso (lo homogeneiza
+  DEBT-FW-HMAC-KEY-ALARM-001). Al arrancar, si no se alcanza ninguna dirección, el componente no arranca (DAY314).</li>
+</ul>
+<h3 id="5b-envoltorios-y-configuracion-sniffer-ml-detector-firewall">5b. Envoltorios y configuración (sniffer, ml-detector, firewall)</h3>
+<ul>
+<li>Los tres envoltorios construyen <code>Config</code> con la lista y las rutas del JSON; sin parseo propio de la URL.</li>
+<li>Bloque <code>etcd</code> de los cuatro JSON (<code>sniffer.json</code>, <code>sniffer-libpcap.json</code>, <code>ml_detector_config.json</code>, <code>firewall.json</code>):
+  <code>endpoints</code> = <code>["https://192.168.100.20:2379"]</code> y <code>ca_file</code>/<code>cert_file</code>/<code>key_file</code> (D1, fatales);
+  <code>connection_timeout_ms</code> 100-60000 (defecto 5000), <code>retry_attempts</code> 1-10 (3), <code>retry_interval_ms</code> 100-60000 (1000),
+  con defecto + aviso y el origen de cada valor en el log de arranque; rango y formato documentados en el propio JSON.
+  Fuera <code>enabled</code> (D2), <code>crypto_token_path</code> (C3) y, si se aprueba E3, los cuatro sin efecto; <code>heartbeat_interval_seconds</code>
+  pasa a aplicarse.</li>
+<li>En los tres <code>main.cpp</code>, fuera <code>endpoints[0]</code> y el <code>if (etcd.enabled)</code>.</li>
+<li>El etcd-server del defender (<code>localhost:2379</code>, http) se queda sin clientes del pipeline; se borra en el paso 6.</li>
+</ul>
+<h3 id="5c-fuera-c3-c4-d3">5c. Fuera (C3, C4, D3)</h3>
+<p><code>get_encryption_seed()</code> del ml-detector (cabecera y fuente); <code>get_encryption_key()</code> de la librería;
+<code>common/http_etcd_registrar.{h,cpp}</code>, <code>common/crypto_epoch_coordinator.{h,cpp}</code>, sus líneas en <code>CRYPTO_PROVIDER_SOURCES</code>
+y en la lista de cabeceras instaladas, y <code>CPPHTTPLIB_OPENSSL_SUPPORT PUBLIC</code> de <code>crypto_provider</code> (nadie más lo
+necesita, M9); <code>test_crypto_epoch_coordinator</code> (fuente y CMake), <code>test_http_etcd_registrar.cpp</code>, T1 y T4 de
+<code>test_e2e_rotation</code> (y su servidor falso si ya no lo usa nadie); en el etcd-server, <code>GET</code>/<code>PUT /v1/epoch</code>, sus dos reglas
+en <code>etcd_server_authz.hpp</code> y en los dos JSON, y la aserción de <code>test_etcd_server_authz.cpp:202</code>. Con E1 = a, el etcd de
+los dos inyectores.</p>
+<h3 id="5d-pruebas-y-predicciones">5d. Pruebas y predicciones</h3>
+<ul>
+<li>Antes de tocar nada, medir en el defender el número de tests de <code>common</code> (<code>make vault-client-test</code>) y de <code>etcd-client</code>
+  (su ctest): son la base de las predicciones de abajo.</li>
+<li>Banco (Debian 12, GCC 12, opciones de production): compila con 0 diagnósticos; control con la rama sin el parche.</li>
+<li><code>make test-components PROFILE=production</code>: 9 / 23 / 13 / 7 / 82 (no cambian: el etcd-server pierde una aserción, no un
+  test; el de HMAC del ml-detector se reescribe a TLS). <code>common</code>: uno menos que la base (<code>test_crypto_epoch_coordinator</code>).
+  <code>etcd-client</code>: los mismos más uno nuevo (lista de direcciones y TLS: primera dirección que no responde → segunda;
+  ninguna → error con todas; <code>http://</code> → mal formado; certificado de servidor de otra CA → falla).</li>
+<li>Mutaciones: sin verificar el certificado del servidor, sin pasar a la siguiente dirección, aceptando <code>http://</code> → cada una
+  hace fallar su test.</li>
+<li>Laboratorio, tras <code>pipeline-start</code>, desde el defender con el certificado de admin contra la VM etcd:
+  <code>GET /components</code> → <code>etcd-server</code>, <code>sniffer</code>, <code>ml-detector</code>, <code>firewall-acl-agent</code>, los cuatro vivos. ml-detector
+  <code>[BRONCE-CLAVE]</code> con huella; firewall con <code>key_path=/secrets/firewall-acl-agent</code>. En el log del etcd-server, 0
+  <code>[ETCD-AUTHZ-DENEGADO]</code> de los tres.</li>
+<li>Control negativo en el laboratorio: JSON del ml-detector con el certificado del sniffer → registro 403 y no arranca;
+  sin <code>ca_file</code> → no arranca y el mensaje dice campo y formato; primera dirección falsa en la lista →
+  <code>[ETCD-CLIENTE-CAMBIO]</code> y registro correcto.</li>
+<li>E2E sintéticos (con E1 = a) y <code>mitre-start</code> (con E5) siguen dando PASA.</li>
+<li>Cada instrumento, dos veces seguidas.</li>
+</ul>
+<h2 id="resultados-day316-paso-5-decisiones-c4d3-y-e4-medidos-estado-deseado-seccion-aparte-sin-reescribir-el-diseno">Resultados DAY316 — paso 5: decisiones, C4+D3 y E4 medidos, estado deseado (sección aparte, sin reescribir el diseño)</h2>
+<h3 id="decisiones-de-alonso-day316-despues-del-diseno">Decisiones de Alonso (DAY316, después del diseño)</h3>
+<ul>
+<li><strong>E1 = c</strong> (cambia la propuesta a). Los inyectores sintéticos son imprescindibles en EMECAS (<code>emecas</code> → <code>test-e2e-synthetic</code>;
+  <code>emecas++</code> → <code>-full</code> y <code>-firewall</code>): no se desactivan. Cada inyector se presenta con el certificado del componente al que
+  sustituye (el de sniffer con CN <code>sniffer</code>, el de ml-output con CN <code>ml-detector</code>) y lee endpoints y rutas TLS del bloque
+  <code>etcd</code> del JSON de ese componente. Medido: el Makefile para el componente real antes de lanzar su sustituto (líneas 1418 y
+  1450-1452), así que no hay dos registros con el mismo CN. Fuera los nombres falsos (<code>cpp_evolutionary_sniffer</code>,
+  <code>synthetic-ml-output</code>) y el <code>localhost:2379</code> escrito en el código.</li>
+<li><strong>E2.</strong> Tests unitarios (ctest, sin VMs): CA desechable en un directorio temporal, borrada al terminar. Integración y E2E en
+  el laboratorio: los certificados reales del lab, repartidos por el mismo camino que usan los componentes (E4); ninguna CA
+  de pruebas en ningún sitio. La CA no vive en Vault: Vault guarda solo las claves HMAC (PR1). Re-verificar el grafo años
+  después necesita las claves HMAC (inmutables en Vault), no la CA.</li>
+<li><strong>E3, E4, E5:</strong> como se propusieron en 5.0. En E4 entra también <code>bronze-to-gold-converter</code> (el conversor corre en el
+  defender y E5 lo necesita); <code>admin</code> no va al defender.</li>
+<li><strong>F1.</strong> La librería lee y valida el bloque <code>etcd</code> del JSON en un solo sitio (defectos con aviso, fatales, origen de cada
+  campo en el log); sniffer, ml-detector y firewall solo le pasan el bloque tal cual (hoy jsoncpp en dos, nlohmann en uno, y
+  tres comportamientos distintos).</li>
+<li><strong>F2.</strong> Fuera <code>Config::from_json</code>/<code>from_json_file</code>, el constructor <code>EtcdClient(ruta_json)</code> y
+  <code>etcd-client/config/etcd_client_config.json</code>: nadie los usa (<code>git grep</code>).</li>
+<li><strong>F3.</strong> La lista de endpoints pasa a la siguiente dirección solo si no hay respuesta o hay un 5xx; un 4xx (403, 404) se
+  devuelve enseguida, sin reintentar (hoy se reintenta toda respuesta que no sea 2xx).</li>
+</ul>
+<h3 id="estado-deseado-alonso-day316-y-lo-que-cambia-de-lo-decidido">Estado deseado (Alonso, DAY316) y lo que cambia de lo decidido</h3>
+<p>El pipeline arranca aunque no responda ninguna de las direcciones del etcd-server (p. ej. un fallo físico). Lo peor que
+ocurre es que no se puede firmar con la clave HMAC: es el precio a pagar, porque lo más importante es que el hospital no
+quede desprotegido. En el grafo esos momentos deben verse como periodos en que el etcd HA/Raft de esa instalación tuvo
+problemas, analizables por el administrador (que todo el etcd caiga durante un ataque es, como mínimo, motivo para
+investigar). Cuando algún etcd-server vuelva a dar servicio, los componentes se dan de alta, hacen el handshake, obtienen
+su clave HMAC y operan con normalidad. Si un servidor cae, entra otro; el estado se comparte: el etcd-server lee el estado
+compartido del etcd real, y los etcd del Raft se sincronizan entre sí (incluida la configuración JSON de los componentes)
+por un canal interno cifrado y de confianza comprobada, para que un proceso etcd pirata no pueda colarse.</p>
+<p>Cambia:
+- <strong>D1:</strong> un bloque <code>etcd</code> mal formado ya no para el proceso: ese componente queda sin etcd, con <code>[ETCD-CLIENTE-FATAL]</code>
+  periódico (campo, formato y límites), y sigue protegiendo (regla DAY291: el pipeline no se queda parado).
+- <strong>5a:</strong> «si no se alcanza ninguna dirección, el componente no arranca» pasa a «arranca, avisa y reintenta».
+- <strong>DAY314:</strong> el dilema de arrancar sin etcd-server queda resuelto: se arranca. El cifrado de ZMQ no depende del
+  etcd-server (sale de <code>seed.bin</code> local).</p>
+<h3 id="medido-contra-el-estado-deseado">Medido contra el estado deseado</h3>
+<ul>
+<li>Hoy, sin etcd-server al arrancar: el sniffer sale («etcd integration is REQUIRED… seed must be obtained from
+  etcd-server», motivo falso: la lee de <code>seed.bin</code>), el ml-detector sale («REQUIRED for ml-detector»), el firewall sigue
+  sin etcd.</li>
+<li>Ya existe (DAY310): el ml-detector pide la clave del bronce cada <code>bronze_key.check_interval_seconds</code>, no escribe nunca
+  bronce sin firma (<code>records_sin_clave</code>), firma con la vigente en modo extendido si el etcd-server cae y aplica en caliente
+  la que llega tarde (<code>[BRONCE-CLAVE-RECUPERADA]</code>).</li>
+<li><code>GET /secrets/{CN}</code> no exige registro, solo el certificado con ese CN: se puede firmar aunque el registro tarde.</li>
+<li>El firewall pide su clave una sola vez, al arrancar (<code>zmq_subscriber.cpp:88</code>); sin clave no escribe su CSV y no la
+  vuelve a pedir.</li>
+<li>etcd real: TLS mutuo entre pares (<code>peer-transport-security</code>, <code>client-cert-auth: true</code>) y RBAC para el etcd-server; un
+  miembro nuevo entra solo con <code>member add</code>. Hueco: la misma CA firma los certificados de los componentes.</li>
+<li>Vault es de un nodo: con varios etcd-server las claves HMAC solo se comparten si Vault también es HA.</li>
+<li>El hueco por falta de clave solo se ve en el log (<code>[BRONCE-SIN-CLAVE]</code>, contador); al grafo no llega como evento.</li>
+</ul>
+<h3 id="plan-revisado">Plan revisado</h3>
+<ul>
+<li><strong>Commit A (paso 5):</strong> TLS + lista de endpoints + lector único en la librería (F1-F3, C3, E3, E1 = c); ningún componente
+  sale por el etcd-server; la librería reconecta sola en cada llamada si no estaba conectada, así el sondeo de clave del
+  ml-detector la recoge cuando vuelve un etcd-server.</li>
+<li><strong>Commit B (DEBT-FW-HMAC-KEY-ALARM-001):</strong> re-registro en segundo plano en la librería, el firewall pide su clave cada
+  cierto tiempo como el ml-detector, aviso periódico mientras no haya etcd; los tres iguales.</li>
+<li><strong>PR2:</strong> varios nodos etcd + etcd-server, Vault HA (raft integrado), <code>peer-cert-allowed-cn</code> y una CA por despliegue.</li>
+</ul>
+<h3 id="c4-d3-medidos-commit-1e75d0618-17-ficheros-16-1131">C4 + D3 medidos (commit <code>1e75d0618</code>, 17 ficheros, +16/-1131)</h3>
+<ul>
+<li>Alcance mayor que M8: detrás de <code>/v1/epoch</code> había gestión de época entera en el etcd-server (<code>EpochInfo</code>,
+  <code>set_epoch</code>/<code>get_epoch</code>, <code>guardar_epoca</code>/<code>leer_epoca</code> del registro y su test). Fuera todo; también OpenSSL y
+  <code>CPPHTTPLIB_OPENSSL_SUPPORT PUBLIC</code> de <code>crypto_provider</code> (solo los usaba el registrador).</li>
+<li>Corrección de M9: <code>crypto_provider</code> lo enlazan el etcd-server y el firewall por la ruta del <code>.so</code>, no como objetivo de
+  CMake, así que la definición <code>PUBLIC</code> no les llegaba. El riesgo ODR del firewall estaba en el <code>.so</code>: llevaba httplib
+  compilado con OpenSSL (el registrador) junto a <code>libetcd_client.so</code> sin OpenSSL. Desaparece con el registrador.</li>
+<li>Banco (Debian 12, GCC 12.2.0, cadena del Makefile, etcd-server en production): control y parche con los mismos avisos
+  (8 notas de <code>lto-wrapper</code> + 1 <code>ld</code> libsodium .26/.23); common 13 → 12, etcd-client 4, etcd-server 7, dos pasadas; con
+  <code>ARGUS_VAULT_ENABLED=ON</code> 15 → 14 (rojo <code>test_ntp_health_check</code> en los dos: sin NTP en el banco). Primera pasada
+  <strong>PARADA</strong>: <code>test_etcd_server_authz</code> 16/17, el test esperaba el texto de log <code>regla 1/15</code>; corregido a <code>1/13</code>. Los tests
+  nuevos contra el código viejo: 3 de 17 fallan.</li>
+<li>Laboratorio: parcheador 31/31; <code>pipeline-build</code> production rc 0; <code>test-components</code> 9 / 23 / 13 / 7 / 82; common 12/12.
+  Despliegue <strong>PARADA</strong>: la VM etcd estaba <code>aborted</code> (<code>make up</code> no la levanta); tras <code>vagrant up etcd</code>: PASA, binario
+  <code>86d52cd93200ed60</code>, 25 paquetes; <code>deploy-configs</code> <code>etcd ok=7 changed=1</code>; registro 28/28 y claves 29/29, dos veces.</li>
+</ul>
+<h3 id="e4-medido-commit-59d0fc592-52-1">E4 medido (commit <code>59d0fc592</code>, +52/-1)</h3>
+<ul>
+<li>Banco con una PKI de juguete (<code>d312_pki.sh</code>): primera pasada y repetición 4 ✅; seis negativos (clave cruzada, falta una
+  clave, certificado de otra CA, CN equivocado, clave 0644, sin <code>ca.crt</code>) fallan cada uno con su mensaje. Cazado en el
+  control positivo: OpenSSL 3 antepone <code>subject=</code> al sujeto. <code>ruby -c</code> del Vagrantfile: <code>Syntax OK</code>.</li>
+<li>Laboratorio: aprovisionamiento rc 0, 4 ✅, repetición rc 0; huellas iguales a las del Mac (sniffer <code>2af48d66</code>,
+  ml-detector <code>a5a2bc4c</code>, firewall-acl-agent <code>d2fa1409</code>, converter <code>1bfd79af</code>); <code>/etc/argus-pki</code> 0700 root, <code>.key</code> 0600 root,
+  entrada borrada. Certificado del firewall medido en el Mac: <code>CN=OU=firewall-acl-agent</code> (coincide con B4).</li>
+</ul>
+<h3 id="deudas-y-pendientes-nuevos-day316">Deudas y pendientes nuevos (DAY316)</h3>
+<ul>
+<li><strong>DEBT-PKI-AT-REST-001:</strong> <code>ca.key</code> en el Mac y las <code>.key</code> de los componentes en claro en disco (0600 root). En producción
+  la CA, fuera de línea y lejos del despliegue; para las claves de cliente: pedirlas a Vault al arrancar y tenerlas en
+  memoria, o TPM/HSM.</li>
+<li><strong>DEBT-GRAPH-HUECO-SIN-CLAVE-001:</strong> que el periodo sin clave HMAC se vea en el grafo como evento (p. ej. una fila firmada
+  de tipo hueco al recuperar la clave, con inicio, fin y filas perdidas). Toca correlation_v1: diseño propio.</li>
+<li>Vault del lab: <code>d314_claves_medir.sh</code> rota con <code>force</code> la clave del CN real <code>ml-detector</code> y cada pasada deja claves
+  inmutables para siempre (medido: <code>c10f19d3</code> → <code>60768287</code>), además de <code>argus-hmac/d312/prueba</code>. Propuesta: CN de prueba
+  propio para los instrumentos y rehacer la VM etcd antes del paso 8.</li>
+<li>DEBT-REPO-RESIDUOS-001: cuatro parcheadores viejos sin trackear en <code>scripts/</code> (<code>d313_4b2_parche.py</code>, <code>d313_4b3_parche.py</code>,
+  <code>d314_4b4_parche.py</code>, <code>d314_docs_parche.py</code>).</li>
+<li>Tests manuales de etcd-client que nunca entran en ctest y necesitan un etcd-server en HTTP (<code>test_hmac_integration_client</code>,
+  <code>test_put_config_integration</code>, <code>test_service_discovery</code>): se actualizan en el commit A o se borran; decide Alonso.</li>
+</ul>
+<h3 id="lecciones-day316">Lecciones DAY316</h3>
+<ul>
+<li>Contar todas las apariciones de un número antes de cambiarlo: el test guardaba el 15 también dentro de un texto de log.</li>
+<li>Un control positivo hace falta también en los scripts de aprovisionamiento (OpenSSL 3 y <code>subject=</code>).</li>
+<li><code>vault status</code> en la VM etcd necesita <code>sudo</code> y certificado de cliente: un <code>grep</code> vacío no prueba nada.</li>
+<li>Sin emojis en los comandos que se pegan en la terminal: zsh calcula mal el ancho y la línea se ve corrida.</li>
+</ul>
+<h2 id="resultados-day316-paso-5-commit-a-fe99a7e70-42-ficheros-1045-1068">Resultados DAY316 — paso 5, commit A (<code>fe99a7e70</code>, 42 ficheros, +1045/-1068)</h2>
+<p>Commit A como en el «Plan revisado», con un cambio por decisión de Alonso («Punto 1»): sniffer y ml-detector <strong>siguen
+saliendo</strong> si no alcanzan el etcd-server o el bloque <code>etcd</code> trae fatales, y el firewall sigue sin etcd (comportamiento de
+antes). Que ningún componente salga por el etcd-server va en el commit B (DEBT-FW-HMAC-KEY-ALARM-001), junto con la
+reconexión y el re-registro.</p>
+<h3 id="que-entra">Qué entra</h3>
+<ul>
+<li><strong>Librería:</strong> transporte HTTPS con certificado de cliente (CA, verificación del certificado y del nombre del servidor)
+  sobre una lista de 1-7 direcciones <code>https://host:puerto</code> (C1/C2). Por dirección, <code>retry_attempts</code> intentos separados
+  <code>retry_interval_ms</code>; sin respuesta o 5xx = reintento y luego la siguiente dirección; 4xx = respuesta final (F3). La
+  última dirección buena se recuerda. Logs: <code>[ETCD-CLIENTE-CAMBIO]</code>, <code>[ETCD-CLIENTE-NO-DISPONIBLE]</code> (cada dirección con su
+  error), <code>[ETCD-CLIENTE-SIN-ENDPOINTS]</code>.</li>
+<li><strong>Lector único <code>leer_bloque_etcd()</code> (F1):</strong> fatales <code>endpoints</code>, <code>ca_file</code>, <code>cert_file</code>, <code>key_file</code> (<code>[ETCD-CLIENTE-FATAL]</code>
+  con campo, motivo y formato); con defecto y aviso <code>connection_timeout_ms</code> [100, 60000] 5000, <code>retry_attempts</code> [1, 10] 3,
+  <code>retry_interval_ms</code> [100, 60000] 1000, <code>heartbeat_interval_seconds</code> [5, 300] 30 (E3); <code>[CONFIG-OBSOLETO]</code> para los siete
+  campos retirados; resumen <code>[ETCD-CLIENTE-CONFIG]</code>. sniffer, ml-detector y firewall le pasan el bloque tal cual.</li>
+<li><strong>Fuera (F2, C3, D2, E3):</strong> <code>Config::from_json*</code>, <code>EtcdClient(ruta)</code>, <code>get_encryption_key</code>, <code>etcd-client/config/</code>, el
+  espacio de nombres <code>http</code> de la librería, <code>parseEndpoint</code> y <code>host</code>/<code>port</code> de los envoltorios, <code>get_encryption_seed</code> de
+  ml-detector (en el sniffer pasa a <code>leer_semilla_local</code>: lee <code>seed.bin</code>, no el etcd-server), <code>etcd.enabled</code> y
+  <code>crypto_token_path</code>, <code>config_sync_path</code>, <code>required_for_encryption</code>, <code>service_registration_path</code>, <code>fallback_mode</code>,
+  <code>lease_ttl_seconds</code>.</li>
+<li><strong>JSON</strong> de sniffer, sniffer-libpcap, ml-detector y firewall: <code>https://192.168.100.20:2379</code>, <code>/etc/argus-pki/ca.crt</code> y el
+  certificado del componente; <code>_doc</code> con rangos y defectos.</li>
+<li><strong>Inyectores (E1 = c):</strong> leen el bloque <code>etcd</code> del JSON del componente al que sustituyen y se registran como <code>sniffer</code> y
+  <code>ml-detector</code>. Fuera <code>localhost:2379</code> y los nombres falsos.</li>
+<li><strong>E5:</strong> <code>scripts/bronze_key/clave_bronce_ml_detector.sh</code> (en el defender, con sudo) pide <code>/secrets/valid/ml-detector</code> por
+  mTLS con el certificado de <code>bronze-to-gold-converter</code> a <code>etcd.endpoints[0]</code> del JSON de ml-detector y devuelve la clave
+  con <code>is_active</code>; lo usan mitre-start, ctu-start y custom-start.</li>
+<li><strong>Tests (E2):</strong> <code>test_etcd_cliente_tls</code> (19 casos: lector L1-L9, mTLS, cambio de dirección, sin servicio, CA ajena, 403
+  sin reintento, 503 con reintentos, sin direcciones) y <code>test_etcd_client_hmac</code> de ml-detector reescrito sobre
+  <code>httplib::SSLServer</code> (10 casos, uno nuevo con CA equivocada). PKI desechable con openssl en <code>/tmp/argus_test_pki_*</code>,
+  borrada al terminar. Los tres tests manuales solo cambian a <code>endpoints</code> (DEBT-ETCD-CLIENT-MANUAL-TESTS-CTEST-001).</li>
+<li><code>CPPHTTPLIB_OPENSSL_SUPPORT</code> PRIVATE en <code>etcd_client</code> y en los dos tests que incluyen <code>httplib.h</code> (mismo httplib a los dos
+  lados: ODR).</li>
+</ul>
+<h3 id="medido_1">Medido</h3>
+<ul>
+<li><strong>Banco</strong> (Debian 12, GCC 12.2.0, cadena del Makefile, componentes en production), dos pasadas: todo compila, avisos
+  iguales a control2 en cada componente; ctest etcd-client 5/5, common 12, etcd-server 7, ml-detector 13/13, firewall 82,
+  sniffer 19/23 (los 4 de siempre: <code>libbpf.so.1</code> y <code>boot_id</code>, entorno). <code>proto rc=1</code> también en control2 (faltan los
+  <code>.proto</code> de Timestamp/Duration en el banco; se compila con los <code>.pb.*</code> del repo).</li>
+<li><strong>Mutaciones</strong>, todas cazadas: sin verificación del servidor → T4 y <code>WrongCaReturnsEmptyString</code>; sin cambio de dirección
+  → T2/T6; <code>http://</code> aceptado → L3; 4xx reintentado → T5.</li>
+<li><strong>PARADA en el banco:</strong> primera pasada de ml-detector 12/13; el servidor falso del test respondía 404 a <code>/health</code> y el
+  envoltorio hace <code>connect()</code> al construirse. Corregido (200, como el mock viejo); 10/10 dos veces.</li>
+<li><strong>Parcheador</strong> <code>scripts/etcd_ha/d316_p5_commit_a.py</code> (sha256 <code>e43c9719…8ebe</code>): aplica el diff en memoria solo si cada
+  fichero tiene el sha256 previo y escribe solo si todos dan el final. Banco: dos copias limpias → árbol idéntico; segunda
+  pasada «YA APLICADO»; un fichero alterado → FALLA sin tocar nada.</li>
+<li><strong>Laboratorio:</strong> APLICADO 42; <code>pipeline-build</code> rc 0; <code>test-components</code> 9 / 23 / 13 / 7 / 82. etcd-server de la VM
+  arrancado a mano (<code>--check-config</code> OK, <code>mtls</code>, almacén etcd, claves en Vault, 13 reglas). Los tres componentes:
+  <code>bloque etcd leído: 1 direcciones, 0 campos con defecto, 0 obsoletos, 0 fatales</code> y <code>Service registered successfully</code>.
+  En la VM: <code>POST /register</code> y <code>PUT /v1/config/sniffer</code> 200 con <code>cn=ou=sniffer</code>; latidos de los tres cada 30 s, cada uno con
+  su CN; <code>GET /secrets/ml-detector</code> cada 60 s, clave de huella <code>60768287</code>. <code>test-e2e-synthetic</code>: los dos PASSED (277
+  eventos en el firewall). <code>mitre-start</code> rc 0: la clave por mTLS (<code>GET /secrets/valid/ml-detector</code>, <code>cn=ou=bronze-to-gold-
+  converter</code>, 200), 0 descartadas en los tres converters; grafo argus 1518, suricata 32, zeek 1074; invariante 0; 1051
+  flujos corroborados.</li>
+<li><strong>Cazado en la VM:</strong> <code>Size mismatch: header=3882352640 vs HTTP=26855</code> en <code>PUT /v1/config</code>. El cliente escribe el tamaño
+  original en little-endian y el etcd-server lo lee en big-endian (26855 = 0x68E7 → <code>E7 68 00 00</code> → 0xE7680000). Viene de
+  antes; el servidor cae a la cabecera HTTP y descomprime bien (DEBT-ETCD-CONFIG-SIZE-ENDIAN-001).</li>
+</ul>
+<h3 id="pendientes-del-paso-5">Pendientes del paso 5</h3>
+<ul>
+<li>Commit B: arrancar sin etcd-server, reconectar y re-registrar en segundo plano, el firewall pide su clave cada cierto
+  tiempo, aviso periódico.</li>
+<li><code>registerService</code> lee rutas escritas en el código: el sniffer <code>/vagrant/sniffer/config/sniffer.json</code> (aunque arranque con
+  otro <code>-c</code>), el firewall <code>../config/firewall.json</code> (relativo al directorio de trabajo). Debe registrar el JSON con el que
+  arrancó.</li>
+<li>El etcd-server del defender (HTTP, memoria) sigue arrancando con <code>pipeline-start</code> y sirve en claro claves de memoria
+  que ya no usa nadie; desaparece en el paso 6.</li>
+</ul>
+<h3 id="lecciones-day316-commit-a">Lecciones DAY316 (commit A)</h3>
+<ul>
+<li><code>d313_es_vm.sh</code> se ejecuta como vagrant (hace <code>sudo</code> dentro). Con <code>sudo bash</code>, root no pudo escribir
+  <code>/var/tmp/d313-check.txt</code> (de vagrant; <code>/var/tmp</code> con sticky bit y <code>fs.protected_regular</code>) y el <code>grep</code> siguiente mostró
+  el <code>OK</code> de una pasada vieja: una línea de éxito no vale si no es de esta ejecución.</li>
+<li>Un <code>tail -20</code> sobre varios logs juntos esconde el primero: un log por comando.</li>
+<li>Un servidor falso tiene que responder todo lo que el cliente pide de verdad (el <code>/health</code> de <code>connect()</code>), no solo la
+  ruta bajo prueba.</li>
+<li><code>str.splitlines()</code> corta también en <code>\r</code>, <code>\x0c</code> y <code>\u2028</code>: para aplicar diffs, partir solo por <code>\n</code>.</li>
+</ul>
+<h2 id="diseno-del-commit-b-paso-5-day316-escrito-antes-de-tocar-codigo">Diseño del commit B (paso 5) — DAY316, escrito ANTES de tocar código</h2>
+<p>Objetivo (estado deseado de Alonso, DAY316): el pipeline arranca y sigue protegiendo aunque no responda ningún etcd-server;
+cuando uno vuelve, cada componente se registra y recoge su clave HMAC solo. Va en dos commits: <strong>B1</strong> (librería y arranque de
+los tres) y <strong>B2</strong> (clave del firewall; cierra DEBT-FW-HMAC-KEY-ALARM-001).</p>
+<h3 id="medido-para-este-diseno-codigo-tras-fe99a7e70">Medido para este diseño (código tras <code>fe99a7e70</code>)</h3>
+<ul>
+<li>Librería: <code>get_hmac_key()</code>, <code>set/get</code>, <code>register_component()</code> y el resto devuelven fallo si <code>connected_</code> es falso, y
+  <code>connected_</code> solo se pone en <code>connect()</code>. Un componente que arranca sin etcd-server no vuelve a intentarlo nunca (y el
+  sondeo de clave del ml-detector no la recogería aunque el servidor vuelva).</li>
+<li>El hilo de latidos arranca solo tras un registro bueno; un latido fallido deja un aviso y nada más. El servidor responde
+  404 a un latido de un componente no registrado (<code>latir</code> → <code>NoEncontrado</code>); el registro vive en el etcd real, así que tras
+  reiniciar el etcd-server el componente sigue registrado.</li>
+<li><code>register_component()</code> hace <code>unlock()</code>/<code>lock()</code> a mano sobre el mutex de un <code>lock_guard</code>.</li>
+<li>Sniffer: sin etcd sale en <code>main.cpp:687</code> («etcd integration is REQUIRED»). Ese bloque lee <code>seed.bin</code> para pasárselo a
+  <code>RingBufferConsumer</code>, que lo ignora desde DAY98 (parámetro comentado; el cifrado lo hace <code>SeedClient</code>). El sniffer no
+  pide clave HMAC.</li>
+<li>ml-detector: sale sin etcd-server o con fatales. El sondeo de clave ya existe (<code>bronze_key.check_interval_seconds</code>,
+  <code>[BRONCE-SIN-CLAVE]</code>, <code>-SIN-CONFIRMAR</code>, <code>-CONFIRMADA</code>, <code>-RECUPERADA</code>, <code>-CAMBIADA</code>); el proveedor llama a
+  <code>etcd-&gt;get_hmac_key()</code> sin mirar si <code>etcd</code> es nulo.</li>
+<li>Firewall: pide la clave una vez (<code>zmq_subscriber.cpp:88</code>, ruta sacada de la respuesta de <code>/register</code>); sin clave no
+  escribe filas y no la vuelve a pedir. Escribe todo en un único <code>firewall_blocks.csv</code> en modo añadir: con un cambio de
+  clave quedarían filas de dos claves en el mismo fichero. Lo lee <code>scripts/parquet/generate_parquet.py</code> (ruta fija).</li>
+<li>Los envoltorios suben su config con rutas escritas en el código (sniffer <code>/vagrant/sniffer/config/sniffer.json</code>,
+  firewall <code>../config/firewall.json</code>).</li>
+<li>El sniffer libpcap (<code>main_libpcap.cpp</code>) no habla con etcd.</li>
+</ul>
+<h3 id="decisiones-de-alonso-day316_1">Decisiones de Alonso (DAY316)</h3>
+<ul>
+<li><strong>G1.</strong> Un hilo «mantenedor» en la librería sustituye al de latidos, con <strong>un solo ritmo</strong>: <code>heartbeat_interval_seconds</code>
+  (Alonso: el latido es cada cuánto se pregunta por el etcd-server, también para reconectar). Sin campos nuevos.</li>
+<li><strong>G2.</strong> Ninguno de los tres sale nunca por etcd. Deja atrás la decisión F1 de DAY310 (argumento del impostor): el cifrado
+  de ZMQ sale de <code>seed.bin</code> y no del registro, y los componentes se autentican ante el etcd-server con mTLS.</li>
+<li><strong>G3.</strong> Al registrarse (y al volver a registrarse) la librería llama a una función del envoltorio que sube la config del
+  JSON con el que arrancó el proceso. Que quede claro en el log.</li>
+<li><strong>G4.</strong> El firewall pide su clave como el ml-detector (mismo comportamiento y etiquetas equivalentes); <strong>a</strong>: al cambiar
+  la clave cierra el CSV y abre otro.</li>
+<li><strong>G5.</strong> Fuera el bloque muerto de la semilla del sniffer.</li>
+<li><strong>G6.</strong> Dos commits, B1 y B2, cada uno con sus tests en ctest y su medida en el laboratorio.</li>
+<li><strong>G7.</strong> El sniffer libpcap sin etcd: deuda aparte (DEBT-SNIFFER-LIBPCAP-ETCD-001).</li>
+</ul>
+<h3 id="b1-libreria-y-arranque">B1 — librería y arranque</h3>
+<ul>
+<li><strong>Estados del mantenedor:</strong> <code>SIN_SERVICIO</code> → (conecta y registra) → <code>REGISTRADO</code>. Cada <code>heartbeat_interval_seconds</code>:</li>
+<li><code>REGISTRADO</code>: latido. 2xx: nada. 404: vuelve a registrarse (y a subir la config). Sin respuesta o 5xx en todas las
+    direcciones: pasa a <code>SIN_SERVICIO</code>.</li>
+<li><code>SIN_SERVICIO</code>: intenta <code>/health</code> + <code>/register</code>. Bien: <code>REGISTRADO</code>, sube la config y deja
+    <code>[ETCD-CLIENTE-REGISTRADO] &lt;CN&gt; en &lt;dirección&gt; tras &lt;s&gt; s sin servicio, &lt;n&gt; intentos; config subida: &lt;ruta JSON&gt; (&lt;bytes&gt;)</code>.
+    Mal: <code>[ETCD-CLIENTE-SIN-SERVICIO] &lt;CN&gt; sin etcd-server desde &lt;hora&gt; (&lt;s&gt; s, intento &lt;n&gt;): &lt;dirección&gt;: &lt;error&gt;; ...;
+    el componente sigue protegiendo; próximo intento en &lt;s&gt; s</code>.</li>
+<li>El primer intento es al arrancar, sin bloquear: el proceso sigue aunque falle.</li>
+<li>La parada es inmediata (espera interrumpible, como <code>[PARADA-INMEDIATA-D300]</code>); al parar, <code>/unregister</code> una sola vez si
+    estaba registrado.</li>
+<li><strong>Llamadas sin <code>connected_</code>:</strong> <code>get_hmac_key()</code> y el resto van directas al transporte; si no hay servicio fallan como
+  cualquier petición sin respuesta. <code>connect()</code>/<code>is_connected()</code> pasan a reflejar el estado del mantenedor.</li>
+<li><strong>Función de registro (G3):</strong> <code>EtcdClient::al_registrar(std::function&lt;bool()&gt;)</code>; los envoltorios la usan para el
+  <code>PUT /v1/config/&lt;CN&gt;</code> con el JSON leído al arrancar (ruta que reciben de <code>main</code>, la misma de <code>-c</code> o la del
+  config_loader). Si la subida falla: <code>[ETCD-CLIENTE-CONFIG-NO-SUBIDA]</code> y se reintenta en el siguiente latido.</li>
+<li><strong>Fatales en el bloque (G2):</strong> el proceso arranca sin etcd y repite <code>[ETCD-CLIENTE-FATAL] &lt;CN&gt;: bloque etcd con &lt;n&gt; campos
+  fatales (arriba, al arrancar); el componente sigue sin etcd</code> cada 30 s (el defecto de <code>heartbeat_interval_seconds</code>: el
+  campo del bloque roto no se puede leer con garantías).</li>
+<li><strong>Arranque:</strong> sniffer, ml-detector y firewall crean siempre el cliente si el bloque no tiene fatales y no salen nunca por
+  etcd. El proveedor de clave del ml-detector comprueba el puntero.</li>
+<li><strong>Fuera (G5):</strong> en el sniffer, el bloque de <code>main.cpp</code> 680-720, <code>leer_semilla_local()</code> y el parámetro <code>encryption_seed</code>
+  de <code>RingBufferConsumer</code>.</li>
+<li><strong><code>lock_guard</code>:</strong> <code>register_component()</code> sin <code>unlock()</code>/<code>lock()</code> a mano.</li>
+</ul>
+<h3 id="b2-clave-del-firewall">B2 — clave del firewall</h3>
+<ul>
+<li><code>hmac_key.check_interval_seconds</code> en <code>firewall.json</code>, entero [10, 3600], defecto 60, con <code>[CONFIG]</code>/<code>[CONFIG-DEFAULT]</code>.
+  Hilo propio; pide <code>/secrets/firewall-acl-agent</code> (no necesita registro, solo el certificado con ese CN).</li>
+<li>Mismo comportamiento que el ml-detector: sin clave no escribe CSV y avisa en cada intento (<code>[FW-CSV-SIN-CLAVE]</code>, desde
+  cuándo y filas sin escribir); servidor caído con clave vigente: sigue firmando (<code>[FW-CSV-CLAVE-SIN-CONFIRMAR]</code>); vuelve
+  (<code>-CONFIRMADA</code>); clave nueva (<code>[FW-CSV-CLAVE-CAMBIADA]</code>, huella vieja → nueva); recuperada tras un hueco
+  (<code>-RECUPERADA</code>). En el log solo la huella.</li>
+<li>CSV (G4 a): un fichero por clave, <code>firewall_blocks-&lt;AAAAMMDDTHHMMSSZ&gt;-&lt;huella&gt;.csv</code> en <code>output_dir</code>; al cambiar la clave
+  se cierra y se abre otro. <code>generate_parquet.py</code> lee todos los <code>firewall_blocks-*.csv</code>. La huella en el nombre adelanta
+  para el firewall el camino b de DEBT-BRONZE-KEY-ID-001 (el bronce del ml-detector sigue como está).</li>
+</ul>
+<h3 id="pruebas-y-predicciones">Pruebas y predicciones</h3>
+<ul>
+<li><strong>ctest B1</strong> (servidor falso <code>httplib::SSLServer</code>, PKI desechable): sin servidor al arrancar → constructor y arranque no
+  fallan, <code>[ETCD-CLIENTE-SIN-SERVICIO]</code> en cada intervalo; el servidor aparece → registro en ≤ 1 intervalo, función de
+  registro llamada una vez; 404 en un latido → nuevo <code>/register</code> y nueva subida; el servidor cae → <code>SIN_SERVICIO</code> y vuelve;
+  <code>get_hmac_key()</code> funciona sin haber llamado a <code>connect()</code>; parada en &lt; 1 s con un intervalo de 30 s. Contra el código
+  de <code>fe99a7e70</code>: los casos de reconexión fallan.</li>
+<li><strong>ctest B2:</strong> el CSV cambia de fichero con la clave; sin clave no se escribe; con el servidor caído se sigue firmando.</li>
+<li><strong>Laboratorio B1:</strong> etcd-server de la VM parado → <code>pipeline-start</code> arranca los tres (<code>RUNNING</code>) con
+  <code>[ETCD-CLIENTE-SIN-SERVICIO]</code> cada 30 s y <code>[BRONCE-SIN-CLAVE]</code> en el ml-detector; arrancar el etcd-server → los tres
+  <code>[ETCD-CLIENTE-REGISTRADO]</code> en ≤ 30 s y <code>[BRONCE-CLAVE-RECUPERADA]</code>; pararlo con el pipeline en marcha →
+  <code>SIN-SERVICIO</code> y <code>[BRONCE-CLAVE-SIN-CONFIRMAR]</code>; volver a arrancarlo → latidos sin nuevo registro (el registro sigue en
+  el etcd real) y <code>[BRONCE-CLAVE-CONFIRMADA]</code>. E2E y mitre-start como en el commit A.</li>
+<li><strong>Laboratorio B2:</strong> el firewall recibe su clave al volver el etcd-server; tras una rotación (<code>/secrets/rotate</code>, admin) →
+  <code>[FW-CSV-CLAVE-CAMBIADA]</code> y un CSV nuevo con la otra huella.</li>
+</ul>
+<h2 id="resultados-day316-commits-b1-370210a28-y-b2-cde7dd213-del-paso-5-seccion-aparte-sin-reescribir-el-diseno">Resultados DAY316 — commits B1 (<code>370210a28</code>) y B2 (<code>cde7dd213</code>) del paso 5 (sección aparte, sin reescribir el diseño)</h2>
+<h3 id="b1-ningun-componente-sale-ni-espera-por-el-etcd-server-18-ficheros-935-810">B1 — ningún componente sale ni espera por el etcd-server (18 ficheros, +935/-810)</h3>
+<ul>
+<li><strong>Cambios respecto al diseño:</strong> la subida de la config la hace la propia librería (<code>iniciar(ruta, tipo)</code>), no una
+  función de cada envoltorio: era el mismo código en los tres. Sin servicio, el mantenedor no hace <code>/health</code> antes de
+  <code>/register</code> (el propio <code>/register</code> lo comprueba). Si el registro se conservó en el etcd real, al volver prueba el latido
+  primero (<code>[ETCD-CLIENTE-REANUDADO]</code>, sin nuevo <code>/register</code>).</li>
+<li><strong>Hallazgo:</strong> el firewall tenía su propio <code>return 1</code> («Encryption enabled but etcd not initialized», <code>main.cpp</code> ~852):
+  sin etcd tampoco arrancaba, al contrario de lo que se creía. Fuera.</li>
+<li><strong>Banco:</strong> dos pasadas del pipeline completo en production, avisos iguales a control2; <code>test_etcd_cliente_tls</code> 28/28
+  dos veces (R1-R8); mutaciones cazadas: sin reintento de registro (R2-R5), 404 tratado como caída (R3), sin subir la
+  config (R2, R3), espera no interrumpible (R5, R7). <strong>PARADA en el banco:</strong> primera pasada 25/28: el servidor falso no
+  atendía <code>PUT</code> (R2, R3) y R7 destruía el cliente antes del primer latido (carrera del test). Corregidos los tests.</li>
+<li><strong>Laboratorio:</strong> etcd-server de la VM parado → <code>pipeline-start</code> con los tres <code>RUNNING</code>, <code>[ETCD-CLIENTE-SIN-SERVICIO]</code>
+  uno por latido (12 en ~6 min) y <code>[BRONCE-SIN-CLAVE]</code>; al arrancarlo, los tres <code>[ETCD-CLIENTE-REGISTRADO] ... tras 390 s
+  sin servicio (13 intentos); config subida: &lt;ruta de -c&gt;</code> y <code>[BRONCE-CLAVE-RECUPERADA]</code> (huella <code>60768287</code>, hueco 434 s,
+  496 eventos sin bronce); parado con el pipeline en marcha → <code>[BRONCE-CLAVE-SIN-CONFIRMAR]</code>; al volver, los tres
+  <code>[ETCD-CLIENTE-REANUDADO] ... sin nuevo /register</code> (90-121 s); 0 <code>[ETCD-CLIENTE-REGISTRO-PERDIDO]</code>; E2E PASSED.</li>
+<li><strong>Predicción fallida, explicada:</strong> «1 <code>POST /register</code>» tras el último arranque era la línea <code>[ETCD-AUTHZ] regla 2/13:
+  POST /register</code> del propio arranque; registros reales, 0. Los seis de 13:09-13:13 son los procesos nuevos del E2E
+  (inyectores y <code>*-start</code> del Makefile), uno a uno.</li>
+</ul>
+<h3 id="b2-clave-del-csv-del-firewall-cada-intervalo-y-un-csv-por-clave-16-ficheros-808-46">B2 — clave del CSV del firewall cada intervalo y un CSV por clave (16 ficheros, +808/-46)</h3>
+<ul>
+<li><code>ClaveCsv</code> (hilo propio, <code>hmac_key.check_interval_seconds</code> [10, 3600] defecto 60) con las etiquetas <code>[FW-CSV-*]</code>;
+  <code>firewall_blocks-&lt;AAAAMMDDTHHMMSSZ&gt;-&lt;huella&gt;.csv</code>; <code>append_csv_log</code> con mutex. La librería registra la ruta absoluta del
+  JSON de arranque (el ml-detector arranca con <code>../config/...</code>).</li>
+<li><strong>Banco:</strong> <code>firewall_tests</code> 82 → 90; mutaciones cazadas: nunca vuelve a pedir la clave, un solo fichero, sin respuesta
+  = sin clave, espera no interrumpible.</li>
+<li><strong>Laboratorio:</strong> <code>[FW-CSV-CLAVE] ... (huella 4f60123a) al arrancar</code>; etcd-server parado → <code>-SIN-CONFIRMAR</code> con la misma
+  huella; al volver, <code>-CONFIRMADA ... la misma clave</code> (122 s); ml-detector registra
+  <code>/vagrant/ml-detector/config/ml_detector_config.json</code>; test-components 9/23/13/7/90; E2E PASSED.</li>
+<li><strong>PARADA en el laboratorio:</strong> predicho un <code>firewall_blocks-&lt;fecha&gt;-4f60123a.csv</code> tras el E2E; no apareció y
+  <code>parquet-convert</code> falló. Medido en el código: desde DDOS-MITIGACION-B2-D302 el firewall solo escribe CSV cuando la
+  mitigación ddos_v2 bloquea o renueva (STEP 8 inalcanzable, <code>zmq_subscriber.cpp</code> 834); con <code>habilitada=false</code> en el lab
+  no hay filas. El viejo <code>firewall_blocks.csv</code> no se tocaba desde el 29-oct: <code>test-parquet</code> (dentro de <code>test-all</code>) era un
+  verde falso que validaba datos de esa fecha. Decisiones de Alonso: <strong>H1 b</strong> (sin CSV: <code>[PARQUET-SIN-CSV]</code>, se borra el
+  Parquet anterior, <code>[PARQUET-SIN-DATOS] ... no es un PASSED</code>, rc 0; con CSV y sin Parquet sigue fallando), <strong>H1 c</strong>
+  (DEBT-FW-CSV-SIN-FILAS-EN-GATE-001), <strong>H2</strong> (el CSV viejo a <code>logs/firewall_logs/archivo/</code>). Medido tras el cambio:
+  <code>test-parquet</code> rc 0 con las dos líneas y el Parquet del 29-oct borrado.</li>
+<li>El CSV por clave solo está demostrado en ctest (incluida la verificación HMAC de cada fila con la clave de la huella de
+  su fichero): en el lab no hay filas que lo ejerzan.</li>
+</ul>
+<h3 id="lecciones-day316-b1-b2">Lecciones DAY316 (B1, B2)</h3>
+<ul>
+<li>Un test con hilos tiene que esperar al hecho que comprueba, no suponer el orden (R7).</li>
+<li>Un servidor falso atiende todos los métodos que usa el cliente (<code>PUT</code>).</li>
+<li>Un <code>grep -c</code> cuenta también las líneas de configuración del arranque: mirar la línea antes de concluir.</li>
+<li>Un verde que valida datos de hace una semana no es un verde: comprobar la fecha de lo que se valida.</li>
+<li>La predicción que falla en el lab (el CSV) se mide en el código antes de tocar nada; la causa estaba en D302.</li>
+</ul>
+<h2 id="diseno-del-paso-6-fuera-del-defender-etcd-server-de-la-vm-como-servicio-day317-escrito-antes-de-tocar-codigo">Diseño del paso 6 (fuera del defender; etcd-server de la VM como servicio) — DAY317, escrito ANTES de tocar código</h2>
+<p>Base: <code>5d03a42</code> (docs DAY316 final). Objetivo: un EMECAS desde cero levanta y aprovisiona la VM etcd sin pasos manuales,
+el etcd-server de la VM corre como servicio systemd y el defender deja de arrancar su etcd-server.</p>
+<h3 id="medido-para-este-diseno-solo-lectura-del-repo-mas-una-medida-en-el-laboratorio">Medido para este diseño (solo lectura del repo, más una medida en el laboratorio)</h3>
+<ul>
+<li><strong>La VM etcd ya se aprovisiona sola</strong> con <code>vagrant up etcd</code> (Vagrantfile 1536-1873): <code>etcd-base</code> (chrony desde el
+  defender, nftables con el 2379 solo desde 192.168.100.1), PKI desde <code>ARGUS_PKI_DIR</code>, Vault 2.2.1 en modo servidor
+  (raft 1 nodo, mTLS, desellado c por systemd, <code>cas_required</code>, root revocado), etcd v3.6.16 como <code>etcd.service</code> (TLS,
+  RBAC) y <code>deploy-access</code> (usuario <code>argus-deploy</code> para Ansible).</li>
+<li><strong>El etcd-server de la VM se monta a mano</strong>, en este orden: <code>d312_etcd_vm_deploy.sh</code> (Mac: binario, librerías y
+  <code>/etc/ml-defender/etcd-server/</code> del defender a <code>/opt/argus</code> de la VM), <code>make deploy-configs</code> (Ansible escribe el JSON
+  y lo valida con <code>--check-config</code> del binario desplegado), <code>d313_es_vm.sh arrancar</code> (nohup, no systemd).</li>
+<li><strong>Orden obligado:</strong> el binario se compila en <code>bootstrap</code>, que va después de <code>vagrant up</code> y de <code>clean-all</code>. El
+  despliegue no puede ser un aprovisionador de Vagrant: es un target que corre tras <code>bootstrap</code>. <code>deploy-access</code>
+  necesita la clave pública del defender y Ansible necesita <code>known_hosts_etcd</code> de la VM: el defender va primero en
+  <code>vagrant up</code>.</li>
+<li><code>make up</code> = <code>vagrant up defender client suricata zeek wazuh</code>; <code>emecas</code> = <code>vagrant up defender client suricata</code>.
+  Ninguno levanta la VM etcd.</li>
+<li>Dependen de <code>etcd-server-start</code> del defender: <code>pipeline-start</code>, <code>pipeline-start-x86-libpcap</code>, <code>crosscheck-up</code> y
+  <code>run-lab-dev-day23</code>. <code>etcd-server-status</code> hace <code>curl http://localhost:2379</code>. <code>d311_reinicio_etcd.sh</code> usa los targets
+  del defender; <code>d313_es_vm.sh</code> chocaría con un servicio (2379 ocupado).</li>
+<li><strong>El Vault dev del defender no es solo del etcd-server viejo:</strong> lo usan <code>vault-enterprise-bootstrap</code> (cada <code>up</code>:
+  vendor-key, vendor-pubkey, token enterprise, <code>secret/argus/crypto</code>), <code>test-enterprise-plugin</code>, <code>test-dual-compilation</code>
+  y <code>Jenkinsfile.dev</code>.</li>
+<li><strong><code>emecas++</code> depende del etcd-server del defender:</strong> el Acto I (<code>test-e2e-vault</code>) y el Acto III (<code>vault-fault-inject</code>)
+  compilan <code>build-vault</code> y lo arrancan contra el Vault dev sin <code>-c</code>, así que leen
+  <code>/etc/ml-defender/etcd-server/etcd-server.json</code> (<code>http</code>/<code>memoria</code>). Prueban el <code>ICryptoProvider</code> enterprise
+  (<code>ICryptoProvider OK</code>, <code>AUTONOMOUS</code>), no las claves HMAC.</li>
+<li><code>lab-e2e</code> restaura y exige 4 de 4 <code>RUNNING</code> en la salida de <code>pipeline-status</code>, contando la línea <code>etcd-server:</code>
+  (Makefile:1355). Sus scripts solo miran el código de salida de <code>pipeline-start</code>/<code>stop</code>; su <code>vivos</code> no mira el
+  etcd-server.</li>
+<li><code>test-provision-1</code> (comprobación 5) exige 4 unidades <code>ml-defender-*</code> en el defender, una es
+  <code>ml-defender-etcd-server.service</code> (apunta a <code>/vagrant/etcd-server/build-active</code>).</li>
+<li><code>/etc/ml-defender/etcd-server/seed.bin</code> del defender es la semilla maestra que <code>provision.sh</code> copia a los tres
+  componentes (ZMQ): se queda en el defender aunque el proceso se vaya.</li>
+<li>Con etcd o Vault sin responder, el etcd-server arranca igual (solo son fatales rutas de certificados ilegibles y
+  campos mal formados): basta <code>After=</code> + <code>Restart=always</code>.</li>
+<li>Los tests del etcd-server leen los dos JSON y los comparan (<code>test_etcd_server_authz.cpp</code> 268-290,
+  <code>test_almacen_claves</code>, <code>test_registro_componentes</code>); los comentarios de defectos de <code>etcd_server_almacen.hpp</code>,
+  <code>_authz.hpp</code> y <code>_claves.hpp</code> citan <code>etcd-server.etcd-vm.json</code>.</li>
+<li><strong>Laboratorio (Mac):</strong> <code>vagrant up etcd</code> rc 0, <code>etcd-base OK</code> (referencia 192.168.100.1), <code>deploy-access</code> con las dos
+  huellas. Predicción: en <code>/etc/ml-defender/etcd-server/</code> de la VM, un enlace <code>etcd-server.etcd-vm.json</code> colado por el
+  tar. <strong>Falló:</strong> no hay ningún enlace; <code>etcd-server.json</code> normal (root 0640, 3-nov, de Ansible) y la identidad y la
+  semilla del 29-oct. Sin residuo; no se investiga más (no afecta al paso 6).</li>
+</ul>
+<h3 id="decisiones-de-alonso-day317">Decisiones de Alonso (DAY317)</h3>
+<ol>
+<li><strong>Vault dev del defender: a.</strong> Se queda hasta DEBT-VAULT-REST-SECRETS-001 (coherente con V3 y la opción a de DAY312).
+   La predicción del paso 6 pasa a: en el defender nada escucha en 2379; en 8200 solo 127.0.0.1 (Vault dev, enterprise).</li>
+<li><strong>Actos I y III de <code>emecas++</code>: a</strong>, sin reservas. JSON propio de prueba
+   (<code>etcd-server/config/etcd-server.smoke-enterprise.json</code>, <code>http</code>/<code>memoria</code> declarados) pasado con <code>-c</code> solo por
+   <code>test-e2e-vault</code> y <code>vault-fault-inject</code>. El código sigue aceptando esos dos modos, con su aviso periódico. Deuda
+   nueva DEBT-VAULT-ENTERPRISE-SMOKE-VM-001: llevar esos actos a la VM con DEBT-VAULT-REST-SECRETS-001.</li>
+<li><strong><code>pipeline-status</code> con estado real</strong>, también de cada instancia etcd: si está sana y si está sincronizada con el
+   líder.</li>
+<li><strong>Sin etcd-server o sin etcd, aviso claro.</strong> Los componentes en marcha siguen trabajando sin firmar; cuando vuelve el
+   servicio, cada uno crea o renueva su clave HMAC (comportamiento ya hecho en B1/B2). <code>pipeline-start</code> avisa y sigue;
+   EMECAS falla.</li>
+<li>El defender es la única máquina que compila (plataforma de compilación del lab). <code>ml-defender-etcd-server.service</code>
+   corre en la VM etcd, junto a etcd y Vault. Los targets del Makefile que gestionan el etcd-server actúan sobre la VM;
+   se actualizan y se comprueba que funcionan (<code>etcd-server-start</code>/<code>stop</code>/<code>status</code>, <code>crosscheck-up</code>,
+   <code>run-lab-dev-day23</code>, <code>pipeline-start-x86-libpcap</code>).</li>
+<li>Un único <code>etcd-server/config/etcd-server.json</code> con el contenido actual de <code>etcd-server.etcd-vm.json</code>; fuera la
+   variante.</li>
+<li>RAM del Mac: 32 GB. <code>make up</code> con la VM etcd suma 18432 MB asignados; EMECAS, 12288.</li>
+</ol>
+<h3 id="aclaraciones-day317-para-no-perderlas-en-el-pr2">Aclaraciones (DAY317) para no perderlas en el PR2</h3>
+<ul>
+<li><strong>La clave HMAC sale de Vault, no de etcd.</strong> Cadenas: clave HMAC = etcd-client → etcd-server → Vault (<code>argus-hmac/</code>);
+  registro, latidos y JSON de los componentes = etcd-client → etcd-server → etcd. Ningún componente habla con Vault: el
+  único cliente de Vault es el etcd-server (<code>CN=etcd-server</code>, política solo crear/leer en <code>argus-hmac/</code>). En el PR1, si
+  cae etcd y siguen el etcd-server y Vault, los componentes reciben su clave igual (<code>GET /secrets/&lt;CN&gt;</code> no exige
+  registro).</li>
+<li><strong>Dos Vaults:</strong> el dev del defender (secretos enterprise; Jenkins también corre en el defender) y el servidor de la VM
+  etcd (solo claves HMAC). <strong>El que va a HA en el PR2 es el de la VM etcd</strong> (raft integrado, 3 nodos, <code>retry_join</code>). Su
+  configuración es <code>vault.hcl</code> (admite también formato JSON).</li>
+<li><strong>Un etcd-server por máquina, junto a su etcd</strong> (DAY314 y plan del PR2). El etcd-server no busca al líder: recibe en
+  <code>almacen.endpoints</code> todos los miembros del despliegue y etcd lleva cada petición al líder por dentro. Igual con Vault
+  (<code>almacen_claves.vault_addrs</code>, 1-7; los nodos en espera reenvían al activo). Los componentes tienen en
+  <code>etcd.endpoints</code> todos los etcd-server y pasan al siguiente si uno no responde (commit A). Por medir en el PR2: que
+  <code>EtcdRegistryStore</code> pase todas las direcciones al cliente de etcd.</li>
+<li><strong>Por despliegue (hospital y planta):</strong> inventario de Ansible fuera del repo con lo negociado (máquinas etcd, Vault y
+  etcd-server, prefijo); Ansible genera el JSON de cada máquina desde el del repo sustituyendo solo los campos del
+  despliegue (DAY314-315; sin plantillas Jinja2 completas). Propuesta para el PR2: que el mismo playbook genere
+  <code>vault.hcl</code> y <code>etcd.conf.yml</code> (hoy los escribe el Vagrantfile), un único mecanismo para el lab y producción.</li>
+</ul>
+<h3 id="6a-unidad-systemd-del-etcd-server-en-la-vm-vagrantfile">6a. Unidad systemd del etcd-server en la VM (Vagrantfile)</h3>
+<ul>
+<li>Aprovisionador nuevo <code>etcd-server-unit</code> en la VM etcd: instala y habilita <code>ml-defender-etcd-server.service</code>:
+  <code>ExecStart=/opt/argus/etcd-server/bin/etcd-server -c /etc/ml-defender/etcd-server/etcd-server.json</code>,
+  <code>Environment=LD_LIBRARY_PATH=/opt/argus/etcd-server/lib</code>, <code>After=</code>/<code>Wants=</code> <code>etcd.service vault.service
+  argus-vault-unseal.service</code>, <code>Restart=always</code>, <code>ConditionPathExists=</code> del binario y del JSON (un <code>up</code> desde cero no
+  falla antes del despliegue), log al journal (la hora en cada línea; ver si basta para
+  DEBT-ETCD-SERVER-LOG-TIMESTAMP-001).</li>
+<li><code>/run/argus</code> sigue por tmpfiles.d (lo pone <code>d312_etcd_vm_deploy.sh</code>).</li>
+</ul>
+<h3 id="6b-makefile">6b. Makefile</h3>
+<ul>
+<li><code>etcd-vm-deploy</code> (Mac): <code>d312_etcd_vm_deploy.sh</code> + <code>deploy-configs</code> + <code>systemctl restart</code> del servicio; comprueba que
+  queda activo y que <code>/health</code> responde.</li>
+<li><code>etcd-server-start</code>/<code>stop</code>/<code>status</code> actúan sobre la VM (<code>vagrant ssh etcd -c "sudo systemctl ..."</code>).</li>
+<li><code>up</code> y <code>emecas</code> añaden <code>etcd</code> (detrás del defender); <code>emecas</code> corre <code>etcd-vm-deploy</code> tras <code>bootstrap</code> y un control
+  estricto (<code>etcd-vm-check</code>) que falla si algo no está sano. <code>pipeline-start</code> comprueba y avisa, no falla.</li>
+<li>Se actualizan y se prueban <code>crosscheck-up</code>, <code>run-lab-dev-day23</code> y <code>pipeline-start-x86-libpcap</code>.</li>
+</ul>
+<h3 id="6c-pipeline-status">6c. <code>pipeline-status</code></h3>
+<ul>
+<li>Script del repo que corre en la VM (<code>vagrant ssh etcd</code>) y saca: por cada miembro de etcd (de <code>etcdctl member list</code>: el
+  PR2 solo añade miembros) si está sano, quién es el líder, el term y el retraso de entradas respecto al líder
+  (sincronización); Vault: sellado o no, activo o en espera; etcd-server: servicio activo y <code>/health</code> local con el
+  certificado del propio etcd-server (sin identidad nueva y sin llevar admin al defender).</li>
+<li>Mantiene la etiqueta <code>etcd-server:</code> (el 4/4 de <code>lab-e2e</code> sigue valiendo). El Vault dev del defender sigue saliendo
+  como <code>vault: ... [dev]</code>.</li>
+</ul>
+<h3 id="6d-defender">6d. Defender</h3>
+<ul>
+<li>Fuera el arranque del etcd-server y su unidad (<code>install-systemd-units.sh</code> instala 3; comprobación 5 espera 3).</li>
+<li>JSON único (decisión 6): <code>etcd-server.json</code> = contenido de <code>etcd-server.etcd-vm.json</code> (con su <code>_doc</code>); fuera la
+  variante; Ansible (<code>es_json_repo</code>) apunta a <code>etcd-server.json</code>; tests y comentarios de defectos pasan a comparar
+  <code>etcd-server.json</code> con <code>etcd-server.smoke-enterprise.json</code> (diferencias: solo los tres <code>modo</code>).</li>
+<li><code>etcd-server.smoke-enterprise.json</code> (decisión 2) y <code>-c</code> en <code>test-e2e-vault</code> y <code>vault-fault-inject</code>. El aviso periódico
+  de <code>tls.modo=http</code> deja de decir «hasta el paso 6» y nombra DEBT-VAULT-ENTERPRISE-SMOKE-VM-001.</li>
+<li>El binario del etcd-server se sigue compilando en el defender (de ahí se despliega). El Vault dev se queda (decisión
+  1).</li>
+</ul>
+<h3 id="commits-uno-por-cambio-logico-cada-uno-medido">Commits (uno por cambio lógico, cada uno medido)</h3>
+<p>6a (Vagrantfile: unidad) → 6b (Makefile: targets, <code>up</code>, <code>emecas</code>) → 6c (<code>pipeline-status</code>) → 6d (defender: arranque,
+unidad, JSON único, smoke enterprise). Después, paso 7 (instrumento de reinicio en la VM) y paso 8 (EMECAS+++
+production).</p>
+<h3 id="predicciones">Predicciones</h3>
+<ul>
+<li><strong>6a:</strong> <code>vagrant provision etcd --provision-with etcd-server-unit</code> rc 0; con el binario y el JSON de DAY316 ya en la
+  VM, <code>systemctl is-active ml-defender-etcd-server</code> = <code>active</code> y el 2379 lo escucha el etcd-server; tras <code>vagrant reload
+  etcd</code>, etcd, Vault desellado y etcd-server activos sin intervención; los tres componentes del defender registrados o
+  reanudados.</li>
+<li><strong>6b:</strong> <code>make etcd-vm-deploy</code> rc 0 dos veces seguidas; <code>make etcd-server-stop</code> → servicio inactivo y
+  <code>[ETCD-CLIENTE-SIN-SERVICIO]</code> en los componentes; <code>make etcd-server-start</code> → <code>[ETCD-CLIENTE-REANUDADO]</code>.</li>
+<li><strong>6c:</strong> <code>pipeline-status</code>: 1 miembro, líder, retraso 0; Vault sin sellar y activo; etcd-server activo y <code>/health</code> 200.
+  Con etcd parado: etcd KO aunque el etcd-server siga activo (estado real, no procesos).</li>
+<li><strong>6d:</strong> en el defender nada escucha en 2379 y en 8200 solo 127.0.0.1; comprobación 5 con 3 unidades; <code>test-e2e-vault</code>
+  y <code>vault-fault-inject</code> PASSED con <code>-c</code>; <code>test-components</code> 9/23/13/7/90; <code>lab-e2e</code> restaura 4/4.</li>
+</ul>
+<h2 id="resultados-day317-paso-6-seccion-aparte-sin-reescribir-el-diseno">Resultados DAY317 — paso 6 (sección aparte, sin reescribir el diseño)</h2>
+<p>Commits: <code>430f12421</code> (diseño del paso 6), <code>8834cad88</code> (6a), <code>4df098f34</code> (6b), <code>2e7cfea2a</code> (6c), <code>86ab61607</code> (6d). La
+predicción del paso, «en el defender nada escucha en 2379; en 8200 solo 127.0.0.1», <strong>PASA</strong>: medida con el pipeline
+parado y arrancado, antes y después de 6d.</p>
+<h3 id="6a-unidad-systemd-en-la-vm-etcd-8834cad88">6a — unidad systemd en la VM etcd (<code>8834cad88</code>)</h3>
+<ul>
+<li>Banco: <code>ruby -c</code> del Vagrantfile, <code>bash -n</code> del aprovisionador; <code>systemd-analyze verify</code> de la unidad limpio con un
+  binario falso; con <code>Restart=siempre</code> se queja pero da rc 0, así que el aprovisionador decide por la salida, no por el
+  código de retorno.</li>
+<li>Laboratorio: <code>vagrant validate</code> OK; <code>vagrant provision etcd --provision-with etcd-server-unit</code> → activa (pid 1243),
+  escucha <code>0.0.0.0:2379</code> (<code>server.host</code> del JSON; nftables limita al defender); journal: <code>tls.modo=mtls</code>, 13 reglas,
+  almacén etcd, Vault conectado, 4 componentes cargados y tres <code>[ETCD-COMPONENTE-MUERTO]</code> (registros de ayer, se
+  conservan).</li>
+<li><code>vagrant reload etcd --no-provision</code>: etcd, Vault y etcd-server <code>active</code>, desellado <code>Result=success</code>, etcd-server con
+  pid 478 (lo arrancó systemd); journal del arranque: <code>[ETCD-VAULT] conectado</code>, registros cargados, sin <code>FATAL</code>.
+  <strong>PASA.</strong></li>
+</ul>
+<h3 id="6b-makefile-y-etcd_vm_estadosh-4df098f34">6b — Makefile y <code>etcd_vm_estado.sh</code> (<code>4df098f34</code>)</h3>
+<ul>
+<li>Banco, con dobles de <code>sudo</code>, <code>systemctl</code>, <code>curl</code> y <code>etcdctl</code>: 14 casos (un nodo sano, tres nodos con retraso dentro y
+  fuera del límite, dos líderes, etcd caído, Vault sellado, Vault en HA activo + en espera, dos activos, el activo
+  sellado, etcd-server inactivo y activo sin <code>/health</code>, opciones mal formadas, espera, JSON ausente). Un doble de <code>curl</code>
+  falló (solo reconocía el 8200); corregido el doble, no el script.</li>
+<li>Laboratorio: <code>make etcd-vm-estado</code> → SANO (1/1 miembros, líder <code>argus-etcd-1</code>, term 12, retraso 0; Vault 200;
+  <code>/health</code> 200). El usuario <code>etcd-server</code> de etcd (RBAC <code>/argus/</code>) sí puede pedir <code>member list</code> y <code>endpoint status</code>
+  (riesgo abierto en el diseño, medido). Control negativo: <code>etcd-server-stop</code> → <code>inactive</code>; <code>etcd-vm-check</code> → <code>NO SANO</code>
+  tras 31 s, rc 2; <code>etcd-server-start</code> → SANO, rc 0. <code>etcd-vm-deploy</code> → <code>RESULTADO PASA</code>, Ansible <code>ok=7 changed=0</code>,
+  SANO. <strong>PASA.</strong></li>
+</ul>
+<h3 id="6c-pipeline-status-2e7cfea2a">6c — <code>pipeline-status</code> (<code>2e7cfea2a</code>)</h3>
+<ul>
+<li><code>pipeline-stop</code> + <code>pipeline-start</code>: el aviso da SANO; <code>pipeline-status</code> enseña el etcd-server de la VM, etcd con su
+  miembro, <code>vault-hmac</code>, los tres componentes, el Vault dev y Jenkins; ningún <code>STOPPED</code>.</li>
+<li>Componentes: los tres <code>[ETCD-CLIENTE-REGISTRADO] ... en https://192.168.100.20:2379 al primer intento; config subida</code>;
+  ml-detector <code>[BRONCE-CLAVE]</code> huella <code>60768287</code>, firewall <code>[FW-CSV-CLAVE]</code> huella <code>4f60123a</code> (las de DAY316: Vault
+  conservó las claves). <strong>PASA.</strong></li>
+</ul>
+<h3 id="6d-el-defender-deja-el-etcd-server-86ab61607">6d — el defender deja el etcd-server (<code>86ab61607</code>)</h3>
+<ul>
+<li><strong>Hallazgo:</strong> las tres unidades de los componentes en el defender llevaban <code>Requires=ml-defender-etcd-server.service</code>,
+  contra G2 (DAY316). Sin corregirlas, al quitar la unidad del etcd-server no arrancarían nunca por systemd. Corregidas.</li>
+<li>Banco (Debian 12, GCC 12.2.0, production): control y 6d, dos pasadas; ctest del etcd-server 7/7; los 12 avisos
+  idénticos línea a línea; los 6 tests de los JSON, por nombre, OK. Mutaciones cazadas: el JSON de prueba en <code>0.0.0.0</code> o
+  en <code>mtls</code>, <code>etcd-server.json</code> con almacén, <code>tls</code> o claves fuera de producción, y el JSON de prueba con otro latido.
+  <code>install-systemd-units.sh</code> con dobles: retira la unidad del defender (ExecStart en
+  <code>/vagrant/etcd-server/build-active</code>) y no toca una con el mismo nombre que sea la de la VM. <code>systemd-analyze verify</code>
+  de las tres unidades limpio (solo el aviso del bit de ejecución, que ya traen en git como 100755; el instalador las
+  copia con 0644).</li>
+<li>Laboratorio: <code>pipeline-build</code> production rc 0 (19 min); <code>test-components</code> 9/23/13/7/90; <code>install-systemd-units</code>: 3
+  instaladas y la vieja retirada; <code>test-provision-1</code> 8/8 (comprobación 5 con 3); <code>etcd-vm-deploy</code> dos veces: <code>changed=1</code>
+  (el <code>_doc</code> nuevo) y <code>changed=0</code>, SANO las dos; Acto I <code>TEST-E2E-VAULT PASSED</code> con el smoke escuchando en
+  <code>http://127.0.0.1:2379</code> y el aviso nombrando DEBT-VAULT-ENTERPRISE-SMOKE-VM-001; Acto III <code>VAULT-FAULT-INJECT PASSED</code>;
+  pipeline rearrancado, todo <code>RUNNING</code>; defender: solo <code>127.0.0.1:8200</code>. <strong>PASA.</strong></li>
+<li>ggshield marcó como secreto dos sha256 de ficheros dentro del parcheador <code>d317_6d_defender.py</code> (falso positivo).
+  Decisión de Alonso: el parcheador queda sin trackear; el commit de 6d lleva solo el código, sin nada marcado.</li>
+</ul>
+<h3 id="lecciones-day317">Lecciones DAY317</h3>
+<ul>
+<li>Una predicción que falla sin consecuencias (el enlace que no estaba en la VM) se anota y no se persigue.</li>
+<li><code>systemd-analyze verify</code> da rc 0 con directivas mal escritas: se decide por la salida.</li>
+<li>La salida de Ansible lanzada con <code>-t</code> lleva códigos de color: para el resumen, <code>grep -a 'changed='</code>.</li>
+<li>Los tests del banco se ejecutan dentro del chroot: fuera no encuentran sus ficheros y fallan por el instrumento.</li>
+<li>Un resultado raro con dobles de prueba: mirar primero el doble (el de <code>curl</code> solo conocía el 8200).</li>
+<li>Al cambiar dónde vive un servicio, medir también las unidades que dependen de él.</li>
+</ul>
+<h3 id="pendientes_1">Pendientes</h3>
+<ul>
+<li>Paso 7 (instrumento de reinicio en la VM: falta el bronce anterior verificable) y paso 8 (EMECAS+++ production, con la
+  VM etcd rehecha desde cero: DEBT-LAB-VAULT-CLAVES-PRUEBA-001). <code>lab-e2e</code> no se ha corrido en el paso 6: va en el 8.</li>
+<li>ggshield avisa <code>Unrecognized key in config: paths_ignore</code> en cada commit: esas exclusiones probablemente no se
+  aplican. Sin decidir.</li>
+</ul>
+<h2 id="diseno-del-paso-7-reinicio-del-etcd-server-de-la-vm-con-el-pipeline-vivo-day317-escrito-antes-de-tocar-codigo">Diseño del paso 7 (reinicio del etcd-server de la VM con el pipeline vivo) — DAY317, escrito ANTES de tocar código</h2>
+<p>Objetivo (predicción del paso 7 del diseño de DAY312): tras reiniciar el etcd-server, misma huella de clave, bronce
+anterior verificable, registro conservado y latidos 200. B1 y B2 midieron ya la huella y el registro conservado; falta
+el bronce anterior verificable y medirlo todo junto con el servicio de la VM.</p>
+<h3 id="medido-para-este-diseno_2">Medido para este diseño</h3>
+<ul>
+<li><code>d311_reinicio_etcd.sh</code> y <code>d311_etcd_defender.sh</code> ya no sirven: miran el 2379 del defender (ahora siempre vacío),
+  piden la clave por HTTP a <code>127.0.0.1:2379</code>, leen <code>/vagrant/logs/lab/etcd-server.log</code> (ahora el journal de la VM),
+  cuentan <code>Heartbeat failed</code> (anterior a B1) y clasifican como MEZCLA un segmento que verifica con las dos claves (lo
+  esperado ahora, si son la misma). Solo se llaman entre ellos.</li>
+<li>Se reutiliza: la petición por mTLS de <code>clave_bronce_ml_detector.sh</code> (E5, identidad del conversor); el conversor
+  <code>/vagrant/correlation-engine/build/bronze_to_gold_converter</code> (<code>ARGUS_BRONZE_HMAC_KEY_HEX</code>, imprime <code>filas válidas:
+  N</code>); el bronce en <code>/vagrant/logs/correlation/argus-*.csv</code>; el pcap benigno de los E2E del lab (fuera de git).</li>
+<li>El etcd-server escribe una línea por petición (<code>[ETCD←] MÉTODO ruta | status=… | cn=…</code>, sin relleno) y una por alta en
+  el registro (<code>[ETCD-REGISTRO] registrado &lt;nombre&gt;</code>). La regla de autorización <code>POST /register</code> también sale al
+  arrancar: no cuenta como registro (lección de DAY316).</li>
+<li>Etiquetas que existen en el código: ml-detector <code>[BRONCE-CLAVE-SIN-CONFIRMAR|-CONFIRMADA|-CAMBIADA|-RECUPERADA]</code> y
+  <code>[BRONCE-SIN-CLAVE]</code>; firewall <code>[FW-CSV-CLAVE-SIN-CONFIRMAR|-CONFIRMADA|-CAMBIADA|-RECUPERADA]</code> y
+  <code>[FW-CSV-SIN-CLAVE]</code>; librería <code>[ETCD-CLIENTE-SIN-SERVICIO|-REANUDADO|-REGISTRADO|-REGISTRO-PERDIDO]</code>; firewall
+  <code>[SOMBRA-DDOS] resumen: ... eventos=N</code>.</li>
+</ul>
+<h3 id="decisiones-de-alonso-day317_1">Decisiones de Alonso (DAY317)</h3>
+<ol>
+<li>El instrumento nuevo sustituye al de DAY311, que se borra (git lo conserva).</li>
+<li>Veredicto automático PASA/FALLA, pero primero se mide a mano; después se decide si entra en <code>lab-e2e</code> (EMECAS).</li>
+<li>La clave del CSV del firewall solo se comprueba por su huella (en el lab el firewall no escribe filas). Se pide por
+   <code>/secrets/valid/firewall-acl-agent</code> con la identidad del conversor, que la regla ya permite; no se abre ninguna vía
+   nueva.</li>
+</ol>
+<h3 id="instrumento">Instrumento</h3>
+<ul>
+<li><code>scripts/etcd_ha/d317_reinicio_vm.sh</code> (Mac) y <code>scripts/etcd_ha/d317_reinicio_defender.sh</code> (defender). Pasos:
+  comprobaciones (<code>etcd-vm-check</code>, pipeline sin <code>STOPPED</code>, alias <code>.51</code>); marcas de los logs, intervalos de latido de los
+  JSON de los componentes, hora de la VM y claves A (ml-detector y firewall: solo-root fuera de <code>/vagrant</code>, por pantalla
+  solo la huella, borradas al final); tráfico benigno a 10 pps; a los 60 s <code>make etcd-server-stop</code> y <code>CAIDO_S</code> segundos
+  (entero [60, 1800], defecto 150); <code>make etcd-server-start</code> (exige quedar sano) y <code>TRAS_S</code> segundos ([60, 1800], 150);
+  claves B; fin del tráfico y 40 s de rotación; copia de los logs de los componentes y del journal de la VM (desde el
+  inicio y desde el arranque); verificación de cada segmento con A y con B (clases AB, A, B, NINGUNA, MEZCLA, VACIO).</li>
+<li><code>--veredicto DIR</code> reevalúa una corrida ya hecha. Trap: para el tráfico, deja el etcd-server activo y borra las claves.</li>
+</ul>
+<h3 id="veredicto-y-predicciones-pasa-si-se-cumplen-todas">Veredicto y predicciones (PASA si se cumplen todas)</h3>
+<ul>
+<li>Huella A = huella B, en la clave del bronce y en la del CSV.</li>
+<li>ml-detector: <code>[BRONCE-CLAVE-SIN-CONFIRMAR]</code> ≥ 1, <code>-CONFIRMADA</code> ≥ 1, <code>-CAMBIADA</code> = 0, <code>[BRONCE-SIN-CLAVE]</code> = 0.</li>
+<li>firewall: <code>[FW-CSV-CLAVE-SIN-CONFIRMAR]</code> ≥ 1, <code>-CONFIRMADA</code> ≥ 1, <code>-CAMBIADA</code> = 0, <code>[FW-CSV-SIN-CLAVE]</code> = 0.</li>
+<li>Cada componente: <code>[ETCD-CLIENTE-SIN-SERVICIO]</code> ≥ 1, <code>[ETCD-CLIENTE-REANUDADO]</code> = 1, <code>-REGISTRADO</code> = 0,
+  <code>-REGISTRO-PERDIDO</code> = 0.</li>
+<li>etcd-server tras arrancar: 0 componentes registrados de nuevo, 0 <code>POST /register</code>, 0 latidos con status distinto de
+  200, y latidos 200 de cada componente ≥ <code>TRAS_S / intervalo − 1</code>.</li>
+<li>Bronce: ≥ 1 segmento en el intervalo y todos en AB (también los escritos con el servidor caído, firmados en modo
+  extendido).</li>
+<li>Continuidad: el firewall resume eventos (<code>eventos</code> &gt; 0).</li>
+<li>Banco: el veredicto con una corrida falsa buena da PASA y cada condición rota da FALLA.</li>
+</ul>
+<h2 id="resultados-day317-paso-7-seccion-aparte-sin-reescribir-el-diseno">Resultados DAY317 — paso 7 (sección aparte, sin reescribir el diseño)</h2>
+<p>Instrumento <code>scripts/etcd_ha/d317_reinicio_vm.sh</code> + <code>d317_reinicio_defender.sh</code> (parcheadores <code>d317_p7_instrumento.py</code> y
+<code>d317_p7_fix_saneado.py</code>); el de DAY311 borrado. La predicción del paso 7 del diseño de DAY312 («misma huella, bronce
+anterior verificable, registro conservado, latidos 200») <strong>PASA</strong>.</p>
+<h3 id="banco">Banco</h3>
+<ul>
+<li>Veredicto con una corrida falsa buena: PASA; 16 condiciones rotas, una a una: FALLA cada una (la línea de la regla
+  <code>POST /register</code> del arranque no cuenta como registro). Clasificación de segmentos con un conversor falso: AB, A, B,
+  MEZCLA, NINGUNA y VACIO donde tocan.</li>
+</ul>
+<h3 id="laboratorio">Laboratorio</h3>
+<ul>
+<li><strong><code>reinicio_vm_1</code> — PARADA en la verificación</strong> (fallo del instrumento): <code>vagrant ssh</code> antepone una línea vacía y <code>T1</code>
+  llegó como <code>\n&lt;epoch&gt;</code>, partiendo la orden del ayudante (<code>line 59: 4: t1</code>, <code>1793779685: orden no encontrada</code>). Antes
+  de parar ya midió huellas iguales antes y después (<code>60768287</code>, <code>4f60123a</code>); el trap paró el tráfico, dejó el
+  etcd-server activo y borró las claves. No se completó a mano (sería verificar con una clave «B» pedida fuera de su
+  momento): se arregló (cada valor capturado saneado; el <code>wc</code> de macOS sin relleno) y se repitió. Los logs quedan en
+  <code>logs/lab/day317/reinicio_vm_1/</code>.</li>
+<li><strong><code>reinicio_vm_2</code> — VEREDICTO PASA</strong> (CAIDO_S 150, TRAS_S 150, intervalos de latido 30 s):</li>
+<li>huellas iguales antes y después: bronce <code>60768287</code>, CSV del firewall <code>4f60123a</code>;</li>
+<li>ml-detector <code>[BRONCE-CLAVE-SIN-CONFIRMAR]</code> 3, <code>-CONFIRMADA</code> 1, <code>-CAMBIADA</code> 0, <code>[BRONCE-SIN-CLAVE]</code> 0; firewall
+    <code>[FW-CSV-CLAVE-SIN-CONFIRMAR]</code> 3, <code>-CONFIRMADA</code> 1, <code>-CAMBIADA</code> 0, <code>[FW-CSV-SIN-CLAVE]</code> 0;</li>
+<li><code>[ETCD-CLIENTE-SIN-SERVICIO]</code> ml-detector 6, firewall 6, sniffer 5; <code>[ETCD-CLIENTE-REANUDADO]</code> 1 en cada uno;
+    <code>-REGISTRADO</code> 0 y <code>-REGISTRO-PERDIDO</code> 0 en los tres;</li>
+<li>etcd-server tras arrancar: 0 componentes registrados de nuevo, 0 <code>POST /register</code>, 0 latidos con status distinto de
+    200; latidos 200: sniffer 8, ml-detector 7, firewall 7 (mínimo 4);</li>
+<li>bronce: 16 segmentos (5276 filas) en el intervalo, los 16 en AB: también los escritos con el servidor caído,
+    firmados en modo extendido, verifican con la clave de antes y con la de después;</li>
+<li>continuidad: el firewall resumió 5248 eventos.</li>
+</ul>
+<h3 id="lecciones-day317-paso-7">Lecciones DAY317 (paso 7)</h3>
+<ul>
+<li>Todo valor capturado por <code>vagrant ssh</code> se sanea antes de usarlo como argumento (la línea vacía inicial).</li>
+<li>Una corrida que para por el instrumento no se completa a mano: se arregla y se repite con otro nombre.</li>
+</ul>
+<h3 id="pendiente">Pendiente</h3>
+<ul>
+<li>Decisión 2 de Alonso: con este PASA, decidir si el instrumento entra en <code>lab-e2e</code> (EMECAS).</li>
+<li>Paso 8: EMECAS+++ production desde cero (la VM etcd se rehace: Vault limpio, DEBT-LAB-VAULT-CLAVES-PRUEBA-001).</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

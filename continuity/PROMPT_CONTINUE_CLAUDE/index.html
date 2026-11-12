@@ -1,0 +1,985 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/continuity/PROMPT_CONTINUE_CLAUDE/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>aRGus NDR — continuidad para DAY324 - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-continuidad-para-day324" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — continuidad para DAY324
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#donde-lo-dejamos-day323-miercoles-11-de-noviembre-0638-2230" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dónde lo dejamos (DAY323, miércoles 11 de noviembre, 06:38-22:30)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primero-day324" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primero, DAY324
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#despues-en-este-orden-decidido-por-alonso" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Después (en este orden, decidido por Alonso)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-de-alonso-del-day323" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones de Alonso del DAY323
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#a-tener-presente" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        A tener presente
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-continuidad-para-day324">aRGus NDR — continuidad para DAY324</h1>
+<p><strong>PR1 de DEBT-ETCD-HA-TLS-RAFT-001 cerrado</strong>: <code>feat/etcd-mtls-vault</code> mergeada a main (PR #153, <code>0479e69d9</code>), con
+<strong>EMECAS+++ PROFILE=production desde cero en verde</strong> (DAY323, 4h02m, sobre <code>443fffb96</code>). ADR-060 (manifiesto firmado de
+rangos protegidos) y BACKLOG al día. Etiqueta <code>pre-release-etcd-mtls-vault-0.0.10</code> sobre el merge. README de la
+portada actualizado en <code>docs/readme-etcd-mtls-vault</code> (PR aparte, solo documentación).</p>
+<h2 id="donde-lo-dejamos-day323-miercoles-11-de-noviembre-0638-2230">Dónde lo dejamos (DAY323, miércoles 11 de noviembre, 06:38-22:30)</h2>
+<p>Commits del DAY323, todos subidos:
+- <code>d44e0a2d0</code> Suricata: la provisión lo reinicia con reglas y yaml ya escritos y comprueba eth1 y firmas &gt; 0 [SURICATA-ARRANQUE-D323]
+- <code>6387cfd75</code> un solo reloj: suricata, zeek y wazuh toman la hora del defender (provisión lab-ntp); lab-clock-step
+  recorre LAB_CLOCK_VMS y mitre-check lo exige [LAB-NTP-SENSORES-D323]
+- <code>2fcac3ce9</code> mitre-check: una ventana [T0,T1] del reloj del defender para los tres sensores (scripts/mitre_ventana.py),
+  Zeek a prueba de rotación (scripts/mitre_zeek_cosecha.sh), el veredicto exige el ataque por sensor, ningún FATAL en
+  silencio; test-mitre-ventana (15 casos) [MITRE-VENTANA-D323]
+- <code>2f74f5047</code> Jenkins: clave del repositorio desde pkg.jenkins.io por huella (scripts/jenkins/jenkins_instalar.sh,
+  provisioning/jenkins/CLAVE); si no se instala, rc 3, aviso, repositorio retirado y el up sigue [JENKINS-CLAVE-D323]
+- <code>95d349c89</code> los sensores .10 .11 .12 como infraestructura en la plantilla del manifiesto [PROTEGIDOS-SENSORES-D323]
+- <code>443fffb96</code> el veredicto de protegidos saca la infraestructura del manifiesto que aplica el firewall [PROTEGIDOS-SENSORES-D323]
+- <code>2859bed0a</code> <code>[EMECAS-PROGRESO-D323]</code> (la cabecera de emecas-progreso para su reloj en el fallo) y <code>e9eb4581e</code> el de
+  documentación (DAY322 y DAY323 en BACKLOG; 8e.5 en ADR-060)
+- <code>0479e69d9</code> merge del PR #153 a main; etiqueta <code>pre-release-etcd-mtls-vault-0.0.10</code> sobre él (como las anteriores,
+  cada una en el merge de su PR)
+- README de la portada (DAY323, al final del día): tabla de etiquetas desde el paper, sección «Control plane», puerta de
+  calidad con seis VMs y el resultado del DAY323, límites y «What comes next» al día; prompt de continuidad corregido</p>
+<p>Cuatro corridas de EMECAS+++ desde cero el DAY323, cada parada con su causa medida, su arreglo probado aparte y su commit:
+1. mitre-check: Suricata con 0 alertas (corría con la config de fábrica: eth0, 0 firmas); además el eve.json se leía
+   entero (el 04-nov pasó con alertas del 3-nov), la rotación horaria de Zeek se comía el barrido y un FATAL del loader
+   acababa en rc 0. Y cada sensor con su propio reloj de Internet.
+2. vagrant-up: el keyserver de la clave de Jenkins no respondió (errores a /dev/null, «✅ Jenkins instalado» falso).
+3. lab-e2e-protegidos P2: con la hora del defender, el NTP de los sensores a .1 entraba en el episodio DDoS.
+4. PASA: mitre-check con argus 1777 (1253 del ataque), Suricata 31 (31), Zeek 1114 (1068), 1080 corroborados.</p>
+<h2 id="primero-day324">Primero, DAY324</h2>
+<ol>
+<li><code>git status -sb</code>, <code>git log -3 --oneline</code> y <code>git tag --sort=-creatordate | head -3</code> (Mac): main al día con origin;
+   el PR del README mergeado (si no, revisarlo y mergearlo); la etiqueta 0.0.10 en <code>0479e69d9</code>. Siguen sin commit los
+   parcheadores de <code>scripts/etcd_ha/d3*</code> y <code>scripts/d31*</code> y dos <code>__pycache__/</code>. Borrar la rama vieja
+   (<code>git branch -d feat/etcd-mtls-vault</code>, <code>git push origin --delete feat/etcd-mtls-vault</code>) si sigue.</li>
+<li>Pendiente del PR1 que no entró: el README del etcd-server (<code>etcd-server/README.md</code> no existe): qué hace (mTLS,
+   autorización por OU/CN, registro y latidos en etcd, claves HMAC en Vault, rutas del manifiesto), cómo se despliega en
+   la VM etcd y qué hace si etcd o Vault caen. Leer antes el JSON del etcd-server y el ADR-060. PR pequeño de
+   documentación.</li>
+<li>Empezar el PR2 (abajo): primero medir; diseño antes de código.</li>
+</ol>
+<h2 id="despues-en-este-orden-decidido-por-alonso">Después (en este orden, decidido por Alonso)</h2>
+<ol>
+<li>PR2 (HA): ≥3 nodos etcd (caída de uno, reelección, cuánto tardan en sincronizar; apagar todos y encender uno a uno),
+   Vault en HA y su Ansible, nº de nodos en el inventario + plantilla Jinja2 de etcd.conf.yml. En PRs pequeños.</li>
+<li>Después del PR2: la «dieta de adelgazamiento» (código deprecado fuera; Trivy).
+   Más tarde (toca Jenkins y exige otro EMECAS): DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001 (queda el JDK de Jenkins por
+   SDKMAN sin verificar, libsodium, el origen del sha de etcd, la huella de Wazuh sin publicar).
+   Deudas sin orden: DEBT-ARGUS-INFRA-MOD-001, DEBT-SNIFFER-SYSTEM-SYSCTL-001, DEBT-LAB-ZONA-HORARIA-001,
+   DEBT-HARDENED-FALCO-RUTAS-001, DEBT-VAULT-SELLADO-ALERTA-001, DEBT-CTU-START-VENTANA-001 (nueva),
+   DEBT-DDOS-COLATERAL-LEGITIMO-001 (nueva).</li>
+</ol>
+<h2 id="decisiones-de-alonso-del-day323">Decisiones de Alonso del DAY323</h2>
+<ul>
+<li>Un solo reloj para el lab, el del defender: si un sensor no va con él es un bug operacional y la prueba falla
+  diciéndolo, no lo compensa. El grafo del día lleva solo datos de esa sesión.</li>
+<li>Se arregla todo lo que para EMECAS; cada arreglo se prueba aparte y, con todos probados, EMECAS+++ desde cero.</li>
+<li>Jenkins se arregla con la clave del mantenedor por huella; si no se instala, el up sigue (EMECAS no usa Jenkins; las
+  claves del lab las crean los aprovisionadores de Vagrant) sin dejar un repositorio roto.</li>
+<li>Los sensores del lab son infraestructura del NDR (plantilla del manifiesto, MAC vacía).</li>
+<li>DEBT-DDOS-COLATERAL-LEGITIMO-001: al afrontarla, primero medir qué ve el modelo; «van a ser las dos cosas, como
+  mínimo» (benigno de servicio en el entrenamiento, en los dos sentidos, sin que el puerto solo decida; umbral de
+  evidencia por origen en la atribución del episodio). «No descartemos alguna sorpresa».</li>
+</ul>
+<h2 id="a-tener-presente">A tener presente</h2>
+<ul>
+<li>Regla del DAY323 para lo nuevo: cada operación comprueba su efecto concreto, sobre estado nuevo, y se prueba también
+  que falla cuando debe. Lo esperado en un test sale de la fuente (manifiesto, plantilla), nunca de una lista a mano.</li>
+<li>Claude: entregar siempre los ficheros COMPLETOS en el <code>cat &gt; f &lt;&lt;'EOF'</code>, nunca un marcador (DAY323 se colaron dos).
+  Si un fichero empieza por línea en blanco, decirlo (cuenta en el sha256).</li>
+<li>Propuesta sin decidir (de Claude, DAY323): poder reanudar EMECAS desde un hito con instantáneas de Vagrant, solo para
+  probar arreglos; el cierre siempre desde cero.</li>
+<li>mitre-check tarda ahora ~14 min (espera ~2 min al archivado de Zeek, tests y relojes). EMECAS+++ entera ~4 h; con
+  tiempos guardados, <code>make emecas-progreso</code> ya da porcentaje.</li>
+<li>Horas de las VMs en UTC (Alonso en Europe/Madrid, UTC+1): decirlo al mostrarlas.</li>
+<li>RAM: las seis VMs ocupan ~19 GB de RSS de 32; la swap va justa en EMECAS.</li>
+<li>git en el Mac con <code>core.fileMode=false</code> (los scripts nuevos quedan 100644; se lanzan con bash/python3).</li>
+<li>El banco de Claude es nuevo en cada sesión: Falco 0.43.1, Vault 2.2.1 y la clave de Jenkins
+  (5E386EAD…7198F4B714ABFC68) se descargan y verifican en el lab, nunca los pasa Claude.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

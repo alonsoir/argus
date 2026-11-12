@@ -1,0 +1,1133 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/ml-heads/prompt_day313/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Prompt de continuidad — DAY313 (tras DAY312, viernes 2026-10-30) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#prompt-de-continuidad-day313-tras-day312-viernes-2026-10-30" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Prompt de continuidad — DAY313 (tras DAY312, viernes 2026-10-30)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#donde-estamos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dónde estamos
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dónde estamos">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lo-que-hizo-4b1-ee6d07ac" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que hizo 4b.1 (ee6d07ac)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#decisiones-tomadas-respetarlas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Decisiones tomadas (respetarlas)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#estado-de-la-vm-etcd-medido" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Estado de la VM etcd (medido)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lo-que-falta-en-orden" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo que falta (en orden)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#deudas-anotadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Deudas anotadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reglas-de-trabajo-las-de-siempre-y-lo-aprendido-en-day312" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reglas de trabajo (las de siempre, y lo aprendido en DAY312)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#primer-paso-de-day313" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Primer paso de DAY313
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="prompt-de-continuidad-day313-tras-day312-viernes-2026-10-30">Prompt de continuidad — DAY313 (tras DAY312, viernes 2026-10-30)</h1>
+<p>Hola, Claude. Soy Alonso (aRGus NDR, único desarrollador). Seguimos con <strong>DEBT-ETCD-HA-TLS-RAFT-001</strong>: etcd-server con
+HTTPS, autenticación, claves HMAC persistidas con ventana de dos, y HA Raft. Dos PRs como mínimo: <strong>PR1 = nodo único</strong>
+(en curso), <strong>PR2 = HA Raft</strong>. Responde siempre en español.</p>
+<p>El diseño completo y los resultados medidos están en <code>docs/ml-heads/day312_diseno.md</code> (secciones de diseño, R0–R2 con
+sus lecciones, y el diseño de 4b). <strong>Léelo antes de proponer nada.</strong></p>
+<h2 id="donde-estamos">Dónde estamos</h2>
+<p>Rama <strong><code>feat/etcd-mtls-vault</code></strong> (sale de main <code>cabac77</code>). Commits, en orden:</p>
+<table>
+<thead>
+<tr>
+<th>commit</th>
+<th>qué</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>e7309db2</td>
+<td>Vault dev del defender solo en loopback (<code>[VAULT-DEV-LOOPBACK-D312]</code>, fuera forwarded_port 8200); <code>day312_diseno.md</code>; <code>scripts/etcd_ha/d312_pki.sh</code></td>
+</tr>
+<tr>
+<td>a3ad992d</td>
+<td>VM <code>etcd</code> (argus-etcd, 192.168.100.20, 1024 MB, 2 CPU): chrony + nftables <code>[VM-ETCD-D312]</code></td>
+</tr>
+<tr>
+<td>7df8914e</td>
+<td><code>VAULT_INSTALL</code> única y fijada a 2.2.1-1; Vault en modo servidor en la VM etcd <code>[VAULT-SERVER-D312]</code>; <code>d312_vault_medir.sh</code></td>
+</tr>
+<tr>
+<td>aea129a9</td>
+<td>resultados R0–R2 en el doc de diseño</td>
+</tr>
+<tr>
+<td>db33e3f8</td>
+<td>etcd 3.6.16 oficial (sha256 fijado) en la VM etcd <code>[ETCD-LOCAL-D312]</code>; cert etcd con EKU serverAuth+clientAuth (<code>d312_pki.sh reemitir</code>); <code>d312_etcd_medir.sh</code></td>
+</tr>
+<tr>
+<td>b5227f85</td>
+<td><code>scripts/etcd_ha/d312_etcd_vm_deploy.sh</code> v3 (despliegue BSR: compilar en el defender, solo runtime a la VM etcd)</td>
+</tr>
+<tr>
+<td>267729c9</td>
+<td>diseño de 4b en el doc</td>
+</tr>
+<tr>
+<td><strong>ee6d07ac</strong></td>
+<td><strong>4b.1: configuración del etcd-server desde el JSON</strong> (ver abajo)</td>
+</tr>
+</tbody>
+</table>
+<p>Todo medido PASA:
+- R0: el Vault dev ya no responde desde fuera (client rc=7, Mac rc=7).
+- Paso 1: firewall de la VM etcd (defender 200, client 28).
+- Paso 2: Vault M1–M6 (persiste y se auto-desella tras reload; 8200 inalcanzable desde fuera).
+- Paso 3: etcd M1–M8 (persiste tras reload).
+- Paso 4a: el etcd-server SIN modificar corre en la VM etcd (defender /health 200, client 28).
+- Paso 4b.1:
+  - ctest del etcd-server 4/4 y total 82/82.
+  - <code>--check-config</code> medido 3 casos: el JSON real da OK con rc=0; uno con <code>port:"x"</code> da 8 defectos y rc=1; uno inexistente, 8 defectos y rc=1.</p>
+<h3 id="lo-que-hizo-4b1-ee6d07ac">Lo que hizo 4b.1 (ee6d07ac)</h3>
+<p><strong>Configuración:</strong>
+- Nuevo <code>etcd-server/include/etcd_server/etcd_server_config.hpp</code>, en el namespace <code>argus::etcdcfg</code>. Es header-only, sin estado y al estilo de <code>flow_table_config.hpp</code>.
+- Lee <code>server.{host,port}</code>, <code>secrets.{grace_period_seconds, default_key_length_bytes, min_rotation_interval_seconds}</code> y <code>heartbeat.{interval_seconds, timeout_multiplier, check_interval_seconds}</code>.
+- Si un campo falta, tiene otro tipo o está fuera de rango, avisa con <code>[CONFIG-DEFAULT]</code> (campo, formato y límites) y aplica el defecto.
+- Reglas: <code>min_rotation &gt;= grace</code> (si no, los dos a defecto) y <code>check &lt;= interval*multiplier</code> (si no, los tres de heartbeat a defecto).
+- Los campos que ya no se usan avisan con <code>[CONFIG-OBSOLETO]</code>.
+- La línea <code>[ETCD-CONFIG]</code> dice el valor y el origen de cada campo.</p>
+<p><strong>main.cpp:</strong>
+- Opciones <code>-c/--config RUTA</code> y <code>--check-config</code> (rc 0 sin defectos, 1 con alguno, 2 si los argumentos están mal).
+- <code>/run/argus</code> se crea antes del AutonomyPublisher (era el fallo de la VM etcd).
+- SecretsManager, EtcdServer (host:puerto), ComponentRegistry (latidos), SeedClient y AlertClient toman todo del mismo JSON.
+- El registrador de épocas usa <code>host:port</code> (127.0.0.1 si el host es 0.0.0.0).</p>
+<p><strong>Limpieza:</strong>
+- Fuera <code>rotation_interval_hours</code> y <code>SecretsManager::Config</code>.
+- <code>etcd-server.json</code> sin campos obsoletos y con <code>_doc</code>.
+- Test nuevo <code>tests/test_etcd_server_config.cpp</code>, con 11 casos gtest.</p>
+<p><strong>Este binario NO se ha desplegado aún en la VM etcd.</strong> El que corre allí es el de 4a, sin modificar.</p>
+<p><strong>Detalle cosmético pendiente</strong>, para arreglarlo en 4b.2: la línea resumen <code>[CONFIG-DEFAULT] N ajustes con valor por defecto en etcd-server.json</code> pone el nombre fijo aunque el fichero sea otro (<code>-c /tmp/roto.json</code>). Debe poner la ruta real.</p>
+<h2 id="decisiones-tomadas-respetarlas">Decisiones tomadas (respetarlas)</h2>
+<p><strong>Arquitectura:</strong>
+- <strong>D1=A:</strong> etcd real como almacén; nuestro etcd-server es la fachada HTTPS. Las claves HMAC viven en Vault y se recuperan de Vault.
+- <strong>D2:</strong> mTLS, un cert de cliente por componente. La CA se hace en mi portátil (<code>~/argus-pki</code>, <code>scripts/etcd_ha/d312_pki.sh</code>: modos <code>init</code>, <code>reemitir etcd|vault</code>, <code>cliente ROL [INSTANCIA]</code>). Jenkins orquestará más adelante.
+- <strong>D3:</strong> PR1 nodo único; PR2 HA Raft.
+- <strong>D4:</strong> el HA real necesita otras VMs; el etcd-server sale del defender.</p>
+<p><strong>Vault:</strong>
+- <strong>V1:</strong> Vault en modo servidor ya. Desellado opción c (clave en disco) solo para el lab: «Seguimos pensando que esto es una herramienta aún no sellada para producción».
+- <strong>V2:</strong> Vault sale del defender y va con las VMs nuevas. Topología del PR2 por decidir <strong>con RAM medida</strong>: el Mac tiene 32 GiB y unos 17,4 GB ya están asignados a VMs; cada Debian adicional cuesta 600 MB o más.
+- <strong>V3:</strong> en este PR solo las claves HMAC van al Vault servidor; el resto de secretos, en un PR posterior (DEBT-VAULT-REST-SECRETS-001).
+- <strong>Camino a:</strong> el Vault dev se queda en el defender, solo en loopback.</p>
+<p><strong>Identidad y despliegue:</strong>
+- <strong>P1–P4:</strong> VM <code>etcd</code> en 192.168.100.20; PKI en <code>~/argus-pki</code>; el converter tiene su propio cert; nombre de clave = CN.
+- <strong>Identidad:</strong> CN = instancia, OU = rol; una clave HMAC por instancia (réplicas en HA).
+- <strong>Q1:</strong> sin compilador en la VM nueva (BSR): se compila en el defender y se despliega solo el runtime. Algún día habrá que quitar también el compilador del defender.
+- <strong>Q2:</strong> la semilla y el material van del defender a la VM etcd por ssh encadenado (<code>ssh -F &lt;(vagrant ssh-config) -T</code>), nunca por el disco del Mac ni por /vagrant. «No nos compliquemos en exceso.»</p>
+<p><strong>Binarios:</strong>
+- etcd: binario oficial actualizado, «igual que con kuzu» (v3.6.16, sha256 fijado; el 3.4.23 de Debian está EOL).
+- Vault: «instala vault de la misma manera que esté en el Vagrantfile… deterministas en el EMECAS» → <code>VAULT_INSTALL</code> única, 2.2.1-1.</p>
+<p><strong>4b:</strong>
+- <strong>B1=a:</strong> cliente Vault propio y pequeño sobre <code>httplib::SSLClient</code> («más sencilla y con menor exposición al ataque»).
+- <strong>B2:</strong> «Json es la ley. Se lee del JSON, si no está o trae errores… se avisa y se aplica el valor por defecto.»
+- <strong>B3:</strong> «Recuerda el modo HA que requiere algo más que el CN» → la identidad es el par (OU rol, CN instancia):
+  - registro, latido y claves por instancia;
+  - permisos para todo el rol vía OU;
+  - las fachadas etcd-server comparten estado en etcd.
+- <strong>B4:</strong> la clave del firewall va a <code>/secrets/firewall-acl-agent</code>.</p>
+<h2 id="estado-de-la-vm-etcd-medido">Estado de la VM etcd (medido)</h2>
+<p><strong>Red y tiempo:</strong>
+- nftables con policy drop. Solo deja pasar lo, establecidas, ICMP, ssh y 2379 desde 192.168.100.1.
+- chrony sincroniza contra el defender.</p>
+<p><strong>Vault 2.2.1 servidor:</strong>
+- raft en <code>/opt/vault/data</code>; listener <code>127.0.0.1:8200</code> con <code>tls_require_and_verify_client_cert</code>.
+- KV v2 en <code>argus-hmac</code>, con política create/read/update y sin delete.
+- cert auth para CN=etcd-server; token root revocado.
+- Desellado con la unidad systemd <code>argus-vault-unseal</code> (clave <code>/etc/vault.d/unseal.key</code> por stdin vía la API HTTP).
+- Sin usar: el cert autofirmado de <code>/opt/vault/tls</code> (se puede quitar).</p>
+<p><strong>etcd 3.6.16:</strong>
+- <code>127.0.0.1:2381</code> para clientes y <code>:2382</code> para peers, con client-cert-auth.
+- RBAC por CN: usuario <code>etcd-server</code> con rol <code>argus-rw</code> readwrite sobre el prefijo <code>/argus/</code>; usuario root sin password, y nunca se emite un cert CN=root.</p>
+<p><strong>Hechos medidos de etcd:</strong>
+- La pasarela JSON de etcd rechaza toda petición con cert de cliente («CommonName… will be ignored»). Por eso la fachada usa <strong>gRPC</strong> con etcd-cpp-apiv3 v0.15.3: <code>SyncClient(url, ca, cert, privkey, target_name_override)</code>, multi-endpoint separado por comas.
+- <code>libetcd-cpp-api</code> solo depende de paquetes Debian (grpc++ 1.51, protobuf 32, cpprest 2.10, abseil).</p>
+<p><strong>etcd-server 4a:</strong> desplegado con <code>d312_etcd_vm_deploy.sh</code>, que copia binario + libs de /usr/local/lib con manifiesto sha256, paquetes vía <code>dpkg -S</code>, material de <code>/etc/ml-defender/etcd-server</code> y <code>/run/argus</code> vía tmpfiles.d.</p>
+<h2 id="lo-que-falta-en-orden">Lo que falta (en orden)</h2>
+<ol>
+<li><strong>4b.2 — HTTPS con mTLS y autorización:</strong></li>
+<li><code>httplib::SSLServer</code> con verificación del cert de cliente.</li>
+<li>Tabla de autorización en el JSON por (OU, CN), aplicada con <code>set_pre_routing_handler</code>; un 403 con <code>[ETCD-AUTHZ-DENEGADO]</code>.</li>
+<li>Registrar el status real (hoy <code>/v1/heartbeat</code> loguea 200 antes de decidir).</li>
+<li>Borrar <code>/seed</code> y <code>/secrets/keys</code>.</li>
+<li>Arreglar el resumen de <code>[CONFIG-DEFAULT]</code> (ruta real).</li>
+<li>Rutas actuales: /register, /unregister, /components, /seed, /validate, /config, /v1/config, /v1/heartbeat, /v1/epoch (GET/PUT, sin auth), /health, /info, /secrets/keys, /secrets/{c}, /secrets/rotate/{c}, /secrets/valid/{c}.</li>
+<li><strong>4b.3 — <code>IRegistryStore</code> con <code>EtcdRegistryStore</code> sobre gRPC</strong>, bajo el prefijo <code>/argus/</code>:</li>
+<li>claves de registro, config, latido y época;</li>
+<li>registro rechazado con 403 si el nombre ≠ CN;</li>
+<li>ComponentRegistry no tiene mutex sobre <code>components_</code> (arreglarlo o quitarlo al pasar a etcd).</li>
+<li><strong>4b.4 — cliente Vault KV v2</strong> (httplib SSLClient, login por cert):</li>
+<li>ventana de dos: <code>argus-hmac/&lt;CN&gt;/&lt;huella8&gt;</code> y <code>argus-hmac/&lt;CN&gt;/ventana</code>;</li>
+<li>get-or-create con un único cerrojo;</li>
+<li>caché más <code>[ETCD-VAULT-NO-DISPONIBLE]</code>;</li>
+<li>los logs solo llevan huellas.</li>
+<li><strong>4b.6 — borrar código muerto:</strong></li>
+<li><code>auto_restart</code>/<code>system()</code> y los campos <code>max_restart_attempts_</code>/<code>restart_delay_seconds_</code>/<code>auto_restart_enabled_</code> de ComponentRegistry;</li>
+<li>métodos deprecados del registro, variantes muertas de etcd-client y bloques de test comentados en CMake;</li>
+<li>para B4: git grep de quién verifica el CSV del firewall con <code>/secrets/firewall</code> antes de renombrar.</li>
+<li><strong>Paso 5:</strong></li>
+<li><code>libetcd_client</code> con certs de cliente TLS;</li>
+<li>los JSON de los componentes apuntan a 192.168.100.20;</li>
+<li>los scripts del lab (mitre_start, ctu_start, custom_start) usan el cert admin.</li>
+<li><strong>Paso 6:</strong> quitar el etcd-server del defender.</li>
+<li><strong>Paso 7:</strong> adaptar el instrumento de reinicio de DAY311 (<code>scripts/bronze_key/d311_reinicio_etcd.sh</code> + <code>d311_etcd_defender.sh</code>).</li>
+<li><strong>Paso 8:</strong> EMECAS+++.</li>
+<li><strong>Después:</strong> PR2 HA Raft (decidir la topología con la RAM medida).</li>
+</ol>
+<h2 id="deudas-anotadas">Deudas anotadas</h2>
+<ul>
+<li>DEBT-VAULT-REST-SECRETS-001: resto de secretos a Vault.</li>
+<li>DEBT-VAULT-DEV-EXPOSED-001: cerrada para el Vault dev.</li>
+<li><code>tools/prod/collect-libs.sh</code> lista libsodium.so.26 (el binario necesita .so.23) y le falta libcrypto_provider.</li>
+<li>Los nombres de instancia están fijos en main.cpp (<code>"etcd-server"</code> en CryptoProvider, AutonomyPublisher y el registrador). En HA deben salir del JSON: siguiente rama.</li>
+<li><code>crypto_cfg.component_config_path</code> sigue fijo a <code>/etc/ml-defender/etcd-server/</code>.</li>
+<li><code>build-vault-production</code> (tarea del Makefile, línea ~1555, Acto I del Vault dev) no lo recompila <code>pipeline-build</code>, y puede quedarse viejo.</li>
+<li>El hostname del defender es <code>bookworm</code> (no hay <code>vm.hostname</code>).</li>
+<li>Falta <code>scripts/timebase/__pycache__</code> en <code>.gitignore</code>.</li>
+<li>Quitar el compilador del defender (algún día).</li>
+<li>Aviso de simple-token de etcd: solo aplica con auth por password.</li>
+</ul>
+<h2 id="reglas-de-trabajo-las-de-siempre-y-lo-aprendido-en-day312">Reglas de trabajo (las de siempre, y lo aprendido en DAY312)</h2>
+<p><strong>Medir y predecir:</strong>
+- Medir, no votar. Predicción escrita antes de medir; si algo no da lo esperado, <strong>parar</strong>.
+- Ventanas de medida de 600–900 s con marcas UTC y control positivo; un resultado vacío no prueba nada (control negativo).</p>
+<p><strong>Parcheadores:</strong>
+- Validan todo antes de escribir nada: sha256 de partida y final, anclas únicas, «ya aplicado», <code>--check</code>/<code>--apply</code>.
+- Se prueban en una copia desechable del repo <strong>con el directorio de trabajo de Claude apartado</strong> (DAY312: uno leía un fichero de <code>/home/claude/work</code> y en el Mac reventó sin escribir).
+- Los de un solo uso no se commitean; los instrumentos sí.</p>
+<p><strong>Entregas y comandos:</strong>
+- <strong>Enviar los ficheros con SendUserFile ANTES de describirlos</strong> (dos veces se me olvidó).
+- Comandos exactos y completos, uno por bloque, diciendo dónde se ejecuta cada uno (Mac / defender / client / etcd).
+- Nada de huecos tipo <code>BIN</code> dentro de comillas: zsh rompe con <code>rc=\$?</code>. Escribir la ruta real.
+- Al copiar comandos le aparecen caracteres de más (<code>.txtt</code>, <code>2&gt;&amp;11</code>): cada <code>cat</code> en su propia línea.
+- <code>git grep</code>, nunca <code>grep -rn</code> desde la raíz. awk con <code>LC_ALL=C</code>.
+- Para transferir por ssh: <code>ssh -F &lt;(vagrant ssh-config) -T</code> (<code>vagrant ssh --no-tty</code> sí asigna TTY y rompe el tar). Con sudo, <code>sudo DEBIAN_FRONTEND=noninteractive apt-get</code>.
+- Nunca poner un secreto en el argv de un comando de prueba (ni en un grep que lo busque).</p>
+<p><strong>Compilar y documentar:</strong>
+- Tras un cambio, compilación completa: <code>make pipeline-build PROFILE=production</code> y <code>make test-components PROFILE=production</code>, revisando las 5 líneas del resumen y el ctest del etcd-server (ahora 4).
+- El binario a probar es <code>/vagrant/etcd-server/build-production/etcd-server</code>.
+- Nunca alterar la historia de git. El código deprecado se borra.
+- El repo es de solo lectura para Claude: los commits los hago yo.
+- Las secciones del doc escritas antes de medir no se reescriben; los resultados van en una sección aparte.</p>
+<h2 id="primer-paso-de-day313">Primer paso de DAY313</h2>
+<p>Leer <code>docs/ml-heads/day312_diseno.md</code> (diseño de 4b) y <code>etcd-server/src/etcd_server.cpp</code>. Después, proponer 4b.2 (HTTPS con mTLS y autorización por (OU, CN)) con sus predicciones, y entregarlo como parcheador probado.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

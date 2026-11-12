@@ -1,0 +1,1702 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/adr/ADR-060-manifiesto-firmado-rangos-protegidos/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>ADR-060 — Manifiesto firmado de rangos protegidos, uno por hospital - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#adr-060-manifiesto-firmado-de-rangos-protegidos-uno-por-hospital" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              ADR-060 — Manifiesto firmado de rangos protegidos, uno por hospital
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-contexto-lo-que-midio-emecas-el-day317" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Contexto: lo que midió EMECAS+++ el DAY317
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-decision" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Decisión
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-consecuencias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Consecuencias
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-alternativas-descartadas" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Alternativas descartadas
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-plan-dentro-de-pr1-un-commit-por-cambio-logico" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Plan (dentro de PR1, un commit por cambio lógico)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-diseno-fino-de-8e1-cerrado-day318" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Diseño fino de 8e.1 (cerrado DAY318)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-diseno-fino-de-8e4-cerrado-day320" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Diseño fino de 8e.4 (cerrado DAY320)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="adr-060-manifiesto-firmado-de-rangos-protegidos-uno-por-hospital">ADR-060 — Manifiesto firmado de rangos protegidos, uno por hospital</h1>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Valor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ADR</strong></td>
+<td>060</td>
+</tr>
+<tr>
+<td><strong>Fecha</strong></td>
+<td>2026-11-04 (DAY 317)</td>
+</tr>
+<tr>
+<td><strong>Estado</strong></td>
+<td>Aceptado (decisiones de Alonso DAY317; diseño fino cerrado DAY318, sección 6)</td>
+</tr>
+<tr>
+<td><strong>Decisión final</strong></td>
+<td>Alonso</td>
+</tr>
+<tr>
+<td><strong>Rama / PR</strong></td>
+<td><code>feat/etcd-mtls-vault</code>, PR1 de DEBT-ETCD-HA-TLS-RAFT-001 (pasos 8e.1–8e.5)</td>
+</tr>
+<tr>
+<td><strong>Deuda</strong></td>
+<td>DEBT-FW-MANIFIESTO-PROTEGIDOS-001</td>
+</tr>
+<tr>
+<td><strong>Relaciona</strong></td>
+<td>ADR-025 (firma Ed25519 de plugins: clave privada fuera del host, pública compilada), ADR-024 (topología de despliegue), ADR-048 (etcd HA), DAY300 (DEBT-FW-PROTECTED-RANGES-001), DAY301 (mitigación B1 y whitelist), RECIDIVISM-D276</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="1-contexto-lo-que-midio-emecas-el-day317">1. Contexto: lo que midió EMECAS+++ el DAY317</h2>
+<p><code>make emecas+++ PROFILE=production</code> (2 h 20 min) cayó en <code>lab-e2e-protegidos</code>. Todo lo anterior pasó (los tres
+reinicios R1–R3, P1, P3, P4, P5). El fallo:</p>
+<pre><code>[VEREDICTO] FALLA P2 episodio: FIN=1 (esperado 1), origenes=192.168.100.50:10780,192.168.100.20:3
+[SOMBRA-DDOS] FIN victima=192.168.100.1 proto=17 ... duracion_s=207 eventos_drop=10783 ...
+</code></pre>
+<ul>
+<li>192.168.100.20 es la VM etcd (etcd, etcd-server, Vault). Desde el paso 8c, EMECAS levanta todas las VMs, así que
+  por primera vez el plano de control está en la red que vigila el sniffer durante <code>lab-e2e</code>.</li>
+<li>El episodio es UDP. El HTTPS del etcd-server (TCP) es normal: register, config, secrets y latidos cada 30 s, todos 200.</li>
+<li>Medido: la VM etcd sincroniza con chrony contra el defender (<code>server 192.168.100.1 iburst</code>, <code>Poll 6</code> = 64 s). Un
+  <code>tcpdump</code> mostró <code>192.168.100.20.&lt;p&gt; &gt; 192.168.100.1.123: NTPv4, Client, length 48</code> cada ~64 s. El episodio duró
+  207 s: 207 / 64 = 3,2, es decir, <strong>las 3 peticiones NTP de cliente</strong> que <code>ddos_v2</code> marcó junto con la reflexión NTP.</li>
+</ul>
+<p><strong>Consecuencia (el DoS autoinfligido).</strong> Hoy no pasa nada porque la mitigación está en sombra (<code>dry_run=true</code>,
+<code>ddos_mitigacion.habilitada=false</code>). Con la mitigación real, <code>ddos_mitigacion</code> mete en el ipset blacklist <strong>la IP de
+origen entera</strong> con <code>min_drops_origen=1</code> y primer escalón de 3600 s: el primer DDoS NTP contra el defender habría
+bloqueado una hora a la VM etcd y, con ella, el HTTPS del etcd-server, es decir, el plano de control completo
+(registro, latidos, configuración, claves) justo durante el ataque. P2 hizo su trabajo: no se relaja.</p>
+<p><strong>Lo que hay hoy y por qué no basta.</strong>
+- <code>ddos_protegidos</code> (DAY300) en <code>firewall.json</code>: listas <code>dmz</code>, <code>intranet</code>, <code>externos_criticos</code>. Un DROP de la cabeza
+  DDoS con origen protegido se registra como <code>ALERTA_PROTEGIDO</code> y no cuenta para el episodio.
+- <code>[ARGUS-WHITELIST-D301]</code>: el ipset <code>ml_defender_whitelist</code> (hash:net) refleja exactamente esos rangos, y la cadena de
+  iptables hace <code>--match-set &lt;whitelist&gt; src ... RETURN</code> antes del blacklist. <strong>Medido en <code>iptables_wrapper.cpp</code>: un
+  origen protegido queda exento de TODO bloqueo de aRGus, no solo del de la cabeza DDoS.</strong> Quien escribe en esa lista
+  da inmunidad completa.
+- Las listas viven en cada <code>firewall.json</code>. Con N firewalls en un despliegue (uno por planta) hay N copias de la verdad,
+  que pueden contradecirse (¿cuál vale, la de la planta 3 o la de la 4?). El fichero se sube además al etcd
+  (<code>config subida</code>), otro camino de escritura.
+- Si no queda ningún rango válido, DAY300 protege por defecto RFC 1918 y fc00::/7 como intranet: rangos amplísimos.
+- Medido: el resumen <code>protegidos:</code> cuenta por categoría y las líneas <code>ALERTA_PROTEGIDO</code> tienen tope
+  (<code>anomalias_detalle_max</code>, rango [0, 1000], lab 10). Meter .20 en <code>intranet</code> impediría separar sus alertas de las de
+  .61 y el veredicto estricto no se podría escribir sin trampas.</p>
+<h2 id="2-decision">2. Decisión</h2>
+<p><strong>D1. Un manifiesto por hospital, en un solo sitio.</strong> Todas las listas protegidas salen de un único manifiesto
+firmado por hospital, con sus plantas dentro (DAY318, sección 6), con cuatro categorías: <code>infraestructura</code> (nueva: el plano de control de aRGus, etcd,
+etcd-server, Vault), <code>intranet</code>, <code>dmz</code>, <code>externos_criticos</code>. <code>ddos_protegidos</code> desaparece de <code>firewall.json</code> (lo
+deprecado se borra). Las categorías se mantienen separadas para contar y para aplicar a cada una su política.</p>
+<p><strong>D2. Entradas estrechas.</strong> Cada entrada: <code>{cidr, interfaz, mac?, motivo}</code>.
+- <code>interfaz</code> obligatoria: un paquete con origen protegido que llega por otra interfaz es falso por construcción: no
+  recibe la exención del kernel, se descarta en <code>raw PREROUTING</code> (antispoofing, D8, 8e.4) y dispara la alerta de
+  spoofing (vale aunque haya routers por medio). Precisión DAY318: la barrera de usuario (suscriptor y
+  <code>BatchProcessor</code>) protege por IP siempre, venga por donde venga; si no, falsificar el origen de un protegido
+  bastaría para que aRGus lo bloqueara, que es el DoS que este ADR evita. Un host con varias interfaces legítimas
+  lleva una entrada por interfaz.
+- <code>mac</code> opcional, cuando el host está en el mismo segmento L2 que el firewall; una IP protegida con otra MAC es alerta
+  de spoofing. (Más allá de un router la MAC que se ve es la del router: por eso es opcional.)
+- La plantilla de despliegue fija <strong>el prefijo más amplio permitido por categoría</strong>. <code>infraestructura</code>: solo /32 y
+  /128, sin excepción. Las demás: el límite que diga la plantilla (p. ej. /24). Un manifiesto que lo supera no se
+  firma (<code>argus-infra</code> lo rechaza antes de ir a Vault) y el firewall tampoco lo aplicaría.</p>
+<p><strong>D3. Firma asimétrica, clave por hospital.</strong>
+- Ed25519, no HMAC: con HMAC el verificador tendría el secreto y un malware en el defender podría firmar.
+- Clave privada en <strong>Vault transit</strong>, no exportable, una por <strong>hospital</strong>: el límite de daño coincide con el límite de
+  confianza (las plantas de un hospital comparten administración). Lo que separa las plantas es su sección dentro
+  del manifiesto (<code>plantas.&lt;despliegue_id&gt;</code>). Descartadas: una por planta (más imágenes sin más seguridad real) y una para todos los hospitales
+  (comprometerla los expone a todos).
+- Clave pública <strong>compilada en el firewall-acl-agent</strong> (patrón ADR-025), inyectada por Jenkins en la compilación de la
+  imagen del hospital. No es un fichero que se pueda cambiar: para cambiarla hay que cambiar el binario, que vigilan
+  Falco y la verificación de la imagen. Dos ranuras compiladas (actual y siguiente) para rotar sin dejar a los
+  firewalls sin poder verificar mientras llega la imagen nueva. El agente prueba las dos; el sobre no dice cuál
+  (DAY318).</p>
+<p><strong>D4. Contra la reproducción y el deshacer sin firma.</strong>
+- <code>version</code> entera que solo crece. El firewall rechaza toda versión ≤ la última aplicada; el etcd-server también.
+- Deshacer = volver a aplicar el contenido de una versión anterior <strong>como versión nueva firmada</strong>. Nunca un botón sin
+  firma (sería la puerta trasera perfecta). Quitar una entrada también es peligroso: si se quita el etcd vuelve el DoS
+  autoinfligido.</p>
+<p><strong>D5. Flujo distribuido.</strong>
+1. Admin, en su máquina (la que fija la plantilla de despliegue) y desde el CIDR autorizado:
+   <code>argus-infra add|del|list|diff|deshacer|verificar ...</code>. La herramienta pide el manifiesto actual, construye la
+   versión N+1, comprueba los límites de D2 y la manda a firmar a Vault transit <strong>con la identidad del propio admin</strong>.
+   Vault solo acepta desde el CIDR autorizado (<code>token_bound_cidrs</code>) y lo registra en su audit device: quién, cuándo,
+   desde qué IP.
+2. Publica con <code>PUT</code> al etcd-server por mTLS con certificado de admin. El etcd-server verifica la firma, el
+   <code>hospital_id</code> y la versión antes de guardarlo en etcd (defensa en profundidad; la autenticidad sale de la firma,
+   no del transporte).
+3. Cada firewall-acl-agent del despliegue lo recoge con su etcd-client. Verifica firma (clave compilada), versión &gt;
+   última aplicada, <code>hospital_id</code> propio, que esté su planta y límites. Si cuadra, aplica de forma atómica, registra <code>[INFRA-CAMBIO]</code>
+   (firmante, fecha, versión anterior y nueva, diferencias) y lanza la alerta nuclear de cambio.
+4. Cada firewall informa en su latido de la versión aplicada. <code>pipeline-status</code> y la futura consola muestran qué
+   firewall va desfasado.
+5. Cada firewall guarda en disco el último manifiesto verificado para arrancar sin etcd. Como va firmado, si alguien
+   lo toca la firma no cuadra: se descubre y se avisa periódicamente.</p>
+<p>Solo lo consumen los firewalls. Sniffer, ml-detector y RAG no lo ven.</p>
+<p><strong>D6. Candado.</strong> <code>ddos_mitigacion.habilitada=true</code> solo surte efecto con un manifiesto verificado. Sin él, el agente
+sigue en sombra y lo avisa periódicamente. El JSON es la ley, pero esta llave no la abre un fichero solo.</p>
+<p><strong>D7. Fallo en caliente.</strong> Si un manifiesto nuevo no verifica, o el de disco deja de verificar, el agente se queda con
+<strong>el último conjunto verificado en memoria</strong> y avisa <strong>periódicamente</strong>, hasta que el admin vuelve a firmar. El aviso
+no puede ser una gota en el océano.</p>
+<p><strong>D8. Vigilancia "como halcones".</strong>
+- Comprobación continua: cada N s (en el JSON, con rango y defecto) el agente compara el ipset del kernel con el
+  manifiesto. Cualquier diferencia es alarma y la entrada no firmada pierde la protección.
+- Spoofing por interfaz o MAC (D2): alerta nuclear y descarte en <code>raw PREROUTING</code> generado desde el manifiesto: una
+  regla por entrada (origen protegido que no entra por su interfaz = DROP), con contador por regla, resumen
+  periódico y muestra de los primeros paquetes como evidencia. Postura de partida (Alonso DAY318): agresiva y con
+  todo registrado; si resulta demasiado dura, se mide y se suaviza.
+- Host (Falco): toda operación sobre el set protegido que no venga del agente, y toda escritura en el manifiesto en
+  disco o en el binario del agente.
+- Wazuh: FIM del manifiesto en disco.
+- Vault: audit device con la identidad y la IP de cada firma.
+- Falco y Wazuh reportan a la máquina del admin, que concentra la consola, el etcd-server del despliegue y la
+  vigilancia.</p>
+<p><strong>D9. La herramienta.</strong> <code>argus-infra</code> se instala solo en la máquina del admin, nunca en un componente. Puede ser
+código abierto como el resto de aRGus: la seguridad sale de la clave y de la vigilancia, no de ocultar el código
+(Kerckhoffs).</p>
+<p><strong>D9 bis. Dos roles de administración, separados a propósito (DAY318).</strong>
+- <code>admin</code> (certificado OU=admin): operación diaria en el etcd-server (rotar claves HMAC, listar componentes,
+  <code>/info</code>). No puede firmar el manifiesto.
+- <code>argus-infra</code> (certificado OU=argus-infra; rol de Vault <code>argus-infra-admin</code>): solo firma, verifica y lee la clave
+  pública del manifiesto de su hospital, y solo publica el manifiesto en el etcd-server. Firmar da inmunidad frente a
+  todo bloqueo de aRGus: si se compromete el certificado de uso diario, el manifiesto sigue a salvo.
+- Medido DAY318 (banco y lab): <code>argus-infra</code> recibe 403 al leer <code>argus-hmac</code>, rotar, exportar o reconfigurar su
+  clave y firmar con otra; <code>etcd-server</code> recibe 403 al firmar. Token de <code>argus-infra</code>: 300 s, atado a 127.0.0.1.</p>
+<p><strong>D10. Plantilla de despliegue.</strong> Un fichero de despliegue, generado por Jenkins desde una plantilla certificada por
+nosotros, fija: máquina admin, CIDR autorizado, <code>hospital_id</code>, las plantas (<code>despliegue_id</code>), límites de prefijo por categoría. Solo
+desde ahí se pueden firmar cambios. Controlar Jenkins y sus plantillas es imprescindible (siempre lo ha sido).</p>
+<p><strong>D11. Laboratorio.</strong>
+- <code>argus-infra</code> vive en la VM etcd (no hay RAM para una VM admin). Vault escucha en 127.0.0.1, así que la VM etcd hace
+  de máquina admin. Es una simplificación de desarrollo: escrita en el <code>_doc</code> y en el BACKLOG.
+- Un fichero de despliegue de laboratorio en el repo, con la misma estructura que tendrá la plantilla.
+- El bootstrap aprovisiona con la propia herramienta: <code>192.168.100.20/32</code> en <code>infraestructura</code> (interfaz del defender
+  hacia la LAN) y <code>192.168.100.61/32</code> en <code>intranet</code> (el protegido de prueba de DAY300). EMECAS prueba el camino real.
+- Cada EMECAS destruye las VMs: la clave transit se genera de nuevo y la clave pública se inyecta en la compilación
+  del firewall. Claves nuevas en cada EMECAS: correcto y determinista.</p>
+<h2 id="3-consecuencias">3. Consecuencias</h2>
+<p><strong>Veredicto de <code>lab-e2e-protegidos</code>, más estricto.</strong>
+- P2: un FIN y <code>origenes=</code> solo <code>192.168.100.50</code> (sin cambios).
+- P3: <code>intranet</code> = alertas de .61; <code>dmz</code> = <code>externos_criticos</code> = 0.
+- P4: DROP_resumenes = DROP_FIN + alertas (intranet + infraestructura) + aislados + pendientes.
+- P5: volumen de <code>intranet</code> en [98 %, 100 %] de los paquetes de .61.
+- P6 (nuevo): <code>infraestructura</code> ≥ 0; .20 no aparece nunca en <code>origenes=</code> de INICIO ni de FIN; sus alertas, si las hay,
+  son <code>categoria=infraestructura</code>.
+- P1 cambia: la configuración de rangos ya no sale del JSON, sino del manifiesto verificado (versión, firmante).</p>
+<p><strong>Lo que este ADR no resuelve (escrito para no olvidarlo).</strong>
+- Root comprometido en el defender por una vulnerabilidad del kernel lo derrota todo (puede cambiar el binario). Lo
+  que se consigue es que no pueda hacerlo en silencio. Contra eso: imágenes con los parches de seguridad del kernel
+  siempre al día desde Jenkins.
+- Proteger .20 implica que aRGus nunca bloquea la IP .20, aunque llegue tráfico falsificado con ese origen. Si entra
+  por otra interfaz lo descarta el antispoofing (D2, D8); desde el mismo segmento solo lo frena la MAC, cuando la
+  entrada la lleva. Falsificar orígenes ajenos con herramientas de fabricación o manipulación de paquetes (Scapy,
+  hping3, Polymorph) no se resuelve desde el borde del hospital: DEBT-FW-SPOOFING-ORIGENES-AJENOS-001.
+- El falso positivo de <code>ddos_v2</code> con un cliente NTP de 48 bytes es un defecto del modelo: DEBT-DDOS-V2-NTP-CLIENTE-001
+  (rama <code>diag/ml-heads</code>). El manifiesto evita el daño, no corrige el modelo.
+- Regla de dos personas (Vault control groups): no ahora. Muchos hospitales no tendrán dos administradores. Deuda,
+  con campo futuro desactivado por defecto.
+- <strong>Hipótesis (Alonso DAY317), sin medir: el DDoS autoinfligido.</strong> En un despliegue distribuido real, el tráfico
+  legítimo del propio aRGus (N componentes reconectando a la vez al etcd-server tras una caída, latidos alineados,
+  muchos clientes NTP contra el mismo servidor de hora) podría parecer un DDoS contra un nodo del plano de control.
+  Se mide en PR2 (3 nodos), sin adelantarse.</p>
+<p><strong>Lección para EMECAS.</strong> Sin el pipeline completo no se habría visto: con solo defender y client no existía .20 y P2
+pasaba. El fallo no estaba en el código de ninguna pieza, sino en la topología. EMECAS debe levantar la topología de
+producción, no un subconjunto. Y el DoS autoinfligido no solo viene de que alguien escriba en la lista: también de que
+falte algo en ella.</p>
+<h2 id="4-alternativas-descartadas">4. Alternativas descartadas</h2>
+<table>
+<thead>
+<tr>
+<th>Alternativa</th>
+<th>Por qué no</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Meter .20 en <code>intranet</code> de <code>firewall.json</code></td>
+<td>Mantiene N copias, el fichero débil y no separa las alertas (P5 no se puede escribir)</td>
+</tr>
+<tr>
+<td>Relajar P2 para aceptar .20</td>
+<td>Esconde un DoS autoinfligido real; EMECAS hizo bien su trabajo</td>
+</tr>
+<tr>
+<td>Que el sniffer no vea el tráfico del plano de control</td>
+<td>Un ataque contra el plano de control quedaría invisible</td>
+</tr>
+<tr>
+<td>HMAC o solo sha256</td>
+<td>El verificador tendría el secreto / integridad sin autenticidad</td>
+</tr>
+<tr>
+<td>Clave en el keyring del kernel</td>
+<td>Se pierde al reiniciar; no resuelve "que no se olvide"</td>
+</tr>
+<tr>
+<td>Ocultar el código de <code>argus-infra</code></td>
+<td>No es un control de seguridad (Kerckhoffs)</td>
+</tr>
+<tr>
+<td>Clave por planta / una para todos</td>
+<td>Más imágenes sin más seguridad / un compromiso expone a todos los hospitales</td>
+</tr>
+<tr>
+<td>Proteger la IP entera sin interfaz</td>
+<td>Un UDP falsificado con origen protegido quedaría inmune</td>
+</tr>
+</tbody>
+</table>
+<h2 id="5-plan-dentro-de-pr1-un-commit-por-cambio-logico">5. Plan (dentro de PR1, un commit por cambio lógico)</h2>
+<p>Orden de los commits (DAY318): 8e.2 va antes que 8e.1, para que el firewall compile en cada commit (desde 8e.1 no
+compila sin la clave pública). EMECAS se pasa al final, con todos los commits de la rama.</p>
+<ul>
+<li><strong>8e.2</strong> Vault: motor transit, clave ed25519 no exportable por hospital, política <code>argus-infra-admin</code>,
+  <code>token_bound_cidrs</code>, audit device. Vagrantfile y Ansible. El bootstrap trae la clave pública al defender.</li>
+<li><strong>8e.1</strong> firewall-acl-agent, en dos commits (DAY318):</li>
+<li><strong>8e.1a</strong> (hecho, 3af32373c) el verificador, sin cambiar el comportamiento del agente: categoría
+    <code>infraestructura</code>, manifiesto por hospital con sus plantas, verificación Ed25519 con libsodium y clave pública
+    compilada en dos ranuras, versión monótona, límites de prefijo, lo vigente seguro entre hilos (D7), caché en
+    disco, aviso si falta el plano de control (D-C). Tests.</li>
+<li><strong>8e.1b</strong> (hecho, f9076a97c) el cableado: carga desde la caché al arrancar, set <code>hash:net,iface</code> sustituido de
+    forma atómica con <code>ipset swap</code> y regla <code>src,src</code>, candado (D6), barrera por IP con los rangos del vigente,
+    avisos periódicos (D6, D7, D-C), contadores por categoría. Fuera <code>ddos_protegidos</code>, <code>ipsets.whitelist</code> y el
+    defecto RFC 1918. Tests.</li>
+<li><strong>8e.3</strong> <code>argus-infra</code> y las rutas del manifiesto en el etcd-server. Diseño cerrado DAY318 (decisiones de Alonso
+  F-A..F-I). Hecho: 8e.3a a5a41ba4 (<code>libs/protegidos</code>), 8e.3b 465e6aa4 (etcd-server), 8e.3c 91981329 (consulta del
+  firewall), 8e.3d-0 a831c44b (historial en el etcd-server), 8e.3d 6b88a0c8 (<code>argus-infra</code>), 8e.3e e2f4bb79
+  (fuera la familia <code>/kv</code> del etcd-client):</li>
+<li><strong>F-A</strong> El etcd-server verifica con la clave pública <strong>compilada</strong>, la misma que el firewall (patrón ADR-025;
+    CMake lee el mismo <code>.hex</code>). No se le da permiso de lectura en Vault. Que REA vea la pública no importa (es
+    pública, D9); cambiarla exige cambiar el binario. Consecuencia: con Vault caído no se pueden firmar versiones
+    nuevas, pero verificar y proteger no depende de Vault.</li>
+<li><strong>F-B</strong> Un solo verificador: el de 8e.1a pasa a una librería compartida (<code>libs/protegidos</code>, jsoncpp +
+    libsodium) que enlazan el firewall y el etcd-server, con modo "documento entero, sin planta" para el servidor.</li>
+<li><strong>F-C</strong> Un etcd-server sirve a un hospital: <code>protegidos.hospital_id</code> en su JSON (Ansible, desde
+    <code>argus_hospital_id</code>). Rutas sin segmento de hospital: <code>GET /v1/protegidos</code> (<code>ou:firewall-acl-agent</code>,
+    <code>ou:argus-infra</code>) y <code>PUT /v1/protegidos</code> (<code>ou:argus-infra</code>). Añadida DAY319 (G-C): <code>GET /v1/protegidos/v/{n}</code>
+    (solo <code>ou:argus-infra</code>), la versión n de <code>protegidos/v/&lt;N&gt;</code> tal cual, sin verificar (verifica quien la pide);
+    400 si n no es un decimal &gt;= 1 sin ceros a la izquierda que quepa en 64 bits, 404 si no existe, 503 sin
+    <code>hospital_id</code> o con el almacén caído. El firewall no la puede leer.</li>
+<li><strong>F-D</strong> En etcd, el sobre tal cual: <code>/argus/protegidos/vigente</code> y <code>/argus/protegidos/v/&lt;N&gt;</code> (inmutable). PUT
+    rechazado si versión &lt;= vigente, firma u hospital no cuadran o se sale de los límites.</li>
+<li><strong>F-E</strong> El firewall lo pide cada <code>protegidos.consulta_sec</code> ([5, 3600], 30) con un método nuevo del etcd-client.
+    Nueva y verificada: kernel, caché y <code>[INFRA-CAMBIO]</code> con altas y bajas. Igual: nada. Menor: rechazo
+    <code>motivo=version</code> (intento de rollback). Servidor caído o 404: sigue con lo vigente y avisa cada <code>aviso_sec</code>.</li>
+<li><strong>F-F</strong> Anti-rollback entre reinicios: <code>protegidos.version</code> junto a la caché (versión más alta aplicada) y
+    consulta al etcd-server antes de aplicar la caché. Caché con versión menor que la del fichero: rechazo y alarma.</li>
+<li><strong>F-G</strong> <code>argus-infra</code>: un fichero Python con la biblioteca estándar (medido en la VM etcd: Python 3.11.2,
+    OpenSSL 3.0.22), instalado por el Vagrantfile en la VM etcd. <code>init</code>, <code>list</code>, <code>add</code>, <code>del</code>, <code>diff</code>,
+    <code>verificar</code>, <code>deshacer N</code> (contenido de N como N+1 firmado). Firma y verifica con Vault transit; comprueba los
+    límites de D2 antes del PUT. Diseño fino DAY319 (decisiones de Alonso G-A..G-G):<ul>
+<li><strong>G-A</strong> Configuración <code>/etc/argus-infra/argus-infra.json</code> (lab: <code>tools/argus-infra/argus-infra.lab.json</code>):
+  hospital, plantas, límites, Vault, etcd-server y TLS sin defecto sano (sin ellos no firma); solo <code>timeout_s</code>
+  tiene defecto ([1, 120], 10, con aviso).</li>
+<li><strong>G-B</strong> Plantilla sin firmar aparte (<code>tools/argus-infra/plantillas/hospital-lab.json</code>); los límites salen
+  siempre de la configuración, nunca de la plantilla ni de la versión anterior.</li>
+<li><strong>G-C</strong> El historial se lee del etcd-server (<code>GET /v1/protegidos/v/{n}</code>, F-C), no de un archivo local: la
+  verdad en un solo sitio.</li>
+<li><strong>G-D</strong> <code>firmante</code> = <code>&lt;cn&gt; entidad=&lt;entity_id de Vault&gt;</code>, como mucho 64 caracteres. Cambiado tras medir: el
+  etcd-server y el firewall registran el firmante con <code>saneado()</code>, que corta a 64, y con el formato largo el
+  entity_id se perdía.</li>
+<li><strong>G-E</strong> Cada cambio: login en Vault; lo vigente se valida (reglas de <code>libs/protegidos</code> portadas a Python y
+  transit verify); N+1; diff; confirmación tecleando el número de versión (<code>--si</code> para el bootstrap); sign;
+  verify; PUT; GET final comparado byte a byte; revoke-self del token.</li>
+<li><strong>G-F</strong> Órdenes <code>init --desde</code>, <code>list</code>, <code>add</code>, <code>del</code>, <code>diff</code>, <code>verificar</code> (también la cadena
+  <code>hash_anterior</code>), <code>deshacer N</code>. Salidas: 0 bien, 1 error, 2 uso, 3 rechazo del etcd-server.</li>
+<li><strong>G-G</strong> Vive en <code>tools/argus-infra/</code>; lo instala el aprovisionador <code>argus-infra</code> de la VM etcd (run: always);
+  <code>make test-argus-infra</code>.</li>
+</ul>
+</li>
+<li><strong>F-H</strong> Plantilla de despliegue sin firmar en el repo (lab: <code>.20</code> infraestructura por eth2, <code>.61</code> intranet);
+    <code>argus-infra init --desde FICHERO</code> la rellena y firma la versión 1 solo si no hay ninguna. El bootstrap la usa
+    en 8e.5.</li>
+<li><strong>F-I</strong> <code>set/get/del/list_keys</code> del etcd-client piden <code>/kv/...</code>, rutas que el servidor no tiene: se borran en
+    un commit propio cuando 8e.3 funcione, tras comprobar con <code>git grep</code> que nadie los usa. Hecho DAY320
+    (e2f4bb79): medido que borrar solo esos 4 rompe la librería, porque otros 6 métodos suyos los llaman
+    (<code>save_config_master</code>, <code>save_config_active</code>, <code>get_config_master</code>, <code>get_config_active</code>, <code>get_component_config</code>
+    y <code>rollback_config</code>). Decisión de Alonso: fuera los 10; se queda <code>put_config</code> (sí funciona).</li>
+<li><strong>8e.4</strong> Comprobación continua kernel ↔ manifiesto, antispoofing en <code>raw PREROUTING</code> generado desde el manifiesto,
+  alertas de spoofing por interfaz y MAC, versión en el latido y en
+  <code>pipeline-status</code>, reglas Falco (en la VM hardened-x86, <code>check-prod-falco</code>) y Wazuh. Falco y Wazuh avisan también
+  cuando la partición del audit de Vault (<code>/var/log/vault</code>) pasa de un umbral (p. ej. 75 %), con prioridad en el log,
+  y cuando falla uno de los dos audit devices (Alonso DAY318: es su trabajo avisarnos). Diseño fino cerrado DAY320
+  (sección 7), en cuatro commits:</li>
+<li><strong>8e.4a</strong> (hecho, fe4c94d3) el vigía kernel ↔ manifiesto y C7 en el E2E de la mitigación real.</li>
+<li><strong>8e.4b</strong> (hecho, 345f8607) antispoofing por interfaz y MAC en <code>raw PREROUTING</code> (H-B a H-E, H-G; H-F pasó a 8e.4c).</li>
+<li><strong>8e.4c</strong> (hecho, 1818f4ec) versión del manifiesto en el latido y en <code>pipeline-status</code> (H-H) y <code>rp_filter</code>
+    informado (H-F).</li>
+<li><strong>8e.4d</strong> Wazuh (FIM, agente en la VM etcd, disco del audit de Vault, fallos de audit) y Falco (H-I, H-J), en
+    tres commits: <strong>8e.4d-1</strong> (hecho, 464c733bc) el manager; <strong>8e.4d-2</strong> (hecho DAY321) los sensores; <strong>8e.4d-3</strong> (hecho DAY322, 9aea549ba) el E2E.
+    Antes de 8e.4d-3, lo que la vigilancia destapó el DAY322: el arranque de Vault sin Vagrant (31ae20e62, 3cb29fee0;
+    ver «8e.4d, DAY322» en la sección 7).</li>
+<li><strong>8e.5</strong> (hecho DAY322, aae32596d) Bootstrap del lab con <code>argus-infra</code>, veredicto P1–P6. Desde DAY323 la plantilla
+    lleva también los sensores .10, .11 y .12 como infraestructura (95d349c89). EMECAS+++ desde cero en verde el DAY323
+    (ver «8e.5, DAY322-323» en la sección 7).</li>
+</ul>
+<h2 id="6-diseno-fino-de-8e1-cerrado-day318">6. Diseño fino de 8e.1 (cerrado DAY318)</h2>
+<p>Decisiones de Alonso DAY318 (D-A a D-I de la revisión), medidas antes de decidir donde se podía. Resumen en
+<code>docs/BACKLOG.md</code>, sección <code>[MANIFIESTO-PROTEGIDOS-D318]</code>.</p>
+<p><strong>Formato del manifiesto en disco y en etcd</strong> (lo que se firma son bytes exactos, no un JSON reformateado):</p>
+<pre><code class="language-json">{
+  &quot;formato&quot;: &quot;argus-protegidos/v1&quot;,
+  &quot;carga_b64&quot;: &quot;&lt;base64 de los bytes exactos de la carga&gt;&quot;,
+  &quot;firma&quot;: &quot;vault:v1:&lt;base64 de la firma Ed25519 sobre esos bytes&gt;&quot;
+}
+</code></pre>
+<p>Sin <code>ranura_clave</code> (D-F, menos es más): el agente verifica con la clave actual y, si no, con la siguiente, y el log
+dice cuál valió. Vault transit firma Ed25519 puro sobre los bytes: basta <code>crypto_sign_verify_detached</code>.</p>
+<p><strong>Carga: un manifiesto por hospital, con sus plantas dentro (D-B).</strong></p>
+<pre><code class="language-json">{
+  &quot;esquema&quot;: 1,
+  &quot;hospital_id&quot;: &quot;hospital-lab&quot;,
+  &quot;version&quot;: 1,
+  &quot;emitido_utc&quot;: &quot;2026-11-05T08:00:00Z&quot;,
+  &quot;firmante&quot;: &quot;&lt;cn&gt; entidad=&lt;entity_id de Vault&gt; (&lt;= 64 caracteres; G-D)&quot;,
+  &quot;motivo&quot;: &quot;alta inicial del laboratorio&quot;,
+  &quot;hash_anterior&quot;: &quot;&lt;sha256 de la carga anterior, vacío en la versión 1&gt;&quot;,
+  &quot;limites&quot;: { &quot;infraestructura&quot;: 32, &quot;intranet&quot;: 24, &quot;dmz&quot;: 24, &quot;externos_criticos&quot;: 32 },
+  &quot;comun&quot;: [],
+  &quot;plantas&quot;: {
+    &quot;lab-vagrant&quot;: [
+      { &quot;categoria&quot;: &quot;infraestructura&quot;, &quot;cidr&quot;: &quot;192.168.100.20/32&quot;, &quot;interfaz&quot;: &quot;eth2&quot;, &quot;mac&quot;: &quot;&quot;, &quot;motivo&quot;: &quot;VM etcd: etcd, etcd-server, Vault&quot; },
+      { &quot;categoria&quot;: &quot;intranet&quot;, &quot;cidr&quot;: &quot;192.168.100.61/32&quot;, &quot;interfaz&quot;: &quot;eth2&quot;, &quot;mac&quot;: &quot;&quot;, &quot;motivo&quot;: &quot;protegido de prueba DAY300&quot; }
+    ]
+  }
+}
+</code></pre>
+<ul>
+<li>Un documento, una firma y una versión describen el hospital entero. Nada de manifiesto de manifiestos.</li>
+<li>Cada firewall aplica <code>comun</code> y la sección de su planta (<code>protegidos.despliegue_id</code> de su <code>firewall.json</code>). Si su
+  planta no aparece, no hay manifiesto verificado para él: candado cerrado y aviso.</li>
+<li>Un cambio en una planta sube la versión del hospital; los firewalls de las demás plantas la aplican y registran
+  <code>sin cambios para esta planta</code>.</li>
+<li>Una entrada por interfaz: un host con dos interfaces legítimas lleva dos entradas.</li>
+<li>Solo un <code>motivo</code> corto: ni ubicación ni función de cada máquina. El manifiesto llega a todos los firewalls del
+  hospital; con más detalle sería un mapa del hospital para quien tome uno. El inventario rico vive en la consola del
+  admin.</li>
+<li><code>limites</code> en IPv4. IPv6 (D-I): la barrera de usuario lo protege; en el kernel se omite con <code>[CONFIG-AVISO]</code> hasta
+  DEBT-FW-IPV6-SETS-001.</li>
+<li>Interfaz del lab medida DAY318: <code>eth2</code> (192.168.100.1; la ruta a .20 sale por <code>eth2</code>).</li>
+</ul>
+<p><strong>El set del kernel (D-A).</strong> Medido DAY318 en el defender (<code>scripts/etcd_ha/d318_medir_set_iface.sh</code>): ipset v7.17;
+<code>hash:net,iface</code> acepta <code>192.168.100.20/32,eth2</code>; <code>ipset test</code> da 0 con <code>eth2</code> y 1 con otra interfaz o con otra IP; la
+regla <code>--match-set &lt;set&gt; src,src -j RETURN</code> entra; <code>ipset swap</code> deja el contenido nuevo. <code>ml_defender_whitelist</code>
+(<code>hash:net</code>) no puede llevar interfaz y se cargaba con <code>flush</code> + <code>add</code> (hueco sin protegidos). Decisión:
+- set nuevo <code>hash:net,iface</code>, tipo fijo en el código y nombre en <code>protegidos.set_name</code>; entradas <code>cidr,interfaz</code>;
+- regla de la cadena de aRGus <code>--match-set &lt;set&gt; src,src -j RETURN</code> (origen e interfaz de entrada);
+- aplicación atómica: set temporal, <code>ipset swap</code>, borrar el temporal; nunca <code>flush</code> + <code>add</code>;
+- si el set ya existe con otro tipo, <code>[PROTEGIDOS-SET-TIPO]</code> claro con la orden para rehacerlo;
+- solo el agente lo escribe; fuera <code>ipsets.whitelist</code> y su <code>RETURN</code> sin interfaz;
+- <code>IPSetWrapper</code> gana el tipo y la validación de <code>cidr,interfaz</code> (interfaz: 1 a 15 caracteres <code>[A-Za-z0-9._-]</code>).</p>
+<p><strong>La barrera de usuario (D-G).</strong> El suscriptor (<code>ALERTA_PROTEGIDO</code>, fuera del episodio) y <code>BatchProcessor</code> (nunca entra
+en el blacklist) protegen por IP siempre, venga por donde venga el paquete: si dejaran de proteger lo que llega por
+otra interfaz, falsificar el origen de un protegido bastaría para que aRGus lo bloqueara. Además, la interfaz del
+evento es la del host del sniffer (el BPF escribe <code>ifNN</code> desde el ifindex), que en un despliegue distribuido no es la
+del firewall. La interfaz y la MAC atan la exención del kernel y alimentan el antispoofing y la alerta (8e.4).</p>
+<p><strong>El defecto RFC 1918 se borra (D-B).</strong> Medido: el único camino que mete un origen en el blacklist es la mitigación
+<code>ddos_v2</code>; el camino viejo (<code>add_detections</code>) es inalcanzable (DEBT-FW-LEGACY-STEPS-001). Sin manifiesto verificado
+el candado (D6) deja la mitigación en sombra, así que el defecto amplio ya no protege nada.</p>
+<p><strong>Plano de control ausente (D-C).</strong> Al arrancar y al aplicar cada manifiesto, el agente compara los hosts de su
+<code>etcd.endpoints</code> con las entradas <code>infraestructura</code> de <code>comun</code> y de su planta. Si falta alguno,
+<code>[PROTEGIDOS-INFRA-INCOMPLETA]</code> cada <code>protegidos.aviso_sec</code>. No cierra el candado: el hospital siempre protegido, y
+perder el etcd-server no para la protección (DAY316). Coste: dos listas pequeñas, una vez por cambio; nada por paquete
+ni acceso al kernel.</p>
+<p><strong>La clave pública (D-E, patrón ADR-025).</strong> <code>-DARGUS_PROTEGIDOS_PUBKEY_ACTUAL_HEX</code> (obligatoria) y
+<code>-DARGUS_PROTEGIDOS_PUBKEY_SIGUIENTE_HEX</code> (vacía si no hay rotación en curso). Sin <code>-D</code>, CMake las lee de
+<code>/etc/ml-defender/firewall-acl-agent/protegidos_pubkey_actual.hex</code> y <code>..._siguiente.hex</code> (opcional), que el bootstrap
+trae de Vault (8e.2). Sin la actual: <code>FATAL_ERROR</code> con mensaje claro; aquí no hay defecto sano posible. En producción,
+Jenkins pasa <code>-D</code>. El firewall enlaza libsodium (hoy no lo hace). Los tests usan una clave desechable generada en el
+propio test.</p>
+<p><strong>Alcance de 8e.1 (D-H).</strong> Carga el manifiesto de la caché al arrancar, la vuelve a verificar cada <code>aviso_sec</code> (D7: si
+deja de verificar, se queda con lo que tiene en memoria y avisa) y guarda lo vigente en un contenedor seguro entre
+hilos (hoy el suscriptor y <code>BatchProcessor</code> copian los rangos una sola vez al arrancar). Pedirlo al etcd-server
+(<code>consulta_sec</code>) va en 8e.3, con sus rutas.</p>
+<p><strong>Límite de 8e.1 (medido DAY318).</strong> La versión monótona protege mientras el agente está vivo: al arrancar no hay
+versión aplicada y se acepta cualquier manifiesto bien firmado de la caché, también uno más viejo. La caché solo la
+escribe root (O_NOFOLLOW, temporal y rename), pero el anti-rollback entre reinicios (la versión más alta vista,
+guardada aparte, o pedida al etcd-server antes de aplicar) se cierra en 8e.3.</p>
+<p><strong>Campos nuevos en <code>firewall.json</code></strong> (el JSON sigue siendo la ley para lo que no es la lista):</p>
+<table>
+<thead>
+<tr>
+<th>Campo</th>
+<th>Rango</th>
+<th>Defecto</th>
+<th>Doc</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>protegidos.hospital_id</code></td>
+<td>cadena [1, 64], <code>[a-z0-9-]</code></td>
+<td>—</td>
+<td>sin valor sano por defecto: si falta, candado cerrado y aviso</td>
+</tr>
+<tr>
+<td><code>protegidos.despliegue_id</code></td>
+<td>cadena [1, 64], <code>[a-z0-9-]</code></td>
+<td>—</td>
+<td>la planta de este firewall; sin valor sano por defecto: si falta, candado cerrado y aviso</td>
+</tr>
+<tr>
+<td><code>protegidos.set_name</code></td>
+<td><code>[A-Za-z0-9_-]</code>, de 1 a 29 (el temporal <code>&lt;set&gt;_n</code> del swap añade dos y tiene que caber en los 31 de <code>is_valid_set_name</code>)</td>
+<td><code>ml_defender_protegidos</code></td>
+<td>set <code>hash:net,iface</code> del kernel</td>
+</tr>
+<tr>
+<td><code>protegidos.manifiesto_cache</code></td>
+<td>ruta absoluta</td>
+<td><code>/var/lib/ml-defender/firewall/protegidos.manifiesto</code></td>
+<td>último manifiesto verificado</td>
+</tr>
+<tr>
+<td><code>protegidos.aviso_sec</code></td>
+<td>[30, 86400]</td>
+<td>300</td>
+<td>aviso periódico y nueva verificación de la caché</td>
+</tr>
+<tr>
+<td><code>protegidos.comprobacion_kernel_sec</code></td>
+<td>[5, 3600]</td>
+<td>30</td>
+<td>vigía kernel ↔ manifiesto (8e.4a, hecho DAY320)</td>
+</tr>
+<tr>
+<td><code>protegidos.antispoof.cadena</code></td>
+<td><code>[A-Za-z0-9_-]</code>, de 1 a 24</td>
+<td><code>ARGUS_ANTISPOOF</code></td>
+<td>cadena de <code>raw PREROUTING</code>; las de spoofing son <code>&lt;cadena&gt;_IF</code> y <code>&lt;cadena&gt;_MAC</code> (8e.4b)</td>
+</tr>
+<tr>
+<td><code>protegidos.antispoof.set_redes</code></td>
+<td><code>[A-Za-z0-9_-]</code>, de 1 a 29</td>
+<td><code>ml_defender_prot_redes</code></td>
+<td><code>hash:net</code> de las redes protegidas (8e.4b)</td>
+</tr>
+<tr>
+<td><code>protegidos.antispoof.set_ips_mac</code></td>
+<td><code>[A-Za-z0-9_-]</code>, de 1 a 29</td>
+<td><code>ml_defender_prot_ipmac</code></td>
+<td><code>hash:ip</code> de las IPs que llevan MAC (8e.4b)</td>
+</tr>
+<tr>
+<td><code>protegidos.antispoof.set_mac</code></td>
+<td><code>[A-Za-z0-9_-]</code>, de 1 a 29</td>
+<td><code>ml_defender_prot_mac</code></td>
+<td><code>hash:ip,mac</code> (8e.4b)</td>
+</tr>
+<tr>
+<td><code>protegidos.antispoof.log_por_minuto</code></td>
+<td>[1, 600]</td>
+<td>5</td>
+<td>muestras <code>LOG</code> por minuto y cadena (8e.4b)</td>
+</tr>
+<tr>
+<td><code>protegidos.antispoof.log_rafaga</code></td>
+<td>[1, 100]</td>
+<td>5</td>
+<td>ráfaga inicial del <code>LOG</code> (8e.4b)</td>
+</tr>
+<tr>
+<td><code>protegidos.consulta_sec</code></td>
+<td>[5, 3600]</td>
+<td>30</td>
+<td>cada cuánto se pide el manifiesto al etcd-server (8e.3)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Mensajes de log</strong> (etiquetas para buscar):
+- <code>[PROTEGIDOS-MANIFIESTO] verificado version=N clave=actual|siguiente firmante=... hospital=... planta=... entradas=E (infraestructura=a intranet=b dmz=c externos_criticos=d)</code>
+- <code>[PROTEGIDOS-MANIFIESTO-RECHAZADO] motivo=firma|version|hospital|planta|limite|formato ...</code> (se conserva el último verificado)
+- <code>[PROTEGIDOS-SIN-MANIFIESTO] mitigacion real BLOQUEADA (candado); sombra</code> (periódico)
+- <code>[PROTEGIDOS-INFRA-INCOMPLETA] etcd.endpoints sin entrada infraestructura: ...</code> (periódico)
+- <code>[PROTEGIDOS-SET-TIPO] el set &lt;nombre&gt; existe con tipo &lt;tipo&gt; (se espera hash:net,iface): ...</code>
+- <code>[INFRA-CAMBIO] version A -&gt; B firmante=... altas=... bajas=...</code>
+- <code>[PROTEGIDOS-DIVERGENCIA] set &lt;set&gt; != manifiesto version N: sobran=[...] faltan=[...]</code> y
+  <code>[PROTEGIDOS-DIVERGENCIA] reglas: &lt;motivo&gt;</code>; <code>[PROTEGIDOS-RECONCILIADO] ...</code> (comprobado tras volver a leer);
+  <code>[PROTEGIDOS-VIGIA]</code> (arranque, resumen <code>comprobaciones= divergencias= reconciliaciones= fallos=</code> cada <code>aviso_sec</code>,
+  aviso de <code>dry_run</code> y <code>ERROR</code> si no se pudo reconciliar) (8e.4a, DAY320)
+- <code>[PROTEGIDOS-ANTISPOOF] aplicado (&lt;por qué&gt;): manifiesto version N modo=cuenta|descarta redes= ips_mac= mac= cadena raw &lt;cadena&gt;</code>,
+  <code>ERROR al aplicar</code>, <code>NO se instala: &lt;motivo&gt;</code> (nombres que chocan, <code>dry_run=true</code>) y aviso si el kernel no admite
+  <code>hash:ip,mac</code> (sin comprobación de MAC); <code>[PROTEGIDOS-RUTA] &lt;entrada&gt;: esa red no se cuenta ni se descarta</code>
+  (periódico); <code>[PROTEGIDOS-DIVERGENCIA] antispoof: ...</code> / <code>[PROTEGIDOS-RECONCILIADO] antispoof: ...</code>;
+  <code>[PROTEGIDOS-SPOOFING] origen protegido falsificado: interfaz=+N mac=+N (total interfaz=N mac=N) modo=...;
+  evidencia: journalctl -k | grep ARGUS-SPOOF</code>. En el journal del kernel, <code>ARGUS-SPOOF-IF</code> y <code>ARGUS-SPOOF-MAC</code>, con
+  la MAC de origen (8e.4b, DAY320)
+- <code>[ETCD-CLIENTE-LATIDO-DATO] &lt;CN&gt;: &lt;clave&gt;=N (nuevo|antes M); va en el siguiente latido</code> (una línea por cambio, no
+  por latido) o <code>&lt;motivo&gt;; no se guarda (datos del latido: &lt;formato&gt;)</code>; <code>[ETCD-CLIENTE-LATIDO-DATOS-RECHAZADOS]</code> y
+  <code>[ETCD-CLIENTE-LATIDO-DATOS-ACEPTADOS]</code> cuando cambia lo que responde el etcd-server. En el etcd-server,
+  <code>[ETCD-LATIDO-DATOS-RECHAZADOS] &lt;CN&gt;: &lt;motivo&gt;; el latido se guarda sin datos</code> y <code>[ETCD-LATIDO-DATOS-ACEPTADOS]</code>,
+  también solo al cambiar. <code>[PROTEGIDOS-RP-FILTER] &lt;interfaz&gt;=&lt;efectivo&gt; (all=a if=b, sin filtro|estricto|laxo) ...;
+  solo se informa, no se cambia (H-F)</code>, al arrancar y cada <code>aviso_sec</code> (8e.4c, DAY321)
+- En <code>pipeline-status</code> (<code>etcd_vm_estado.sh</code>): <code>✅ protegidos: vN publicada; K componentes al día</code>, <code>⚠️ ... K DESFASADOS</code>,
+  <code>⚠️ ... POR DELANTE</code>, <code>⚠️ ... sin manifiesto publicado</code>, <code>⚠️ ... ningún componente informa protegidos_version</code> o
+  <code>❌ ... vigente ilegible</code>, y debajo una línea por componente (<code>- &lt;CN&gt; vN al día|DESFASADO|POR DELANTE (activo|muerto,
+  latido hace S s)</code>) (8e.4c, DAY321)
+- <code>protegidos:</code> gana <code>infraestructura=N</code>.</p>
+<p>Implementados en 8e.1b, además: <code>[PROTEGIDOS-CLAVE]</code> (huellas de las dos ranuras compiladas: los 16 primeros hex
+del sha256 de la clave, no los de la clave), <code>[PROTEGIDOS-SET]</code>, <code>[PROTEGIDOS-KERNEL]</code> (entradas llevadas al set;
+las IPv6 solo en la barrera) y <code>[PROTEGIDOS-CACHE]</code> (la caché no se lee o ya no verifica: se conserva lo que hay en
+memoria). <code>[INFRA-CAMBIO]</code> llega con 8e.3, cuando el manifiesto cambia en caliente (medido DAY319: solo se
+escribe si ya había un vigente; con la primera versión sale solo <code>[PROTEGIDOS-MANIFIESTO]</code>).</p>
+<p><strong>Tests de 8e.1:</strong> firma válida con la clave actual y con la siguiente; firma de otra clave; carga alterada un byte;
+versión igual y menor; otro <code>hospital_id</code>; planta ausente; prefijo más amplio que el límite (en <code>infraestructura</code>,
+/31); entrada sin interfaz o con interfaz mal formada; caché ausente o alterada al arrancar; candado con
+<code>habilitada=true</code> y sin manifiesto; último verificado conservado tras un rechazo en caliente; aviso
+<code>INFRA-INCOMPLETA</code>; set existente de otro tipo y órdenes del <code>swap</code> (en dry_run); barrera por IP con un origen
+protegido que llega por otra interfaz.</p>
+<h2 id="7-diseno-fino-de-8e4-cerrado-day320">7. Diseño fino de 8e.4 (cerrado DAY320)</h2>
+<p>Decisiones de Alonso DAY320 (H-A a H-J), medidas antes de decidir donde se podía. Reglas que lo cruzan todo: el JSON es
+la ley (cada campo nuevo se lee de ahí y, si falta o está mal formado, defecto del código con aviso; todo al log); toda
+operación nueva o modificada lleva un test que pruebe que hace su trabajo; coste por paquete O(1), como mucho
+O(log n); las reglas, ficheros y procesos que vigilan Wazuh y Falco van en su configuración, no en el código; si algo
+no cuadra, se reconcilia.</p>
+<p><strong>Medido antes de decidir (DAY320, en el código):</strong> nada de 8e.4 existía; el latido solo lleva <code>{timestamp, status}</code> y
+el etcd-server ignora su cuerpo; Falco solo está en <code>hardened-x86</code> y sus reglas van en un heredoc de <code>setup-falco.sh</code>;
+de Wazuh no hay reglas de aRGus; la VM etcd no tiene agente Wazuh ni MAC fija; <code>/var/log/vault</code> está en la raíz.</p>
+<p><strong><code>dry_run</code> (precisado DAY320).</strong> Con <code>operation.dry_run=true</code> el agente no escribe nada en el kernel (regla de
+DAY302): ni set ni cadena. El vigía no compara y lo dice al arrancar y cada <code>aviso_sec</code>. Con <code>dry_run=false</code> y el
+candado cerrado o la mitigación deshabilitada, el vigía compara y reconcilia y el antispoofing (8e.4b) solo cuenta; con
+<code>dry_run=false</code>, mitigación habilitada y manifiesto verificado, el antispoofing descarta. La hipótesis de este ADR (con
+la mitigación real, ningún protegido entra en el blacklist) solo se prueba con <code>dry_run=false</code> y <code>habilitada=true</code>
+(Alonso DAY320): se mide así en EMECAS (C7, abajo) y el lab sigue arrancando en sombra de serie hasta que EMECAS+++ pase
+entero ("si la mitigación real bloquea a clientes legítimos que no estén en el manifiesto, estamos haciendo algo mal:
+midamos primero").</p>
+<ul>
+<li><strong>H-A</strong> El vigía reconcilia (no solo avisa): lo no firmado pierde la protección y lo que falta se repone.</li>
+<li><strong>H-B</strong> Antispoofing con coste constante por paquete: seis reglas fijas en <code>raw PREROUTING</code> sobre sets (<code>hash:net</code>
+  de las redes protegidas, <code>hash:net,iface</code>, <code>hash:ip</code> de las IPs con MAC y <code>hash:ip,mac</code>), no una regla por entrada.
+  Medido DAY320 en el defender (<code>scripts/etcd_ha/d320_medir_antispoof.sh</code>, v2: 19/19): el no protegido sale en la
+  segunda regla con un solo lookup; spoofing por interfaz y por MAC contados exactos; un paquete con interfaz y MAC
+  malas cuenta una sola vez; el DROP en raw no deja pasar nada a mangle; <code>iptables-restore --noflush</code> rehace las
+  cadenas de golpe; lectura del vigía 2-3 ms; ipset 7.17 tiene <code>hash:ip,mac</code>. Las reglas 3 y 5 saltan con <code>-g</code>
+  (goto): con <code>-j</code>, en modo solo contar, el paquete volvía y seguía por la cadena (medido en la v1). Los contadores por
+  entrada de ipset suben con cualquier coincidencia, también las negadas: los totales salen de las reglas y la
+  identidad del paquete del LOG.</li>
+<li><strong>H-C</strong> Las reglas del antispoofing solo cuentan mientras la mitigación no sea real (ver <code>dry_run</code> arriba); con ella,
+  DROP.</li>
+<li><strong>H-D</strong> Si la interfaz de una entrada no casa con la ruta del kernel (<code>ip route get</code>), no se instala su DROP y
+  <code>[PROTEGIDOS-RUTA]</code> es alarma periódica: un DROP por interfaz equivocada sería el DoS autoinfligido otra vez. <code>-i lo</code>
+  siempre exento (un <code>intranet /24</code> suele contener la IP del propio firewall).</li>
+<li><strong>H-E</strong> Evidencia de spoofing: <code>LOG</code> con límite (medido: 5 líneas con <code>--limit-burst 5</code>, con la MAC de origen) al
+  journal; lo recoge Wazuh. Sin NFLOG ni hilo nuevo.</li>
+<li><strong>H-F</strong> <code>rp_filter</code> se lee y se informa, no se cambia (medido DAY320: 0 en todas las interfaces del defender).</li>
+<li><strong>H-G</strong> MAC fija de la VM etcd en el Vagrantfile y en la plantilla del lab, para probar en EMECAS los dos casos: el
+  client falsificando .20 (entra por <code>eth2</code>: lo caza la MAC) y un veth en un netns del defender (lo caza la interfaz).</li>
+<li><strong>H-H</strong> Datos de latido genéricos y validados en el etcd-client; el firewall manda <code>protegidos_version</code>; el
+  etcd-server lo guarda en el registro y <code>pipeline-status</code> marca el firewall desfasado.</li>
+<li><strong>H-I</strong> Agente Wazuh en la VM etcd (disco de <code>/var/log/vault</code> al 75 % y fallos de los audit devices).</li>
+<li><strong>H-J</strong> 8e.4d dentro del PR1.</li>
+</ul>
+<p><strong>8e.4a, el vigía (hecho DAY320, fe4c94d3).</strong> Cada <code>comprobacion_kernel_sec</code>, en el bucle principal (fuera del camino
+del paquete), <code>vigia_protegidos_paso</code> (<code>firewall/protegidos_vigia.hpp</code>) compara con lo vigente:
+- K1 el set existe y es <code>hash:net,iface</code> (si falta, se crea con la misma configuración que al arrancar);
+- K2 su contenido (<code>IPSetWrapper::list_entries_opciones</code>: entradas con sus opciones, sin contadores) es exactamente el
+  de las entradas IPv4 del vigente, en forma canónica (red con los bits de host a cero y prefijo explícito: el kernel
+  normaliza y omite <code>/32</code>). Una entrada de más, de menos, por otra interfaz o con opciones (<code>nomatch</code> anularía la
+  exención) es divergencia. Sin vigente, el set tiene que estar vacío. O(n) con conjuntos hash;
+- K3 la cadena: un único salto INPUT → cadena en la posición 1 y dentro exactamente protegidos <code>src,src</code> RETURN y
+  blacklist DROP, en ese orden (<code>setup_base_rules</code>).
+Si no cuadra, se reconcilia (sustitución atómica del set; <code>setup_base_rules</code> para la cadena) y se vuelve a leer: solo
+cuenta como reconciliado lo que se comprueba. <strong>Set ajeno</strong>: si existe con otro tipo, no se destruye y la cadena se
+rehace sin el RETURN. Medido DAY320: iptables acepta <code>--match-set &lt;set hash:ip&gt; src,src</code> e ignora la dimensión de más,
+así que el RETURN eximiría un contenido que nadie ha firmado; quitarlo no pone en riesgo a nadie (el agente nunca mete a
+un protegido en el blacklist; la barrera de usuario protege por IP) y vuelve en cuanto el set está bien.</p>
+<p>Medido DAY320: banco (Debian 12, GCC 12.2, native y skylake, dos pasadas) 119/119 y 0 avisos del código;
+<code>test_protegidos_vigia</code> 42/42 (con wrappers falsos que dicen "hecho" sin hacerlo); <code>test_protegidos_vigia_root</code> 34/34
+(kernel real, S1-S9); 7 mutaciones cazadas. Lab: <code>pipeline-build</code> rc 0; <code>test-firewall</code> 95/95; <code>test-firewall-e2e</code>
+PASA (24, 0 saltados); <code>lab-e2e-vigia</code> PASA (E1 6 s, E2-E4 25-26 s, límite 35; kernel igual que al empezar; 0 errores).</p>
+<p><strong>C7 (la hipótesis del DoS autoinfligido, medida con la mitigación real).</strong> <code>lab-e2e-mitigacion</code> (<code>dry_run=false</code>,
+<code>habilitada=true</code>, ataque NTP de .50 y .61) exige la VM etcd arriba y .20 en el set de protegidos, y muestrea cada
+segundo el blacklist y los contadores por entrada del set. DAY320: C1-C5 y <strong>C7 PASA</strong>: .20 en 0 de 459 muestras del
+blacklist; su entrada del set de protegidos de 223 a 529 paquetes durante los ataques. En la misma corrida <code>ddos_v2</code>
+volvió a marcar DROP a la VM etcd (<code>[SOMBRA-DDOS] protegidos: ... infraestructura=2</code>, DEBT-DDOS-V2-NTP-CLIENTE-001):
+el DoS autoinfligido del DAY317 se produjo y la barrera lo paró.</p>
+<p><strong>8e.4b, el antispoofing (hecho DAY320, 345f8607; arreglos del lab 6479804f y 3c67ca40).</strong>
+<code>firewall/protegidos_antispoof.hpp</code>. <code>repartir_antispoof</code> reparte las entradas IPv4 del vigente en tres sets (redes,
+IPs con MAC, pares IP-MAC); las que tienen una interfaz que no casa con la ruta del kernel (<code>ip -o route get</code>, H-D) se
+quedan fuera de <code>set_redes</code>, y salen en <code>[PROTEGIDOS-RUTA]</code>. <code>texto_restore_antispoof</code> genera las cadenas y se cargan
+de golpe con <code>iptables-restore -w --noflush</code>. En <code>raw PREROUTING</code>, una regla de salto y seis reglas fijas:
+1. <code>lo</code> RETURN;
+2. origen fuera de <code>set_redes</code> RETURN (lo no protegido sale aquí, con un solo lookup);
+3. <code>(origen, interfaz)</code> fuera del set de protegidos <code>-g &lt;cadena&gt;_IF</code>;
+4. origen fuera de <code>set_ips_mac</code> RETURN;
+5. <code>(origen, MAC)</code> fuera de <code>set_mac</code> <code>-g &lt;cadena&gt;_MAC</code>;
+6. RETURN.</p>
+<p><code>_IF</code> y <code>_MAC</code> llevan <code>LOG</code> con límite y una regla de cuenta, que lleva <code>DROP</code> solo con la mitigación real (H-C). La
+aplicación es inmediata al arrancar y en cuanto cambia la versión del manifiesto o el modo. En cada vuelta del vigía,
+<code>antispoof_paso</code> comprueba los sets y las cadenas raw y reconcilia (K4 y K5), vuelve a mirar las rutas y suma los
+contadores de las reglas de cuenta en <code>[PROTEGIDOS-SPOOFING]</code>. Si el kernel no tiene <code>hash:ip,mac</code>, el antispoofing
+queda sin la parte de MAC y lo avisa.</p>
+<p>Medido DAY320: banco (sin <code>hash:ip,mac</code> en su kernel) native y skylake, dos pasadas, 121/121 (el test de root sale
+Skipped 77) y 0 avisos del código; <code>test_protegidos_antispoof</code> 41/41; <code>test_protegidos_antispoof_root</code> 15/15 en el
+banco (<code>ARGUS_TEST_SIN_IPMAC=1</code>) y 16/16 en el defender; 8 mutaciones cazadas. Lab: <code>test-firewall</code> 96/96;
+<code>test-firewall-e2e</code> PASA (25, 0 saltados); <code>lab-e2e-antispoof</code> con la mitigación real PASA: el client falsifica .62
+(entrada de prueba con una MAC que no es de nadie, firmada al empezar y quitada en el trap) y el kernel cuenta
+<code>SPOOF-MAC</code> +20 y deja pasar 0 a mangle; un netns del defender falsifica .20 por un veth, <code>SPOOF-IF</code> +20 y 0 a mangle;
+el tráfico legítimo de .20 suma 0 al spoofing (su entrada del set de protegidos de 209 a 531 paquetes) y la VM etcd
+sigue sana; 5 líneas <code>ARGUS-SPOOF-IF</code> y 5 <code>ARGUS-SPOOF-MAC</code> en el journal. <code>lab-e2e-vigia</code> y <code>lab-e2e-mitigacion</code>
+(C7) siguen PASA con el antispoofing instalado.</p>
+<p><strong>H-F se hizo en 8e.4c</strong> (DAY321, 1818f4ec), que cierra DEBT-FW-ANTISPOOF-RP-FILTER-001; 8e.4b solo lo leía en el
+script de medida.</p>
+<p><strong>8e.4c, la versión del manifiesto en el latido y <code>rp_filter</code> (hecho DAY321, 1818f4ec).</strong> Decisiones de Alonso
+(DAY321), las cuatro como se recomendaron:
+- <strong>Tipo de los datos del latido: solo enteros.</strong> Regla única en <code>libs/latido/include/latido/datos_latido.hpp</code>, que
+  aplican el etcd-client antes de enviar y el etcd-server al recibir: <code>"datos"</code> es un objeto de 0 a 8 claves
+  <code>^[a-z][a-z0-9_]{0,31}$</code> con enteros en [0, 2^53 − 1] (el mayor entero que cualquier lector JSON representa sin perder
+  precisión). Es contrato del protocolo, no configuración, como el tamaño máximo de la carga del manifiesto. Con una
+  clave mala se rechazan todos los datos de ese latido. O(datos).
+- <strong>Datos mal formados en el etcd-server: 200 sin los datos.</strong> El latido se guarda igual, sin la clave <code>"datos"</code>, y la
+  respuesta lo dice en <code>"datos_rechazados"</code>. Medido en el código antes de decidir: un 4xx al latido hace que el cliente
+  se dé por desregistrado y quede «sin servicio», así que un dato malo dejaría al componente sin latir y lo acabaría
+  marcando muerto.
+- <strong>Origen de <code>pipeline-status</code>: etcd con <code>etcdctl</code></strong>, sin ruta nueva ni reglas de authz nuevas.
+- <strong>E2E del desfase: <code>protegidos.consulta_sec=3600</code> solo durante la prueba</strong>, dentro de <code>lab-e2e</code>.</p>
+<p>Cómo queda:
+- <code>EtcdClient::poner_dato_latido(clave, valor)</code>, seguro entre hilos; el mantenedor y <code>heartbeat()</code> añaden <code>"datos"</code>
+  cuando hay alguno. El firewall pone <code>protegidos_version</code> (0 sin manifiesto) al arrancar y tras cada consulta.
+- El etcd-server guarda <code>latido/&lt;CN&gt; = {"ultimo", "estado", "datos"}</code>. Al marcar un componente muerto se conservan
+  los datos, así que se ve la versión que tenía al morir; el siguiente latido los renueva.
+- <code>scripts/etcd_ha/etcd_vm_estado.sh</code> lee <code>&lt;prefijo&gt;latido/</code> y <code>&lt;prefijo&gt;protegidos/vigente</code> con los certificados que
+  ya usa. La versión publicada sale de la carga del sobre sin verificar la firma, porque el etcd-server solo escribe
+  <code>vigente</code> después de verificarla y el firewall la verifica otra vez. Solo lista los componentes que mandan
+  <code>protegidos_version</code>. Un desfase es normal hasta <code>consulta_sec</code> más un latido después de publicar.
+- <strong>La línea de protegidos solo informa (⚠️): no cuenta en el veredicto de la VM etcd.</strong> Cambio sobre lo que se
+  propuso antes de medir: <code>--estricto</code> no lo usa solo EMECAS, también <code>etcd-vm-check</code> (dentro de <code>etcd-vm-deploy</code> y
+  <code>etcd-server-start</code>, con el firewall parado) y <code>etcd-vm-aviso</code> (en <code>pipeline-start</code>, antes de arrancarlo). Con el
+  desfase contando, un despliegue fallaría solo por haber publicado una versión con el firewall parado.
+- <strong>H-F:</strong> <code>[PROTEGIDOS-RP-FILTER]</code> al arrancar y cada <code>aviso_sec</code> (<code>firewall/protegidos_rp_filter.hpp</code>): por cada
+  interfaz de las entradas IPv4 del vigente, <code>max(conf/all/rp_filter, conf/&lt;interfaz&gt;/rp_filter)</code>, que es lo que usa
+  el kernel. Solo se lee. Un nombre que pudiera salir de la raíz (<code>.</code>, <code>..</code>, <code>/</code>) no se lee.</p>
+<p>Medido DAY321:
+- Banco (Debian 12, GCC 12.2, native y skylake, dos pasadas cada uno): etcd-client 5/5, etcd-server 9/9, firewall
+  122/122 y 0 avisos del código. <code>test_latido_datos</code> 8 tests; L1-L7 en <code>test_etcd_cliente_tls</code> (35/35);
+  <code>test_protegidos_rp_filter</code> 33/33. Con etcd 3.6.16 real (TLS y RBAC como en el Vagrantfile) y el etcd-server
+  compilado, 16/16 en las cuatro compilaciones. 16 mutaciones cazadas, todas compilando.
+- Lab (<code>PROFILE=production</code>): <code>pipeline-build</code> rc 0; <code>test-firewall</code> 97/97; etcd-server 9/9; etcd-client 5/5;
+  <code>test-firewall-e2e</code> PASA (25, 0 saltados); <code>etcd-vm-deploy</code> SANO. Tras arrancar, <code>✅ protegidos: v9 publicada; 1
+  componente al día</code> y <code>[PROTEGIDOS-RP-FILTER] eth2=0 (all=0 if=0, sin filtro)</code>. <code>lab-e2e-latido</code> PASA en 7 min 49 s:
+  L0 al día con v9 en 5 s; L1 v10 publicada y el firewall en v9 DESFASADO a los 4 s, con el veredicto en SANO; L2 al día
+  con v10 a los 4 s del rearranque; L3 v11 por la consulta periódica en 37 s (límite 75); L4 0 rechazos en los dos lados.
+  El lab queda en v11, con el contenido de antes de la prueba.
+- Al parar el firewall de forma ordenada, su baja (<code>/unregister</code>) borra <code>latido/&lt;CN&gt;</code> y deja de salir en la línea; solo
+  sale como muerto si cae sin darse de baja.</p>
+<p><strong>El kernel después de los E2E (3c67ca40).</strong> Con la mitigación real, el agente instala también el antispoofing durante
+<code>lab-e2e-vigia</code> y <code>lab-e2e-mitigacion</code>, y sus traps no lo conocían: la cadena raw usa el set de protegidos, así que el
+<code>ipset destroy</code> de ese set fallaba sin decir nada y quedaban en el defender las tres cadenas raw (en modo descarta) y
+cuatro sets. Ahora los tres traps llaman a <code>scripts/etcd_ha/d320_limpia_kernel.sh</code> (primero los saltos y las cadenas,
+raw y filtro; después los sets; los nombres, del JSON), y <code>lab-e2e</code> comprueba con <code>make lab-kernel-limpio</code> (solo
+cuenta) que tras cada uno no queda nada.</p>
+<p><strong>8e.4d, la vigilancia con Wazuh y Falco (8e.4d-1 y 8e.4d-2 hechos DAY321; 8e.4d-3, el E2E, hecho DAY322).</strong> Decisiones
+de Alonso (DAY321):
+- <strong>Cada sensor en la máquina que vigila</strong>: Falco ve las syscalls del kernel donde corre, y el FIM y el journal son
+  locales. Falco en la VM etcd y en el defender; agente de Wazuh en las dos; el manager sigue en la VM wazuh. La VM
+  etcd pasa de 1024 a 1536 MB (medido: Falco 114-149 MB de RSS con las reglas de serie, 101 MB con las de aRGus).
+- <strong>Falco → fichero → Wazuh</strong>: Falco escribe JSON en <code>/var/log/falco/eventos.json</code> y el agente lo lee; Falco no
+  conoce al manager.
+- <strong>Configuración centralizada</strong>: un grupo del manager por máquina (<code>argus-etcd</code>, <code>argus-defender</code>), con su
+  <code>agent.conf</code>, en el repo (<code>provisioning/wazuh/argus/</code>). Sin <code>&lt;command&gt;</code> en los agentes: exigiría
+  <code>remote_commands=1</code> y un manager comprometido podría ejecutar órdenes en ellos; el disco lo mide un servicio propio.
+- <strong>Origen oficial</strong>: manager, agentes y Falco desde el apt firmado de su mantenedor, con versión fija
+  (<code>provisioning/{wazuh,falco}/VERSION</code> y <code>apt-mark hold</code>) y la clave del repositorio comprobada por huella antes de
+  instalarla (<code>provisioning/{wazuh,falco}/CLAVE</code>, <code>scripts/vigilancia/lib_apt_oficial.sh</code>). Una clave que no está en el
+  fichero de huellas para la instalación. Sin <code>.deb</code> de terceros en el repo.
+- <strong>E2E dentro de <code>lab-e2e</code></strong>.</p>
+<p>Cómo queda:
+- <strong>Manager</strong> (<code>scripts/vigilancia/wazuh_manager_desplegar.sh</code>, aprovisionador <code>argus-vigilancia</code> y
+  <code>make vigilancia-manager-deploy</code>): comprueba la versión; pone decoders, reglas y <code>agent.conf</code> con copia de lo
+  anterior; valida (<code>verify-agent-conf</code> por grupo, <code>wazuh-analysisd -t</code>) y, si no valida, restaura; reinicia solo si
+  algo cambió; asigna cada agente a su grupo (<code>grupos.tsv</code>) comprobando el resultado, no el código de salida; y pasa
+  el test de las reglas (<code>test_reglas_wazuh.sh</code>, 27 casos con <code>wazuh-logtest</code>). Reglas: 100510-100518 firewall
+  (<code>[PROTEGIDOS-*]</code>: divergencia, reconciliado, spoofing, manifiesto rechazado o ausente, rutas, errores del vigía y
+  del antispoofing), 100520 errores del audit de Vault, 100530 <code>ARGUS-SPOOF-IF|MAC</code> del kernel, 100540-100542 disco,
+  100550-100553 eventos de Falco cuya regla empieza por <code>argus_</code> (CRITICAL 12, WARNING 8, NOTICE 4).
+- <strong>Agentes</strong> (<code>wazuh_agente_instalar.sh</code>, <code>run: always</code> en cada VM): versión de <code>VERSION</code>, manager de <code>MANAGER</code>;
+  con todo ya puesto no hace nada ni usa la red. FIM en tiempo real de la configuración y la PKI
+  (<code>/etc/argus-pki</code>, <code>/etc/vault.d</code>, <code>/etc/etcd</code>, <code>/etc/falco</code>, <code>/etc/argus-vigilancia</code>…) y periódico de los binarios;
+  journald filtrado (vault <code>[ERROR]</code>, <code>argus-disco</code>, <code>ARGUS-SPOOF-*</code>), <code>firewall-agent.log</code> en el defender y los
+  eventos de Falco.
+- <strong>Falco 0.43.1</strong> (<code>falco_instalar.sh</code>, <code>modern_ebpf</code>, sin falcoctl-artifact-follow): <code>config.d/argus_salida.yaml</code>
+  apaga todas las reglas y enciende las <code>argus_*</code> (<code>config.d</code> se funde en <code>append</code>: un <code>rules_files</code> ahí se sumaba al
+  del paquete y cargaba las reglas dos veces); <code>rules.d/argus_lab.yaml</code>, tres reglas por ruta del ejecutable (el
+  <code>comm</code> del kernel son 15 caracteres): hijo inesperado de un componente (CRITICAL; permitidos: ipset, ip e iptables
+  del firewall y las dos órdenes <code>sysctl</code> del sniffer, DEBT-SNIFFER-SYSTEM-SYSCTL-001), clave leída por quien no es su
+  dueño (CRITICAL) y lectura administrativa de una clave (NOTICE, rastro de <code>pipeline-status</code> y <code>provision.sh
+  verify</code>). Instalación todo o nada: <code>--dry-run</code> tiene que cargar <code>argus_lab.yaml</code> una vez y dejar activas
+  exactamente sus reglas.
+- <strong>argus-disco</strong> (<code>scripts/vigilancia/argus_disco.py</code>, VM etcd, sin privilegios): cada <code>periodo_s</code> mide la partición
+  de <code>ruta</code> como <code>df</code> y escribe <code>ARGUS-DISCO ruta=… uso=… umbral=… estado=OK|ALTO</code> al journal; ALTO es la regla 100541.
+  <code>/etc/argus-vigilancia/disco.json</code> (<code>ruta</code>, <code>umbral_pct</code> [1, 99] = 75, <code>periodo_s</code> [10, 3600] = 60) se relee en
+  cada ciclo; un campo malo, desconocido o un fichero ilegible da <code>ARGUS-DISCO-ERROR</code> (regla 100542) y ese campo toma
+  su defecto; la configuración efectiva sale con su origen al arrancar y cuando cambia.</p>
+<p>Medido DAY321 (detalle en BACKLOG, «DAY321 — pasos 8e.4d-1 y 8e.4d-2»): banco 27/27 reglas, <code>test_argus_disco</code> 16/16
+con 9 mutaciones cazadas, los instaladores restauran con configuraciones rotas y <code>lib_apt_oficial.sh</code> rechaza claves
+ajenas. Lab: los cinco agentes en 4.14.10-1 desde el apt de Wazuh y conectados, etcd y defender en su grupo, Falco
+0.43.1 en las dos VMs con 3 reglas activas, argus-disco <code>uso=4 estado=OK</code>, <code>pipeline-status</code> en ✅.</p>
+<p><strong>8e.4d, DAY322: lo que la vigilancia destapó en el arranque de Vault [VAULT-ARRANQUE-D322].</strong> Falco dio 7 CRITICAL
+<code>argus_lab_clave_leida_ajeno</code> en la VM etcd al arrancar el lab: <code>curl</code> desde <code>bash</code> leyendo <code>etcd-server.key</code>. Era el
+desellado del lab, y midiendo por qué corría se vio que <strong>Vault no volvía solo de un arranque</strong>:
+<code>logrotate.timer</code> (<code>Persistent=true</code>) corre al arrancar tras una noche apagada, el <code>postrotate</code> del audit mandaba
+SIGHUP a un Vault que aún arrancaba (<code>Failed with result 'protocol'</code>), <code>Restart=on-failure</code> lo levantaba <strong>sellado</strong> y
+el desellado, ligado a <code>multi-user.target</code>, ya se había descartado («Dependency failed»). Solo lo desellaba, de
+rebote, el <code>systemctl start</code> del aprovisionador <code>etcd-server-unit</code> (con <code>Wants=</code> del desellado: un <code>start</code> de una
+unidad activa arranca sus <code>Wants=</code> inactivos). En un hospital, tras un corte de luz, Vault se habría quedado sellado y
+el etcd-server sin claves HMAC; y en 24x7, cada caída de Vault. Decisiones de Alonso:
+- <strong>Identidad propia del desellado</strong> (opción b): <code>CN=OU=argus-vault-unseal</code>, sin ninguna política en Vault
+  (<code>sys/seal-status</code> y <code>sys/unseal</code> no la piden; el listener exige certificado de cliente solo para el TLS). Descartada
+  (a), que Falco lo tratara como herramienta de administración: un desellado comprometido seguiría teniendo la
+  identidad que lee y escribe las claves HMAC.
+- <strong>Las 17 trazas NOTICE por <code>pipeline-status</code> se aceptan</strong> (2 <code>curl</code> + 15 <code>etcdctl</code>, padre <code>sudo</code>, constantes en
+  cuatro pasadas): dejan rastro de quién leyó la clave y cuándo. Se mide en 8e.4d-3 cuántas deja un <code>etcd-vm-check</code>
+  con etcd caído (reevalúa cada 2 s); si pasa de un límite, se agrupa en Wazuh.
+- <strong>Regla aparte para los intentos fallidos de leer una clave</strong> (EACCES/EPERM, WARNING), en 8e.4d-3 con su E2E.</p>
+<p>Cómo queda: <code>provisioning/vault/</code> (script, unidad y logrotate) y <code>scripts/etcd_ha/vault_arranque_instalar.sh</code>
+(aprovisionador <code>vault-arranque</code>, <code>run: always</code>, antes de <code>vault-server</code>): el desellado va <code>WantedBy=vault.service</code>
+(cada arranque de Vault, también un <code>Restart</code>, lo dessella); el <code>postrotate</code> solo manda SIGHUP con Vault activo (si
+arranca, espera hasta 60 s); la identidad se comprueba (CA, CN, OU, clave que casa) y no se reescribe si el
+certificado no cambia. El etcd-server pasa a <code>After=</code> (no <code>Wants=</code>) del desellado. Falco: el desellado es dueño de su
+clave (<code>curl</code> hijo de <code>bash</code> hijo de pid 1) y la lectura de una clave cuenta solo si el <code>open</code> tuvo éxito
+(<code>fd.num&gt;=0</code>, como <code>open_read</code> del reglamento oficial: GNU <code>install</code> hace <code>openat(destino, O_RDONLY|O_PATH|O_DIRECTORY)</code>,
+que falla sin leer). <strong>Solo laboratorio</strong>: en producción no hay clave de desellado en disco; ahí la protección es
+avisar de Vault sellado (DEBT-VAULT-SELLADO-ALERTA-001).</p>
+<p>Medido DAY322 (detalle en BACKLOG, «DAY322»): banco con Vault 2.2.1 y Falco 0.43.1 oficiales (firma comprobada); lab,
+<code>d322_reinicio_vault.sh</code> R1-R6 en ✅ (<code>sudo systemctl reboot</code> sin Vagrant con una rotación pendiente: logrotate rota,
+Vault arranca a la primera, lo dessella su unidad sin aprovisionadores; SIGKILL: vuelve desellado en 7 s; 0 CRITICAL);
+instalar una clave en <code>/etc/argus-pki</code> no da evento y copiarla fuera da 1 CRITICAL.</p>
+<p><strong>8e.4d-3, DAY322: <code>lab-e2e-vigilancia</code> [VIGILANCIA-E2E-D322].</strong> Cada caso provoca algo en el lab y exige su alerta en
+el <code>alerts.json</code> del manager de Wazuh, escrita después del inicio del caso (<code>scripts/vigilancia/alertas_wazuh.sh</code> lee
+solo lo nuevo, por byte, y detecta la rotación): C1 FIM en <code>/etc/argus-pki</code> (554 y 553), C2 umbral del disco bajado
+(100541), C3 audit de fichero de Vault con <code>chattr +i</code> (100520; Vault reabre el fichero, ese <code>open</code> falla y sigue con el
+device de syslog), C5 lectura ajena de una clave (100551), C6 intento fallido de leerla (100552, regla nueva
+<code>argus_lab_clave_intento_fallido</code>, EACCES/EPERM; con <code>fd.num=-1</code>, <code>fd.name</code> es la ruta pedida), C8 trazas de un
+<code>etcd-vm-check</code> con etcd parado, C7 el reinicio de Vault sin Vagrant (<code>d322_reinicio_vault.sh</code>) y C4 una divergencia del
+vigía (<code>d320_vigia_e2e.sh</code> con <code>D320_EVENTOS=E1</code>; 100511 y 100512). Dentro de <code>lab-e2e</code>, tras <code>lab-e2e-latido</code>. Decisiones
+de Alonso: C4 provoca su propia divergencia; C8 midió primero y después es criterio: trazas de Falco &lt;=
+<code>VIG_C8_MAX_TRAZAS</code> (defecto 60, parámetro porque otro despliegue puede necesitar más) y todas llegan al manager.
+Medido: 14 trazas y 14 alertas (se predijeron ~255: cada <code>etcdctl</code> espera su timeout y en 36 s caben un par de vueltas),
+menos que un <code>pipeline-status</code> sano (17): no hace falta agruparlas. Dos corridas en PASA.</p>
+<p><strong>8e.5, DAY322-323: bootstrap del manifiesto y EMECAS+++ desde cero [PROTEGIDOS-BOOTSTRAP-D322] [PROTEGIDOS-SENSORES-D323].</strong>
+El bootstrap firma la versión 1 desde la plantilla del lab (<code>argus-infra init --desde … --si</code>; rc 4 propio si ya hay un
+manifiesto, que el bootstrap da por bueno) y lab-e2e-protegidos la exige en P1-P6. Las paradas de EMECAS+++ desde cero
+del DAY322 (antispoof con lo esperado escrito a mano, R3 contando flujos ajenos, el grupo del agente de Wazuh, C7 en
+una VM nueva) y del DAY323 (Suricata sin reglas ni interfaz, un reloj por sensor, la ventana MITRE, la clave de Jenkins,
+el NTP de los sensores dentro del episodio DDoS) están medidas una a una en <code>docs/BACKLOG.md</code>. La que toca a este ADR:
+con la hora del defender, el NTP de los sensores (.10, .11, .12) a .1 caía dentro del ataque UDP y entraba en
+<code>origenes=</code>; los sensores son infraestructura del NDR y entran en la plantilla (MAC vacía, decisión de Alonso), y el
+veredicto saca la infraestructura del manifiesto que aplica el firewall, no de una lista fija. El fondo (tráfico
+legítimo hacia la víctima dentro del episodio) es DEBT-DDOS-COLATERAL-LEGITIMO-001. Resultado: EMECAS+++ desde cero
+PASA el DAY323 (4h02m, sobre 443fffb96).</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>
