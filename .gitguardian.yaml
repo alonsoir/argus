@@ -1,10 +1,11 @@
 version: 2
-paths_ignore:
-  - logs/**
-  - data/**
-  - "**/*.jsonl"
-  - "**/*.log"
-  - .venv/**
-  - mawi/**
-  - datasets/**
-  - backups/**
+secret:
+  ignored_paths:
+    - logs/**
+    - data/**
+    - "**/*.jsonl"
+    - "**/*.log"
+    - .venv/**
+    - mawi/**
+    - datasets/**
+    - backups/**
