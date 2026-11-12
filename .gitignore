@@ -106,7 +106,6 @@ firewall-acl-agent/CMakeCache.txt
 **/*.pb.h
 
 # Python cache for ML scripts
-ml-training/scripts/__pycache__/
 ml-training/scripts/*.py[cod]
 ml-training/scripts/*$py.class
 
@@ -210,7 +209,6 @@ docs/argus_ndr_v*.pdf
 docs/latex/Archivo.zip
 docs/latex/*.zip
 etcd-server/build
-scripts/parquet/schemas/__pycache__/
 test_sos_e2e.cpp
 enterprise_vendor.key
 enterprise.token
@@ -293,7 +291,6 @@ tools/scratch/
 
 # [VIGILANCIA-D321] el agente de Wazuh ya no va al repo como .deb: se instala del apt firmado de Wazuh con la versión
 # de provisioning/wazuh/VERSION (scripts/vigilancia/wazuh_agente_instalar.sh)
-scripts/__pycache__/
 
 docs/latex/*.pdf
 docs/latex/*.blg
@@ -314,3 +311,7 @@ ml-training/scripts/ddos_detection/evidence/seed-repro/*.json
 /tools/build
 # etcd-server de Vault por perfil ([ARGUS-PROFILE-D303])
 /etcd-server/build-vault-*/
+
+# Python: caché de bytecode (en cualquier directorio)
+__pycache__/
+*.pyc
