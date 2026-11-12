@@ -1,0 +1,294 @@
+---
+# aRGus NDR -- Playbook: etcd en clúster en los nodos del plano de control [ETCD-CLUSTER-D324]
+# ADR-048 (revisión DAY324), DEBT-ETCD-HA-TLS-RAFT-001 PR2b paso 4. Lo que hace Vagrant y lo que hace este playbook:
+#   Vagrant (por nodo): binario oficial de etcd (sha256 fijado), su certificado etcd-<nodo> con su IP en el SAN
+#     (d312_pki.sh nodos), el usuario etcd y nftables (2381/2382 solo entre nodos del plano de control).
+#   Ansible (aquí, desde el defender): etcd.conf.yml (templates/etcd.conf.yml.j2) y la unidad, el arranque, el RBAC
+#     y la comprobación del clúster.
+# Arranque estático (decisión de Alonso DAY324): los miembros arrancan a la vez con el mismo initial-cluster.
+#   - Ningún nodo con datos (/var/lib/etcd/member): se arranca el clúster.
+#   - Todos con datos: se comprueba que los miembros son los del inventario; si cambia la configuración, se reinicia
+#     de uno en uno esperando a que cada miembro vuelva sano (el quórum nunca se pierde).
+#   - Unos sí y otros no, o miembros distintos de los del inventario: se falla sin tocar nada. Sumar o reemplazar un
+#     miembro en un clúster vivo (member add/remove) es otra operación: PR2e.
+# Tiempos de Raft (group_vars; el JSON es la ley también aquí): etcd_heartbeat_interval_ms entero [50, 1000],
+#   etcd_election_timeout_ms entero [500, 10000] y election >= 5 x heartbeat. Ausentes o mal: se usa el defecto
+#   validado (100 y 1000, los de etcd) avisando con [ETCD-CLUSTER-DEFAULT]; siempre se registra el valor aplicado y
+#   de dónde sale ([ETCD-CLUSTER-CONFIG]).
+# Uso dev: make etcd-cluster-deploy   (lo llama también make etcd-vm-deploy, antes del etcd-server)
+
+- name: aRGus NDR -- el grupo etcd_members del inventario es la lista de argus_control_nodos
+  hosts: localhost
+  gather_facts: false
+  tasks:
+    - name: "etcd_members existe y no está vacío"
+      assert:
+        that:
+          - groups['etcd_members'] is defined
+          - groups['etcd_members'] | length > 0
+        fail_msg: "[ETCD-CLUSTER] el inventario no tiene el grupo etcd_members o está vacío: no se despliega nada"
+        quiet: true
+
+    - name: "Mismos nodos (nombre e IP) en etcd_members y en argus_control_nodos"
+      vars:
+        nodos: "{{ hostvars[groups['etcd_members'][0]]['argus_control_nodos'] | default([]) }}"
+        en_inventario: "{{ groups['etcd_members'] | map('extract', hostvars, 'ansible_host') | list }}"
+      assert:
+        that:
+          - nodos | length > 0
+          - (groups['etcd_members'] | sort) == (nodos | map(attribute='nombre') | sort)
+          - (en_inventario | sort) == (nodos | map(attribute='ip') | sort)
+        fail_msg: >-
+          [ETCD-CLUSTER] etcd_members del inventario ({{ groups['etcd_members'] | join(', ') }} en
+          {{ en_inventario | join(', ') }}) no coincide con argus_control_nodos del group_vars
+          ({{ nodos | map(attribute='nombre') | join(', ') }} en {{ nodos | map(attribute='ip') | join(', ') }})
+        quiet: true
+
+- name: aRGus NDR -- etcd en clúster
+  hosts: etcd_members
+  gather_facts: false
+  become: true
+  vars:
+    hb_defecto: 100
+    el_defecto: 1000
+    hb_v: "{{ etcd_heartbeat_interval_ms | default('') }}"
+    el_v: "{{ etcd_election_timeout_ms | default('') }}"
+    hb_bien: "{{ (hb_v | string) is match('^[0-9]+$') and (hb_v | int) >= 50 and (hb_v | int) <= 1000 }}"
+    el_bien: "{{ (el_v | string) is match('^[0-9]+$') and (el_v | int) >= 500 and (el_v | int) <= 10000 }}"
+    par_bien: "{{ hb_bien and el_bien and (el_v | int) >= 5 * (hb_v | int) }}"
+    etcd_conf: /etc/etcd/etcd.conf.yml
+    etcd_unidad: /etc/systemd/system/etcd.service
+    etcd_lider_admin: "{{ groups['etcd_members'][0] }}"
+    etcd_endpoints: "{{ argus_control_nodos | map(attribute='ip') | map('regex_replace', '^(.*)$', 'https://\\1:2381') | list }}"
+    etcdctl_admin: >-
+      etcdctl --cacert=/etc/etcd/tls/ca.crt --cert=/etc/argus-pki/etcd-server.crt
+      --key=/etc/argus-pki/etcd-server.key --command-timeout=5s
+
+  tasks:
+    - name: "Tiempos de Raft aplicados (inventario o defecto validado)"
+      set_fact:
+        etcd_hb: "{{ (hb_v | int) if par_bien else hb_defecto }}"
+        etcd_el: "{{ (el_v | int) if par_bien else el_defecto }}"
+        etcd_tiempos_origen: >-
+          {{ 'inventario' if par_bien else ('defecto: ' ~ ('ausente' if hb_v == '' and el_v == '' else
+          'heartbeat=' ~ hb_v ~ ' election=' ~ el_v ~ ' no valen (heartbeat entero [50, 1000], election entero
+          [500, 10000], election >= 5 x heartbeat)')) }}
+
+    - name: "[ETCD-CLUSTER-DEFAULT] aviso si se usa el defecto"
+      debug:
+        msg: >-
+          [ETCD-CLUSTER-DEFAULT] {{ inventory_hostname }}: heartbeat-interval={{ etcd_hb }} ms y
+          election-timeout={{ etcd_el }} ms ({{ etcd_tiempos_origen | trim }}). Revisar etcd_heartbeat_interval_ms y
+          etcd_election_timeout_ms en el group_vars.
+      when: not par_bien
+
+    - name: "Datos del nodo y del clúster desde argus_control_nodos"
+      set_fact:
+        etcd_ip: "{{ (argus_control_nodos | selectattr('nombre', 'equalto', inventory_hostname) | first).ip }}"
+        etcd_initial_cluster: >-
+          {{ argus_control_nodos | map(attribute='nombre') | zip(argus_control_nodos | map(attribute='ip'))
+             | map('join', '=https://') | map('regex_replace', '$', ':2382') | join(',') }}
+        etcd_token: "argus-{{ argus_hospital_id }}"
+
+    - name: "[ETCD-CLUSTER-CONFIG] configuración efectiva"
+      debug:
+        msg: >-
+          [ETCD-CLUSTER-CONFIG] {{ inventory_hostname }} ip={{ etcd_ip }} heartbeat-interval={{ etcd_hb }} ms
+          election-timeout={{ etcd_el }} ms ({{ etcd_tiempos_origen | trim }}) initial-cluster={{ etcd_initial_cluster | trim }}
+          token={{ etcd_token }}
+
+    - name: "Binario de etcd y certificados del nodo (los pone Vagrant: etcd-install y etcd-tls)"
+      stat:
+        path: "{{ item }}"
+      loop: [/usr/local/bin/etcd, /etc/etcd/tls/ca.crt, /etc/etcd/tls/etcd.crt, /etc/etcd/tls/etcd.key]
+      register: etcd_ficheros
+
+    - name: "Sin binario o sin certificados no se configura nada"
+      assert:
+        that: etcd_ficheros.results | map(attribute='stat.exists') | select | list | length == 4
+        fail_msg: >-
+          [ETCD-CLUSTER] {{ inventory_hostname }}: falta
+          {{ etcd_ficheros.results | rejectattr('stat.exists') | map(attribute='item') | join(', ') }}
+          (desde el Mac: vagrant provision {{ inventory_hostname }})
+        quiet: true
+
+    - name: "¿Tiene datos este miembro? (/var/lib/etcd/member)"
+      stat:
+        path: /var/lib/etcd/member
+      register: etcd_datos
+
+    - name: "Modo: arranque (nadie tiene datos) o existente (todos); mezcla = fallo"
+      run_once: true
+      set_fact:
+        etcd_modo: >-
+          {{ 'arranque' if con_datos | length == 0 else ('existente' if con_datos | length == ansible_play_hosts | length
+             else 'mezcla') }}
+        etcd_con_datos: "{{ con_datos }}"
+      vars:
+        con_datos: "{{ ansible_play_hosts | map('extract', hostvars) | selectattr('etcd_datos.stat.exists') | map(attribute='inventory_hostname') | list }}"
+
+    - name: "Mezcla de miembros con y sin datos: no se toca nada"
+      run_once: true
+      assert:
+        that: etcd_modo | trim != 'mezcla'
+        fail_msg: >-
+          [ETCD-CLUSTER] tienen datos {{ etcd_con_datos | join(', ') }} y no los demás de {{ ansible_play_hosts | join(', ') }}:
+          eso es sumar o reemplazar un miembro (member add, PR2e), no un arranque. Para rehacer el laboratorio desde
+          cero: vagrant destroy -f de los nodos con datos y vagrant up.
+        quiet: true
+
+    - name: "Clúster existente: los miembros son los del inventario (nombre y URL de peer)"
+      run_once: true
+      delegate_to: "{{ etcd_lider_admin }}"
+      when: etcd_modo | trim == 'existente'
+      shell: "{{ etcdctl_admin }} --endpoints={{ etcd_endpoints | join(',') }} member list -w json"
+      register: etcd_ml_antes
+      changed_when: false
+
+    - name: "Clúster existente con otros miembros: no se toca nada"
+      run_once: true
+      when: etcd_modo | trim == 'existente'
+      vars:
+        reales: "{{ (etcd_ml_antes.stdout | from_json).members | map(attribute='name') | sort }}"
+        esperados: "{{ argus_control_nodos | map(attribute='nombre') | sort }}"
+      assert:
+        that: reales == esperados
+        fail_msg: "[ETCD-CLUSTER] miembros reales {{ reales | join(', ') }} y esperados {{ esperados | join(', ') }}: no se toca nada (member add/remove: PR2e)"
+        quiet: true
+
+    - name: "etcd.conf.yml desde la plantilla"
+      template:
+        src: templates/etcd.conf.yml.j2
+        dest: "{{ etcd_conf }}"
+        owner: root
+        group: etcd
+        mode: "0640"
+      register: etcd_conf_res
+
+    - name: "Unidad systemd de etcd"
+      copy:
+        dest: "{{ etcd_unidad }}"
+        owner: root
+        group: root
+        mode: "0644"
+        content: |
+          # [ETCD-CLUSTER-D324] generado por Ansible (ansible/playbooks/etcd_cluster.yml); no editar a mano
+          [Unit]
+          Description=etcd del plano de control de aRGus (miembro {{ inventory_hostname }}) [ETCD-CLUSTER-D324]
+          After=network-online.target
+          Wants=network-online.target
+          [Service]
+          User=etcd
+          Group=etcd
+          ExecStart=/usr/local/bin/etcd --config-file {{ etcd_conf }}
+          Restart=on-failure
+          RestartSec=2
+          LimitNOFILE=65536
+          [Install]
+          WantedBy=multi-user.target
+      register: etcd_unidad_res
+
+    - name: "systemd recarga la unidad si cambió"
+      systemd:
+        daemon_reload: true
+      when: etcd_unidad_res.changed
+
+    - name: "Arranque: los miembros arrancan a la vez (se esperan entre sí hasta tener quórum)"
+      when: etcd_modo | trim == 'arranque'
+      systemd:
+        name: etcd
+        state: started
+        enabled: true
+
+    # /health del propio miembro con SU certificado (etcd-<nodo>): solo control-1 tiene el del etcd-server
+    - name: "Existente: reinicio de uno en uno si cambió la configuración, esperando a que el miembro vuelva sano"
+      when: etcd_modo | trim == 'existente' and (etcd_conf_res.changed or etcd_unidad_res.changed)
+      throttle: 1
+      shell: |
+        systemctl restart etcd
+        for i in $(seq 1 60); do
+          curl -s --max-time 2 --cacert /etc/etcd/tls/ca.crt --cert /etc/etcd/tls/etcd.crt --key /etc/etcd/tls/etcd.key \
+            https://127.0.0.1:2381/health | grep -q '"health":"true"' && exit 0
+          sleep 1
+        done
+        echo "[ETCD-CLUSTER] {{ inventory_hostname }} no vuelve sano en 60 s (journalctl -u etcd)"; exit 1
+      args:
+        executable: /bin/bash
+
+    - name: "Existente: etcd habilitado y en marcha"
+      when: etcd_modo | trim == 'existente'
+      systemd:
+        name: etcd
+        state: started
+        enabled: true
+
+    - name: "Todos los miembros sanos (hasta 60 s)"
+      run_once: true
+      delegate_to: "{{ etcd_lider_admin }}"
+      shell: "{{ etcdctl_admin }} --endpoints={{ etcd_endpoints | join(',') }} endpoint health"
+      register: etcd_salud
+      until: etcd_salud.rc == 0
+      retries: 30
+      delay: 2
+      changed_when: false
+
+    # [ETCD-LOCAL-D312] el RBAC de siempre: el CN del certificado es el usuario; etcd-server solo lee/escribe bajo
+    # /argus/; root sin contraseña y sin certificado CN=root emitido. Una vez por clúster, con quórum.
+    - name: "RBAC (una vez por clúster)"
+      run_once: true
+      delegate_to: "{{ etcd_lider_admin }}"
+      shell: |
+        set -e
+        E="{{ etcdctl_admin }} --endpoints={{ etcd_endpoints | join(',') }}"
+        AUTH=$($E auth status 2>&1 || true)
+        if echo "$AUTH" | grep -qE 'Authentication Status: true|permission denied'; then echo "RBAC ya activado"; exit 0; fi
+        echo "$AUTH" | grep -q 'Authentication Status: false' || { echo "auth status inesperado: $AUTH"; exit 1; }
+        $E user get root > /dev/null 2>&1        || $E user add root --no-password > /dev/null
+        $E user grant-role root root > /dev/null
+        $E role get argus-rw > /dev/null 2>&1    || $E role add argus-rw > /dev/null
+        $E role grant-permission argus-rw readwrite /argus/ --prefix=true > /dev/null
+        $E user get etcd-server > /dev/null 2>&1 || $E user add etcd-server --no-password > /dev/null
+        $E user grant-role etcd-server argus-rw > /dev/null
+        $E auth enable > /dev/null
+        echo "RBAC activado (etcd-server: readwrite /argus/; root sin certificado emitido)"
+      args:
+        executable: /bin/bash
+      register: etcd_rbac
+      changed_when: "'RBAC activado' in etcd_rbac.stdout"
+
+    - name: "Comprobación del clúster: miembros del inventario, URLs de peer, todos sanos, un líder"
+      run_once: true
+      delegate_to: "{{ etcd_lider_admin }}"
+      shell: |
+        set -e
+        E="{{ etcdctl_admin }} --endpoints={{ etcd_endpoints | join(',') }} -w json"
+        $E member list > /tmp/argus_etcd_ml.json
+        $E endpoint status > /tmp/argus_etcd_st.json
+        python3 - /tmp/argus_etcd_ml.json /tmp/argus_etcd_st.json '{{ argus_control_nodos | to_json }}' <<'PY'
+        import json, sys
+        ml = json.load(open(sys.argv[1]))["members"]
+        st = json.load(open(sys.argv[2]))
+        esperados = {n["nombre"]: "https://%s:2382" % n["ip"] for n in json.loads(sys.argv[3])}
+        reales = {m.get("name", "?"): (m.get("peerURLs") or ["?"])[0] for m in ml}
+        lideres = {s["Status"]["leader"] for s in st}
+        ids = {m["ID"]: m.get("name", "?") for m in ml}
+        aplicados = sorted(s["Status"].get("raftAppliedIndex", s["Status"]["raftIndex"]) for s in st)
+        mal = []
+        if reales != esperados: mal.append("miembros %s, esperados %s" % (reales, esperados))
+        if len(st) != len(esperados): mal.append("responden %d de %d" % (len(st), len(esperados)))
+        if len(lideres) != 1: mal.append("líderes %s" % sorted(lideres))
+        lider = ids.get(next(iter(lideres)), "?") if len(lideres) == 1 else "?"
+        print("[ETCD-CLUSTER] %d/%d miembros (%s), líder %s, term %s, índice aplicado %s..%s" % (
+            len(st), len(esperados), ", ".join(sorted(reales)), lider, st[0]["Status"]["raftTerm"], aplicados[0], aplicados[-1]))
+        if mal:
+            print("[ETCD-CLUSTER] FALLA: " + "; ".join(mal)); sys.exit(1)
+        PY
+      args:
+        executable: /bin/bash
+      register: etcd_comprobacion
+      changed_when: false
+
+    - name: "Resultado"
+      run_once: true
+      debug:
+        msg: "{{ etcd_comprobacion.stdout_lines }}"

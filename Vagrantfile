@@ -1643,7 +1643,9 @@ BASHRC_EOF
       mount_options: ["dmode=775,fmode=775,exec"]
 
     # [VM-ETCD-D312] hora del defender (TLS y logs necesitan relojes alineados) y cortafuegos de entrada.
-    etcd.vm.provision "shell", name: "etcd-base", run: "always", inline: <<-'ETCD_BASE'
+    etcd.vm.provision "shell", name: "etcd-base", run: "always",
+      env: { "ARGUS_PEERS" => ARGUS_CONTROL["nodos"].map { |n| n["ip"] }.reject { |ip| ip == nodo["ip"] }.join(", ") },
+      inline: <<-'ETCD_BASE'
       set -e
       export DEBIAN_FRONTEND=noninteractive
       echo "=== etcd VM: base (chrony + nftables) [VM-ETCD-D312] ==="
@@ -1678,11 +1680,22 @@ table inet argus_etcd {
   chain output  { type filter hook output priority 0; policy accept; }
 }
 NFT
+      # [ETCD-CLUSTER-D324] etcd entre nodos del plano de control: clientes (2381) y peers (2382), solo desde los otros
+      # nodos (ARGUS_PEERS, del Vagrantfile: argus_control_nodos menos este). Con un solo nodo no hay regla.
+      if [ -n "${ARGUS_PEERS:-}" ]; then
+        [[ "$ARGUS_PEERS" =~ ^192\.168\.100\.[0-9]{1,3}(,\ 192\.168\.100\.[0-9]{1,3})*$ ]] \
+          || { echo "❌ etcd-base: ARGUS_PEERS='$ARGUS_PEERS' mal formado"; exit 1; }
+        sed -i "s|^    ip saddr 192.168.100.1 tcp dport 2379 accept\$|&\n    ip saddr { $ARGUS_PEERS } tcp dport { 2381, 2382 } accept|" /etc/nftables.conf
+      fi
       nft -c -f /etc/nftables.conf
       systemctl enable nftables
       systemctl restart nftables
       nft list chain inet argus_etcd input | grep -q 'ip saddr 192.168.100.1 tcp dport 2379 accept' \
         || { echo "❌ etcd-base: la regla del 2379 no quedó cargada"; exit 1; }
+      if [ -n "${ARGUS_PEERS:-}" ]; then
+        nft list chain inet argus_etcd input | grep -q "ip saddr { $ARGUS_PEERS } tcp dport { 2381, 2382 } accept" \
+          || { echo "❌ etcd-base: la regla de etcd entre nodos ($ARGUS_PEERS) no quedó cargada"; exit 1; }
+      fi
       echo "✅ etcd-base OK: $(chronyc -n tracking | grep 'Reference ID'); nftables argus_etcd cargada"
     ETCD_BASE
 
@@ -1877,10 +1890,13 @@ print("✅ vault-server: argus-transit/keys/%s ed25519, exportable=False, deleti
       vault status -format=json | python3 -c 'import sys,json; s=json.load(sys.stdin); print("✅ vault-server: sealed=%s storage=%s version=%s" % (s["sealed"], s["storage_type"], s["version"]))'
     VAULT_SERVER
 
-    # [ETCD-LOCAL-D312] etcd real de 1 nodo (binario oficial v3.6.16, sha256 fijado, como Kuzu), solo 127.0.0.1:2381/2382,
-    # TLS de cliente obligatorio y RBAC por CN (etcd-server: readwrite /argus/). El PR2 añade los peers (HA Raft).
+    end  # if primero
+
+    # [ETCD-CLUSTER-D324] etcd en TODOS los nodos (ADR-048, revisión DAY324). Aquí solo el binario oficial (v3.6.16, sha256
+    # fijado), el certificado etcd-<nodo> del nodo (d312_pki.sh nodos: su IP en el SAN) y el usuario etcd. etcd.conf.yml,
+    # la unidad, el arranque del clúster y el RBAC los hace Ansible desde el defender: make etcd-cluster-deploy.
     etcd.vm.provision "shell", name: "pki-etcd-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-etcd"
-    %w[ca.crt etcd.crt etcd.key].each do |f|
+    ["ca.crt", "etcd-#{nodo["nombre"]}.crt", "etcd-#{nodo["nombre"]}.key"].each do |f|
       etcd.vm.provision "pki-etcd-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki-etcd/#{f}"
     end
     etcd.vm.provision "shell", name: "etcd-install", inline: <<-'ETCD_INSTALL'
@@ -1904,87 +1920,34 @@ print("✅ vault-server: argus-transit/keys/%s ed25519, exportable=False, deleti
   /usr/local/bin/etcd --version | grep -q "^etcd Version: ${ETCD_VER#v}$" || { echo "❌ ETCD_INSTALL: versión instalada inesperada"; exit 1; }
   echo "✅ etcd $(/usr/local/bin/etcd --version | head -1 | awk '{print $3}') instalado (sha256 verificado)"
     ETCD_INSTALL
-    etcd.vm.provision "shell", name: "etcd-local", inline: <<-'ETCD_LOCAL'
+    etcd.vm.provision "shell", name: "etcd-tls",
+      env: { "ARGUS_NODO" => nodo["nombre"], "ARGUS_NODO_IP" => nodo["ip"] }, inline: <<-'ETCD_TLS'
       set -e
       umask 077
-      echo "=== etcd VM: etcd 1 nodo (solo 127.0.0.1, TLS de cliente obligatorio) [ETCD-LOCAL-D312] ==="
+      [[ "${ARGUS_NODO:-}" =~ ^[a-z0-9-]{1,32}$ ]] && [[ "${ARGUS_NODO_IP:-}" =~ ^192\.168\.100\.[0-9]{1,3}$ ]] \
+        || { echo "❌ etcd-tls: ARGUS_NODO='${ARGUS_NODO:-}' / ARGUS_NODO_IP='${ARGUS_NODO_IP:-}' ausentes o mal formados"; exit 1; }
+      echo "=== $ARGUS_NODO: usuario y TLS de etcd [ETCD-CLUSTER-D324] (configuración y arranque: make etcd-cluster-deploy) ==="
       id etcd > /dev/null 2>&1 || useradd --system --home-dir /var/lib/etcd --shell /usr/sbin/nologin etcd
       install -d -m 0700 -o etcd -g etcd /var/lib/etcd
+      install -d -m 0755 -o root -g root /etc/etcd
       PKI_IN=/tmp/argus-pki-etcd
       if [ -d "$PKI_IN" ]; then
         install -d -m 0750 -o etcd -g etcd /etc/etcd/tls
-        install -m 0644 -o etcd -g etcd "$PKI_IN/ca.crt"   /etc/etcd/tls/ca.crt
-        install -m 0644 -o etcd -g etcd "$PKI_IN/etcd.crt" /etc/etcd/tls/etcd.crt
-        install -m 0600 -o etcd -g etcd "$PKI_IN/etcd.key" /etc/etcd/tls/etcd.key
+        install -m 0644 -o etcd -g etcd "$PKI_IN/ca.crt"                /etc/etcd/tls/ca.crt
+        install -m 0644 -o etcd -g etcd "$PKI_IN/etcd-$ARGUS_NODO.crt" /etc/etcd/tls/etcd.crt
+        install -m 0600 -o etcd -g etcd "$PKI_IN/etcd-$ARGUS_NODO.key" /etc/etcd/tls/etcd.key
         rm -rf "$PKI_IN"
       fi
-      for f in /etc/etcd/tls/ca.crt /etc/etcd/tls/etcd.crt /etc/etcd/tls/etcd.key /etc/argus-pki/etcd-server.crt /etc/argus-pki/etcd-server.key; do
-        [ -s "$f" ] || { echo "❌ etcd-local: falta $f"; exit 1; }
+      for f in /etc/etcd/tls/ca.crt /etc/etcd/tls/etcd.crt /etc/etcd/tls/etcd.key; do
+        [ -s "$f" ] || { echo "❌ etcd-tls: falta $f (en el Mac: bash scripts/etcd_ha/d312_pki.sh nodos \$ARGUS_PKI_DIR; vagrant provision $ARGUS_NODO)"; exit 1; }
       done
-      cat > /etc/etcd/etcd.conf.yml <<'YML'
-# [ETCD-LOCAL-D312] generado por el Vagrantfile; no editar a mano. Un nodo (PR1); el PR2 añade los peers.
-name: argus-etcd-1
-data-dir: /var/lib/etcd
-listen-client-urls: https://127.0.0.1:2381
-advertise-client-urls: https://127.0.0.1:2381
-listen-peer-urls: https://127.0.0.1:2382
-initial-advertise-peer-urls: https://127.0.0.1:2382
-initial-cluster: argus-etcd-1=https://127.0.0.1:2382
-initial-cluster-state: new
-initial-cluster-token: argus-lab
-client-transport-security:
-  cert-file: /etc/etcd/tls/etcd.crt
-  key-file: /etc/etcd/tls/etcd.key
-  trusted-ca-file: /etc/etcd/tls/ca.crt
-  client-cert-auth: true
-peer-transport-security:
-  cert-file: /etc/etcd/tls/etcd.crt
-  key-file: /etc/etcd/tls/etcd.key
-  trusted-ca-file: /etc/etcd/tls/ca.crt
-  client-cert-auth: true
-YML
-      chown root:etcd /etc/etcd/etcd.conf.yml; chmod 0640 /etc/etcd/etcd.conf.yml
-      cat > /etc/systemd/system/etcd.service <<'UNIT'
-[Unit]
-Description=etcd del lab (1 nodo, solo 127.0.0.1) [ETCD-LOCAL-D312]
-After=network-online.target
-Wants=network-online.target
-[Service]
-User=etcd
-Group=etcd
-ExecStart=/usr/local/bin/etcd --config-file /etc/etcd/etcd.conf.yml
-Restart=on-failure
-RestartSec=2
-LimitNOFILE=65536
-[Install]
-WantedBy=multi-user.target
-UNIT
-      systemctl daemon-reload
-      systemctl enable etcd
-      systemctl restart etcd
-      E="etcdctl --endpoints=https://127.0.0.1:2381 --cacert=/etc/etcd/tls/ca.crt --cert=/etc/argus-pki/etcd-server.crt --key=/etc/argus-pki/etcd-server.key"
-      ok=0; for i in $(seq 1 30); do if $E endpoint health > /dev/null 2>&1; then ok=1; break; fi; sleep 1; done
-      [ "$ok" = "1" ] || { echo "❌ etcd-local: etcd no responde en 30 s (ver journalctl -u etcd)"; exit 1; }
-      # RBAC: el CN del certificado es el usuario. etcd-server solo lee/escribe bajo /argus/; root sin contraseña y sin
-      # certificado CN=root emitido: nadie administra salvo que se emita uno a propósito.
-      # Sin auth, auth status lo puede pedir cualquiera; con auth, a etcd-server se le niega: las dos cosas dicen "activado".
-      AUTH=$($E auth status 2>&1 || true)
-      if ! echo "$AUTH" | grep -qE 'Authentication Status: true|permission denied'; then
-        echo "$AUTH" | grep -q 'Authentication Status: false' || { echo "❌ etcd-local: auth status inesperado"; exit 1; }
-        $E user get root > /dev/null 2>&1        || $E user add root --no-password > /dev/null
-        $E user grant-role root root > /dev/null
-        $E role get argus-rw > /dev/null 2>&1    || $E role add argus-rw > /dev/null
-        $E role grant-permission argus-rw readwrite /argus/ --prefix=true > /dev/null
-        $E user get etcd-server > /dev/null 2>&1 || $E user add etcd-server --no-password > /dev/null
-        $E user grant-role etcd-server argus-rw > /dev/null
-        $E auth enable > /dev/null
-        echo "✅ etcd-local: RBAC activado (etcd-server: readwrite /argus/; root sin certificado emitido)"
-      else
-        echo "✅ etcd-local: RBAC ya activado"
-      fi
-      echo "✅ etcd-local: $($E endpoint status -w json | python3 -c 'import sys,json; s=json.load(sys.stdin)[0]["Status"]; print("version=%s lider=%s" % (s["version"], "si" if s["leader"] == s["header"]["member_id"] else "no"))')"
-    ETCD_LOCAL
-    end  # if primero
+      command -v openssl > /dev/null || { apt-get update -qq; apt-get install -y -qq openssl > /dev/null; }
+      openssl verify -CAfile /etc/etcd/tls/ca.crt /etc/etcd/tls/etcd.crt > /dev/null \
+        || { echo "❌ etcd-tls: /etc/etcd/tls/etcd.crt no lo firmó la CA del laboratorio"; exit 1; }
+      openssl x509 -in /etc/etcd/tls/etcd.crt -noout -text | grep -qF "IP Address:$ARGUS_NODO_IP" \
+        || { echo "❌ etcd-tls: /etc/etcd/tls/etcd.crt sin IP:$ARGUS_NODO_IP en el SAN (¿el certificado de otro nodo?)"; exit 1; }
+      echo "✅ etcd-tls: etcd-$ARGUS_NODO (IP:$ARGUS_NODO_IP, firmado por la CA) en /etc/etcd/tls; etcd sin configurar hasta make etcd-cluster-deploy"
+    ETCD_TLS
 
     # [DEPLOY-SSH-D315] DEBT-ANSIBLE-DEPLOY-CONFIGS-001 paso 2a: usuario argus-deploy para Ansible/Jenkins desde el
     # defender. authorized_keys = SOLO la pública que dejó el provisioner deploy-key del defender (se reemplaza, no se

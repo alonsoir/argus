@@ -351,22 +351,22 @@ lab-clock-step:
 	@echo "[LAB-CLOCK-STEP] OK: defender y $(LAB_CLOCK_VMS) alineados"
 
 up-argus:
-	@vagrant up defender client control-1
+	@vagrant up defender client $(CONTROL_NODOS)
 
 up-suricata:
 	@cd experiments/suricata-comparative && vagrant up suricata client
 
 up:
-	@vagrant up defender client suricata zeek wazuh control-1
+	@vagrant up defender client suricata zeek wazuh $(CONTROL_NODOS)
 
 halt-argus:
-	@vagrant halt defender client control-1
+	@vagrant halt defender client $(CONTROL_NODOS)
 
 halt-suricata:
 	@cd experiments/suricata-comparative && vagrant halt
 
 halt:
-	@vagrant halt defender client suricata zeek wazuh control-1
+	@vagrant halt defender client suricata zeek wazuh $(CONTROL_NODOS)
 
 destroy:
 	@vagrant destroy -f
@@ -1298,7 +1298,7 @@ emecas:
 	@$(EMECAS_PASO) vagrant-destroy -- vagrant destroy -f
 	@$(EMECAS_PASO) clean-host-builds -- $(MAKE) clean-host-builds
 	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
-	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh control-1
+	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh $(CONTROL_NODOS)
 	@$(EMECAS_PASO) sello-inicio -- vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	@$(EMECAS_PASO) bootstrap -- $(MAKE) bootstrap
 	@$(EMECAS_PASO) emecas-frescura -- $(MAKE) emecas-frescura
@@ -2250,6 +2250,9 @@ dev-setup-tools:
 #   ETCD_VM_ESPERA_S: segundos que etcd-vm-check y etcd-vm-aviso esperan a que todo esté sano (entero [0, 300], defecto 30)
 # ════════════════════════════════════════════════════════════════════════════
 ETCD_VM_ESPERA_S ?= 30
+# [PLANO-CONTROL-D324] nodos del plano de control: argus_control_nodos del group_vars, validados por nodos_control.rb
+# (la misma validación que el Vagrantfile). Sin lista válida, el target que los use para aquí diciéndolo.
+CONTROL_NODOS = $(or $(shell ruby scripts/etcd_ha/nodos_control.rb nombres ansible/inventory/group_vars/argus_dev.yml Vagrantfile),$(error [PLANO-CONTROL-D324] sin nodos de control: ruby scripts/etcd_ha/nodos_control.rb nodos ansible/inventory/group_vars/argus_dev.yml Vagrantfile))
 ETCD_VM_UNIDAD := ml-defender-etcd-server.service
 ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
 .PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey protegidos-bootstrap test-argus-infra
@@ -2306,10 +2309,20 @@ test-vigilancia-disco:
 
 # Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
 etcd-vm-deploy:
+	@$(MAKE) --no-print-directory etcd-cluster-deploy  # [ETCD-CLUSTER-D324] el etcd-server necesita el clúster antes
 	@bash scripts/etcd_ha/d312_etcd_vm_deploy.sh $(PROFILE)
 	@$(MAKE) --no-print-directory deploy-configs
 	@vagrant ssh control-1 -c "sudo systemctl restart $(ETCD_VM_UNIDAD)"
 	@$(MAKE) --no-print-directory etcd-vm-check
+
+# [ETCD-CLUSTER-D324] etcd en clúster en los nodos del plano de control (Ansible desde el defender, como deploy-configs):
+# ansible/playbooks/etcd_cluster.yml. Arranque estático; con datos solo reinicia si cambió la configuración.
+etcd-cluster-deploy:
+	@vagrant ssh defender -- -t "cd /vagrant && sudo ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/etcd_cluster.yml --diff"
+
+# [ETCD-CLUSTER-D324] el clúster de verdad (VMs arriba): idempotencia, miembros de la lista, replicación, TLS, hashkv
+test-etcd-cluster:
+	@bash scripts/etcd_ha/test_etcd_cluster.sh
 
 # Informe (rc 0 siempre)
 etcd-vm-estado:

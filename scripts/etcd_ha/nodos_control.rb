@@ -16,6 +16,8 @@
 # Uso desde la terminal (raíz del repo):
 #   ruby scripts/etcd_ha/nodos_control.rb nodos GROUP_VARS VAGRANTFILE   -> TSV: nodo<TAB>nombre<TAB>ip<TAB>mac, memoria_mb, cpus
 #   ruby scripts/etcd_ha/nodos_control.rb inventario INVENTARIO          -> host<TAB>ansible_host de argus_dev, uno por línea
+#   ruby scripts/etcd_ha/nodos_control.rb grupo INVENTARIO GRUPO         -> los hosts del grupo, uno por línea
+#   ruby scripts/etcd_ha/nodos_control.rb nombres GROUP_VARS VAGRANTFILE -> los nombres en una línea (el Makefile: CONTROL_NODOS)
 # rc 0 si todo vale; rc 1 con un error por línea (campo, valor, formato y límites).
 require "yaml"
 
@@ -97,6 +99,11 @@ module ArgusNodosControl
     h = (((d["all"] || {})["children"] || {})["argus_dev"] || {})["hosts"] || {}
     h.map { |nombre, v| [nombre, (v || {})["ansible_host"].to_s] }
   end
+
+  def self.hosts_grupo(inventario, grupo)
+    d = YAML.safe_load(File.read(inventario, encoding: "UTF-8")) || {}
+    ((((d["all"] || {})["children"] || {})[grupo] || {})["hosts"] || {}).keys
+  end
 end
 
 if $PROGRAM_NAME == __FILE__
@@ -113,10 +120,22 @@ if $PROGRAM_NAME == __FILE__
     cfg["nodos"].each { |n| puts ["nodo", n["nombre"], n["ip"], n["mac"]].join("\t") }
     puts "memoria_mb\t#{cfg["memoria_mb"]}"
     puts "cpus\t#{cfg["cpus"]}"
+  when "nombres"
+    abort "uso: ruby #{$PROGRAM_NAME} nombres GROUP_VARS VAGRANTFILE" unless ARGV.size == 3
+    cfg, errores, avisos = ArgusNodosControl.cargar(ARGV[1], ARGV[2])
+    avisos.each { |a| warn "[PLANO-CONTROL] AVISO #{a}" }
+    unless errores.empty?
+      errores.each { |e| warn "[PLANO-CONTROL] ERROR #{e}" }
+      exit 1
+    end
+    puts cfg["nodos"].map { |n| n["nombre"] }.join(" ")
+  when "grupo"
+    abort "uso: ruby #{$PROGRAM_NAME} grupo INVENTARIO GRUPO" unless ARGV.size == 3
+    puts ArgusNodosControl.hosts_grupo(ARGV[1], ARGV[2])
   when "inventario"
     abort "uso: ruby #{$PROGRAM_NAME} inventario INVENTARIO" unless ARGV.size == 2
     ArgusNodosControl.hosts_inventario(ARGV[1]).each { |n, ip| puts "#{n}\t#{ip}" }
   else
-    abort "uso: ruby #{$PROGRAM_NAME} nodos GROUP_VARS VAGRANTFILE | inventario INVENTARIO"
+    abort "uso: ruby #{$PROGRAM_NAME} nodos|nombres GROUP_VARS VAGRANTFILE | inventario INVENTARIO | grupo INVENTARIO GRUPO"
   end
 end

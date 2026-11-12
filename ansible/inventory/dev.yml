@@ -37,3 +37,10 @@ all:
     etcd_servers:
       hosts:
         control-1:
+    # [ETCD-CLUSTER-D324] miembros del clúster etcd (ansible/playbooks/etcd_cluster.yml): los nodos de
+    # argus_control_nodos (make test-plano-control y el propio playbook exigen que coincidan)
+    etcd_members:
+      hosts:
+        control-1:
+        control-2:
+        control-3:

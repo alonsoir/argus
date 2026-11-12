@@ -1,0 +1,25 @@
+# [ETCD-CLUSTER-D324] generado por Ansible (ansible/playbooks/etcd_cluster.yml); no editar a mano
+# Miembro {{ inventory_hostname }} del clúster de {{ argus_control_nodos | length }} (argus_control_nodos del group_vars).
+# initial-cluster* solo cuenta en el primer arranque (directorio de datos vacío); luego manda el clúster.
+name: {{ inventory_hostname }}
+data-dir: /var/lib/etcd
+listen-client-urls: https://{{ etcd_ip }}:2381,https://127.0.0.1:2381
+advertise-client-urls: https://{{ etcd_ip }}:2381
+listen-peer-urls: https://{{ etcd_ip }}:2382
+initial-advertise-peer-urls: https://{{ etcd_ip }}:2382
+initial-cluster: {{ etcd_initial_cluster | trim }}
+initial-cluster-state: new
+initial-cluster-token: {{ etcd_token }}
+# Tiempos de Raft en ms ({{ etcd_tiempos_origen | trim }})
+heartbeat-interval: {{ etcd_hb }}
+election-timeout: {{ etcd_el }}
+client-transport-security:
+  cert-file: /etc/etcd/tls/etcd.crt
+  key-file: /etc/etcd/tls/etcd.key
+  trusted-ca-file: /etc/etcd/tls/ca.crt
+  client-cert-auth: true
+peer-transport-security:
+  cert-file: /etc/etcd/tls/etcd.crt
+  key-file: /etc/etcd/tls/etcd.key
+  trusted-ca-file: /etc/etcd/tls/ca.crt
+  client-cert-auth: true

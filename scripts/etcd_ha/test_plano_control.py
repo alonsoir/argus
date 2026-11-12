@@ -8,7 +8,8 @@
 #      fichero vivo, hasta que no entra ninguno más. Un parcheador de un día que nadie llama no es vivo. Este test
 #      no se mira a sí mismo (sus muestras de C0 llevan el nombre viejo a propósito).
 #   C2 (paso 2, lista de nodos): scripts/etcd_ha/nodos_control.rb (la misma validación que usa el Vagrantfile) acepta
-#      el group_vars real, y el inventario lleva exactamente esos nodos con su IP (ningún control-N de más ni de menos).
+#      el group_vars real, y el inventario lleva exactamente esos nodos con su IP (ningún control-N de más ni de menos),
+#      y su grupo etcd_members (el que despliega ansible/playbooks/etcd_cluster.yml) es exactamente esa lista.
 #      Y tiene que RECHAZAR, nombrando el campo, cada copia estropeada a propósito del group_vars real: IP repetida, IP
 #      de otra VM del Vagrantfile, MAC mal formada, memoria fuera de rango, primer nodo que no es control-1 y lista
 #      ausente. Necesita ruby (el del sistema vale: solo usa la biblioteca estándar).
@@ -146,6 +147,11 @@ def c2():
     sobran = [h for h in hosts if h.startswith("control-") and h not in dict(nodos)]
     if faltan or sobran:
         falla("C2: inventario y group_vars no coinciden: faltan o con otra IP %s; sobran %s" % (faltan, sobran))
+    rc, g = ruby("grupo", INV, "etcd_members")
+    miembros = sorted(l.strip() for l in g.splitlines() if l.strip())
+    if rc != 0 or miembros != sorted(n for n, _ in nodos):
+        falla("C2: el grupo etcd_members del inventario (%s) no es la lista de nodos (%s)"
+              % (", ".join(miembros), ", ".join(n for n, _ in nodos)))
     with open(GV, encoding="utf-8") as f:
         real = f.read()
     m = re.search(r"^argus_control_nodos:\n(?:  - .*\n)+", real, re.M)
@@ -170,7 +176,7 @@ def c2():
             rc, out = ruby("nodos", p, "Vagrantfile")
             if rc == 0 or esperado not in out:
                 falla("C2: la copia '%s' debía rechazarse diciendo '%s' (rc=%d):\n%s" % (nombre, esperado, rc, out))
-    print("[PLANO-CONTROL] C2 PASA: %d nodos (%s) iguales en group_vars e inventario; %d copias estropeadas rechazadas"
+    print("[PLANO-CONTROL] C2 PASA: %d nodos (%s) iguales en group_vars, inventario y etcd_members; %d copias estropeadas rechazadas"
           % (len(nodos), ", ".join(n for n, _ in nodos), len(estropeadas)))
 
 
