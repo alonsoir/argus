@@ -2290,6 +2290,11 @@ vigilancia-manager-deploy:
 test-plano-control:
 	@python3 -I scripts/etcd_ha/test_plano_control.py
 
+# [PKI-NODOS-D324] d312_pki.sh nodos sobre una PKI de usar y tirar en /tmp (Mac, sin VMs): SAN con la IP de cada
+# nodo, idempotente, y falla si un certificado no lleva la IP de su nodo o no lo firmó la CA
+test-pki-nodos:
+	@bash scripts/etcd_ha/test_pki_nodos.sh
+
 # Cada regla de aRGus contra su línea de provisioning/wazuh/argus/tests/casos_reglas.tsv, con wazuh-logtest en el manager
 test-vigilancia-reglas:
 	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/test_reglas_wazuh.sh"

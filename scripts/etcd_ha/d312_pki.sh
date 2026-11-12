@@ -4,6 +4,8 @@
 #   bash d312_pki.sh init    DIR [IP_VM_ETCD]   crea la CA y los certificados de servidor y de cliente
 #   bash d312_pki.sh reemitir DIR etcd|vault    reemite un certificado de servidor de perfil fijo con la CA existente
 #   bash d312_pki.sh cliente DIR ROL [INSTANCIA] añade un certificado de cliente (CN=INSTANCIA, defecto ROL; OU=ROL)
+#   bash d312_pki.sh nodos   DIR [GROUP_VARS [VAGRANTFILE]]  [PKI-NODOS-D324] etcd-, vault- y etcd-server-<nodo> con
+#                                la IP de cada nodo de argus_control_nodos (desde la raíz del repo; ver el modo)
 # Identidad (DAY312): CN = instancia (clave HMAC propia, /secrets/{CN}); OU = rol (permisos de todo el rol).
 # Roles de administración (DAY318, ADR-060), separados a propósito:
 #   admin        (OU=admin)        operación diaria en el etcd-server: rotar claves HMAC, listar componentes, /info.
@@ -36,6 +38,9 @@ entero_en_rango() {  # nombre valor defecto min max
 
 perm() { if [ "$(uname -s)" = Darwin ]; then stat -f %Lp "$1"; else stat -c %a "$1"; fi; }
 huella() { openssl x509 -in "$1" -noout -fingerprint -sha256 | sed 's/^.*=//; s/://g' | tr 'A-F' 'a-f'; }
+# [PKI-NODOS-D324] entradas del SAN, una por línea (DNS:x, IP:x), con OpenSSL o LibreSSL (el del Mac)
+san_de() { openssl x509 -in "$1" -noout -text | sed -n '/Subject Alternative Name/{n;p;}' | tr ',' '\n' \
+  | sed 's/^ *//; s/IP Address:/IP:/'; }
 
 firmar() {  # nombre cn ou eku san
   local nom=$1 cn=$2 ou=$3 eku=$4 san=$5
@@ -79,7 +84,7 @@ fuera_de_git() {  # el directorio (o su padre si no existe) no puede estar dentr
 }
 
 MODO=${1:-}; D=${2:-}
-[ -n "$MODO" ] && [ -n "$D" ] || falla "uso: $0 init DIR [IP_VM_ETCD] | $0 reemitir DIR etcd|vault | $0 cliente DIR ROL [INSTANCIA]"
+[ -n "$MODO" ] && [ -n "$D" ] || falla "uso: $0 init DIR [IP_VM_ETCD] | $0 reemitir DIR etcd|vault | $0 cliente DIR ROL [INSTANCIA] | $0 nodos DIR [GROUP_VARS [VAGRANTFILE]]"
 command -v openssl >/dev/null || falla "no hay openssl"
 log "openssl: $(openssl version)"
 exec 3>/tmp/d312_pki_val.$$
@@ -123,6 +128,35 @@ case "$MODO" in
     firmar "$CN" "$CN" "$ROL" clientAuth ""
     comprobar
     ;;
+  nodos)
+    # [PKI-NODOS-D324] un juego por nodo del plano de control, de la lista que valida nodos_control.rb (la misma del
+    # Vagrantfile). CN = <perfil>-<nodo> (instancia), OU = perfil (rol); SAN = localhost, la IP del nodo y 127.0.0.1;
+    # EKU servidor y cliente (etcd: peers; Vault: retry_join presenta certificado al listener; etcd-server: su
+    # cliente de etcd y de Vault). Lo que ya existe con su IP se deja; sin su IP, se falla: no se pisa una clave.
+    GVF=${3:-ansible/inventory/group_vars/argus_dev.yml}; VF=${4:-Vagrantfile}
+    [ -f "$D/ca.crt" ] && [ -f "$D/ca.key" ] || falla "$D no tiene CA: primero init"
+    fuera_de_git "$D"
+    command -v ruby >/dev/null || falla "no hay ruby (lo necesita scripts/etcd_ha/nodos_control.rb)"
+    LISTA=$(ruby "$(dirname "$0")/nodos_control.rb" nodos "$GVF" "$VF" 2>&1) || { echo "$LISTA"; falla "la lista de nodos de $GVF no vale"; }
+    log "nodos de $GVF: $(printf '%s\n' "$LISTA" | awk -F'\t' '$1 == "nodo" {printf "%s=%s ", $2, $3}')"
+    nuevos=0; ya=0
+    while IFS=$'\t' read -r k nodo ip mac; do
+      [ "$k" = nodo ] || continue
+      for perfil in etcd vault etcd-server; do
+        nom="$perfil-$nodo"
+        if [ -e "$D/$nom.crt" ]; then
+          san_de "$D/$nom.crt" | grep -qx "IP:$ip" \
+            || falla "$D/$nom.crt existe sin IP:$ip en el SAN (¿cambió la IP de $nodo?): no se pisa; reemitir a mano"
+          ya=$((ya+1))
+        else
+          firmar "$nom" "$nom" "$perfil" "serverAuth,clientAuth" "DNS:localhost,IP:$ip,IP:127.0.0.1"
+          nuevos=$((nuevos+1))
+        fi
+      done
+    done <<< "$LISTA"
+    log "nodos: $nuevos certificados nuevos, $ya ya estaban con su IP"
+    comprobar
+    ;;
   reemitir)
     N=${3:-}
     case "$N" in
@@ -138,6 +172,6 @@ case "$MODO" in
     mv -f "$D/$N.nuevo.key" "$D/$N.key"; mv -f "$D/$N.nuevo.crt" "$D/$N.crt"
     comprobar
     ;;
-  *) falla "modo '$MODO' desconocido (init | reemitir | cliente)";;
+  *) falla "modo '$MODO' desconocido (init | reemitir | cliente | nodos)";;
 esac
 log "HECHO en $D"
