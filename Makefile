@@ -2265,7 +2265,7 @@ protegidos-pubkey:
 
 # [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5 (Mac): el bootstrap firma la versión 1 del manifiesto de protegidos con la
 # propia herramienta del admin (argus-infra init, VM etcd) desde la plantilla del lab (tools/argus-infra/plantillas/
-# hospital-lab.json: .20 en infraestructura con su MAC, .61 en intranet). Idempotente (decisión de Alonso DAY322): rc 0
+# hospital-lab.json: los nodos del plano de control .20-.22 en infraestructura con su MAC, .61 en intranet). Idempotente (decisión de Alonso DAY322): rc 0
 # firmada; rc 4 ya había un manifiesto publicado y no se toca; cualquier otro código para el bootstrap.
 protegidos-bootstrap:
 	@vagrant ssh control-1 -c "sudo /usr/local/sbin/argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json --si; echo ARGUS_INFRA_RC=\$$?" > /tmp/argus_protegidos_bootstrap.txt 2>&1; \

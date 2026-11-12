@@ -13,6 +13,10 @@
 #      Y tiene que RECHAZAR, nombrando el campo, cada copia estropeada a propósito del group_vars real: IP repetida, IP
 #      de otra VM del Vagrantfile, MAC mal formada, memoria fuera de rango, primer nodo que no es control-1 y lista
 #      ausente. Necesita ruby (el del sistema vale: solo usa la biblioteca estándar).
+#   C3 (paso 5, manifiesto): cada nodo de argus_control_nodos está en la plantilla del manifiesto de protegidos
+#      (tools/argus-infra/plantillas/hospital-lab.json) exactamente una vez, como infraestructura, con su IP/32 y
+#      su MAC (antispoofing H-G). Y tiene que FALLAR contra copias estropeadas: MAC cambiada, nodo ausente, nodo
+#      en otra categoría y nodo repetido.
 #   C0 (el detector detecta): antes de mirar el repo, el detector tiene que cazar cada línea de una muestra con el
 #      nombre viejo y dejar pasar cada línea de una muestra legítima (etcd.service, etcd-server, /etc/etcd...). Si no,
 #      el test falla sin mirar nada: un detector ciego daría un verde falso.
@@ -68,6 +72,7 @@ DEBE_PASAR = [
 GV = "ansible/inventory/group_vars/argus_dev.yml"
 INV = "ansible/inventory/dev.yml"
 NODOS_RB = "scripts/etcd_ha/nodos_control.rb"
+PLANTILLA = "tools/argus-infra/plantillas/hospital-lab.json"
 RAICES = ("Makefile", "Vagrantfile")
 DIRS_RAIZ = ("ansible/", "provisioning/")
 DIRS_SCRIPTS = ("scripts/", "tools/")
@@ -180,8 +185,72 @@ def c2():
           % (len(nodos), ", ".join(n for n, _ in nodos), len(estropeadas)))
 
 
+def mac_plantilla(mac):  # 080027A20021 -> 08:00:27:a2:00:21 (el formato del manifiesto: minúsculas con dos puntos)
+    m = mac.lower()
+    return ":".join(m[i:i + 2] for i in range(0, 12, 2))
+
+
+def errores_c3(pl, nodos):
+    """Lista de errores: cada nodo tiene que estar exactamente una vez como infraestructura, con su IP/32, su MAC y la
+    misma interfaz que los demás nodos. Lineal en nodos x entradas (ambos acotados: 7 y MAX_ENTRADAS)."""
+    entradas = list(pl.get("comun") or [])
+    for v in (pl.get("plantas") or {}).values():
+        entradas += list(v or [])
+    errores, interfaces = [], set()
+    for nombre, ip, mac in nodos:
+        suyas = [e for e in entradas if isinstance(e, dict) and e.get("cidr") == ip + "/32"]
+        if len(suyas) != 1:
+            errores.append("%s (%s/32) aparece %d veces en la plantilla (esperada 1)" % (nombre, ip, len(suyas)))
+            continue
+        e = suyas[0]
+        if e.get("categoria") != "infraestructura":
+            errores.append("%s: categoria '%s', esperada infraestructura" % (nombre, e.get("categoria")))
+        if e.get("mac") != mac_plantilla(mac):
+            errores.append("%s: mac '%s', esperada '%s' (la de argus_control_nodos)" % (nombre, e.get("mac"), mac_plantilla(mac)))
+        interfaces.add(e.get("interfaz"))
+    if len(interfaces) > 1:
+        errores.append("los nodos entran por interfaces distintas: %s" % sorted(map(str, interfaces)))
+    return errores
+
+
+def c3():
+    import copy
+    import json
+    rc, out = ruby("nodos", GV, "Vagrantfile")
+    if rc != 0:
+        falla("C3: el group_vars real no pasa la validación:\n" + out)
+    nodos = [tuple(l.split("\t")[1:4]) for l in out.splitlines() if l.startswith("nodo\t")]
+    with open(PLANTILLA, encoding="utf-8") as f:
+        pl = json.load(f)
+    e = errores_c3(pl, nodos)
+    if e:
+        falla("C3: la plantilla del manifiesto (%s) no lleva los nodos del plano de control: %s" % (PLANTILLA, "; ".join(e)))
+    ultimo, ip_u = nodos[-1][0], nodos[-1][1]
+
+    def con(f):
+        c = copy.deepcopy(pl)
+        for v in c["plantas"].values():
+            for x in list(v):
+                if x.get("cidr") == ip_u + "/32":
+                    f(v, x)
+        return c
+    estropeadas = [
+        ("MAC de %s cambiada" % ultimo, con(lambda v, x: x.update(mac="08:00:27:a2:00:99")), "mac '08:00:27:a2:00:99'"),
+        ("sin %s" % ultimo, con(lambda v, x: v.remove(x)), "aparece 0 veces"),
+        ("%s en intranet" % ultimo, con(lambda v, x: x.update(categoria="intranet")), "categoria 'intranet'"),
+        ("%s dos veces" % ultimo, con(lambda v, x: v.append(dict(x))), "aparece 2 veces"),
+    ]
+    for nombre, c, esperado in estropeadas:
+        e = errores_c3(c, nodos)
+        if not any(esperado in x for x in e):
+            falla("C3: la copia '%s' debía fallar diciendo '%s'; errores: %s" % (nombre, esperado, e))
+    print("[PLANO-CONTROL] C3 PASA: %d nodos (%s) en el manifiesto con su IP/32 y su MAC; %d copias estropeadas rechazadas"
+          % (len(nodos), ", ".join(n for n, _, _ in nodos), len(estropeadas)))
+
+
 if __name__ == "__main__":
     c0()
     c1()
     c2()
+    c3()
     print("[PLANO-CONTROL] RESULTADO PASA")
