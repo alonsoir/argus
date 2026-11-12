@@ -59,6 +59,14 @@ class Config(unittest.TestCase):
         self.assertEqual(set(origenes.values()), {"fichero"})
         self.assertEqual(valores, {"rutas": ("/var/log/vault", "/var/lib/etcd"), "umbral_pct": 75, "periodo_s": 60})
 
+    def test_sin_vault_del_repo_valido_y_sin_errores(self):
+        # [DISCO-RUTAS-D324] el de los nodos sin Vault hasta el PR2c (el Vagrantfile lo pone en control-2 y control-3)
+        repo = os.path.join(AQUI, "..", "..", "provisioning", "vigilancia", "disco-sin-vault.json")
+        valores, origenes, errores = d.leer_config(repo)
+        self.assertEqual(errores, [])
+        self.assertEqual(set(origenes.values()), {"fichero"})
+        self.assertEqual(valores, {"rutas": ("/var/lib/etcd",), "umbral_pct": 75, "periodo_s": 60})
+
     def test_ausente_da_defectos_y_error(self):
         valores, origenes, errores = d.leer_config(self.ruta)
         self.assertEqual(valores, {k: v[0] for k, v in d.CAMPOS.items()})

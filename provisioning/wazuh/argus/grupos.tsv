@@ -2,3 +2,5 @@
 # Vagrantfile) y su grupo (provisioning/wazuh/argus/shared/<grupo>/agent.conf). Separado por tabulador.
 defender	argus-defender
 control-1	argus-control
+control-2	argus-control
+control-3	argus-control

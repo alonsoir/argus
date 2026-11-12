@@ -1973,7 +1973,7 @@ print("✅ vault-server: argus-transit/keys/%s ed25519, exportable=False, deleti
       echo "✅ deploy-access: argus-deploy autoriza $(ssh-keygen -lf "$PUB" | awk '{print $2}'); huella de la VM $(ssh-keygen -lf /etc/ssh/ssh_host_ed25519_key.pub | awk '{print $2}') en /vagrant/dist/deploy/known_hosts_$ARGUS_NODO"
     DEPLOY_ACCESS
 
-    if primero  # [PLANO-CONTROL-D324] etcd-server, argus-infra y vigilancia: solo control-1 (PR2d y paso 6)
+    if primero  # [PLANO-CONTROL-D324] etcd-server y argus-infra: solo control-1 (PR2d); la vigilancia, en todos
     # [ETCD-SERVER-UNIT-D317] DEBT-ETCD-HA-TLS-RAFT-001 paso 6a (decisión 5 de Alonso, DAY317): el etcd-server corre aquí como
     # servicio systemd, junto a etcd y Vault. El binario y el JSON NO los pone Vagrant (el binario se compila en el defender
     # tras bootstrap): los dejan d312_etcd_vm_deploy.sh y make deploy-configs. Sin ellos la unidad queda habilitada pero
@@ -2075,17 +2075,21 @@ UNIT
       echo "✅ argus-infra: /usr/local/sbin/argus-infra (sha256 $(sha256sum /usr/local/sbin/argus-infra | cut -c1-16)), /etc/argus-infra/argus-infra.json, --check-config OK, $("$PY" --version 2>&1)"
     ARGUS_INFRA
 
-    # [VIGILANCIA-D321] ADR-060 8e.4d (H-I): los sensores de la VM etcd, todo o nada cada uno y run: always (con todo ya
-    # puesto no cambian nada). Falco desde su apt firmado (provisioning/falco/VERSION) con las reglas de aRGus;
-    # argus-disco (uso del disco del audit de Vault); el agente de Wazuh (grupo argus-control: lo asigna el manager en
-    # make vigilancia-manager-deploy, provisioning/wazuh/argus/grupos.tsv).
+    end  # if primero
+
+    # [VIGILANCIA-D321] ADR-060 8e.4d (H-I): los sensores de CADA nodo del plano de control [PLANO-CONTROL-D324 paso 6],
+    # todo o nada cada uno y run: always (con todo ya puesto no cambian nada). Falco desde su apt firmado
+    # (provisioning/falco/VERSION) con las reglas de aRGus; argus-disco (discos del audit de Vault y de los datos de
+    # etcd); el agente de Wazuh, que se registra con el nombre del nodo y pide su grupo (argus-control) de
+    # provisioning/wazuh/argus/grupos.tsv. [DISCO-RUTAS-D324] Hasta el PR2c solo control-1 tiene Vault: los demás usan
+    # disco-sin-vault.json (solo /var/lib/etcd; con el estricto, /var/log/vault inexistente sería ARGUS-DISCO-ERROR).
+    # En el PR2c (Vault en todos los nodos) se borran ese fichero y esta elección.
     etcd.vm.provision "shell", name: "falco", run: "always", inline: "bash /vagrant/scripts/vigilancia/falco_instalar.sh"
     etcd.vm.provision "shell", name: "argus-disco", run: "always",
+      env: { "VIGILANCIA_DISCO_JSON" => (primero ? "disco.json" : "disco-sin-vault.json") },
       inline: "bash /vagrant/scripts/vigilancia/argus_disco_instalar.sh"
-    etcd.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => "control-1"},
+    etcd.vm.provision "shell", name: "wazuh-agent", run: "always", env: {"AGENT_NAME" => nodo["nombre"]},
       inline: WAZUH_AGENT_INSTALL
-
-    end  # if primero
   end  # End VM del nodo de control
   end  # each ARGUS_CONTROL [PLANO-CONTROL-D324]
 
