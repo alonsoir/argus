@@ -38,8 +38,8 @@ mal()   { echo "FALLA $*"; FALLOS=$((FALLOS + 1)); }
 # vm VM ORDEN: salida sin la línea [argus] de vagrant y con el código del comando remoto (patrón de d320_antispoof)
 vm()    { local out rc; out=$(vagrant ssh "$1" -c "$2" 2>/dev/null); rc=$?
           [ -n "$out" ] && printf '%s\n' "$out" | tr -d '\r' | grep -v '^\[argus\]'; return $rc; }
-infra() { vm etcd "sudo /usr/local/sbin/argus-infra $1"; }
-estado(){ vm etcd "bash $EST" > "$DM/estado_$1.txt" 2>&1; grep -E '^  (✅ |⚠️  |❌ )protegidos:|^       - [a-z].* v[0-9]+ ' "$DM/estado_$1.txt"; }
+infra() { vm control-1 "sudo /usr/local/sbin/argus-infra $1"; }
+estado(){ vm control-1 "bash $EST" > "$DM/estado_$1.txt" 2>&1; grep -E '^  (✅ |⚠️  |❌ )protegidos:|^       - [a-z].* v[0-9]+ ' "$DM/estado_$1.txt"; }
 veredicto() { grep -oE '^\[ETCD-VM-ESTADO\] (SANO|NO SANO)' "$DM/estado_$1.txt" | head -n 1; }
 publicada() { sed -nE 's/^  (✅ |⚠️  )protegidos:     v([0-9]+) publicada.*/\2/p' "$DM/estado_$1.txt" | head -n 1; }
 # espera_linea ETIQUETA SEGUNDOS PATRÓN: repite etcd_vm_estado.sh cada 5 s hasta que la línea case; deja T (segundos)
@@ -80,7 +80,7 @@ print(d["etcd"].get("heartbeat_interval_seconds", 30), d.get("protegidos", {}).g
 PYEOF
 ) || falla "no leo el JSON"
 LIM=$((HB + 15)); LIM3=$((CS + HB + 15))
-INICIO=$(vm etcd "date +%s")
+INICIO=$(vm control-1 "date +%s")
 [[ "$INICIO" =~ ^[0-9]+$ ]] || falla "no leo la hora de la VM etcd"
 echo "    heartbeat_interval_seconds=$HB consulta_sec=$CS (límites: $LIM s y $LIM3 s); journal del etcd-server desde @$INICIO"
 mkdir -p "$DM"
@@ -166,7 +166,7 @@ fi
 
 paso "6 L4 sin rechazos de datos del latido"
 r1=$(grep -cE "\[ETCD-CLIENTE-LATIDO-DATOS-RECHAZADOS\]|no se guarda \(datos del latido" "$F")
-r2=$(vm etcd "sudo journalctl -u $UNIDAD --since @$INICIO --no-pager | grep -c '\[ETCD-LATIDO-DATOS-RECHAZADOS\]'")
+r2=$(vm control-1 "sudo journalctl -u $UNIDAD --since @$INICIO --no-pager | grep -c '\[ETCD-LATIDO-DATOS-RECHAZADOS\]'")
 [ "$r1" = 0 ] && pasa "L4 0 rechazos en el log del firewall" || mal "L4 $r1 rechazos en el log del firewall"
 [ "${r2:-x}" = 0 ] && pasa "L4 0 [ETCD-LATIDO-DATOS-RECHAZADOS] en el journal del etcd-server" || mal "L4 ${r2:-sin respuesta} rechazos en el journal del etcd-server"
 grep -E "\[ETCD-CLIENTE-LATIDO-DATO\]|\[PROTEGIDOS-RP-FILTER\]" "$F" | cut -c1-200 > "$DM/latido_firewall.txt"

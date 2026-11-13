@@ -3,7 +3,9 @@
 # plano de control del laboratorio (sin VMs; se lanza en el Mac, raíz del repo: make test-plano-control).
 #   C1 (paso 1, renombrado etcd -> control-1): ningún fichero VIVO nombra todavía a la VM 'etcd' (vagrant ssh/up/halt/
 #      status/destroy/ssh-config etcd, S/V etcd "...", known_hosts_etcd, AGENT_NAME etcd, el grupo de Wazuh argus-etcd,
-#      la máquina "etcd" del Vagrantfile o del inventario). VIVO no es una lista escrita a mano: se parte del Makefile,
+#      la máquina "etcd" del Vagrantfile o del inventario; y, DAY325, las formas que se escaparon al renombrar: vm etcd
+#      "...", un bucle for sobre nombres de VM con etcd dentro, y el agente de Wazuh 'etcd' como argumento de alerta y
+#      contar en el E2E de vigilancia). VIVO no es una lista escrita a mano: se parte del Makefile,
 #      el Vagrantfile, ansible/ y provisioning/, y se añade todo script de scripts/ o tools/ cuya ruta aparezca en un
 #      fichero vivo, hasta que no entra ninguno más. Un parcheador de un día que nadie llama no es vivo. Este test
 #      no se mira a sí mismo (sus muestras de C0 llevan el nombre viejo a propósito).
@@ -31,7 +33,9 @@ import tempfile
 VIEJO = re.compile(
     r"vagrant (?:ssh|up|halt|provision|ssh-config|status|destroy|reload)(?: -f)?(?: (?:defender|client|suricata|zeek|wazuh))*"
     r" etcd(?![\w/.-])"
-    r"|(?:^|[\s;(|&])[SV] etcd \""
+    r"|(?:^|[\s;(|&{])(?:[SV]|vm|vme) etcd \""
+    r"|\bfor \w+ in (?=[^;]*\b(?:defender|client|suricata|zeek|wazuh)\b)[^;]*(?<![\w/.$-])etcd(?![\w/.-])"
+    r"|\balerta etcd\b|\bcontar \S+ \S+ etcd\b"
     r"|known_hosts_etcd"
     r"|argus-etcd(?![\w-])"
     r"|\"AGENT_NAME\" => \"etcd\""
@@ -55,6 +59,13 @@ DEBE_CAZAR = [
     '  config.vm.define "etcd", autostart: false do |etcd|',
     '        etcd:',
     'etcd\targus-etcd',
+    'infra() { vm etcd "sudo /usr/local/sbin/argus-infra $1"; }',
+    'INICIO=$(vm etcd "date +%s")',
+    'for v in client etcd; do vagrant status "$v" 2>/dev/null | grep -qE "^$v +running" || falla "x"; done',
+    'for m in defender client etcd wazuh; do',
+    'for a in etcd defender; do',
+    'marca; etcd fim-crear; alerta etcd "$ESPERA" 554 vigilancia-e2e.prueba',
+    '    V wazuh "bash $HW contar $D8 $I8 etcd 100553" > "$T"; W8=$(valor CUENTA)',
 ]
 DEBE_PASAR = [
     'vagrant ssh control-1 -c "sudo systemctl restart etcd.service"',
@@ -68,6 +79,13 @@ DEBE_PASAR = [
     'BIN=/vagrant/etcd-server/build-$PROFILE/etcd-server',
     'vagrant ssh defender -c "ipset save" || falla "el manifiesto vigente no protege la VM etcd"',
     'vagrant ssh control-1 -c "systemctl stop x; echo \\"etcd-server de la VM etcd: activo\\""',
+    'for perfil in etcd vault etcd-server; do',
+    'for c in etcd-server ml-detector sniffer firewall-acl-agent; do',
+    'for m in defender client control-1 wazuh; do',
+    'marca; etcd fim-crear; alerta control-1 "$ESPERA" 554 vigilancia-e2e.prueba',
+    'grep etcd "/tmp/${N}_status.txt"; }',
+    'etcd etcd-parar',
+    'infra() { vm control-1 "sudo /usr/local/sbin/argus-infra $1"; }',
 ]
 GV = "ansible/inventory/group_vars/argus_dev.yml"
 INV = "ansible/inventory/dev.yml"

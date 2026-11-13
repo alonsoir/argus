@@ -3,11 +3,11 @@
 # Cada caso provoca algo en el lab y exige su alerta en el alerts.json del manager de Wazuh (VM wazuh), escrita después
 # del inicio del caso (scripts/vigilancia/alertas_wazuh.sh). Decisiones de Alonso: dentro de lab-e2e (DAY321); C4
 # provoca su propia divergencia y C8 solo mide en su primera corrida (DAY322).
-# Se ejecuta EN EL MAC, desde la raíz del repo, con las VMs defender, client, etcd y wazuh arriba:
+# Se ejecuta EN EL MAC, desde la raíz del repo, con las VMs defender, client, control-1 y wazuh arriba:
 #   DIA=dayNNN bash scripts/vigilancia/lab_e2e_vigilancia.sh NOMBRE        (make lab-e2e-vigilancia)
 #
 # PREDICCIÓN (escrita antes de la primera corrida, DAY322):
-#   C1 FIM: crear un fichero en /etc/argus-pki da la 554 y borrarlo la 553 (agente etcd), cada una en < 30 s.
+#   C1 FIM: crear un fichero en /etc/argus-pki da la 554 y borrarlo la 553 (agente control-1), cada una en < 30 s.
 #   C2 disco: umbral_pct=1 da la 100541 (estado=ALTO) en < periodo_s + 30 s; restaurado con cmp.
 #   C3 audit de Vault: chattr +i en audit.log y un login: HTTP 200 (sigue el device de syslog) y la 100520 en < 30 s.
 #   C5 Falco: copiar la clave del desellado da la 100551 (argus_lab_clave_leida_ajeno) en < 30 s.
@@ -78,33 +78,33 @@ trap fin EXIT
 trap 'exit 130' INT TERM
 
 log "0 VMs y manager"
-for m in defender client etcd wazuh; do
+for m in defender client control-1 wazuh; do
   V "$m" "echo vivo" | grep -qx vivo || { log "❌ la VM $m no responde: vagrant up $m (lab-e2e-vigilancia la necesita)"; exit 1; }
 done
 V wazuh "systemctl is-active wazuh-manager; sudo /var/ossec/bin/agent_control -l" > "$T"
 grep -qx active "$T" || { cat "$T"; log "❌ wazuh-manager no está en marcha en la VM wazuh"; exit 1; }
-for a in etcd defender; do
+for a in control-1 defender; do
   grep -E "Name: $a, .*Active" "$T" > /dev/null || { cat "$T"; log "❌ el agente $a no está Active en el manager"; exit 1; }
 done
-log "   wazuh-manager en marcha; agentes etcd y defender Active"
+log "   wazuh-manager en marcha; agentes control-1 y defender Active"
 
 log "C1 FIM en /etc/argus-pki"
-marca; etcd fim-crear; alerta etcd "$ESPERA" 554 vigilancia-e2e.prueba
-marca; etcd fim-borrar; alerta etcd "$ESPERA" 553 vigilancia-e2e.prueba
+marca; etcd fim-crear; alerta control-1 "$ESPERA" 554 vigilancia-e2e.prueba
+marca; etcd fim-borrar; alerta control-1 "$ESPERA" 553 vigilancia-e2e.prueba
 
 log "C2 umbral del disco bajado"
-marca; etcd disco-bajar; alerta etcd "$ESPERA_DISCO" 100541 'estado=ALTO'
+marca; etcd disco-bajar; alerta control-1 "$ESPERA_DISCO" 100541 'estado=ALTO'
 etcd disco-restaurar
 
 log "C3 audit de fichero de Vault inmutable"
-marca; etcd audit-romper; alerta etcd "$ESPERA" 100520
+marca; etcd audit-romper; alerta control-1 "$ESPERA" 100520
 etcd audit-restaurar
 
 log "C5 lectura ajena de una clave (Falco CRITICAL)"
-marca; etcd clave-copiar; alerta etcd "$ESPERA" 100551 argus_lab_clave_leida_ajeno
+marca; etcd clave-copiar; alerta control-1 "$ESPERA" 100551 argus_lab_clave_leida_ajeno
 
 log "C6 intento fallido de leer una clave (Falco WARNING)"
-marca; etcd clave-intento; alerta etcd "$ESPERA" 100552 argus_lab_clave_intento_fallido
+marca; etcd clave-intento; alerta control-1 "$ESPERA" 100552 argus_lab_clave_intento_fallido
 
 log "C8 trazas de un etcd-vm-check con etcd parado (máximo $C8_MAX, y todas en el manager)"
 marca; D8=$DESDE; I8=$INODO
@@ -123,7 +123,7 @@ else
   F8=${F8:-0}
   W8=""; t0=$SECONDS   # que el agente mande lo último: hasta ESPERA s a que el manager tenga las F8
   while :; do
-    V wazuh "bash $HW contar $D8 $I8 etcd 100553" > "$T"; W8=$(valor CUENTA)
+    V wazuh "bash $HW contar $D8 $I8 control-1 100553" > "$T"; W8=$(valor CUENTA)
     [[ "$W8" =~ ^[0-9]+$ ]] && [ "$W8" -ge "$F8" ] && break
     [ $(( SECONDS - t0 )) -ge "$ESPERA" ] && break
     sleep 3

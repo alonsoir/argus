@@ -45,7 +45,7 @@ DEB=$(ls dist/vendor/falco_*.deb 2>/dev/null | head -n 1)
 [ -n "$DEB" ] || { echo "PARADA: no hay dist/vendor/falco_*.deb"; exit 1; }
 H=$(shasum -a 256 "$DEB" | cut -d' ' -f1)
 grep -q "$H" dist/vendor/CHECKSUMS 2>/dev/null || { echo "PARADA: el sha256 de $DEB no está en dist/vendor/CHECKSUMS"; exit 1; }
-for v in client etcd; do vagrant status "$v" 2>/dev/null | grep -qE "^$v +running" || { echo "PARADA: la VM $v no está arriba"; exit 1; }; done
+for v in client control-1; do vagrant status "$v" 2>/dev/null | grep -qE "^$v +running" || { echo "PARADA: la VM $v no está arriba"; exit 1; }; done
 git diff --quiet -- firewall-acl-agent/config/firewall.json || { echo "PARADA: firewall.json con cambios sin commit (lab-e2e-mitigacion no arrancaría)"; exit 1; }
 mkdir -p "$DM"
 REGLAS='- macro: argus_medida_padre_vigilado
@@ -66,7 +66,7 @@ CONF='# medida DAY321 v2: eventos en JSON (con el nombre de la regla) para conta
 json_output: true
 json_include_output_property: true'
 
-for V in etcd defender; do
+for V in control-1 defender; do
   echo; echo "=== [$(date +%T)] 1 Falco con las reglas de medida en $V"
   if vm "$V" "dpkg-query -W -f='\${Status}' falco 2>/dev/null | grep -q 'install ok installed'"; then
     echo "PARADA: Falco ya estaba instalado en $V (no se toca)"; exit 1
@@ -80,7 +80,7 @@ for V in etcd defender; do
   vm "$V" "sudo falco --validate /etc/falco/rules.d/argus_medida.yaml 2>&1 | tail -n 2; sudo systemctl restart $UNIDAD; sleep 5; echo \"$UNIDAD: \$(systemctl is-active $UNIDAD)\"" | sed 's/^/    /'
   vm "$V" "pgrep -x falco > /dev/null" || { echo "PARADA: falco no arrancó en $V"; vm "$V" "sudo journalctl -u $UNIDAD -n 15 --no-pager"; exit 1; }
 done
-T0=$(vm etcd "date +%s"); T0D=$(vm defender "date +%s")
+T0=$(vm control-1 "date +%s"); T0D=$(vm defender "date +%s")
 
 echo; echo "=== [$(date +%T)] 2 carga de trabajo"
 make pipeline-stop > /tmp/d321_h_stop.txt 2>&1; echo "    pipeline-stop rc=$?"
@@ -91,7 +91,7 @@ make lab-e2e-mitigacion > /tmp/d321_h_mitig.txt 2>&1; echo "    lab-e2e-mitigaci
 make pipeline-start PROFILE=production > /tmp/d321_h_start2.txt 2>&1; echo "    pipeline-start rc=$?"
 sleep 40
 
-for V in etcd defender; do
+for V in control-1 defender; do
   t=$T0; [ "$V" = defender ] && t=$T0D
   echo; echo "=== [$(date +%T)] 3 resultado en $V"
   vm "$V" "sudo journalctl -u $UNIDAD --since @$t --no-pager -q -o cat | grep '^{'" > "$DM/$V.jsonl"
