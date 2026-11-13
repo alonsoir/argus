@@ -2316,13 +2316,23 @@ etcd-vm-deploy:
 	@$(MAKE) --no-print-directory etcd-vm-check
 
 # [ETCD-CLUSTER-D324] etcd en clúster en los nodos del plano de control (Ansible desde el defender, como deploy-configs):
-# ansible/playbooks/etcd_cluster.yml. Arranque estático; con datos solo reinicia si cambió la configuración.
+# ansible/playbooks/etcd_cluster.yml. Arranque estático; con datos solo reinicia (de uno en uno) si cambió la configuración.
+#   ETCD_CLUSTER_ARGS: argumentos de más para ansible-playbook (vacío por defecto). Lo usa make test-etcd-reinicio para
+#   desplegar con otros tiempos de Raft sin tocar el group_vars (-e etcd_heartbeat_interval_ms=... -e etcd_election_timeout_ms=...;
+#   el playbook los valida igual). El despliegue normal no lo lleva: el group_vars es la ley.
+ETCD_CLUSTER_ARGS ?=
 etcd-cluster-deploy:
-	@vagrant ssh defender -- -t "cd /vagrant && sudo ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/etcd_cluster.yml --diff"
+	@vagrant ssh defender -- -t "cd /vagrant && sudo ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/etcd_cluster.yml --diff $(ETCD_CLUSTER_ARGS)"
 
 # [ETCD-CLUSTER-D324] el clúster de verdad (VMs arriba): idempotencia, miembros de la lista, replicación, TLS, hashkv
 test-etcd-cluster:
 	@bash scripts/etcd_ha/test_etcd_cluster.sh
+
+# [ETCD-REINICIO-D325] el reinicio de uno en uno de verdad (VMs arriba): despliega con otros tiempos de Raft y vuelve a los
+# del group_vars; exige orden (reinicio, salud de todos, siguiente), PID nuevo en cada nodo, ninguna escritura fallida
+# durante los reinicios (quórum) y 0 CRITICAL de Falco de reglas argus_* en todos los nodos [FALCO-SILENCIO-D325]
+test-etcd-reinicio:
+	@bash scripts/etcd_ha/test_etcd_reinicio.sh
 
 # [ALMACEN-ESCRIBE-D324] etcd-vm-check da NO SANO si el etcd-server no escribe en etcd (sin VMs: el script de verdad
 # con sudo/systemctl/curl/etcdctl de mentira; 6 casos de latido fresco, viejo, ausente, sin respuesta y del JSON)

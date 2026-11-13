@@ -8,13 +8,19 @@
 # Arranque estático (decisión de Alonso DAY324): los miembros arrancan a la vez con el mismo initial-cluster.
 #   - Ningún nodo con datos (/var/lib/etcd/member): se arranca el clúster.
 #   - Todos con datos: se comprueba que los miembros son los del inventario; si cambia la configuración, se reinicia
-#     de uno en uno esperando a que cada miembro vuelva sano (el quórum nunca se pierde).
+#     de uno en uno (play aparte con serial: 1): tras reiniciar un miembro se espera, desde el primer nodo, a que
+#     TODOS estén sanos antes de tocar el siguiente (el quórum nunca se pierde); si uno no vuelve, no se reinicia
+#     ningún otro y el playbook falla. make test-etcd-reinicio lo prueba de verdad.
 #   - Unos sí y otros no, o miembros distintos de los del inventario: se falla sin tocar nada. Sumar o reemplazar un
 #     miembro en un clúster vivo (member add/remove) es otra operación: PR2e.
 # Tiempos de Raft (group_vars; el JSON es la ley también aquí): etcd_heartbeat_interval_ms entero [50, 1000],
 #   etcd_election_timeout_ms entero [500, 10000] y election >= 5 x heartbeat. Ausentes o mal: se usa el defecto
 #   validado (100 y 1000, los de etcd) avisando con [ETCD-CLUSTER-DEFAULT]; siempre se registra el valor aplicado y
 #   de dónde sale ([ETCD-CLUSTER-CONFIG]).
+# [FALCO-SILENCIO-D325] Este playbook no dispara ninguna CRITICAL de Falco (medido DAY324: unas 253 por lecturas de
+# claves): etcdctl va siempre con sudo (traza Notice de administración, como etcd-vm-check y los tests); el stat de
+# los certificados no lee el fichero (sin checksum, mime ni atributos); la salud tras un reinicio se mira desde el
+# primer nodo con el certificado del etcd-server, nunca con curl y la clave del nodo (decisión de Alonso DAY324).
 # Uso dev: make etcd-cluster-deploy   (lo llama también make etcd-vm-deploy, antes del etcd-server)
 
 - name: aRGus NDR -- el grupo etcd_members del inventario es la lista de argus_control_nodos
@@ -48,7 +54,7 @@
   hosts: etcd_members
   gather_facts: false
   become: true
-  vars:
+  vars: &etcd_vars
     hb_defecto: 100
     el_defecto: 1000
     hb_v: "{{ etcd_heartbeat_interval_ms | default('') }}"
@@ -60,8 +66,10 @@
     etcd_unidad: /etc/systemd/system/etcd.service
     etcd_lider_admin: "{{ groups['etcd_members'][0] }}"
     etcd_endpoints: "{{ argus_control_nodos | map(attribute='ip') | map('regex_replace', '^(.*)$', 'https://\\1:2381') | list }}"
+    # [FALCO-SILENCIO-D325] con sudo: Falco ve etcdctl con padre sudo (argus_lab_lectura_admin, Notice). Sin él, el
+    # padre es el sh del módulo shell y la lectura de etcd-server.key es CRITICAL (argus_lab_clave_leida_ajeno)
     etcdctl_admin: >-
-      etcdctl --cacert=/etc/etcd/tls/ca.crt --cert=/etc/argus-pki/etcd-server.crt
+      sudo etcdctl --cacert=/etc/etcd/tls/ca.crt --cert=/etc/argus-pki/etcd-server.crt
       --key=/etc/argus-pki/etcd-server.key --command-timeout=5s
 
   tasks:
@@ -97,9 +105,14 @@
           election-timeout={{ etcd_el }} ms ({{ etcd_tiempos_origen | trim }}) initial-cluster={{ etcd_initial_cluster | trim }}
           token={{ etcd_token }}
 
+    # [FALCO-SILENCIO-D325] solo existencia: por defecto stat abre el fichero (checksum con python3, mime con file,
+    # atributos con lsattr) y con etcd.key eso son tres CRITICAL de Falco por nodo
     - name: "Binario de etcd y certificados del nodo (los pone Vagrant: etcd-install y etcd-tls)"
       stat:
         path: "{{ item }}"
+        get_checksum: false
+        get_mime: false
+        get_attributes: false
       loop: [/usr/local/bin/etcd, /etc/etcd/tls/ca.crt, /etc/etcd/tls/etcd.crt, /etc/etcd/tls/etcd.key]
       register: etcd_ficheros
 
@@ -200,21 +213,49 @@
         state: started
         enabled: true
 
-    # /health del propio miembro con SU certificado (etcd-<nodo>): solo control-1 tiene el del etcd-server
-    - name: "Existente: reinicio de uno en uno si cambió la configuración, esperando a que el miembro vuelva sano"
+# [ETCD-REINICIO-D325] Clúster existente con la configuración cambiada: un miembro cada vez (serial: 1). La salud se
+# mira desde el primer nodo (el único con el certificado del etcd-server) y sobre TODOS los miembros: endpoint health
+# hace una lectura con quórum por cada miembro, así que rc 0 dice que el reiniciado ha vuelto y que los demás siguen.
+# Si no vuelve, el lote (un nodo) falla entero: Ansible corta aquí y no se reinicia ningún otro miembro.
+# Los nombres de las dos tareas llevan [ETCD-REINICIO]: test_etcd_reinicio.sh lee con ellos el orden de la salida.
+- name: aRGus NDR -- etcd en clúster -- reinicio de uno en uno
+  hosts: etcd_members
+  gather_facts: false
+  become: true
+  serial: 1
+  vars: *etcd_vars
+  tasks:
+    - name: "[ETCD-REINICIO] reinicio de etcd en este miembro (clúster existente y configuración cambiada)"
       when: etcd_modo | trim == 'existente' and (etcd_conf_res.changed or etcd_unidad_res.changed)
-      throttle: 1
-      shell: |
-        systemctl restart etcd
-        for i in $(seq 1 60); do
-          curl -s --max-time 2 --cacert /etc/etcd/tls/ca.crt --cert /etc/etcd/tls/etcd.crt --key /etc/etcd/tls/etcd.key \
-            https://127.0.0.1:2381/health | grep -q '"health":"true"' && exit 0
-          sleep 1
-        done
-        echo "[ETCD-CLUSTER] {{ inventory_hostname }} no vuelve sano en 60 s (journalctl -u etcd)"; exit 1
-      args:
-        executable: /bin/bash
+      systemd:
+        name: etcd
+        state: restarted
 
+    - name: "[ETCD-REINICIO] todos los miembros sanos antes de tocar el siguiente (30 intentos)"
+      when: etcd_modo | trim == 'existente' and (etcd_conf_res.changed or etcd_unidad_res.changed)
+      block:
+        - name: "[ETCD-REINICIO] salud de todos los miembros desde el primer nodo"
+          delegate_to: "{{ etcd_lider_admin }}"
+          shell: "{{ etcdctl_admin }} --endpoints={{ etcd_endpoints | join(',') }} endpoint health"
+          register: etcd_salud_nodo
+          until: etcd_salud_nodo.rc == 0
+          retries: 30
+          delay: 2
+          changed_when: false
+      rescue:
+        - name: "[ETCD-REINICIO] el miembro no vuelve sano: no se reinicia ningún otro"
+          fail:
+            msg: >-
+              [ETCD-CLUSTER] tras reiniciar etcd en {{ inventory_hostname }} el clúster no queda sano
+              ({{ etcd_salud_nodo.stderr_lines | default([]) | last | default('sin salida', true) }}): no se reinicia
+              ningún otro miembro. Mirar en {{ inventory_hostname }}: sudo journalctl -u etcd -n 50 --no-pager
+
+- name: aRGus NDR -- etcd en clúster -- en marcha, RBAC y comprobación
+  hosts: etcd_members
+  gather_facts: false
+  become: true
+  vars: *etcd_vars
+  tasks:
     - name: "Existente: etcd habilitado y en marcha"
       when: etcd_modo | trim == 'existente'
       systemd:
