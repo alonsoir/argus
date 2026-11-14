@@ -13,7 +13,8 @@
 #             /usr/bin/ip (40); sniffer -> /usr/bin/dash (6: sh -c sysctl, DEBT-SNIFFER-SYSTEM-SYSCTL-001);
 #             etcd-server, vault, etcd y ml-detector: ninguno.
 #   lecturas: cada servidor sus claves y su semilla; etcdctl y curl con sudo (pipeline-status) la del etcd-server;
-#             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem.
+#             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem; argus-infra con sudo la suya
+#             (medido DAY326: antispoof, latido, protegidos-pubkey).
 # Cualquier otra cosa es CRITICAL. Coste: Falco filtra en el kernel por tipo de evento (execve y open*), O(1) por evento.
 
 # ── Procesos vigilados, por ruta ───────────────────────────────────────────────────────────────────────────────────
@@ -50,11 +51,14 @@
      proc.pexepath = /usr/bin/vault)
 
 # ── 1. Hijo inesperado de un proceso vigilado ──────────────────────────────────────────────────────────────────────
+# [FALCO-RUIDO-D326] xtables-nft-multi es un binario de varias órdenes: lo que lo distingue es argv[0], y proc.name es
+# ese nombre CORTADO a 15 caracteres por el kernel: iptables-restore (16) llega como iptables-restor. Medido DAY326:
+# 4 CRITICAL en lab-e2e (cmd=iptables-restor -w --noflush) con iptables-restore en la lista; nunca casaba.
 - macro: argus_lab_hijo_permitido
   condition: >
     (proc.pexepath glob "/vagrant/firewall-acl-agent/build-*/firewall-acl-agent" and
       (proc.exepath in (/usr/sbin/ipset, /usr/bin/ip) or
-       (proc.exepath = /usr/sbin/xtables-nft-multi and proc.name in (iptables, iptables-save, iptables-restore)))) or
+       (proc.exepath = /usr/sbin/xtables-nft-multi and proc.name in (iptables, iptables-save, iptables-restor)))) or
     (proc.pexepath glob "/vagrant/sniffer/build-*/sniffer" and proc.exepath = /usr/bin/dash and
       proc.cmdline in ("sh -c sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1",
                        "sh -c sysctl -w net.ipv6.conf.all.forwarding=1 > /dev/null 2>&1"))
@@ -98,10 +102,18 @@
     argus_lab_es_desellado
 
 # Herramientas de administración medidas (trazas de bajo nivel, no alertas)
+# [FALCO-RUIDO-D326] argus-infra (#!/usr/bin/python3 -I) con sudo leyendo SU clave TLS, nada más. Medido DAY326 en
+# control-1: proc.exepath=/usr/bin/python3.11, proc.pexepath=/usr/bin/sudo, proc.cmdline="argus-infra -I
+# /usr/local/sbin/argus-infra <orden> ...", dos lecturas por orden (un contexto TLS para Vault y otro para el
+# etcd-server). Python de Debian 12: al pasar a Debian 13 (python3.13) esto vuelve a dar CRITICAL, que es lo deseado:
+# se mide y se cambia. proc.cmdline lo fija quien lanza el proceso, pero para eso ya hace falta ser root.
 - macro: argus_lab_lectura_admin
   condition: >
     (proc.exepath in (/usr/local/bin/etcdctl, /usr/bin/curl) and proc.pname = sudo and
      fd.name = /etc/argus-pki/etcd-server.key) or
+    (proc.exepath = /usr/bin/python3.11 and proc.pexepath = /usr/bin/sudo and
+     proc.cmdline startswith "argus-infra -I /usr/local/sbin/argus-infra " and
+     fd.name = /etc/argus-pki/argus-infra.key) or
     (proc.exepath = /usr/bin/openssl and fd.name glob "/etc/ml-defender/*/private.pem")
 
 - rule: argus_lab_clave_leida_ajeno
@@ -114,7 +126,7 @@
   tags: [argus, secretos, adr-060]
 
 - rule: argus_lab_clave_leida_admin
-  desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify)
+  desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify, argus-infra)
   condition: argus_lab_lee_fichero and argus_lab_fichero_secreto and argus_lab_lectura_admin
   output: >
     aRGus lectura administrativa de clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name usuario=%user.name
