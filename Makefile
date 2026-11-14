@@ -1305,6 +1305,7 @@ emecas:
 	@$(EMECAS_PASO) test-all -- $(MAKE) test-all
 	@# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: argus-infra (VM etcd) y la vigilancia de 8e.4d (manager y argus-disco)
 	@$(EMECAS_PASO) test-argus-infra -- $(MAKE) test-argus-infra
+	@$(EMECAS_PASO) test-clave-bronce -- $(MAKE) test-clave-bronce
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -2282,6 +2283,12 @@ protegidos-bootstrap:
 # configuración, la plantilla del laboratorio, el diff y la política.
 test-argus-infra:
 	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
+
+# [CLAVE-BRONCE-D326] (Mac): tests de scripts/bronze_key/clave_bronce.py (unittest, biblioteca estándar, sin red) con el
+# Python del defender, donde se ejecuta la orden: el bloque etcd del JSON, la respuesta de /secrets/valid/{c} y la orden.
+.PHONY: test-clave-bronce
+test-clave-bronce:
+	@vagrant ssh defender -c "cd /tmp && python3 -I /vagrant/scripts/bronze_key/test_clave_bronce.py"
 
 # [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
 # agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el

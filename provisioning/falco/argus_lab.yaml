@@ -15,7 +15,8 @@
 #   lecturas: cada servidor sus claves y su semilla; etcdctl y curl con sudo (pipeline-status) la del etcd-server;
 #             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem; argus-infra con sudo la suya
 #             (medido DAY326: antispoof, latido, protegidos-pubkey); tar y sha256sum con sudo la semilla y el
-#             private.pem del etcd-server (d312_etcd_vm_deploy.sh, en etcd-vm-deploy; medido DAY326).
+#             private.pem del etcd-server (d312_etcd_vm_deploy.sh, en etcd-vm-deploy; medido DAY326);
+#             clave_bronce.py con sudo la del conversor (mitre/ctu/custom-start, lab-e2e-reinicio-etcd).
 # Cualquier otra cosa es CRITICAL. Coste: Falco filtra en el kernel por tipo de evento (execve y open*), O(1) por evento.
 
 # ── Procesos vigilados, por ruta ───────────────────────────────────────────────────────────────────────────────────
@@ -115,6 +116,16 @@
       proc.cmdline = "tar -C /etc/ml-defender --exclude=etcd-server/etcd-server.json -cf - etcd-server") or
      proc.exepath = /usr/bin/sha256sum)
 
+# [CLAVE-BRONCE-D326] scripts/bronze_key/clave_bronce.py (#!/usr/bin/python3 -I) con sudo leyendo la clave TLS del
+# conversor para pedir la clave HMAC activa a /secrets/valid/{c}: antes era curl (medido DAY326: 4 CRITICAL en
+# lab-e2e-reinicio-etcd, y las mismas en mitre-start). Solo esa clave y esa orden; /vagrant solo existe en el lab.
+# Python de Debian 12, como argus-infra: con Debian 13 vuelve a dar CRITICAL y se mide.
+- macro: argus_lab_clave_bronce
+  condition: >
+    proc.exepath = /usr/bin/python3.11 and proc.pexepath = /usr/bin/sudo and
+    proc.cmdline startswith "python3 -I /vagrant/scripts/bronze_key/clave_bronce.py " and
+    fd.name = /etc/argus-pki/bronze-to-gold-converter.key
+
 # Herramientas de administración medidas (trazas de bajo nivel, no alertas)
 # [FALCO-RUIDO-D326] argus-infra (#!/usr/bin/python3 -I) con sudo leyendo SU clave TLS, nada más. Medido DAY326 en
 # control-1: proc.exepath=/usr/bin/python3.11, proc.pexepath=/usr/bin/sudo, proc.cmdline="argus-infra -I
@@ -129,6 +140,7 @@
      proc.cmdline startswith "argus-infra -I /usr/local/sbin/argus-infra " and
      fd.name = /etc/argus-pki/argus-infra.key) or
     argus_lab_despliegue_etcd_server or
+    argus_lab_clave_bronce or
     (proc.exepath = /usr/bin/openssl and fd.name glob "/etc/ml-defender/*/private.pem")
 
 - rule: argus_lab_clave_leida_ajeno

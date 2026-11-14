@@ -3,6 +3,7 @@
 # (instrumento de medida; sustituye a d311_etcd_defender.sh). Se ejecuta en el defender (sudo dentro).
 # Las claves se piden por mTLS con la identidad del conversor (OU=CN=bronze-to-gold-converter; regla de /secrets/valid/{c})
 # al etcd-server del bloque etcd de ml-detector, SOLO para comprobar huellas y verificar segmentos con el conversor real.
+# [CLAVE-BRONCE-D326] las pide scripts/bronze_key/clave_bronce.py (Python estándar), no curl.
 # Se guardan en un directorio solo-root fuera de /vagrant; por la salida solo sale la huella (8 hex del SHA-256 de la
 # clave, la misma que escribe el ml-detector). 'borrar' las elimina.
 # Uso: d317_reinicio_defender.sh clave A|B ml-detector|firewall-acl-agent | marcas | intervalos |
@@ -23,15 +24,8 @@ case "${1:-}" in
     case "$X" in A|B) ;; *) echo "[REINICIO-VM] FALLA: clave '$X' (A|B)"; exit 2;; esac
     case "$C" in ml-detector|firewall-acl-agent) ;; *) echo "[REINICIO-VM] FALLA: componente '$C'"; exit 2;; esac
     sudo mkdir -p "$CLAVES" && sudo chmod 700 "$CLAVES" || { echo "[REINICIO-VM] FALLA: no creo $CLAVES"; exit 1; }
-    EP=$(sudo python3 -I -c 'import json,sys; print(json.load(open(sys.argv[1]))["etcd"]["endpoints"][0])' "$JSON_ML") \
-      || { echo "[REINICIO-VM] FALLA: $JSON_ML sin etcd.endpoints[0]"; exit 1; }
-    K=$(sudo curl -sS -f --max-time 10 --cacert "$PKI/ca.crt" --cert "$PKI/$ID.crt" --key "$PKI/$ID.key" "$EP/secrets/valid/$C" \
-        | python3 -I -c '
-import json, re, sys
-d = json.load(sys.stdin)
-a = [k.get("key", "") for k in d.get("keys", []) if k.get("is_active") is True]
-print(a[0] if len(a) == 1 and re.fullmatch(r"[0-9a-f]{64}", a[0]) else "")') \
-      || { echo "[REINICIO-VM] FALLA: GET $EP/secrets/valid/$C"; exit 1; }
+    K=$(sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py --json "$JSON_ML" --pki "$PKI" "$C") \
+      || { echo "[REINICIO-VM] FALLA: clave_bronce.py $C (arriba su error)"; exit 1; }
     [ ${#K} -eq 64 ] || { echo "[REINICIO-VM] FALLA: /secrets/valid/$C sin una única clave activa de 64 hex"; exit 1; }
     printf '%s' "$K" | sudo tee "$CLAVES/$X-$C.hex" > /dev/null && sudo chmod 600 "$CLAVES/$X-$C.hex"
     echo "[REINICIO-VM] huella_${X}_${C}=$(printf '%s' "$K" | huella)"

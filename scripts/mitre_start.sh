@@ -60,8 +60,8 @@ echo ""
 
 # 1) Clave HMAC del bronce (el hack)
 # [ETCD-CLIENTE-D316] E5: mTLS con la identidad del converter contra el etcd-server del bloque etcd de ml-detector
-KEY=$(vagrant ssh defender -c "sudo bash /vagrant/scripts/bronze_key/clave_bronce_ml_detector.sh" 2>/dev/null | tr -d '\r')
-[ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). Diagnostico: vagrant ssh defender -c 'sudo bash /vagrant/scripts/bronze_key/clave_bronce_ml_detector.sh'"
+KEY=$(vagrant ssh defender -c "sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py ml-detector" 2>/dev/null | tr -d '\r')
+[ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). Diagnostico: vagrant ssh defender -c 'sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py ml-detector'"
 echo "OK clave HMAC en mano (64 hex, head ${KEY:0:8}...)"
 
 # 2) T0 (reloj del defender), disparo MITRE (nmap -A: el que hace reaccionar a los TRES sensores), drenaje y T1
