@@ -36,12 +36,15 @@
   condition: proc.exepath = /var/ossec/bin/wazuh-syscheckd
 
 # [VAULT-ARRANQUE-D322] el desellado del Vault del lab (provisioning/vault/argus-vault-unseal, identidad propia
-# CN=argus-vault-unseal sin políticas en Vault): lo lanza systemd (argus-vault-unseal.service), así que el bash del script
-# es hijo de pid 1 y cada curl es hijo directo del script. Solo su clave: la del etcd-server ya no la usa.
+# CN=argus-vault-unseal sin políticas en Vault), lanzado por argus-vault-unseal.service. Solo su clave TLS y la clave de
+# desellado. [DESELLADO-PY-D326] Python estándar (#!/usr/bin/python3 -I), reconocido por binario, ARGUMENTOS y fichero:
+# medido DAY326, al arrancar la VM Falco tarda ~2 s en conocer a los procesos nuevos y la regla vieja (curl, padre bash,
+# abuelo pid 1) daba CRITICAL con padre=<NA>. proc.args, no proc.name: el kernel corta el nombre a 15 caracteres
+# (argus-vault-uns). Python de Debian 12: con Debian 13 vuelve a dar CRITICAL y se mide.
 - macro: argus_lab_es_desellado
   condition: >
-    (proc.exepath = /usr/bin/curl and proc.pexepath = /usr/bin/bash and proc.apid[2] = 1 and
-     fd.name = /etc/argus-pki/argus-vault-unseal.key)
+    (proc.exepath = /usr/bin/python3.11 and proc.args = "-I /usr/local/sbin/argus-vault-unseal" and
+     fd.name in (/etc/argus-pki/argus-vault-unseal.key, /etc/vault.d/unseal.key))
 
 - macro: argus_lab_padre_vigilado
   condition: >
@@ -83,6 +86,7 @@
 - macro: argus_lab_fichero_secreto
   condition: >
     (fd.name glob "/etc/argus-pki/*.key" or fd.name glob "/etc/vault.d/tls/*.key" or
+     fd.name = /etc/vault.d/unseal.key or
      fd.name glob "/etc/etcd/tls/*.key" or fd.name glob "/etc/ml-defender/*/seed.bin" or
      fd.name glob "/etc/ml-defender/*/private.pem")
 

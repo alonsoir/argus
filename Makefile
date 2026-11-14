@@ -1306,6 +1306,7 @@ emecas:
 	@# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: argus-infra (VM etcd) y la vigilancia de 8e.4d (manager y argus-disco)
 	@$(EMECAS_PASO) test-argus-infra -- $(MAKE) test-argus-infra
 	@$(EMECAS_PASO) test-clave-bronce -- $(MAKE) test-clave-bronce
+	@$(EMECAS_PASO) test-vault-unseal -- $(MAKE) test-vault-unseal
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -2289,6 +2290,12 @@ test-argus-infra:
 .PHONY: test-clave-bronce
 test-clave-bronce:
 	@vagrant ssh defender -c "cd /tmp && python3 -I /vagrant/scripts/bronze_key/test_clave_bronce.py"
+
+# [DESELLADO-PY-D326] (Mac): tests del desellado del Vault del lab (provisioning/vault/argus-vault-unseal; unittest, sin
+# red ni Vault) con el Python de control-1, donde corre: espera a Vault, sin inicializar, desellado y clave sin salir.
+.PHONY: test-vault-unseal
+test-vault-unseal:
+	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/provisioning/vault/test_argus_vault_unseal.py"
 
 # [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
 # agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el

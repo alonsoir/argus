@@ -1,34 +1,117 @@
-#!/bin/bash
+#!/usr/bin/python3 -I
 # provisioning/vault/argus-vault-unseal — [VAULT-ARRANQUE-D322] desellado del Vault del lab (opción c: la clave de
-# desellado vive en disco, /etc/vault.d/unseal.key, root 0600; sale por stdin, nunca por argv). SOLO laboratorio: en
-# producción no hay clave en disco (ADR-060, sección 7 «8e.4d»). Lo pone scripts/etcd_ha/vault_arranque_instalar.sh en
-# /usr/local/sbin/ y lo lanza argus-vault-unseal.service, ligada a vault.service: cada arranque de Vault, también el de un
-# Restart=on-failure, lo dessella (medido DAY322: ligada a multi-user.target, un Vault caído en el arranque se quedaba
-# sellado y solo lo desellaba, de rebote, el `systemctl start` del aprovisionador etcd-server-unit).
+# desellado vive en disco, /etc/vault.d/unseal.key, root 0600; va en el cuerpo de la petición, nunca en argv). SOLO
+# laboratorio: en producción no hay clave en disco (ADR-060, sección 7). Lo pone scripts/etcd_ha/vault_arranque_instalar.sh
+# en /usr/local/sbin/ y lo lanza argus-vault-unseal.service, ligada a vault.service: cada arranque de Vault, también el
+# de un Restart=on-failure, lo dessella (medido DAY322: ligada a multi-user.target, un Vault caído en el arranque se
+# quedaba sellado).
 # Identidad propia (DAY322, decisión b de Alonso): CN=argus-vault-unseal, OU=argus-vault-unseal, SIN ninguna política
-# en Vault: sys/seal-status y sys/unseal no la piden; el listener exige certificado de cliente solo para el TLS. Antes
-# usaba el del etcd-server, la identidad que lee y escribe las claves HMAC.
-# Cada curl es hijo directo de este script (nada de curl en tuberías dentro de $(...), que añadiría un subshell): la
-# regla de Falco del dueño de la clave (provisioning/falco/argus_lab.yaml) pide padre bash e hijo de pid 1 (systemd).
+# en Vault: sys/seal-status y sys/unseal no la piden; el listener exige certificado de cliente solo para el TLS.
+# [DESELLADO-PY-D326] Python estándar en vez de bash + curl (decisión de Alonso DAY326: sin curl; `vault operator unseal`
+# solo acepta la clave como argumento, visible en el proceso). Falco lo reconoce por binario, argumentos y fichero, no
+# por el árbol de procesos: medido DAY326, al arrancar la VM Falco tarda ~2 s en conocer a los procesos nuevos y la
+# regla vieja (padre bash, abuelo pid 1) daba CRITICAL con padre=<NA>. Los plazos son los del script de bash (DAY322).
 # Vault sin inicializar (primer aprovisionamiento, antes de que vault-server haga el init): nada que desellar, rc 0.
-set -u
-LC_ALL=C; export LC_ALL
-C="--cacert /etc/vault.d/tls/ca.crt --cert /etc/argus-pki/argus-vault-unseal.crt --key /etc/argus-pki/argus-vault-unseal.key"
-U=https://127.0.0.1:8200
-ESTADO=""; RC=0
-estado() { ESTADO=$(curl -s --max-time 3 $C "$U/v1/sys/seal-status"); RC=$?; [ "$RC" = 0 ] || ESTADO=""; }
-campo() { python3 -c 'import json,sys; print(json.loads(sys.argv[1]).get(sys.argv[2]))' "$ESTADO" "$1" 2>/dev/null; }
-for _ in $(seq 1 30); do estado; [ -n "$ESTADO" ] && break; sleep 1; done
-[ -n "$ESTADO" ] || { echo "[VAULT-UNSEAL] FALLA: Vault no responde en 30 s en $U (sys/seal-status); último curl rc=$RC" \
-  "(7: nadie escucha; 35 o 56: el TLS rechaza el certificado, ¿/etc/argus-pki/argus-vault-unseal.crt de otra CA?)"; exit 1; }
-if [ "$(campo initialized)" = False ]; then
-  echo "[VAULT-UNSEAL] Vault sin inicializar: nada que desellar (lo inicializa el aprovisionador vault-server)"; exit 0
-fi
-if [ "$(campo sealed)" = True ]; then
-  [ -s /etc/vault.d/unseal.key ] || { echo "[VAULT-UNSEAL] FALLA: sellado y sin /etc/vault.d/unseal.key"; exit 1; }
-  python3 -c 'import json; print(json.dumps({"key": open("/etc/vault.d/unseal.key").read().strip()}))' \
-    | curl -s --max-time 5 $C -X PUT --data-binary @- -o /dev/null "$U/v1/sys/unseal"
-  estado
-fi
-[ "$(campo sealed)" = False ] || { echo "[VAULT-UNSEAL] FALLA: sigue sellado"; exit 1; }
-echo "[VAULT-UNSEAL] Vault desellado"
+import http.client
+import json
+import ssl
+import sys
+import time
+
+TAG = "[VAULT-UNSEAL]"
+HOST, PUERTO = "127.0.0.1", 8200
+CA = "/etc/vault.d/tls/ca.crt"
+CRT = "/etc/argus-pki/argus-vault-unseal.crt"
+KEY = "/etc/argus-pki/argus-vault-unseal.key"
+CLAVE = "/etc/vault.d/unseal.key"
+INTENTOS, PAUSA_S = 30, 1                 # hasta 30 s a que Vault responda (como el script de bash, DAY322)
+TIMEOUT_ESTADO_S, TIMEOUT_DESELLO_S = 3, 5
+MAX_RESPUESTA = 65536
+
+
+class Fallo(Exception):
+    pass
+
+
+def pedir(metodo, ruta, cuerpo, timeout_s):
+    """(status, objeto JSON o None) por HTTPS con el certificado del desellado. Fallo si no hay respuesta."""
+    c = None
+    try:
+        ctx = ssl.create_default_context(cafile=CA)
+        ctx.minimum_version = ssl.TLSVersion.TLSv1_2
+        ctx.load_cert_chain(CRT, KEY)
+        c = http.client.HTTPSConnection(HOST, PUERTO, context=ctx, timeout=timeout_s)
+        c.request(metodo, ruta, body=cuerpo, headers={"Content-Type": "application/json"} if cuerpo else {})
+        r = c.getresponse()
+        datos = r.read(MAX_RESPUESTA)
+    except (OSError, http.client.HTTPException, ssl.SSLError) as e:
+        raise Fallo(str(e)[:200]) from None
+    finally:
+        if c is not None:
+            c.close()
+    try:
+        return r.status, json.loads(datos.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return r.status, None
+
+
+def estado(pedir):
+    """El JSON de sys/seal-status, o None si Vault no responde (aún)."""
+    try:
+        st, j = pedir("GET", "/v1/sys/seal-status", None, TIMEOUT_ESTADO_S)
+    except Fallo as e:
+        return None, str(e)
+    if st != 200 or not isinstance(j, dict):
+        return None, f"HTTP {st}"
+    return j, ""
+
+
+def leer_clave(ruta=CLAVE):
+    try:
+        with open(ruta, encoding="ascii") as f:
+            k = f.read().strip()
+    except (OSError, UnicodeDecodeError):
+        k = ""
+    return k
+
+
+def main(pedir=pedir, dormir=time.sleep, leer_clave=leer_clave):
+    e, ultimo = None, ""
+    for i in range(INTENTOS):
+        e, ultimo = estado(pedir)
+        if e is not None:
+            break
+        if i + 1 < INTENTOS:
+            dormir(PAUSA_S)
+    if e is None:
+        print(f"{TAG} FALLA: Vault no responde en {INTENTOS * PAUSA_S} s en https://{HOST}:{PUERTO} (sys/seal-status); "
+              f"último error: {ultimo} (¿nadie escucha, o el TLS rechaza {CRT}, de otra CA?)")
+        return 1
+    if e.get("initialized") is False:
+        print(f"{TAG} Vault sin inicializar: nada que desellar (lo inicializa el aprovisionador vault-server)")
+        return 0
+    if e.get("sealed") is True:
+        k = leer_clave()
+        if not k:
+            print(f"{TAG} FALLA: sellado y sin {CLAVE} (o vacía o ilegible)")
+            return 1
+        try:
+            st, _ = pedir("PUT", "/v1/sys/unseal", json.dumps({"key": k}).encode("ascii"), TIMEOUT_DESELLO_S)
+        except Fallo as x:
+            st = f"sin respuesta ({x})"
+        del k
+        if st != 200:
+            print(f"{TAG} AVISO: sys/unseal respondió {st}")
+        e, ultimo = estado(pedir)
+        if e is None:
+            print(f"{TAG} FALLA: tras desellar, Vault no responde a sys/seal-status ({ultimo})")
+            return 1
+    if e.get("sealed") is not False:
+        print(f"{TAG} FALLA: sigue sellado")
+        return 1
+    print(f"{TAG} Vault desellado")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
