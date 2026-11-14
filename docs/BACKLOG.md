@@ -9688,12 +9688,33 @@ arrancan y dicen qué recurso, cuánto hay y cuánto se exige. Umbrales en confi
 que pruebe que falla cuando debe. Datos: DAY325 (rojo) carga 46 y swap 5,3/6,1 GB con la presión de memoria en verde (la
 memoria sola no lo habría detectado); DAY326 (verde) carga ~6 en lab-e2e, 4,65 recién arrancado, swap 0, 170 GB libres.
 
-### DEBT-PROTEGIDOS-SUELO-REVAULT-001 — ABIERTA (nueva DAY325)
-Tras rehacer Vault, el suelo anti-retroceso y la caché del firewall son del linaje anterior y el firewall se queda sin
+### DEBT-PROTEGIDOS-SUELO-REVAULT-001 — ABIERTA (nueva DAY325; opción decidida DAY326)
+**Decidido DAY326 (Alonso): (b)**, «a falta de algo mejor»: el suelo guarda (huella de la clave, versión); si la huella
+compilada en el firewall no es la del suelo, el suelo se reinicia con aviso en el log. No debilita el anti-retroceso: un
+manifiesto viejo va firmado con la clave vieja y no verifica con la nueva, y cambiar la clave compilada exige cambiar el
+binario. Hay que tocar el firewall (C++), el formato del suelo (con migración), sus tests y ADR-060; lo difícil es la
+rotación (ranura actual y siguiente: qué huella manda). Mientras tanto, y en cualquier caso: el rechazo por suelo debe
+salir como error claro y periódico en el log («versión X ≤ suelo Y; huella del suelo ≠ huella compilada»). Test que pide:
+suelo del linaje viejo + clave nueva → acepta la v1 con aviso; manifiesto de versión mayor firmado con la clave vieja →
+sigue rechazado. Un análisis del binario (REA) no lo encontraría: el binario hace lo que se diseñó; el fallo es de estado
+a lo largo del ciclo de vida y solo lo enseña un E2E (rehacer Vault sin rehacer el defender).
+El problema (DAY325): tras rehacer Vault, el suelo anti-retroceso y la caché del firewall son del linaje anterior y el firewall se queda sin
 manifiesto. Decidir: (a) paso manual del runbook (retirar suelo y caché en cada firewall), o (b) el firewall ata el suelo
 a la huella de la clave compilada y lo reinicia con aviso cuando cambia (toca el modelo de seguridad de ADR-060). Medir
 si el etcd-server tiene un estado equivalente. En el defender, `/var/lib/ml-defender/firewall-linaje-anterior/` (borrar
 al cerrarla).
+
+Propuesta DAY326 (Claude, por medir; Alonso: «mediremos todo lo que haga falta»): en un JSON con rango y defecto
+avisado, carga media de 5 min ≤ 8 (la mitad de las 16 CPU lógicas; la de 1 min salta con picos y la de 15 arrastra),
+swap usado ≤ 1 GB (la señal más limpia), disco libre ≥ 50 GB (medir cuánto crece en un EMECAS) y, solo en EMECAS antes
+del vagrant up, RAM disponible ≥ 20 GB. Registrar los mismos valores también al terminar, como dato. Medir antes el Mac
+tranquilo con el lab arriba.
+
+### DEBT-EMECAS-PLANO-CONTROL-001 — ABIERTA (decidida DAY326, Alonso)
+`test-etcd-cluster` y `test-etcd-reinicio` entran en EMECAS, en el grupo de `test-argus-infra` (antes del test de
+silencio de Falco y de lab-e2e: sus trazas Notice no cuentan como CRITICAL ni caen en la ventana de C8). Alonso: «son
+pocos minutos, y encima nos dice si el HA va bien entre PR». Bajar el ruido del escritor de `test-etcd-reinicio` (una
+escritura cada 2 s, intervalo en su configuración). Antes: cronometrar los dos y medir las trazas con el escritor a 2 s.
 
 ### DEBT-CURL-FUERA-PRODUCCION-001 — ABIERTA (nueva DAY326)
 Quedan usos de curl en las VMs del lab: `etcd-vm-check` lee `/health` del etcd-server con `sudo curl` (Notice en Falco)

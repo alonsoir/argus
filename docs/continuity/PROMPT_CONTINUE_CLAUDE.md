@@ -53,13 +53,16 @@ arXiv:2604.04952). Principio: «medir, no votar». El repo es SOLO LECTURA para 
    disco. Comprobar contra la documentación de Vault 2.2.1 antes de escribirlo como norma.
    Además ADR-048 (DAY324-326) y ADR-060 (argus-disco con `rutas`, el suelo tras rehacer Vault, `clave-publica`,
    desellado en Python y `unseal.key` vigilada).
-3. **Decisiones pendientes de Alonso:**
-    - Suelo del manifiesto tras rehacer Vault: (a) paso manual del runbook, o (b) el firewall ata el suelo a la huella de
-      la clave compilada (toca ADR-060). Medir si el etcd-server tiene un estado equivalente.
+3. **Decisiones de Alonso (las tres tomadas DAY326; faltan las medidas):**
+    - **Decidido DAY326: suelo del manifiesto (b)**, el firewall ata el suelo a la huella de la clave compilada
+      (DEBT-PROTEGIDOS-SUELO-REVAULT-001: toca C++, formato del suelo, tests y ADR-060; lo difícil es la rotación).
+      Antes: medir si el etcd-server tiene un estado equivalente y leer cómo trata el firewall la ranura siguiente.
     - **Decidido (DAY325): comprobación de recursos del anfitrión al empezar lab-e2e y EMECAS**, sin arrancar si falta.
       Datos para los umbrales: Mac ahogado (DAY325) carga 46, swap 5,3/6,1 GB → lab-e2e rojo; DAY326 carga ~6 durante
       lab-e2e y 4,65 recién arrancado (CLion indexando) → verde; swap 0; 170 GB libres.
-    - `test-etcd-reinicio`: ¿entra en lab-e2e/EMECAS? ¿`test-etcd-cluster` en EMECAS?
+    - **Decidido DAY326: `test-etcd-cluster` y `test-etcd-reinicio` en EMECAS** (DEBT-EMECAS-PLANO-CONTROL-001), en el
+      grupo de `test-argus-infra`; el escritor a una escritura cada 2 s. Antes: cronometrarlos y medir las trazas.
+    - Umbrales de recursos (propuesta por medir): carga 5 min ≤ 8, swap ≤ 1 GB, disco ≥ 50 GB, RAM ≥ 20 GB solo en EMECAS.
 4. **EMECAS desde cero** (primera vez con 3 nodos): verde y en silencio de Falco. Incluye los pasos nuevos
    `test-clave-bronce` y `test-vault-unseal`, y por primera vez `mitre-start`/`ctu-start` con `clave_bronce.py`.
    Luego archivar los parcheadores (`d324_*`, `d325_*`, `d326_*`) con un tag/rama en el remoto, borrarlos del Mac, push,
