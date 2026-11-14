@@ -14,7 +14,8 @@
 #             etcd-server, vault, etcd y ml-detector: ninguno.
 #   lecturas: cada servidor sus claves y su semilla; etcdctl y curl con sudo (pipeline-status) la del etcd-server;
 #             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem; argus-infra con sudo la suya
-#             (medido DAY326: antispoof, latido, protegidos-pubkey).
+#             (medido DAY326: antispoof, latido, protegidos-pubkey); tar y sha256sum con sudo la semilla y el
+#             private.pem del etcd-server (d312_etcd_vm_deploy.sh, en etcd-vm-deploy; medido DAY326).
 # Cualquier otra cosa es CRITICAL. Coste: Falco filtra en el kernel por tipo de evento (execve y open*), O(1) por evento.
 
 # ── Procesos vigilados, por ruta ───────────────────────────────────────────────────────────────────────────────────
@@ -101,6 +102,19 @@
     argus_lab_es_fim_wazuh or
     argus_lab_es_desellado
 
+# [FALCO-RUIDO-D326] d312_etcd_vm_deploy.sh (make etcd-vm-deploy, en bootstrap) lleva el material del etcd-server del
+# defender a control-1 y lo compara fichero a fichero. Medido DAY326: sudo tar en el defender lee seed.bin y private.pem
+# (2 CRITICAL) y sha256sum los lee en las dos VMs (4 CRITICAL; padre xargs, que pasa a ser sudo). tar puede sacar el
+# contenido, así que solo con la orden exacta del script; sha256sum solo imprime la huella: basta padre sudo. El tar -x
+# de control-1 escribe, no lee: no da evento.
+- macro: argus_lab_despliegue_etcd_server
+  condition: >
+    fd.name in (/etc/ml-defender/etcd-server/seed.bin, /etc/ml-defender/etcd-server/private.pem) and
+    proc.pexepath = /usr/bin/sudo and
+    ((proc.exepath = /usr/bin/tar and
+      proc.cmdline = "tar -C /etc/ml-defender --exclude=etcd-server/etcd-server.json -cf - etcd-server") or
+     proc.exepath = /usr/bin/sha256sum)
+
 # Herramientas de administración medidas (trazas de bajo nivel, no alertas)
 # [FALCO-RUIDO-D326] argus-infra (#!/usr/bin/python3 -I) con sudo leyendo SU clave TLS, nada más. Medido DAY326 en
 # control-1: proc.exepath=/usr/bin/python3.11, proc.pexepath=/usr/bin/sudo, proc.cmdline="argus-infra -I
@@ -114,6 +128,7 @@
     (proc.exepath = /usr/bin/python3.11 and proc.pexepath = /usr/bin/sudo and
      proc.cmdline startswith "argus-infra -I /usr/local/sbin/argus-infra " and
      fd.name = /etc/argus-pki/argus-infra.key) or
+    argus_lab_despliegue_etcd_server or
     (proc.exepath = /usr/bin/openssl and fd.name glob "/etc/ml-defender/*/private.pem")
 
 - rule: argus_lab_clave_leida_ajeno

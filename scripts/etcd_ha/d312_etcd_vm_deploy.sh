@@ -50,8 +50,10 @@ echo "[ETCD-DEPLOY] tubo defender->etcd verificado con datos públicos (sha256 $
 # almacen.endpoints y almacen.prefijo del inventario; este tar lo pisaría
 S defender "sudo tar -C /etc/ml-defender --exclude=etcd-server/etcd-server.json -cf - etcd-server" \
   | S control-1 "sudo install -d -m 0755 -o root -g root /etc/ml-defender && sudo tar -C /etc/ml-defender -xpf -"
-D=$(S defender "cd /etc/ml-defender/etcd-server && sudo find . -type f | sort | sudo xargs sha256sum" 2>/dev/null )
-E=$(S control-1 "cd /etc/ml-defender/etcd-server && sudo find . -type f | sort | sudo xargs sha256sum" 2>/dev/null )
+# [FALCO-RUIDO-D326] sha256sum hijo directo de sudo (antes de xargs): así lo reconoce Falco como administración
+# (provisioning/falco/argus_lab.yaml, argus_lab_despliegue_etcd_server). La lista la expande la VM, no el Mac.
+D=$(S defender "cd /etc/ml-defender/etcd-server && sudo sha256sum \$(sudo find . -type f | sort)" 2>/dev/null )
+E=$(S control-1 "cd /etc/ml-defender/etcd-server && sudo sha256sum \$(sudo find . -type f | sort)" 2>/dev/null )
 ND=$(printf '%s\n' "$D" | grep -c .); IG=$(comm -12 <(printf '%s\n' "$D" | sort) <(printf '%s\n' "$E" | sort) | grep -c . || true)
 [ "$ND" -gt 0 ] && [ "$ND" = "$IG" ] || { echo "[ETCD-DEPLOY] FALLA: material: $IG de $ND ficheros iguales"; exit 1; }
 echo "[ETCD-DEPLOY] material: $IG de $ND ficheros iguales en defender y etcd; etcd-server.json no viaja (make deploy-configs)"
