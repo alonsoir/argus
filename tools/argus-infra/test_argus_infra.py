@@ -403,5 +403,63 @@ class Init(unittest.TestCase):
         self.assertEqual(c.exception.codigo, ai.SALIDA_USO)
 
 
+class ClavePublica(unittest.TestCase):
+    """[CLAVE-PUBLICA-D326] clave-publica lee la clave transit con el cliente de Vault (sin red: se simula la respuesta
+    HTTPS) e imprime las tres líneas que lee protegidos_pubkey.sh; no acepta otra cosa que una Ed25519 de 32 bytes."""
+    PK = bytes(range(32))
+
+    def vault(self, status=200, data=None, crudo=None):
+        import types
+        v = ai.Vault.__new__(ai.Vault)
+        v.montaje, v.clave, v.token = "argus-transit", "protegidos-hospital-lab", "t"
+        self.pedidos = []
+        cuerpo = crudo if crudo is not None else json.dumps({"data": data}).encode()
+        v.h = types.SimpleNamespace(pedir=lambda m, r, c, cab: self.pedidos.append((m, r, cab)) or (status, cuerpo))
+        return v
+
+    def data(self, **kw):
+        d = {"type": "ed25519", "latest_version": 2,
+             "keys": {"1": {"public_key": base64.b64encode(b"x" * 32).decode()},
+                      "2": {"public_key": base64.b64encode(self.PK).decode()}}}
+        d.update(kw)
+        return d
+
+    def falla(self, texto, **kw):
+        with self.assertRaises(ai.Fallo) as c:
+            self.vault(**kw).clave_publica()
+        self.assertIn(texto, str(c.exception))
+
+    def test_devuelve_la_version_mas_reciente_en_hex(self):
+        v = self.vault(data=self.data())
+        self.assertEqual(v.clave_publica(), (2, self.PK.hex()))
+        self.assertEqual(self.pedidos, [("GET", "/v1/argus-transit/keys/protegidos-hospital-lab", {"X-Vault-Token": "t"})])
+
+    def test_rechaza_lo_que_no_es_una_ed25519_de_32_bytes(self):
+        self.falla("se exige ed25519", data=self.data(type="rsa-2048"))
+        self.falla("31 bytes", data=self.data(keys={"2": {"public_key": base64.b64encode(b"x" * 31).decode()}}))
+        self.falla("sin la pública", data=self.data(latest_version=3))
+        self.falla("sin la pública", data=self.data(latest_version="2"))
+        self.falla("sin la pública", data=self.data(latest_version=True))
+        self.falla("sin la pública", data=self.data(keys={"2": {"public_key": "no es base64 !"}}))
+        self.falla("sin data", crudo=b"no es json")
+        self.falla("HTTP 403", status=403, crudo=b'{"errors":["permission denied"]}')
+
+    def test_orden_imprime_las_tres_lineas(self):
+        import contextlib
+        import io
+        import types
+        ses = types.SimpleNamespace(cfg={"vault": {"clave": "protegidos-hospital-lab"}},
+                                    vault=self.vault(data=self.data()))
+        out = io.StringIO()
+        with contextlib.redirect_stdout(out):
+            rc = ai.orden_clave_publica(ses, None)
+        self.assertEqual(rc, ai.SALIDA_OK)
+        self.assertEqual(out.getvalue().splitlines(),
+                         ["PROTEGIDOS_CLAVE=protegidos-hospital-lab", "PROTEGIDOS_VERSION=2",
+                          "PROTEGIDOS_PUBKEY_HEX=" + self.PK.hex()])
+        self.assertEqual(ai.analizar(["clave-publica"]).orden, "clave-publica")
+        self.assertIs(ai.ORDENES["clave-publica"], ai.orden_clave_publica)
+
+
 if __name__ == "__main__":
     unittest.main(verbosity=2)

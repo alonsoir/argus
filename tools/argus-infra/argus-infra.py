@@ -10,6 +10,7 @@
 #   argus-infra [-c CONFIG] del (--planta P | --comun) --cidr X --interfaz I --motivo T [--si]
 #   argus-infra [-c CONFIG] diff [A [B]]
 #   argus-infra [-c CONFIG] verificar [--version N]
+#   argus-infra [-c CONFIG] clave-publica
 #   argus-infra [-c CONFIG] deshacer N --motivo T [--si]
 #
 # Solo vive en la máquina del admin, nunca en un componente (D9). En el laboratorio, en la VM etcd (D11). Código
@@ -719,6 +720,31 @@ class Vault:
         except (KeyError, TypeError, ValueError, binascii.Error):
             raise Fallo("[ARGUS-INFRA-VAULT] respuesta de la clave sin data.keys") from None
 
+    def clave_publica(self):
+        """(versión más reciente, 64 hex) de la clave PÚBLICA transit del manifiesto. [CLAVE-PUBLICA-D326] La pública no
+        es un secreto; la privada nunca sale de Vault (exportable=false). Solo una Ed25519 de 32 bytes."""
+        st, datos = self.h.pedir("GET", f"/v1/{self.montaje}/keys/{self.clave}", None, {"X-Vault-Token": self.token})
+        if st != 200:
+            raise self._error(f"lectura de {self.montaje}/keys/{self.clave}", st, datos)
+        j = _json_o_nada(datos)
+        d = j.get("data") if isinstance(j, dict) else None
+        if not isinstance(d, dict):
+            raise Fallo("[ARGUS-INFRA-VAULT] respuesta de la clave sin data")
+        if d.get("type") != "ed25519":
+            raise Fallo(f"[ARGUS-INFRA-VAULT] la clave {self.clave} es de tipo '{saneado(str(d.get('type')))}': "
+                        "se exige ed25519")
+        v = d.get("latest_version")
+        try:
+            if not es_entero(v) or v < 1:
+                raise ValueError
+            pk = base64.b64decode(d["keys"][str(v)]["public_key"], validate=True)
+        except (KeyError, TypeError, ValueError, binascii.Error):
+            raise Fallo("[ARGUS-INFRA-VAULT] respuesta de la clave sin la pública de su versión más reciente") \
+                from None
+        if len(pk) != 32:
+            raise Fallo(f"[ARGUS-INFRA-VAULT] clave pública de {len(pk)} bytes: se esperan 32 (Ed25519)")
+        return v, pk.hex()
+
     def revocar(self):
         if not self.token:
             return
@@ -1090,6 +1116,17 @@ def orden_verificar(ses, a):
     return SALIDA_OK
 
 
+def orden_clave_publica(ses, a):
+    """[CLAVE-PUBLICA-D326] La clave PÚBLICA del manifiesto, para compilarla en el firewall (make protegidos-pubkey).
+    Tres líneas CLAVE=valor que lee scripts/etcd_ha/protegidos_pubkey.sh. Sustituye a protegidos_pubkey_vm.sh, que
+    hacía lo mismo con curl (decisión de Alonso DAY325: sin curl; Falco conoce a argus-infra, no a un curl)."""
+    v, pk = ses.vault.clave_publica()
+    registrar(f"PROTEGIDOS_CLAVE={ses.cfg['vault']['clave']}")
+    registrar(f"PROTEGIDOS_VERSION={v}")
+    registrar(f"PROTEGIDOS_PUBKEY_HEX={pk}")
+    return SALIDA_OK
+
+
 def canonico(cidr):
     """La forma canónica de un CIDR (sin ceros sobrantes ni mayúsculas): la que escribe add."""
     import ipaddress
@@ -1141,6 +1178,7 @@ def analizar(argv):
     p.add_argument("b", nargs="?", type=_entero_pos)
     p = sub.add_parser("verificar", help="verifica la versión vigente (o la N) y su cadena hash_anterior")
     p.add_argument("--version", type=_entero_pos)
+    sub.add_parser("clave-publica", help="imprime la clave pública del manifiesto (la de Vault transit), en hex")
     p = sub.add_parser("deshacer", help="firma como versión nueva el contenido de la versión N (D4)")
     p.add_argument("n", type=_entero_pos)
     p.add_argument("--motivo", required=True)
@@ -1152,7 +1190,7 @@ def analizar(argv):
 
 
 ORDENES = {"init": orden_init, "list": orden_list, "add": orden_add, "del": orden_del, "diff": orden_diff,
-           "verificar": orden_verificar, "deshacer": orden_deshacer}
+           "verificar": orden_verificar, "deshacer": orden_deshacer, "clave-publica": orden_clave_publica}
 
 
 def main(argv=None):

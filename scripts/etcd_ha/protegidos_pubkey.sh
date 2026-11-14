@@ -12,7 +12,9 @@ TAG=PROTEGIDOS-PUBKEY
 falla() { echo "[$TAG] FALLA: $*" >&2; exit 1; }
 DESTINO=/etc/ml-defender/firewall-acl-agent/protegidos_pubkey_actual.hex
 SIGUIENTE=/etc/ml-defender/firewall-acl-agent/protegidos_pubkey_siguiente.hex
-CRUDO=$(vagrant ssh control-1 -c "sudo bash /vagrant/scripts/etcd_ha/protegidos_pubkey_vm.sh" 2>/tmp/argus_protegidos_pubkey_err.txt)
+# [CLAVE-PUBLICA-D326] la lee argus-infra (orden clave-publica, cliente de Vault en Python estándar) con su propio
+# certificado; antes era protegidos_pubkey_vm.sh con curl (CRITICAL de Falco, y curl no puede existir en producción)
+CRUDO=$(vagrant ssh control-1 -c "sudo /usr/local/sbin/argus-infra clave-publica" 2>/tmp/argus_protegidos_pubkey_err.txt)
 RC=$?
 SAL=$(printf '%s\n' "$CRUDO" | tr -d '\r')
 CLAVE=$(printf '%s\n' "$SAL" | sed -n 's/^PROTEGIDOS_CLAVE=\(protegidos-[a-z0-9-]*\)$/\1/p')
@@ -20,6 +22,10 @@ VER=$(printf '%s\n' "$SAL" | sed -n 's/^PROTEGIDOS_VERSION=\([0-9][0-9]*\)$/\1/p
 HEX=$(printf '%s\n' "$SAL" | sed -n 's/^PROTEGIDOS_PUBKEY_HEX=\([0-9a-f]\{64\}\)$/\1/p')
 if [ "$RC" -ne 0 ] || [ -z "$CLAVE" ] || [ -z "$VER" ] || [ ${#HEX} -ne 64 ]; then
   cat /tmp/argus_protegidos_pubkey_err.txt >&2
+  printf '%s\n' "$SAL" | grep -E '^\[ARGUS-INFRA|^argus-infra: |^usage: ' >&2
+  if printf '%s\n' "$SAL" | grep -q "invalid choice: 'clave-publica'" || grep -q "invalid choice: 'clave-publica'" /tmp/argus_protegidos_pubkey_err.txt; then
+    falla "el argus-infra instalado en control-1 es anterior a la orden clave-publica: vagrant provision control-1 --provision-with argus-infra"
+  fi
   falla "no se pudo leer la clave pública de la VM etcd (rc=$RC; arriba el error de la VM)"
 fi
 HUELLA=$(printf '%s' "$HEX" | xxd -r -p | shasum -a 256 2>/dev/null | cut -c1-16)
