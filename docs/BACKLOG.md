@@ -9606,3 +9606,100 @@ DEBT-VAULT-SELLADO-ALERTA-001, DEBT-CTU-START-VENTANA-001, DEBT-DDOS-COLATERAL-L
 - `etcd-server/tests/test_secrets_manager.cpp`: su `add_executable` está comentado en `etcd-server/CMakeLists.txt`
   (no se compila ni se ejecuta). Decidir: cablearlo o borrarlo.
 - Ramas viejas en el remoto: `chore/cleanup-temp-scripts` (14-may-2026) y `chore/preserve-scratch-scripts`.
+
+## DAY325 — reinicio de uno en uno del clúster etcd, restos del renombrado y un lab-e2e rojo que venía del anfitrión [ETCD-REINICIO-D325] [PLANO-CONTROL-D324]
+
+### Hecho
+- `d207ce9b0` **F1**: `etcd_cluster.yml` sin CRITICAL de Falco (etcdctl con sudo; stat sin leer las claves; salud tras
+  reinicio desde control-1, sin curl) y reinicio de uno en uno (`serial: 1`, salud de TODOS antes del siguiente).
+  `make test-etcd-reinicio` (R0-R6). Medido: PASA; 0 CRITICAL; 1 escritura de 147 fallida a la primera (propuesta en
+  vuelo al ceder el liderazgo; el reintento entra).
+- `627885d5e` restos del renombrado etcd → control-1 en tres E2E de lab-e2e y en `d321_medir_falco_hijos.sh`; el
+  detector de C1 de `test-plano-control` caza también `vm etcd "…"`, bucles sobre nombres de VM y el agente `etcd`.
+
+### Hallazgos DAY325
+- lab-e2e-protegidos rojo (1.ª corrida): **rehacer Vault sin rehacer el defender deja al firewall sin manifiesto**: el
+  Vault nuevo empieza en la versión 1 con otra clave y el defender conserva el suelo anti-retroceso (versión 5) y la caché
+  vieja. Apartando los dos, el firewall acepta la v1. Un EMECAS desde cero no lo ve (destruye también el defender).
+- lab-e2e-protegidos rojo (2.ª corrida): el Mac ahogado por una compilación ajena (carga 46, swap 5,3 de 6,1 GB):
+  `slow fdatasync` de 5-13 s en etcd, reelecciones continuas (término 164 → 216), 18 714 alertas de infraestructura (Raft
+  25-36 veces la línea base) y ningún DROP del ataque. Corrida no válida como prueba; sí como experimento de estrés.
+- Al reiniciar al líder, una escritura en vuelo puede perderse y el cliente solo lo ve por el plazo (5 s).
+
+### Decisiones de Alonso (DAY325)
+- Reinicio del clúster: se deja el orden de la lista de nodos en el PR2b; para el PR2e, seguidores primero y líder al final.
+- F2 (DEBT-FALCO-RUIDO-ADMIN-001): tar y sha256sum del despliegue como traza Notice; la clave pública del manifiesto por
+  `argus-infra clave-publica`, sin curl; test de silencio de Falco en EMECAS desde la creación de las VMs hasta justo
+  antes de lab-e2e. Borrar los instrumentos d321 que ya no hacen falta.
+- Comprobación de recursos del anfitrión al empezar lab-e2e y EMECAS (DEBT-LAB-RECURSOS-ANFITRION-001).
+
+## DAY326 — lab-e2e entero en verde con 3 nodos y Falco sin ruido de administración [CLAVE-PUBLICA-D326] [FALCO-RUIDO-D326] [CLAVE-BRONCE-D326] [DESELLADO-PY-D326]
+
+### Hecho
+- **`make lab-e2e` entero en VERDE** (04:55-06:42Z, Mac a carga ~6), primera vez con el plano de control de 3 nodos y
+  tras el renombrado: reinicios del sniffer, protegidos P1-P6, mitigación C1-C7, vigía, antispoof S1-S4, latido L0-L4,
+  vigilancia C1-C8 (C8: 16 trazas ≤ 60; C7: Vault arranca y se dessella solo) y reinicio del etcd-server.
+- `f409059ca` `argus-infra clave-publica` (cliente de Vault de la herramienta; solo Ed25519 de 32 bytes; 25 tests);
+  `protegidos_pubkey.sh` la usa; se borra `protegidos_pubkey_vm.sh` (curl). Huella `a1b73e22cf85899a`, la misma.
+- `1ac905740` Falco: `iptables-restore` del firewall permitido por su nombre cortado (`iptables-restor`; la lista lo
+  tenía con 16 caracteres y nunca casaba: 4 CRITICAL en lab-e2e) y argus-infra con sudo leyendo su clave = Notice.
+- `b6c8dcfe7` saca `scripts/local_checks.sh`, que entró vacío y por error en `1ac905740`; el prototipo queda en la rama
+  `proto/local-checks`.
+- `151109ec4` `etcd-vm-deploy` sin CRITICAL: `tar` con sudo (solo la orden exacta del script) y `sha256sum` hijo de sudo
+  sobre semilla y private.pem del etcd-server = Notice; `d312_etcd_vm_deploy.sh` usa `sudo sha256sum $(sudo find …)`.
+- `51f4ebd29` `scripts/bronze_key/clave_bronce.py`: la clave HMAC activa por mTLS con la identidad del conversor, en
+  Python estándar (bloque etcd del JSON del ml-detector; 8 tests; `make test-clave-bronce`, paso en emecas). La usan
+  mitre/ctu/custom-start y las claves A y B del E2E del etcd-server; se borra `clave_bronce_ml_detector.sh`.
+- `[DESELLADO-PY-D326]` desellado del Vault del lab en Python estándar (8 tests; `make test-vault-unseal`, paso en
+  emecas); Falco vigila `/etc/vault.d/unseal.key` (antes no) y reconoce al desellado por binario, `proc.args` y
+  fichero, no por el árbol de procesos.
+- Cada regla nueva con su prueba que debe fallar, medida: `python3`, `cat` y `tar` cualesquiera sobre las mismas claves
+  siguen dando CRITICAL.
+
+### Hallazgos DAY326
+- Las CRITICAL de lab-e2e no venían de C5 (que las provoca a propósito) sino de herramientas legítimas que Falco no
+  conocía: argus-infra (14), curl del desellado al arrancar (1), curl de las claves A/B (4), iptables-restore (4).
+- **Carrera del desellado**: al arrancar la VM, Falco abrió la fuente de syscalls 1,7 s antes del desellado y aún no
+  conocía al proceso (padre=<NA>); la regla vieja pedía padre bash y abuelo pid 1. En el reinicio de C7 (2,07 s) no pasó.
+  En una VM recién creada no aparece (Falco ya corre cuando el aprovisionador dessella): EMECAS no lo habría visto.
+- Falco en control-2/3 activo y con las reglas cargadas (provocado: `sudo head -c 0 /etc/etcd/tls/etcd.key` = 1 CRITICAL).
+- El kernel corta proc.name a 15 caracteres; GNU tar no lee si la salida es /dev/null; `vagrant ssh -c` añade `\r`.
+- `vault operator unseal` solo acepta la clave como argumento (visible en el proceso) o por el aviso interactivo.
+
+### Decisiones de Alonso (DAY326)
+- Desellado en Python estándar (no `vault` oficial: no lee la clave por stdin); vigilar `unseal.key` con el desellado
+  como único lector; claves A/B con una orden propia sin curl; iptables-restore como hijo permitido del firewall.
+- Las recomendaciones al admin sobre dónde guardar la clave de desellado en producción van a ADR-060 sección 7 y al
+  procedimiento de DEBT-VAULT-SELLADO-ALERTA-001 (pendiente de escribir).
+
+### DEBT-FALCO-RUIDO-ADMIN-001 — casi cerrada DAY326
+Hecho (arriba). Queda: el test de silencio en EMECAS (0 CRITICAL `argus_*` en defender y control-1..3 desde la creación
+de las VMs hasta justo antes de lab-e2e) y su primera corrida desde cero.
+
+### DEBT-VAULT-SELLADO-ALERTA-001 — ampliada DAY326
+Además del aviso de Vault sellado y el procedimiento de desellado, escribir para el admin dónde guardar la clave de
+desellado en producción: Shamir con `-pgp-keys` y la clave PGP privada en YubiKey (umbral 1 por las guardias), HSM
+(solo Vault Enterprise), KMS de nube (confianza en el proveedor; depende de Internet), transit desde el Vault de la VM
+admin del hospital; nunca en claro en disco. Comprobar contra la documentación de Vault 2.2.1 antes de fijarlo.
+
+### DEBT-LAB-RECURSOS-ANFITRION-001 — ABIERTA (nueva DAY325, Alonso)
+lab-e2e y EMECAS comprueban al empezar la carga de CPU, la RAM disponible, el swap y el disco del Mac; si falta algo no
+arrancan y dicen qué recurso, cuánto hay y cuánto se exige. Umbrales en configuración, con rango y defecto avisado; test
+que pruebe que falla cuando debe. Datos: DAY325 (rojo) carga 46 y swap 5,3/6,1 GB con la presión de memoria en verde (la
+memoria sola no lo habría detectado); DAY326 (verde) carga ~6 en lab-e2e, 4,65 recién arrancado, swap 0, 170 GB libres.
+
+### DEBT-PROTEGIDOS-SUELO-REVAULT-001 — ABIERTA (nueva DAY325)
+Tras rehacer Vault, el suelo anti-retroceso y la caché del firewall son del linaje anterior y el firewall se queda sin
+manifiesto. Decidir: (a) paso manual del runbook (retirar suelo y caché en cada firewall), o (b) el firewall ata el suelo
+a la huella de la clave compilada y lo reinicia con aviso cuando cambia (toca el modelo de seguridad de ADR-060). Medir
+si el etcd-server tiene un estado equivalente. En el defender, `/var/lib/ml-defender/firewall-linaje-anterior/` (borrar
+al cerrarla).
+
+### DEBT-CURL-FUERA-PRODUCCION-001 — ABIERTA (nueva DAY326)
+Quedan usos de curl en las VMs del lab: `etcd-vm-check` lee `/health` del etcd-server con `sudo curl` (Notice en Falco)
+y otros por inventariar (`git grep -n curl -- scripts Makefile Vagrantfile`). Ninguno nuevo; en producción no puede
+existir curl. Sustituirlos por herramientas propias en Python estándar, como `clave_bronce.py` y el desellado.
+
+### Para el PR2e (anotado DAY325)
+- Reinicio del clúster etcd: seguidores primero y líder al final (hoy el reinicio persigue al líder y una escritura en
+  vuelo puede perderse).
