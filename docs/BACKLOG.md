@@ -9557,7 +9557,7 @@ salida de cada adapter, Zeek copiado del spool y pasos sin comprobar. No está e
 **Test de cierre:** ctu-start en una VM con corridas anteriores deja en el grafo solo las filas de su ventana, y falla
 si un paso falla.
 
-### DEBT-DDOS-COLATERAL-LEGITIMO-001 — ABIERTA (nueva DAY323, Alonso)
+### DEBT-DDOS-COLATERAL-LEGITIMO-001 — ABIERTA (nueva DAY323, Alonso; ampliada DAY327, ver DAY327)
 Durante un ataque contra una víctima, la cabeza DDoS mete en el episodio el tráfico legítimo de un paquete que llega a
 esa víctima (medido DAY323: NTP de los sensores a .1, un evento por sensor en `origenes=`). Fuera del modo sombra se
 bloquearía a quien solo pidió la hora o un nombre. En un hospital: cualquier equipo que consulte NTP o DNS a un
@@ -9672,7 +9672,7 @@ DEBT-VAULT-SELLADO-ALERTA-001, DEBT-CTU-START-VENTANA-001, DEBT-DDOS-COLATERAL-L
 - Las recomendaciones al admin sobre dónde guardar la clave de desellado en producción van a ADR-060 sección 7 y al
   procedimiento de DEBT-VAULT-SELLADO-ALERTA-001 (pendiente de escribir).
 
-### DEBT-FALCO-RUIDO-ADMIN-001 — casi cerrada DAY326
+### DEBT-FALCO-RUIDO-ADMIN-001 — CERRADA DAY327 (casi cerrada DAY326; test de silencio en emecas, verde desde cero)
 Hecho (arriba). Queda: el test de silencio en EMECAS (0 CRITICAL `argus_*` en defender y control-1..3 desde la creación
 de las VMs hasta justo antes de lab-e2e) y su primera corrida desde cero.
 
@@ -9682,7 +9682,7 @@ desellado en producción: Shamir con `-pgp-keys` y la clave PGP privada en YubiK
 (solo Vault Enterprise), KMS de nube (confianza en el proveedor; depende de Internet), transit desde el Vault de la VM
 admin del hospital; nunca en claro en disco. Comprobar contra la documentación de Vault 2.2.1 antes de fijarlo.
 
-### DEBT-LAB-RECURSOS-ANFITRION-001 — ABIERTA (nueva DAY325, Alonso)
+### DEBT-LAB-RECURSOS-ANFITRION-001 — CERRADA DAY327 (nueva DAY325, Alonso; recursos_anfitrion.py, ver DAY327)
 lab-e2e y EMECAS comprueban al empezar la carga de CPU, la RAM disponible, el swap y el disco del Mac; si falta algo no
 arrancan y dicen qué recurso, cuánto hay y cuánto se exige. Umbrales en configuración, con rango y defecto avisado; test
 que pruebe que falla cuando debe. Datos: DAY325 (rojo) carga 46 y swap 5,3/6,1 GB con la presión de memoria en verde (la
@@ -9710,7 +9710,7 @@ swap usado ≤ 1 GB (la señal más limpia), disco libre ≥ 50 GB (medir cuánt
 del vagrant up, RAM disponible ≥ 20 GB. Registrar los mismos valores también al terminar, como dato. Medir antes el Mac
 tranquilo con el lab arriba.
 
-### DEBT-EMECAS-PLANO-CONTROL-001 — ABIERTA (decidida DAY326, Alonso)
+### DEBT-EMECAS-PLANO-CONTROL-001 — CERRADA DAY327 (decidida DAY326, Alonso; los dos tests en emecas, verdes desde cero)
 `test-etcd-cluster` y `test-etcd-reinicio` entran en EMECAS, en el grupo de `test-argus-infra` (antes del test de
 silencio de Falco y de lab-e2e: sus trazas Notice no cuentan como CRITICAL ni caen en la ventana de C8). Alonso: «son
 pocos minutos, y encima nos dice si el HA va bien entre PR». Bajar el ruido del escritor de `test-etcd-reinicio` (una
@@ -9724,3 +9724,94 @@ existir curl. Sustituirlos por herramientas propias en Python estándar, como `c
 ### Para el PR2e (anotado DAY325)
 - Reinicio del clúster etcd: seguidores primero y líder al final (hoy el reinicio persigue al líder y una escritura en
   vuelo puede perderse).
+
+## DAY327 — test de silencio de Falco, recursos del anfitrión y EMECAS+++ desde cero hasta mitre-check [FALCO-SILENCIO-D327] [RECURSOS-ANFITRION-D327] [CORRELATES-CROSS-SENSOR-D327]
+
+### Hecho
+- `9a91811f2` `scripts/vigilancia/falco_silencio.py` (`make falco-silencio`, VMs arriba; `make test-falco-silencio`,
+  31 tests): 0 CRITICAL de reglas `argus_*` en el defender y en cada nodo de control desde la creación de la VM
+  (`eventos.json` y sus rotados, también `.gz`). Antes de contar, en cada VM: Falco en marcha y una **sonda** (nobody
+  intenta leer una clave vigilada; WARNING de `argus_lab_clave_intento_fallido`) que Falco tiene que escribir; sin eso es
+  NO MEDIDO y FALLA. En emecas, justo antes de lab-e2e. Medido: con la historia de DAY326, FALLA (379 CRITICAL); desde
+  una marca, PASA.
+- `346ca4ff` `test-invariant-seed` compara las semillas con `sudo sha256sum` (antes `od` desde `sudo bash`: 4 CRITICAL
+  por EMECAS) y exige las 4 leídas (antes una ilegible no contaba). Falco: macros `argus_lab_invariante_semilla` y
+  `argus_lab_inyector_sintetico` (cada inyector de test-e2e-synthetic, por ruta e hijo de sudo, solo su clave y su
+  semilla) = Notice. Medido: 20 CRITICAL antes, 0 después.
+- `0333d7f56` el escritor de `test-etcd-reinicio` escribe con una pausa de `ETCD_REINICIO_ESCRITOR_S` s ([1, 10],
+  defecto 2). Medido: 67 escrituras en 137 s, 0 fallidas, 6 reinicios.
+- `0270e609e` `test-etcd-cluster` (55 s suelto, 1m19s en EMECAS) y `test-etcd-reinicio` (198 s, 5m34s) en emecas tras
+  `test-argus-infra`.
+- `c8e21b4b2` el R3 del reinicio (modo antes) cuenta las marcas de origen protegido: marcas tras el corte = AISLADO de
+  otros flujos + `ALERTA_PROTEGIDO`. El primer EMECAS del día paró aquí: 4 marcas del manager de Wazuh
+  (`192.168.100.12`, infraestructura desde DAY323) que el firewall alertó sin bloquear, como manda el diseño; el
+  veredicto de DAY322 no conocía esa línea. Probado sobre los logs de esa corrida (pasa; con una alerta quitada, falla).
+- `ec2e3f4e1` + `7e54fdeae` `scripts/emecas/recursos_anfitrion.py` + `recursos_anfitrion.json` (16 tests,
+  `make test-anfitrion-recursos`; `make anfitrion-recursos RECURSOS_PERFIL=emecas|lab_e2e`): carga a 5 min, swap,
+  presión y nivel de memoria de macOS y disco. Perfil `emecas` tras `vagrant destroy` (el Mac sin el lab); `lab-e2e`
+  suelto empieza por el perfil `lab_e2e`. Si falta algo, no arranca y lista los procesos que más gastan.
+- `2e4c63bdd` se borran `d321_medir_falco`, `d321_medir_falco_hijos`, `d321_medir_vigilancia` y
+  `d321_comprobar_sensores` (decidido DAY325); el comentario de `argus_lab.yaml` deja de citar uno.
+- `9a5a3771b` `kuzu_query` imprime el mensaje de error de Kuzu (antes solo «la consulta no tuvo exito»).
+- `7ccee51c0` + `c89da507f` `mitre_start.sh`: (1) el poblador de `CORRELATES_FLOW` solo empareja eventos de sensores
+  distintos (`Alert` o `TelemetryEvent`); (2) mitre_start.sh y ctu_start.sh se quedan solo con la línea de 64 hex de
+  `clave_bronce.py`. `make mitre-check` en VERDE sobre el lab de la corrida: titular 1215, invariante 0.
+- **EMECAS+++ desde cero (14:17-19:15, 4h58m): 29 pasos en verde y rojo en `mitre-check`** (paso 30). Primera vez con
+  los tres nodos y todos los pasos nuevos: `anfitrion-recursos`, `test-etcd-cluster`, `test-etcd-reinicio`,
+  `test-clave-bronce`, `test-vault-unseal`, `test-falco-silencio`, `test-anfitrion-recursos`, `falco-silencio` (0
+  CRITICAL desde la creación de las 4 VMs), lab-e2e entero (1h51m) y los actos de emecas++. Los arreglos de
+  mitre-check se probaron sueltos sobre ese lab: falta la corrida que certifique.
+
+### Hallazgos DAY327
+- **El sniffer del defender ve el tráfico Raft entre los nodos de control** (puerto 2382, el líder `.21` con `.20` y
+  `.22`): en la ventana MITRE de 96 s, 12227 de las 13915 filas de aRGus son etcd (88 %), y aRGus da un `flow_uid` nuevo
+  a casi cada latido: ~1060 filas por sentido y conexión. El 11-nov (un nodo) eran ~1700 filas en total.
+- Con eso el poblador viejo de `CORRELATES_FLOW` (todos los pares del mismo `community_id`) quiso crear ~8,5 millones de
+  aristas aRGus-aRGus (cuatro grupos de ~2000 flujos) y Kuzu falló. El nuevo: 6,9 s, 13801 aristas sobre la misma BD.
+- `vagrant ssh -c` lanzado desde una terminal abre pty y el stderr de la VM llega en el stdout; con `nohup` (EMECAS),
+  no. `clave_bronce.py` (clave por stdout, `[CONFIG]` por stderr) dio len=270 en `make mitre-check` en primer plano y
+  64 en EMECAS.
+- **El swap no separa el Mac sano del ahogado**: 7,2 GB con el lab sano (lab-e2e verde), 5,3 GB ahogado (DAY325). Sí
+  separan la carga (≤ 8,2 sano, 46 ahogado) y la presión de memoria (1 en todas las muestras del día). Tras `vagrant
+  destroy` el swap bajó de 7,2 a 1,5 GB en 40 s y a 0,76 GB en unos minutos; la carga a 5 min tardó en bajar de 7,8.
+  Umbrales (JSON): carga 12 en los dos perfiles; swap 4096 MB (emecas) y 16384 MB (lab_e2e, solo techo).
+- Cabeza DDoS y manager de Wazuh: `ratio=3.1968` (DAY322: 3,19) en las marcas tras un arranque en frío del sniffer; ver
+  DEBT-DDOS-COLATERAL-LEGITIMO-001.
+- Leyendo `crypto-transport/src/transport.cpp`: ChaCha20-Poly1305 IETF (AEAD) con clave HKDF de `seed.bin` + contexto
+  fijo y nonce = contador que **arranca en 0 en cada proceso**: misma clave, mismos nonces tras cada reinicio. Sin medir.
+
+### Decisiones de Alonso (DAY327)
+- Recursos del anfitrión: dos perfiles (emecas tras el destroy, lab_e2e con el lab arriba) con los umbrales medidos.
+- `od` del invariante de semillas → `sha256sum`; los inyectores sintéticos, macro Notice en Falco («lo que tú me
+  recomiendes»).
+- DEBT-DDOS-COLATERAL-LEGITIMO-001 hay que perseguirla hasta una explicación lógica y cerrarla: «puede morder mucho más
+  adelante en modo distribuido en producción».
+- La reutilización de nonce de crypto-transport va al BACKLOG como deuda, con la medida como primer paso.
+
+### DEBT-SNIFFER-FLOW-UID-TCP-LARGA-001 — ABIERTA (nueva DAY327)
+Una conexión TCP larga y con tráfico continuo (el Raft entre nodos etcd: latido cada 100 ms) sale en el bronce como
+~11 flujos nuevos por segundo y sentido, cada uno con su `flow_uid` (medido DAY327: 2120 nodos `NetworkFlow` para una
+sola 5-tupla en 96 s). Es carga en todo el pipeline (sniffer, ml-detector, bronce, oro, grafo) y en producción, con el
+plano de control en HA, permanente. Además hace cuadrático cualquier emparejamiento por 5-tupla (el poblador de
+`CORRELATES_FLOW` sigue siéndolo entre sensores). Primero medir en el sniffer por qué se cierra y se abre el flujo (la
+caducidad de DAY307, la clave de flujo, el tope de paquetes por flujo de DEBT-SNIFFER-FLOW-PACKET-CAP-200 o la
+emisión por evento); relacionada con DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001.
+
+### DEBT-CRYPTO-NONCE-REINICIO-001 — ABIERTA (nueva DAY327; P1, sin medir)
+`CryptoTransport` (`crypto-transport/src/transport.cpp`): la clave sale de HKDF(`seed.bin`, contexto fijo del canal) y el
+nonce de 96 bits es un contador en memoria que empieza en 0 (`nonce_counter_{0}`). Tras cada reinicio del sniffer o del
+ml-detector se cifra otra vez con los nonces 0, 1, 2… bajo la misma clave. Con ChaCha20-Poly1305 eso rompe la
+confidencialidad (XOR de dos protobuf) y la autenticidad (se repite la clave de un solo uso de Poly1305: se pueden
+falsificar mensajes). Además: la cabecera (`epoch_id`) no va como datos asociados del AEAD y el receptor no comprueba que
+el nonce crezca (reinyección). Primer paso, medir: dos arranques del sniffer con captura entre sniffer y ml-detector y
+ver si el primer mensaje de cada uno lleva el nonce 0. Arreglo (cambio de protocolo, su ADR, tests negativos y EMECAS):
+clave por arranque (valor aleatorio en el HKDF, enviado en la cabecera) o XChaCha20-Poly1305 con nonce aleatorio; no
+persistir el contador (un kill -9 o restaurar el disco lo hace retroceder). Fuera del PR2b.
+
+### DEBT-DDOS-COLATERAL-LEGITIMO-001 — ampliada DAY327
+El manager de Wazuh (`.12`) hacia `.1` por TCP: marcado con `ratio=3.1968` (k_ratio=3) tras un arranque en frío del
+sniffer, en DAY322 y en DAY327; en una corrida suelta del mismo día, 0 marcas. Hipótesis sin medir: en frío, una ráfaga
+periódica normal se compara con una base casi vacía. Hoy no muerde porque `.12` está en el manifiesto de protegidos;
+el tráfico legítimo a ráfagas de un hospital (copias, monitorización, actualizaciones) no lo estará, y cada reinicio del
+sniffer abre una ventana en frío. Mientras siga, el admin tenderá a manifiestos anchos, que son inmunidad para un intruso.
+Después del PR2, antes de REA.
