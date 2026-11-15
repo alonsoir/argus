@@ -1295,6 +1295,8 @@ emecas:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@$(EMECAS_PASO) vagrant-destroy -- vagrant destroy -f
 	@$(EMECAS_PASO) clean-host-builds -- $(MAKE) clean-host-builds
+	@# [RECURSOS-ANFITRION-D327] con las VMs ya destruidas (el Mac sin el lab): si faltan recursos no se sigue
+	@$(EMECAS_PASO) anfitrion-recursos -- $(MAKE) anfitrion-recursos RECURSOS_PERFIL=emecas
 	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
 	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh $(CONTROL_NODOS)
 	@$(EMECAS_PASO) sello-inicio -- vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
@@ -1311,6 +1313,7 @@ emecas:
 	@$(EMECAS_PASO) test-clave-bronce -- $(MAKE) test-clave-bronce
 	@$(EMECAS_PASO) test-vault-unseal -- $(MAKE) test-vault-unseal
 	@$(EMECAS_PASO) test-falco-silencio -- $(MAKE) test-falco-silencio
+	@$(EMECAS_PASO) test-anfitrion-recursos -- $(MAKE) test-anfitrion-recursos
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1319,7 +1322,7 @@ emecas:
 	@# [FALCO-SILENCIO-D327] 0 CRITICAL de reglas argus_* en las VMs con Falco desde que se crearon; justo antes de
 	@# lab-e2e, que las provoca a propósito (C5 de lab-e2e-vigilancia)
 	@$(EMECAS_PASO) falco-silencio -- $(MAKE) falco-silencio
-	@$(EMECAS_PASO) lab-e2e -- $(MAKE) lab-e2e
+	@$(EMECAS_PASO) lab-e2e -- $(MAKE) lab-e2e LAB_E2E_EN_EMECAS=1
 	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -1339,6 +1342,19 @@ EMECAS_PASO = $(EMECAS_PY) paso $(EMECAS_META_O)
 .PHONY: emecas-progreso test-emecas-paso
 emecas-progreso:
 	@$(EMECAS_PY) ver
+
+# [RECURSOS-ANFITRION-D327] (Mac) recursos del anfitrión antes de EMECAS y de lab-e2e: carga a 5 min, swap, presión y
+# nivel de memoria de macOS y disco libre contra los umbrales de scripts/emecas/recursos_anfitrion.json. Si falta
+# alguno (o no se puede medir) no se arranca. RECURSOS_PERFIL: emecas (el Mac sin el lab; en la receta emecas va tras
+# vagrant destroy) o lab_e2e (con el lab arriba; lo lanza lab-e2e cuando no viene de EMECAS).
+# test-anfitrion-recursos (Mac): unittest con las medidas simuladas.
+.PHONY: anfitrion-recursos test-anfitrion-recursos
+RECURSOS_PERFIL ?= lab_e2e
+anfitrion-recursos:
+	@python3 -I scripts/emecas/recursos_anfitrion.py $(RECURSOS_PERFIL)
+
+test-anfitrion-recursos:
+	@python3 -I scripts/emecas/test_recursos_anfitrion.py
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
@@ -1437,6 +1453,7 @@ lab-e2e-vigilancia:
 
 lab-e2e:
 	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion, vigia, antispoof, latido, vigilancia, reinicio del etcd-server"
+	@$(if $(LAB_E2E_EN_EMECAS),echo "[LAB-E2E] recursos del anfitrion: ya comprobados en EMECAS (paso anfitrion-recursos)",$(MAKE) --no-print-directory anfitrion-recursos RECURSOS_PERFIL=lab_e2e)
 	$(MAKE) lab-test-limpia-kernel
 	$(MAKE) lab-e2e-reinicio-antes
 	$(MAKE) lab-e2e-reinicio-ordenada

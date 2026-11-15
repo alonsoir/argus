@@ -1,0 +1,25 @@
+{
+  "_doc": "[RECURSOS-ANFITRION-D327] Umbrales de recursos del Mac anfitrión para arrancar EMECAS y lab-e2e (scripts/emecas/recursos_anfitrion.py). Si falta un recurso, no se arranca. Campo ausente o mal formado: se aplica el defecto del código (estos mismos valores) con aviso.",
+  "_campos": {
+    "carga_5min_max": "entero en [1, 256]: media de carga a 5 minutos, como mucho",
+    "swap_usado_mb_max": "entero en [0, 65536]: swap en uso (MB), como mucho",
+    "presion_memoria_max": "entero en [1, 4]: nivel de presión de memoria de macOS (1 normal, 2 aviso, 4 crítico), como mucho",
+    "nivel_memoria_min": "entero en [0, 100]: porcentaje de memoria disponible según macOS (kern.memorystatus_level), como poco",
+    "disco_libre_gb_min": "entero en [1, 100000]: GB libres en el disco del repo, como poco"
+  },
+  "_medido_day327": "MacBook Pro, 16 hilos, 32 GB. Sin lab (tras vagrant destroy): carga 3,3, swap 0,15 GB, nivel 84. Lab sano durante EMECAS: carga hasta 8,2, swap hasta 4,05 GB, nivel mínimo 67, presión 1. Mac ahogado (DAY325): carga 46, swap 5,3 GB.",
+  "emecas": {
+    "carga_5min_max": 8,
+    "swap_usado_mb_max": 1024,
+    "presion_memoria_max": 1,
+    "nivel_memoria_min": 70,
+    "disco_libre_gb_min": 50
+  },
+  "lab_e2e": {
+    "carga_5min_max": 10,
+    "swap_usado_mb_max": 5120,
+    "presion_memoria_max": 1,
+    "nivel_memoria_min": 60,
+    "disco_libre_gb_min": 50
+  }
+}
