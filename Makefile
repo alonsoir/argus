@@ -1307,11 +1307,15 @@ emecas:
 	@$(EMECAS_PASO) test-argus-infra -- $(MAKE) test-argus-infra
 	@$(EMECAS_PASO) test-clave-bronce -- $(MAKE) test-clave-bronce
 	@$(EMECAS_PASO) test-vault-unseal -- $(MAKE) test-vault-unseal
+	@$(EMECAS_PASO) test-falco-silencio -- $(MAKE) test-falco-silencio
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
 	@$(EMECAS_PASO) test-firewall-perf -- $(MAKE) test-firewall-perf
 	@$(EMECAS_PASO) test-e2e-synthetic -- $(MAKE) test-e2e-synthetic
+	@# [FALCO-SILENCIO-D327] 0 CRITICAL de reglas argus_* en las VMs con Falco desde que se crearon; justo antes de
+	@# lab-e2e, que las provoca a propósito (C5 de lab-e2e-vigilancia)
+	@$(EMECAS_PASO) falco-silencio -- $(MAKE) falco-silencio
 	@$(EMECAS_PASO) lab-e2e -- $(MAKE) lab-e2e
 	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas
 	@echo ""
@@ -2296,6 +2300,21 @@ test-clave-bronce:
 .PHONY: test-vault-unseal
 test-vault-unseal:
 	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/provisioning/vault/test_argus_vault_unseal.py"
+
+# [FALCO-SILENCIO-D327] (Mac, VMs arriba) el test de silencio de Falco, último trozo de DEBT-FALCO-RUIDO-ADMIN-001:
+# 0 eventos CRITICAL de reglas argus_* en el defender y en cada nodo del plano de control desde que se creó la VM
+# (eventos.json y sus rotados). Antes de contar, en cada VM: Falco en marcha y una sonda (nobody intenta leer una clave
+# vigilada: WARNING de argus_lab_clave_intento_fallido) que Falco tiene que escribir; sin eso es NO MEDIDO y FALLA.
+#   FALCO_SILENCIO_DESDE: solo eventos desde esa hora UTC (AAAA-MM-DDTHH:MM:SSZ). Vacío por defecto (y en EMECAS):
+#   desde la creación. Para medir a mano en VMs con historia: make falco-silencio FALCO_SILENCIO_DESDE=2026-11-15T05:00:00Z
+# test-falco-silencio (Mac, sin VMs): unittest de scripts/vigilancia/falco_silencio.py.
+.PHONY: falco-silencio test-falco-silencio
+FALCO_SILENCIO_DESDE ?=
+falco-silencio:
+	@python3 -I scripts/vigilancia/falco_silencio.py lab $(if $(FALCO_SILENCIO_DESDE),--desde $(FALCO_SILENCIO_DESDE)) defender $(CONTROL_NODOS)
+
+test-falco-silencio:
+	@python3 -I scripts/vigilancia/test_falco_silencio.py
 
 # [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
 # agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el
