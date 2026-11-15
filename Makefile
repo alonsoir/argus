@@ -875,16 +875,14 @@ test-provision-1:
 test-invariant-seed:
 	@echo ""
 	@echo "── TEST-INVARIANT-SEED: 4 seeds idénticos post-reset ──"
-	@vagrant ssh -c 'sudo bash -c " \
-	  hashes=\"\" ; \
-	  for c in etcd-server ml-detector sniffer firewall-acl-agent; do \
-	    h=\$$(od -A n -t x1 /etc/ml-defender/\$$c/seed.bin | tr -d \" \\n\") ; \
-	    hashes=\"\$$hashes \$$h\" ; \
-	  done ; \
-	  unique=\$$(echo \$$hashes | tr \" \" \"\\n\" | sort -u | grep -v \"^$$\" | wc -l) ; \
-	  echo \"Hashes únicos: \$$unique\" ; \
-	  [ \"\$$unique\" -eq 1 ] && echo \"✅ TEST-INVARIANT-SEED PASSED\" || { echo \"❌ TEST-INVARIANT-SEED FAILED\"; exit 1; } \
-	"' || (echo "❌ INVARIANTE-SEED-001 violado: seeds divergentes" && exit 1)
+	@# [FALCO-SILENCIO-D327] sha256sum hijo de sudo (traza Notice de Falco: argus_lab_invariante_semilla), no od desde
+	@# sudo bash: od vuelca la semilla por una tubería y daba 4 CRITICAL en cada EMECAS (medido DAY327 en la historia
+	@# del 11-nov). Y se exigen las 4 semillas leídas: antes, una semilla ilegible no contaba y podía dar verde.
+	@vagrant ssh -c 's=$$(for c in etcd-server ml-detector sniffer firewall-acl-agent; do sudo sha256sum /etc/ml-defender/$$c/seed.bin; done | cut -d" " -f1); \
+	  n=$$(echo "$$s" | grep -c .); unique=$$(echo "$$s" | sort -u | grep -c .); \
+	  echo "Semillas leídas: $$n de 4; huellas únicas: $$unique"; \
+	  [ "$$n" -eq 4 ] && [ "$$unique" -eq 1 ] && echo "✅ TEST-INVARIANT-SEED PASSED" || { echo "❌ TEST-INVARIANT-SEED FAILED"; exit 1; }' \
+	  || (echo "❌ INVARIANTE-SEED-001 violado: seeds divergentes o ilegibles" && exit 1)
 	@echo ""
 
 pipeline-start: test-provision-1

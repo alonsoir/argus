@@ -16,7 +16,9 @@
 #             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem; argus-infra con sudo la suya
 #             (medido DAY326: antispoof, latido, protegidos-pubkey); tar y sha256sum con sudo la semilla y el
 #             private.pem del etcd-server (d312_etcd_vm_deploy.sh, en etcd-vm-deploy; medido DAY326);
-#             clave_bronce.py con sudo la del conversor (mitre/ctu/custom-start, lab-e2e-reinicio-etcd).
+#             clave_bronce.py con sudo la del conversor (mitre/ctu/custom-start, lab-e2e-reinicio-etcd);
+#             sha256sum con sudo las cuatro semillas (test-invariant-seed) y los inyectores sintéticos con sudo la
+#             clave y la semilla del componente al que sustituyen (test-e2e-synthetic); medido DAY327.
 # Cualquier otra cosa es CRITICAL. Coste: Falco filtra en el kernel por tipo de evento (execve y open*), O(1) por evento.
 
 # ── Procesos vigilados, por ruta ───────────────────────────────────────────────────────────────────────────────────
@@ -130,6 +132,27 @@
     proc.cmdline startswith "python3 -I /vagrant/scripts/bronze_key/clave_bronce.py " and
     fd.name = /etc/argus-pki/bronze-to-gold-converter.key
 
+# [FALCO-SILENCIO-D327] test-invariant-seed (en test-all) compara las cuatro semillas con sudo sha256sum: solo imprime
+# la huella, basta padre sudo (como en argus_lab_despliegue_etcd_server). Antes era od desde sudo bash, que vuelca el
+# contenido: 4 CRITICAL por EMECAS (medido DAY327 en la historia del defender, 11-nov 18:53:08Z).
+- macro: argus_lab_invariante_semilla
+  condition: >
+    proc.exepath = /usr/bin/sha256sum and proc.pexepath = /usr/bin/sudo and
+    fd.name glob "/etc/ml-defender/*/seed.bin"
+
+# [FALCO-SILENCIO-D327] los inyectores sintéticos de test-e2e-synthetic (sudo env LD_LIBRARY_PATH=... <inyector>; env
+# se sustituye por el inyector, que queda hijo de sudo) se presentan como el componente al que sustituyen (decisión de
+# Alonso DAY316): leen SU clave TLS y SU semilla, nada más. Medido DAY327 en la historia del defender (11-nov): 32
+# CRITICAL en un EMECAS+++. Por ruta, no por nombre (synthetic_sniffer_injector se corta a 15); /vagrant solo existe
+# en el lab.
+- macro: argus_lab_inyector_sintetico
+  condition: >
+    proc.pexepath = /usr/bin/sudo and
+    ((proc.exepath glob "/vagrant/tools/build-*/synthetic_sniffer_injector" and
+      fd.name in (/etc/argus-pki/sniffer.key, /etc/ml-defender/sniffer/seed.bin)) or
+     (proc.exepath glob "/vagrant/tools/build-*/synthetic_ml_output_injector" and
+      fd.name in (/etc/argus-pki/ml-detector.key, /etc/ml-defender/ml-detector/seed.bin)))
+
 # Herramientas de administración medidas (trazas de bajo nivel, no alertas)
 # [FALCO-RUIDO-D326] argus-infra (#!/usr/bin/python3 -I) con sudo leyendo SU clave TLS, nada más. Medido DAY326 en
 # control-1: proc.exepath=/usr/bin/python3.11, proc.pexepath=/usr/bin/sudo, proc.cmdline="argus-infra -I
@@ -145,6 +168,8 @@
      fd.name = /etc/argus-pki/argus-infra.key) or
     argus_lab_despliegue_etcd_server or
     argus_lab_clave_bronce or
+    argus_lab_invariante_semilla or
+    argus_lab_inyector_sintetico or
     (proc.exepath = /usr/bin/openssl and fd.name glob "/etc/ml-defender/*/private.pem")
 
 - rule: argus_lab_clave_leida_ajeno
@@ -157,7 +182,7 @@
   tags: [argus, secretos, adr-060]
 
 - rule: argus_lab_clave_leida_admin
-  desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify, argus-infra)
+  desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify, argus-infra, tests del lab)
   condition: argus_lab_lee_fichero and argus_lab_fichero_secreto and argus_lab_lectura_admin
   output: >
     aRGus lectura administrativa de clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name usuario=%user.name
