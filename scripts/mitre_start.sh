@@ -60,7 +60,10 @@ echo ""
 
 # 1) Clave HMAC del bronce (el hack)
 # [ETCD-CLIENTE-D316] E5: mTLS con la identidad del converter contra el etcd-server del bloque etcd de ml-detector
-KEY=$(vagrant ssh defender -c "sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py ml-detector" 2>/dev/null | tr -d '\r')
+# [CLAVE-PTY-D327] con terminal, vagrant ssh da pty y el stderr de la VM (las líneas [CONFIG] de clave_bronce.py)
+# llega mezclado en el stdout: len=270 (medido DAY327, make mitre-check en primer plano; en EMECAS, sin terminal,
+# salía bien). Se queda solo la línea de 64 hex; si hay más de una, la longitud no cuadra y para.
+KEY=$(vagrant ssh defender -c "sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py ml-detector" 2>/dev/null | tr -d '\r' | grep -E '^[0-9a-f]{64}$')
 [ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). Diagnostico: vagrant ssh defender -c 'sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py ml-detector'"
 echo "OK clave HMAC en mano (64 hex, head ${KEY:0:8}...)"
 
@@ -109,7 +112,13 @@ vagrant ssh defender -c "mkdir -p /vagrant/logs/day234-kuzu" || die "no se pudo 
 cargar argus
 cargar suricata
 cargar zeek
-vagrant ssh defender -c "cd $CE && ./kuzu_query $KUZU \"MATCH (a:NetworkFlow),(b:NetworkFlow) WHERE a.community_id=b.community_id AND a.flow_uid<b.flow_uid MERGE (a)-[e:CORRELATES_FLOW]->(b) ON CREATE SET e.community_id=a.community_id, e.method='community_id', e.confidence=1.0\"" \
+# [CORRELATES-CROSS-SENSOR-D327] solo aristas entre sensores distintos (lo que mide el titular y lo que usa
+# dataset_export.py, con Alert y TelemetryEvent). La versión anterior emparejaba TODOS los flujos del mismo
+# community_id, también los de un mismo sensor: con los tres nodos etcd, aRGus ve cada latido Raft como un flujo
+# nuevo (unos 2000 por 5-tupla en 96 s) y el MERGE quiso crear ~8,5 millones de aristas aRGus-aRGus que nadie
+# usa; Kuzu falló y EMECAS+++ paró en mitre-check (DAY327). Medido sobre esa BD: 6,9 s, 13801 aristas,
+# invariante 0, titular 1213. Sigue siendo cuadrático ENTRE sensores por 5-tupla: DEBT-SNIFFER-FLOW-UID-TCP-LARGA-001.
+vagrant ssh defender -c "cd $CE && ./kuzu_query $KUZU \"MATCH (ea)-[:ALERT_ABOUT|TELEMETRY_ABOUT]->(a:NetworkFlow), (eb)-[:ALERT_ABOUT|TELEMETRY_ABOUT]->(b:NetworkFlow) WHERE a.community_id=b.community_id AND a.flow_uid<b.flow_uid AND ea.source_sensor<>eb.source_sensor MERGE (a)-[e:CORRELATES_FLOW]->(b) ON CREATE SET e.community_id=a.community_id, e.method='community_id', e.confidence=1.0\"" \
   || die "kuzu_query: el poblador CORRELATES_FLOW falló"
 
 # 6) Veredicto del dia
