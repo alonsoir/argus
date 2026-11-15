@@ -14,8 +14,8 @@
 #      requests"): nunca hay dos miembros parados a la vez, que es lo que perdería el quórum.
 #   R3 vuelta: make etcd-cluster-deploy a secas devuelve los tiempos del group_vars con otro reinicio de uno en uno;
 #      una pasada más no cambia nada.
-#   R4 servicio: un escritor en el primer nodo escribe una clave cada segundo (los tres endpoints) durante todo el
-#      test. Ninguna escritura falla dos veces seguidas (la fallida se reintenta en el acto) y las fallidas a la
+#   R4 servicio: un escritor en el primer nodo escribe una clave (los tres endpoints) durante todo el test, con una
+#      pausa de ETCD_REINICIO_ESCRITOR_S segundos entre escrituras [ESCRITOR-PAUSA-D327]. Ninguna escritura falla dos veces seguidas (la fallida se reintenta en el acto) y las fallidas a la
 #      primera son como mucho una por reinicio. Medido DAY325: al reiniciar al líder etcd le pasa el liderazgo a otro
 #      miembro, y una propuesta que va en vuelo en ese instante puede perderse; el cliente solo se entera por el
 #      plazo ("etcdserver: request timed out", 5 s). En el lab, 1 de 86 escrituras (journal: los otros dos miembros
@@ -25,8 +25,9 @@
 #   R6 Falco: desde el inicio del test, 0 eventos CRITICAL de reglas argus_* en todos los nodos; y en el primer nodo
 #      hay trazas argus_lab_clave_leida_admin (Notice): Falco estaba mirando y etcdctl va con sudo.
 # Parámetros (entorno), enteros: ETCD_REINICIO_HB_MS [50, 1000] defecto 150 y ETCD_REINICIO_EL_MS [500, 10000] defecto
-# 1500, con EL >= 5 x HB (los rangos del playbook) y distintos de los que tiene el clúster. Ausentes o mal: el defecto,
-# avisando. Trap: para el escritor, borra su clave y, si el clúster quedó con los tiempos de prueba, lanza
+# 1500, con EL >= 5 x HB (los rangos del playbook) y distintos de los que tiene el clúster; ETCD_REINICIO_ESCRITOR_S
+# [1, 10] defecto 2 (DEBT-EMECAS-PLANO-CONTROL-001: cada escritura es un etcdctl con sudo, es decir, trazas Notice de
+# Falco; a 1 s eran el doble). Ausentes o mal: el defecto, avisando. Trap: para el escritor, borra su clave y, si el clúster quedó con los tiempos de prueba, lanza
 # make etcd-cluster-deploy para devolverlo al group_vars.
 # Coste: lineal en la salida de Ansible y en los eventos de Falco posteriores al inicio.
 set -u
@@ -46,23 +47,23 @@ if [ "${1:-}" = "--vm" ]; then
       echo "FALCO=$(systemctl is-active falco-modern-bpf.service 2>/dev/null)"
       echo "LINEAS=$(sudo wc -l "$EVENTOS" 2>/dev/null | awk '{print $1}')"
       echo "AHORA=$(date +%s)";;
-    escritor-bucle)  # ENDPOINTS CLAVE: una escritura por segundo; la fallida se reintenta en el acto.
+    escritor-bucle)  # ENDPOINTS CLAVE PAUSA_S: escribe, espera PAUSA_S y vuelve; la fallida se reintenta en el acto.
       # Una línea por escritura: epoch rc rc_del_reintento(- si no hizo falta) segundos error(última línea)
       while :; do
         t=$(date +%s); r=-
         e=$($ETCDCTL --endpoints="$3" put "$4" "$t" 2>&1 > /dev/null); rc=$?
         if [ "$rc" -ne 0 ]; then $ETCDCTL --endpoints="$3" put "$4" "$t" > /dev/null 2>&1; r=$?; fi
         echo "$t $rc $r $(( $(date +%s) - t )) $(echo "$e" | tail -n 1 | cut -c1-160)" >> "$ESC_LOG"
-        sleep 1
+        sleep "${5:-2}"
       done;;
     paradas)  # DESDE (epoch): "PARADA parada vuelta" por cada parada de etcd desde entonces (vuelta = ya sirve; - si no)
       sudo journalctl -u etcd --since "@$3" --no-pager -o short-unix 2>/dev/null | awk '
         /Stopping etcd\.service/ { if (s != "") print "PARADA", s, "-"; s = $1 }
         /ready to serve client requests/ { if (s != "") { print "PARADA", s, $1; s = "" } }
         END { if (s != "") print "PARADA", s, "-" }';;
-    escritor-arrancar)  # ENDPOINTS CLAVE
+    escritor-arrancar)  # ENDPOINTS CLAVE PAUSA_S
       rm -f "$ESC_LOG" "$ESC_PID"; : > "$ESC_LOG"
-      setsid nohup bash "$0" --vm escritor-bucle "$3" "$4" > /dev/null 2>&1 < /dev/null &
+      setsid nohup bash "$0" --vm escritor-bucle "$3" "$4" "${5:-2}" > /dev/null 2>&1 < /dev/null &
       echo $! > "$ESC_PID"; sleep 1
       kill -0 "$(cat "$ESC_PID")" 2>/dev/null && echo "ESCRITOR=$(cat "$ESC_PID")" || echo "ESCRITOR=";;
     escritor-leer) cat "$ESC_LOG" 2>/dev/null;;
@@ -279,6 +280,7 @@ entero() {  # nombre valor defecto min max -> VAL
 }
 entero ETCD_REINICIO_HB_MS "${ETCD_REINICIO_HB_MS:-}" 150 50 1000; HBP=$VAL
 entero ETCD_REINICIO_EL_MS "${ETCD_REINICIO_EL_MS:-}" 1500 500 10000; ELP=$VAL
+entero ETCD_REINICIO_ESCRITOR_S "${ETCD_REINICIO_ESCRITOR_S:-}" 2 1 10; ESCS=$VAL
 if [ "$ELP" -lt $((5 * HBP)) ]; then HBP=150; ELP=1500; log "tiempos de prueba 150 y 1500 (defecto: EL tiene que ser >= 5 x HB)"; fi
 K="/argus/test-etcd-reinicio/$(date -u +%Y%m%dT%H%M%SZ)"
 ESCRITOR=no; DEVOLVER=no
@@ -331,7 +333,7 @@ reinicio_bien() {  # etapa salida prefijo_antes prefijo_despues HB EL reinicios_
 }
 
 # R1
-log "nodos: $NODOS; tiempos de prueba: heartbeat $HBP ms, election $ELP ms"
+log "nodos: $NODOS; tiempos de prueba: heartbeat $HBP ms, election $ELP ms; escritor: pausa de $ESCS s"
 despliega r1
 A recap "$T/r1.txt" igual $NODOS > "$T/r1_recap.txt" || { tail -n 20 "$T/r1.txt"; cat "$T/r1_recap.txt"; falla "R1: make etcd-cluster-deploy falla o cambia algo: el clúster no está en la configuración del group_vars; no se empieza"; }
 estado a
@@ -346,7 +348,7 @@ done
 log "R1 PASA: sin cambios; el clúster está en $HB0/$EL0 ms; Falco en marcha en los $NN nodos"
 
 # Escritor (R4)
-V "$PRIMERO" "bash $YO --vm escritor-arrancar '$EPS' '$K'" > "$T/esc_arranque.txt"
+V "$PRIMERO" "bash $YO --vm escritor-arrancar '$EPS' '$K' $ESCS" > "$T/esc_arranque.txt"
 [[ "$(dato "$T/esc_arranque.txt" ESCRITOR)" =~ ^[0-9]+$ ]] || { cat "$T/esc_arranque.txt"; falla "R4: el escritor no arranca en $PRIMERO"; }
 ESCRITOR=si
 sleep 4
