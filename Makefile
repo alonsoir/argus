@@ -1303,6 +1303,11 @@ emecas:
 	@$(EMECAS_PASO) test-all -- $(MAKE) test-all
 	@# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: argus-infra (VM etcd) y la vigilancia de 8e.4d (manager y argus-disco)
 	@$(EMECAS_PASO) test-argus-infra -- $(MAKE) test-argus-infra
+	@# [EMECAS-PLANO-CONTROL-D327] DEBT-EMECAS-PLANO-CONTROL-001 (decisión de Alonso DAY326): el clúster etcd de verdad y
+	@# su reinicio de uno en uno, en cada EMECAS. Medido DAY327: 55 s y 198 s; 0 CRITICAL de Falco; sus trazas Notice
+	@# (495 en control-1) quedan antes de falco-silencio y fuera de la ventana de C8 de lab-e2e-vigilancia
+	@$(EMECAS_PASO) test-etcd-cluster -- $(MAKE) test-etcd-cluster
+	@$(EMECAS_PASO) test-etcd-reinicio -- $(MAKE) test-etcd-reinicio
 	@$(EMECAS_PASO) test-clave-bronce -- $(MAKE) test-clave-bronce
 	@$(EMECAS_PASO) test-vault-unseal -- $(MAKE) test-vault-unseal
 	@$(EMECAS_PASO) test-falco-silencio -- $(MAKE) test-falco-silencio
@@ -2361,7 +2366,8 @@ test-etcd-cluster:
 
 # [ETCD-REINICIO-D325] el reinicio de uno en uno de verdad (VMs arriba): despliega con otros tiempos de Raft y vuelve a los
 # del group_vars; exige orden (reinicio, salud de todos, siguiente), PID nuevo en cada nodo, ninguna escritura fallida
-# durante los reinicios (quórum) y 0 CRITICAL de Falco de reglas argus_* en todos los nodos [FALCO-SILENCIO-D325]
+# durante los reinicios (quórum) y 0 CRITICAL de Falco de reglas argus_* en todos los nodos [FALCO-SILENCIO-D325].
+# Entorno: ETCD_REINICIO_HB_MS, ETCD_REINICIO_EL_MS y ETCD_REINICIO_ESCRITOR_S (pausa del escritor, [1, 10], defecto 2)
 test-etcd-reinicio:
 	@bash scripts/etcd_ha/test_etcd_reinicio.sh
 
