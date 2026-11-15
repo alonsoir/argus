@@ -7,10 +7,14 @@
 # rc 0 PASA, 1 FALLA (falta un recurso o no se pudo medir), 2 uso.
 # Perfiles (medido DAY327, MacBook Pro de 16 hilos y 32 GB):
 #   emecas   el Mac SIN el lab: en la receta emecas va justo después de vagrant destroy. Con las VMs de la corrida
-#            anterior arriba, el swap y la carga son los del propio lab (3-4 GB de swap con el lab sano) y un umbral de
-#            arranque no dejaría relanzar. Tras el destroy: carga 3,3, swap 0,15 GB, nivel de memoria 84.
-#   lab_e2e  el Mac CON el lab arriba (make lab-e2e suelto). Lab sano: carga a 5 min hasta 8,2, swap hasta 4,05 GB,
+#            anterior arriba, el swap y la carga son los del propio lab y un umbral de arranque no dejaría relanzar.
+#            Tras el destroy, con el lab antes en reposo: carga 3,3, swap 0,15 GB, nivel 84. Tras el destroy nada
+#            más acabar una corrida: carga 7,8 (la media de 5 min aún baja), swap 1,5 GB (lo que el lab empujó de
+#            otros procesos; de 7,2 GB con el lab), nivel 81. [RECURSOS-UMBRALES-D327]
+#   lab_e2e  el Mac CON el lab arriba (make lab-e2e suelto). Lab sano: carga a 5 min hasta 8,2, swap hasta 7,2 GB,
 #            nivel de memoria mínimo 67, presión 1. Mac ahogado (DAY325, lab-e2e en rojo): carga 46, swap 5,3 GB.
+#            El swap NO separa el Mac sano del ahogado (7,2 GB sano, 5,3 GB ahogado): su umbral es solo un techo.
+#            Separan la carga (8 frente a 46) y la presión de memoria.
 # Qué se mide:
 #   carga_5min        media de carga a 5 minutos (os.getloadavg)
 #   swap_usado_mb     swap en uso, MB (sysctl vm.swapusage)
@@ -34,8 +38,8 @@ CONFIG = os.path.join(os.path.dirname(os.path.abspath(__file__)), "recursos_anfi
 PERFILES = ("emecas", "lab_e2e")
 # campo: (sentido, mínimo, máximo, defecto emecas, defecto lab_e2e, qué es)
 CAMPOS = (
-    ("carga_5min_max", "max", 1, 256, 8, 10, "carga a 5 min"),
-    ("swap_usado_mb_max", "max", 0, 65536, 1024, 5120, "swap usado (MB)"),
+    ("carga_5min_max", "max", 1, 256, 12, 12, "carga a 5 min"),
+    ("swap_usado_mb_max", "max", 0, 65536, 4096, 16384, "swap usado (MB)"),
     ("presion_memoria_max", "max", 1, 4, 1, 1, "presión de memoria (1 normal, 2 aviso, 4 crítico)"),
     ("nivel_memoria_min", "min", 0, 100, 70, 60, "nivel de memoria disponible (%)"),
     ("disco_libre_gb_min", "min", 1, 100000, 50, 50, "disco libre (GB)"),

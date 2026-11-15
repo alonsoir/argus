@@ -17,7 +17,8 @@ ra = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(ra)
 
 SANO_SIN_LAB = {"carga_5min": 3.33, "swap_usado_mb": 153.25, "presion_memoria": 1, "nivel_memoria": 84, "disco_libre_gb": 167.0}
-SANO_CON_LAB = {"carga_5min": 8.2, "swap_usado_mb": 4051.75, "presion_memoria": 1, "nivel_memoria": 67, "disco_libre_gb": 167.0}
+TRAS_UNA_CORRIDA = {"carga_5min": 7.82, "swap_usado_mb": 1505.75, "presion_memoria": 1, "nivel_memoria": 81, "disco_libre_gb": 293.25}
+SANO_CON_LAB = {"carga_5min": 8.2, "swap_usado_mb": 7207.0, "presion_memoria": 1, "nivel_memoria": 67, "disco_libre_gb": 167.0}
 AHOGADO = {"carga_5min": 46.0, "swap_usado_mb": 5427.0, "presion_memoria": 2, "nivel_memoria": 30, "disco_libre_gb": 170.0}
 
 
@@ -59,11 +60,15 @@ class Veredicto(unittest.TestCase):
         self.assertIn("RESULTADO PASA", txt)
         self.assertNotIn("GLOTONES", txt)
 
+    def test_recien_acabada_una_corrida_pasa_emecas(self):
+        # medido DAY327: con los umbrales primeros (carga 8, swap 1024) EMECAS no arrancó tras el destroy
+        self.assertEqual(corre("emecas", TRAS_UNA_CORRIDA)[0], 0)
+
     def test_lab_sano_pasa_lab_e2e_pero_no_emecas(self):
         self.assertEqual(corre("lab_e2e", SANO_CON_LAB)[0], 0)
         rc, txt = corre("emecas", SANO_CON_LAB)   # por eso emecas se comprueba tras el destroy
         self.assertEqual(rc, 1)
-        self.assertIn("swap usado (MB): 4051.75 (máximo 1024)", txt)
+        self.assertIn("swap usado (MB): 7207.00 (máximo 4096)", txt)
 
     def test_mac_ahogado_no_arranca_en_ningun_perfil(self):
         for perfil in ra.PERFILES:
@@ -75,7 +80,7 @@ class Veredicto(unittest.TestCase):
 
     def test_cada_umbral_en_su_frontera(self):
         # (medida, valor justo en el umbral de emecas: pasa, valor un paso más allá: falla)
-        for medida, justo, pasado in (("carga_5min", 8.0, 8.01), ("swap_usado_mb", 1024.0, 1024.5),
+        for medida, justo, pasado in (("carga_5min", 12.0, 12.01), ("swap_usado_mb", 4096.0, 4096.5),
                                       ("presion_memoria", 1, 2), ("nivel_memoria", 70, 69),
                                       ("disco_libre_gb", 50.0, 49.9)):
             self.assertEqual(corre("emecas", dict(SANO_SIN_LAB, **{medida: justo}))[0], 0, medida)
@@ -96,7 +101,7 @@ class Veredicto(unittest.TestCase):
 
 class Configuracion(unittest.TestCase):
     def test_el_json_manda(self):
-        ruta = config({"emecas": {"carga_5min_max": 2, "swap_usado_mb_max": 1024, "presion_memoria_max": 1,
+        ruta = config({"emecas": {"carga_5min_max": 2, "swap_usado_mb_max": 4096, "presion_memoria_max": 1,
                                   "nivel_memoria_min": 70, "disco_libre_gb_min": 50}})
         rc, txt = corre("emecas", SANO_SIN_LAB, ruta)
         self.assertEqual(rc, 1)
@@ -104,18 +109,18 @@ class Configuracion(unittest.TestCase):
         self.assertIn("carga a 5 min: 3.33 (máximo 2)", txt)
 
     def test_campo_ausente_o_malo_defecto_con_aviso_y_sigue(self):
-        for malo, trozo in (({}, "ausente"), ({"carga_5min_max": "8"}, "'8' mal formado"),
+        for malo, trozo in (({}, "ausente"), ({"carga_5min_max": "12"}, "'12' mal formado"),
                             ({"carga_5min_max": 0}, "'0' mal formado"), ({"carga_5min_max": 257}, "'257' mal formado"),
                             ({"carga_5min_max": 8.5}, "'8.5' mal formado"), ({"carga_5min_max": True}, "'True' mal formado")):
             rc, txt = corre("emecas", SANO_SIN_LAB, config({"emecas": malo}))
             self.assertEqual(rc, 0, malo)
-            self.assertIn("emecas.carga_5min_max=8 (defecto del código: %s; entero en [1, 256])" % trozo, txt)
+            self.assertIn("emecas.carga_5min_max=12 (defecto del código: %s; entero en [1, 256])" % trozo, txt)
 
     def test_el_defecto_es_el_del_perfil(self):
         rc, txt = corre("lab_e2e", SANO_CON_LAB, config({"lab_e2e": {}}))
         self.assertEqual(rc, 0)
-        self.assertIn("lab_e2e.carga_5min_max=10 (defecto del código: ausente", txt)
-        self.assertIn("lab_e2e.swap_usado_mb_max=5120 (defecto del código: ausente", txt)
+        self.assertIn("lab_e2e.carga_5min_max=12 (defecto del código: ausente", txt)
+        self.assertIn("lab_e2e.swap_usado_mb_max=16384 (defecto del código: ausente", txt)
         self.assertIn("lab_e2e.nivel_memoria_min=60 (defecto del código: ausente", txt)
 
     def test_sin_fichero_o_roto_todos_los_defectos_y_sigue(self):
