@@ -18,6 +18,12 @@
 #               y las marcas del ml-detector tras el corte = eventos AISLADO de los demas flujos (todas explicadas).
 #               Los demas flujos salen como dato (no decide). Los FIN no cuentan: el del episodio del ataque, empezado
 #               antes del reinicio, puede imprimirse despues del corte con los eventos de antes.
+#               [REINICIO-R3-PROTEGIDO-D327] Medido DAY327 en EMECAS+++: 4 marcas tres minutos despues del reinicio
+#               y ningun AISLADO; el R3 de DAY322 fallo. Una marca cuyo ORIGEN esta en el manifiesto de protegidos
+#               (desde DAY323 los sensores y desde DAY324 los nodos de control son infraestructura) no entra en
+#               episodio ni en AISLADO: el firewall escribe [SOMBRA-DDOS] ALERTA_PROTEGIDO y no bloquea
+#               (zmq_subscriber.cpp, [PROTEGIDOS-D300]). Tambien esta explicada: marcas del ml-detector tras el
+#               corte = eventos AISLADO de los demas flujos + lineas ALERTA_PROTEGIDO tras linea_fw_parado.
 #     ordenada/kill9: marcados_despues >= 0,5 x marcados_antes. Frontera entre los dos regimenes posibles:
 #               con estado ~1,2-1,3 (DAY300: 1,305 y 1,236), sin estado 0. La banda 1,15-1,40 se imprime
 #               como dato y NO decide (depende de lo que tarde vagrant ssh en parar el sniffer).
@@ -92,11 +98,19 @@ case "$MODO" in
           if (v == V && p == P) { if (ini) ai++; else aa += e } else if (!ini) aj += e }
         END { printf "%d %d %d\n", ai, aa, aj }' "$F")
       AI=${1:-0}; AA=${2:-0}; AJ=${3:-0}
-      if [ "$AI" -eq 0 ] && [ "$AA" -eq 0 ] && [ "$MD" -eq "$AJ" ]; then
-        ok "R3 marcado: antes=$MA; tras el reinicio 0 del ataque ($VICT proto $PROTO, en frio) y $MD marcas, todas aislados de otros flujos ($AJ)"
+      # [REINICIO-R3-PROTEGIDO-D327] una linea ALERTA_PROTEGIDO = un evento marcado de origen protegido (no se bloquea)
+      AP=$(awk -v L="$LF" 'NR > L && /\[SOMBRA-DDOS\] ALERTA_PROTEGIDO / { n++ } END { printf "%d\n", n }' "$F")
+      if [ "$AI" -eq 0 ] && [ "$AA" -eq 0 ] && [ "$MD" -eq $((AJ + AP)) ]; then
+        ok "R3 marcado: antes=$MA; tras el reinicio 0 del ataque ($VICT proto $PROTO, en frio) y $MD marcas, todas explicadas: $AJ aislados de otros flujos + $AP de origen protegido (ALERTA_PROTEGIDO, no se bloquea)"
       else
-        ko "R3 marcado: tras el reinicio el ataque ($VICT proto $PROTO) tiene $AI INICIO y $AA eventos aislados (esperado 0 y 0); marcas del ml-detector $MD, aislados de otros flujos $AJ (tienen que ser iguales); antes=$MA"
+        ko "R3 marcado: tras el reinicio el ataque ($VICT proto $PROTO) tiene $AI INICIO y $AA eventos aislados (esperado 0 y 0); marcas del ml-detector $MD, aislados de otros flujos $AJ + de origen protegido $AP = $((AJ + AP)) (tienen que ser iguales); antes=$MA"
       fi
+      awk -v L="$LF" 'NR > L && /\[SOMBRA-DDOS\] ALERTA_PROTEGIDO / {
+          o = ""; c = ""; v = ""; p = ""
+          for (i = 1; i <= NF; i++) { split($i, a, "=")
+            if (a[1] == "origen") o = a[2]; if (a[1] == "categoria") c = a[2]; if (a[1] == "victima") v = a[2]; if (a[1] == "proto") p = a[2] }
+          n[o " categoria=" c " victima=" v " proto=" p]++ }
+        END { for (k in n) printf "[VEREDICTO] dato (no decide): tras el reinicio, %d marcas de origen protegido origen=%s\n", n[k], k }' "$F"
       awk -v L="$LF" -v V="$VICT" -v P="$PROTO" 'NR > L && /\[SOMBRA-DDOS\] AISLADO / {
           v = ""; p = ""; e = ""; o = ""
           for (i = 1; i <= NF; i++) { split($i, a, "=")
