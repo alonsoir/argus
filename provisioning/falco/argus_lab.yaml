@@ -7,7 +7,8 @@
 # (firewall-acl-agent -> firewall-acl-ag), medido DAY321; las reglas de hardened que comparan nombres nunca vieron al
 # firewall (DEBT-HARDENED-FALCO-RUTAS-001).
 #
-# Las listas de permitidos salen de MEDIR el lab (scripts/etcd_ha/d321_medir_falco_hijos.sh v2, DAY321: pipeline-stop,
+# Las listas de permitidos salen de MEDIR el lab (DAY321, con un instrumento ya borrado; hoy las cuenta
+# scripts/vigilancia/falco_silencio.py por regla, proceso, padre y fichero. Medido en: pipeline-stop,
 # pipeline-start, pipeline-status, lab-e2e-mitigacion con la mitigación real, pipeline-start), no de leer el código:
 #   hijos:    firewall-acl-agent -> /usr/sbin/ipset (513), /usr/sbin/xtables-nft-multi (268, como iptables*),
 #             /usr/bin/ip (40); sniffer -> /usr/bin/dash (6: sh -c sysctl, DEBT-SNIFFER-SYSTEM-SYSCTL-001);
