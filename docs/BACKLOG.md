@@ -9815,3 +9815,88 @@ periódica normal se compara con una base casi vacía. Hoy no muerde porque `.12
 el tráfico legítimo a ráfagas de un hospital (copias, monitorización, actualizaciones) no lo estará, y cada reinicio del
 sniffer abre una ventana en frío. Mientras siga, el admin tenderá a manifiestos anchos, que son inmunidad para un intruso.
 Después del PR2, antes de REA.
+
+## DAY328 — EMECAS+++ desde cero parado en C7: oops de ext4 con el kernel 6.1.0-55 de Debian al reiniciar control-1 [KERNEL-EXT4-OOPS-D328]
+
+### Hecho
+- **EMECAS+++ desde cero (05:03-09:50), sobre `19ee5962e`: verde hasta lab-e2e y colgado en C7 de
+  `lab-e2e-vigilancia`** (`d322_reinicio_vault.sh`); parado a mano (`rc=143`). No certifica. Tiempos: vagrant-up
+  52m46s, bootstrap 40m17s, test-all 15m37s. De `lab-e2e-vigilancia`, C3, C5, C6 y C8 en ✅ antes de C7.
+- Ningún cambio en el código: el día fue de diagnóstico. Pruebas guardadas fuera del repo, en el Mac:
+  `~/argus-evidencias/d328/` (salidas `d328_*.txt`, capturas de consola y el volcado de memoria de control-1).
+
+### Hallazgos DAY328 (todos medidos salvo donde se dice)
+- **Oops del kernel en ext4 al arrancar control-1 con `6.1.0-55-amd64` (Debian 6.1.192-1, compilado el 14-nov)**:
+  `BUG: kernel NULL pointer dereference, address: 0`, `RIP: ext4_mb_load_buddy_gfp+0xbc/0x380 [ext4]`. Dos arranques
+  de dos: (1) el `systemctl reboot` de C7, a los 12,1 s, en `kworker/u4:3` (`writeback wb_workfn (flush-8:0)`); (2)
+  tras `VBoxManage controlvm … reset`, a los 16,7 s, en un `unlinkat`. `RBX` = `0x3e2` y `0x3e0` (misma zona).
+- **Consecuencia: la VM queda viva y sin sistema de ficheros.** El hilo que muere tenía abierta una operación de
+  jbd2; `jbd2/sda1-8` espera para siempre en `jbd2_journal_wait_updates` y todo lo que escribe se pone detrás
+  (`wait_transaction_locked`): journald (no muere ni con SIGKILL), rsyslog, etcd, vault, Wazuh, cron, sshd, sudo.
+  Más de 40 tareas en `D`, carga 30, presión de E/S (`/proc/pressure/io`, `full`) 94 %, con memoria de sobra (393 MB
+  disponibles, presión 0) y el disco ocioso (12 lecturas y 0 escrituras en 10 s, nada en vuelo). Responden el ping, el
+  saludo de sshd y el puerto de etcd (2381); Vault (8200) no; las sesiones ssh tardan minutos o no vuelven.
+- **control-3, reiniciada con el mismo kernel, arranca sana** (carga 0,03, presión de E/S 0): no es «el `-55` rompe
+  cualquier VM»; depende de algo del disco de control-1 (único nodo con Vault, y el que tocan C2 y C3). Sin medir qué.
+- **Las dos corridas no probaron el mismo kernel**: el EMECAS de DAY327 instaló `linux-image-6.1.0-54-amd64` y el de
+  DAY328 `linux-image-6.1.0-55-amd64`. Debian publicó kernel entre una y otra.
+- **El lab no ejecuta el kernel que instala**: la caja está fijada (`debian/bookworm64` `12.20240905.1`) y las VMs
+  corren su kernel, `6.1.0-25-amd64` (6.1.106-3, de 2024), con el último instalado y esperando un reinicio (medido en
+  control-2). El único arranque del kernel instalado en todo EMECAS es el reinicio de C7, en control-1.
+- **El examinador de C7 se cuelga en vez de fallar**: `V()` y el reboot de `d322_reinicio_vault.sh` son
+  `vagrant ssh control-1 -c …` sin tiempo límite; la espera de 300 s solo se mira entre llamadas. Además
+  `lab_e2e_vigilancia.sh` manda la salida de C7 a `c7_reinicio_vault.txt`: `emecas_actual.log` quedó mudo desde las
+  08:49 y EMECAS habría seguido así hasta cerrar el portátil.
+- Pista del origen (lectura de Claude, sin confirmar): el código de la traza comprueba si un resultado es un error
+  (`cmp $-4096`) y, como no lo es, lo usa, pero es nulo (`RAX=0`); después mira dos bits de la página. Tiene la forma
+  de un parche de ext4 traído a la rama 6.1 con `IS_ERR()` donde 6.1 devuelve NULL. Sin informe público encontrado
+  para 6.1.192; en marzo de 2026 hubo uno con la misma función en 6.1.167-rc1.
+- `make emecas-progreso` calcula con los 22 pasos de la última corrida buena («paso 22/22 lab-e2e», «fin ~09:05»):
+  hoy son más de 30 y el porcentaje no vale.
+- `emecas_run.sh` rechaza bien un segundo lanzamiento (sale con 1 antes de tocar nada). Para parar una corrida:
+  `kill -TERM -<pgid del make>; sleep 5; kill -KILL -<pgid>` (la limpieza de salida de C7 abre otra sesión).
+- El anfitrión pasó `anfitrion-recursos` con carga a 5 min de 11,24 (máximo 12): justo. Con el lab arriba, como DAY327
+  (carga ~5, swap 7,1 GB, nivel 80-82).
+- Herramientas que sirvieron con la VM sorda: `VBoxManage controlvm <vm> screenshotpng` (la consola),
+  `VBoxManage debugvm <vm> dumpvmcore` + `strings` (el `kern.log` de rsyslog en memoria), `/proc/pressure/*`,
+  `/proc/diskstats`, `/proc/[0-9]*/task/*/status` (sin `ps`, que se cuelga) y `sudo cat /proc/<pid>/task/<tid>/stack`.
+  No sirvieron: `VBoxManage debugvm osdmesg` (no reconoce el kernel) ni `VBoxManage metrics` (Guest Additions 6.0.0
+  con VirtualBox 7.2.10).
+- Sin medir: si Vault dejó de atender por su audit device de syslog con journald muerto; cómo ve el clúster etcd a un
+  miembro que acepta conexiones y no puede escribir.
+
+### Decisiones de Alonso (DAY328)
+- **Todas las imágenes del pipeline deben ser iguales, con el mismo kernel**: «es mejor tender a la homogeneidad, al
+  menos en lo que podemos controlar». Se reconstruye en cada EMECAS, así que es fácil; el error fue no fijar la
+  versión del kernel.
+- Se documenta lo aprendido y se conserva el volcado de memoria de control-1 por si hay que informar a Debian; si hay
+  datos para armar el informe, se envía («igual les viene bien»).
+- `emecas-progreso`: hay que darle un repaso cuando acabe la corrida buena.
+
+### DEBT-LAB-KERNEL-HOMOGENEO-001 — ABIERTA (nueva DAY328, Alonso; bloquea la certificación del PR2b)
+Todas las VMs del lab con el mismo kernel, el que se instala es el que corre, y la versión declarada en un solo sitio.
+Hoy: caja fijada, kernel en ejecución el de la caja (2024), kernel instalado el último de Debian (cambia de un día a
+otro) y solo control-1 lo arranca, en C7. Antes de decidir, medir: (1) por dónde llega el kernel nuevo
+(`unattended-upgrades`, activo por DEBT-DEBIAN-BASE-SECURITY-001, o un `apt-get` del aprovisionamiento); (2) si el
+`6.1.0-54` (6.1.190-1) sigue instalable desde los repositorios oficiales o hay que ir a snapshot.debian.org; (3) cuánto
+añade a `vagrant-up` reiniciar las 8 VMs. Propuesta de Claude, sin decidir: versión en `group_vars/argus_dev.yml`,
+paquete retenido, reinicio de cada VM dentro de `vagrant up` y un paso de EMECAS que compare `uname -r` de todas con la
+versión declarada (con su test de que falla cuando debe); subir de kernel = un commit que cambia esa línea y su EMECAS.
+Alternativas: quedarse en el kernel de la caja (homogéneo, pero de 2024) o fijar la fecha entera de Debian por
+snapshot (kernel y resto de paquetes). Mientras Debian no arregle el `-55`, no arrancarlo en control-1.
+
+### DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001 — ABIERTA (nueva DAY328)
+`scripts/etcd_ha/d322_reinicio_vault.sh`: cada llamada a la VM con tiempo límite (parámetro con rango y defecto, como
+los otros dos) y veredicto ❌ si se agota, diciendo en qué paso; test de que falla cuando la VM no contesta. Revisar
+con el mismo criterio el resto de E2E que usan `vagrant ssh` (sin medir cuántos). Que `lab_e2e_vigilancia.sh` deje en
+el log de EMECAS una línea de vida mientras C7 corre. Va antes del siguiente EMECAS.
+
+### DEBT-KERNEL-EXT4-OOPS-6-1-192-001 — ABIERTA (nueva DAY328; externa: kernel de Debian)
+Informar a Debian (`src:linux` 6.1.192-1) con la traza, las pilas y el volcado. Borrador en
+`~/argus-evidencias/d328/d328_informe_debian.txt`. Faltaría, si se puede: `dumpe2fs -h` del disco de control-1
+(arrancándola con el kernel `6.1.0-25` desde GRUB) y la traza entera del segundo arranque. Seguir el informe: cuando
+haya kernel arreglado, probarlo con C7.
+
+### DEBT-EMECAS-PROGRESO-REFERENCIA-001 — ABIERTA (nueva DAY328, menor)
+`make emecas-progreso`: que la referencia de pasos y tiempos se actualice con la última corrida buena y que, si la
+corrida en curso tiene pasos que la referencia no conoce, lo diga en vez de dar un porcentaje. Con su test.
