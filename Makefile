@@ -1298,7 +1298,13 @@ emecas:
 	@# [RECURSOS-ANFITRION-D327] con las VMs ya destruidas (el Mac sin el lab): si faltan recursos no se sigue
 	@$(EMECAS_PASO) anfitrion-recursos -- $(MAKE) anfitrion-recursos RECURSOS_PERFIL=emecas
 	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
-	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh $(CONTROL_NODOS)
+	@# [KERNEL-HOMOGENEO-D329] DEBT-LAB-KERNEL-HOMOGENEO-001 (decisión de Alonso DAY329): primero solo apt-espera y
+	@# debian-fecha (Debian en la fecha de all.yml), luego un reinicio para arrancar el kernel de esa fecha (reload
+	@# vuelve a montar /vagrant) y después el aprovisionamiento entero, ya sobre ese kernel. kernel-homogeneo lo comprueba
+	@$(EMECAS_PASO) vagrant-up -- vagrant up --provision-with apt-espera,debian-fecha $(EMECAS_VMS)
+	@$(EMECAS_PASO) vagrant-reload -- vagrant reload --no-provision $(EMECAS_VMS)
+	@$(EMECAS_PASO) vagrant-provision -- vagrant provision $(EMECAS_VMS)
+	@$(EMECAS_PASO) kernel-homogeneo -- $(MAKE) kernel-homogeneo
 	@$(EMECAS_PASO) sello-inicio -- vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	@$(EMECAS_PASO) bootstrap -- $(MAKE) bootstrap
 	@$(EMECAS_PASO) emecas-frescura -- $(MAKE) emecas-frescura
@@ -1314,6 +1320,7 @@ emecas:
 	@$(EMECAS_PASO) test-vault-unseal -- $(MAKE) test-vault-unseal
 	@$(EMECAS_PASO) test-falco-silencio -- $(MAKE) test-falco-silencio
 	@$(EMECAS_PASO) test-anfitrion-recursos -- $(MAKE) test-anfitrion-recursos
+	@$(EMECAS_PASO) test-kernel-homogeneo -- $(MAKE) test-kernel-homogeneo
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1355,6 +1362,21 @@ anfitrion-recursos:
 
 test-anfitrion-recursos:
 	@python3 -I scripts/emecas/test_recursos_anfitrion.py
+
+# [KERNEL-HOMOGENEO-D329] (Mac) DEBT-LAB-KERNEL-HOMOGENEO-001: todas las VMs del lab con sus fuentes de Debian en la
+# fecha de ansible/inventory/group_vars/all.yml y EJECUTANDO el kernel de esa fecha (uname -r), el mismo en todas; con
+# el tiempo límite de all.yml en cada llamada (scripts/emecas/con_limite.pl mata también los hijos de vagrant). Tras un
+# vagrant up a mano las VMs siguen en el kernel de la caja hasta un vagrant reload: esto lo dice. EMECAS_VMS: la lista
+# de VMs de EMECAS, una sola vez. test-kernel-homogeneo (Mac): el validador de all.yml y la comprobación con un vagrant
+# falso (kernel sin arrancar, otra fecha, otro kernel, VM colgada, sin fecha, VM inexistente).
+.PHONY: kernel-homogeneo test-kernel-homogeneo
+EMECAS_VMS = defender client suricata zeek wazuh $(CONTROL_NODOS)
+kernel-homogeneo:
+	@bash scripts/emecas/kernel_homogeneo.sh ansible/inventory/group_vars/all.yml $(EMECAS_VMS)
+
+test-kernel-homogeneo:
+	@ruby scripts/emecas/test_lab_comun.rb
+	@bash scripts/emecas/test_kernel_homogeneo.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
