@@ -146,6 +146,17 @@ unless ARGUS_HOSPITAL_ID.match?(/\A[a-z0-9-]{1,64}\z/)
         "(formato: [a-z0-9-], de 1 a 64 caracteres; p. ej. hospital-lab)"
 end
 
+# [DEBIAN-FECHA-D329] lo común a todas las lentes (todas las VMs), de ansible/inventory/group_vars/all.yml, con la
+# validación de scripts/emecas/lab_comun.rb (formato y límites en su cabecera; la misma que usa make kernel-homogeneo).
+# Sin fecha de Debian válida Vagrant para aquí: es un error de fabricante (de aRGus), no del despliegue.
+require File.join(__dir__, "scripts", "emecas", "lab_comun")
+ARGUS_GROUP_VARS_TODOS = File.expand_path(File.join("ansible", "inventory", "group_vars", "all.yml"), __dir__)
+ARGUS_DEBIAN_SNAPSHOT, _limite_vm, errores_comun, avisos_comun, _aplicados_comun = ArgusLabComun.cargar(ARGUS_GROUP_VARS_TODOS)
+avisos_comun.each { |a| warn "[DEBIAN-FECHA-D329] AVISO #{a}" }
+unless errores_comun.empty?
+  abort "[DEBIAN-FECHA-D329] #{ARGUS_GROUP_VARS_TODOS}:\n  " + errores_comun.join("\n  ")
+end
+
 # [PLANO-CONTROL-D324] nodos del plano de control (etcd + Vault + etcd-server; ADR-048/049, revisión DAY324), del mismo
 # group_vars: scripts/etcd_ha/nodos_control.rb los valida (formato y límites en su cabecera). Sin lista válida Vagrant
 # para aquí: es la identidad de la infraestructura del laboratorio y no tiene defecto sano.
@@ -175,6 +186,46 @@ Vagrant.configure("2") do |config|
       echo "✅ apt-espera: dpkg libre tras $(( $(date +%s) - T0 )) s; DPkg::Lock::Timeout=600 en $C"
     fi
   APT_ESPERA
+
+  # [DEBIAN-FECHA-D329] DEBT-LAB-KERNEL-HOMOGENEO-001 (decisión de Alonso DAY328-329): todas las VMs con el mismo Debian.
+  # Va a nivel de config, justo después de apt-espera y en cada up: apunta las fuentes de Debian a snapshot.debian.org en
+  # argus_debian_snapshot (all.yml), para si queda alguna otra fuente de Debian sin fijar, deja la VM en el estado de esa
+  # fecha (full-upgrade) y comprueba que el kernel de la fecha queda instalado. Arrancarlo exige reiniciar: en EMECAS,
+  # vagrant up --provision-with apt-espera,debian-fecha; vagrant reload --no-provision; vagrant provision; y make
+  # kernel-homogeneo lo comprueba con uname -r. Medido DAY328: sin esto, unattended-upgrades (y en defender el apt-get de
+  # linux-headers-amd64) instalaba el último kernel de bookworm-security en plena corrida, más ~120 paquetes.
+  config.vm.provision "shell", name: "debian-fecha", run: "always", args: [ARGUS_DEBIAN_SNAPSHOT], inline: <<-'DEBIAN_FECHA'
+    set -eu
+    TS="$1"
+    case "$TS" in
+      [0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z) ;;
+      *) echo "❌ debian-fecha: marca '$TS' mal formada (AAAAMMDDTHHMMSSZ)"; exit 1 ;;
+    esac
+    B=https://snapshot.debian.org/archive
+    L=/etc/apt/sources.list
+    printf '%s\n' \
+      "# [DEBIAN-FECHA-D329] generado por el Vagrantfile desde ansible/inventory/group_vars/all.yml (argus_debian_snapshot); no editar a mano" \
+      "deb [check-valid-until=no] $B/debian/$TS/ bookworm main" \
+      "deb [check-valid-until=no] $B/debian/$TS/ bookworm-updates main" \
+      "deb [check-valid-until=no] $B/debian-security/$TS/ bookworm-security main" > "$L.argus-nuevo"
+    mv "$L.argus-nuevo" "$L"
+    DEBIAN_RE='(deb|security|ftp[a-z0-9.]*)\.debian\.org'
+    OTRAS=$(grep -lE "^[[:space:]]*(deb|URIs:).*$DEBIAN_RE" /etc/apt/sources.list.d/*.list /etc/apt/sources.list.d/*.sources 2>/dev/null || true)
+    if [ -n "$OTRAS" ]; then
+      echo "❌ debian-fecha: fuentes de Debian sin fijar a $TS: $OTRAS"; exit 1
+    fi
+    apt-get update -o Acquire::Retries=3
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Acquire::Retries=3 \
+      -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold full-upgrade
+    if apt-cache policy | grep -E "$DEBIAN_RE"; then
+      echo "❌ debian-fecha: apt sigue viendo Debian fuera de $TS (líneas de arriba)"; exit 1
+    fi
+    K=$(dpkg-query -W -f='${Depends}' linux-image-amd64 | sed -n 's/.*linux-image-\([0-9][^ ,]*\).*/\1/p' | head -n 1)
+    if [ -z "$K" ] || ! dpkg-query -W -f='${Status}' "linux-image-$K" 2>/dev/null | grep -q 'install ok installed'; then
+      echo "❌ debian-fecha: el kernel de la fecha no quedó instalado (linux-image-amd64 -> ${K:-?})"; exit 1
+    fi
+    echo "✅ debian-fecha: Debian en $TS; kernel de la fecha $K (en marcha: $(uname -r); arranca tras reiniciar)"
+  DEBIAN_FECHA
 
   # ════════════════════════════════════════════════════════════════════════════
   # DEFENDER VM - Full ML Pipeline (Primary)
@@ -1341,8 +1392,8 @@ BASHRC_EOF
       echo "nameserver 1.1.1.1" >> /etc/resolv.conf
       chattr +i /etc/resolv.conf
 
-      # bookworm-backports para libhtp2 >= 0.5.50 (Suricata 7.x)
-      echo "deb http://deb.debian.org/debian bookworm-backports main" \
+      # bookworm-backports para libhtp2 >= 0.5.50 (Suricata 7.x), en la fecha de Debian del lab [DEBIAN-FECHA-D329]
+      echo "deb [check-valid-until=no] https://snapshot.debian.org/archive/debian/#{ARGUS_DEBIAN_SNAPSHOT}/ bookworm-backports main" \
         > /etc/apt/sources.list.d/backports.list
       apt-get update -qq
       apt-get install -y -t bookworm-backports libhtp2 || { echo "❌ libhtp2 failed"; exit 1; }

@@ -1,0 +1,22 @@
+# aRGus NDR -- group_vars de TODOS los grupos del laboratorio (todas las lentes: argus, suricata, zeek, wazuh)
+# [DEBIAN-FECHA-D329] Fuente única de lo que es común a todas las VMs. Lo propio de cada lente va en su fichero
+# (argus_dev.yml; y suricata_dev.yml, zeek_dev.yml... cuando lleguen, DEBT-LAB-VERSIONES-TERCEROS-001). Los valida
+# scripts/emecas/lab_comun.rb, que leen el Vagrantfile y make kernel-homogeneo.
+
+# [DEBIAN-FECHA-D329] DEBT-LAB-KERNEL-HOMOGENEO-001 (decisión de Alonso DAY328-329): todas las VMs del laboratorio con
+# el mismo Debian. Todas las fuentes de Debian (bookworm, bookworm-updates, bookworm-security y el bookworm-backports
+# de Suricata) apuntan a snapshot.debian.org en esta marca, y el aprovisionador debian-fecha deja cada VM en ese estado
+# (full-upgrade). El kernel sale de la fecha: el que pide linux-image-amd64 en ella (make kernel-homogeneo lo comprueba
+# con uname -r en todas las VMs). Medido DAY329: en 20261115T000000Z, linux-image-amd64 6.1.190-1 ->
+# linux-image-6.1.0-54-amd64, el kernel con el que pasó el EMECAS de DAY327; el 6.1.0-55 (6.1.192-1) sufre el oops de
+# ext4 de DAY328 (Debian #1154153).
+# Formato: AAAAMMDDTHHMMSSZ (UTC), una fecha real. Límites: desde 20240905T000000Z (la caja debian/bookworm64
+# 12.20240905.1: una fecha anterior bajaría paquetes) hasta el momento actual. Sin defecto en ningún sitio: si falta o
+# está mal, Vagrant para. Es un error de fabricante (de aRGus, no del despliegue): el laboratorio lo ve antes que nadie.
+# Para cambiarla: la fecha más reciente que pase un EMECAS+++ desde cero.
+argus_debian_snapshot: "20261115T000000Z"
+
+# [DEBIAN-FECHA-D329] tiempo límite, en segundos, de cada llamada del anfitrión a una VM en las comprobaciones del lab
+# (make kernel-homogeneo). Una VM que no contesta da ❌ en vez de colgar la corrida (lección DAY328). Entero [10, 600].
+# Ausente o mal: 60, avisando.
+argus_lab_llamada_vm_limite_s: 60
