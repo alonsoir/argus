@@ -138,8 +138,8 @@ else
 fi
 
 log "C7 reinicio de Vault sin Vagrant (d322_reinicio_vault.sh)"
-bash scripts/etcd_ha/d322_reinicio_vault.sh > "$DM/c7_reinicio_vault.txt" 2>&1; r=$?
-grep -E '✅|❌' "$DM/c7_reinicio_vault.txt" | sed 's/^/  /'
+# [C7-LIMITE-D329] línea de vida: la salida de C7 va al log a la vez que a su fichero (DAY328: 60 min sin una línea)
+bash scripts/etcd_ha/d322_reinicio_vault.sh 2>&1 | tee "$DM/c7_reinicio_vault.txt" | sed 's/^/     c7: /'; r=${PIPESTATUS[0]}
 [ "$r" = 0 ] && echo "  ✅ C7 d322_reinicio_vault.sh PASA" || { echo "  ❌ C7 d322_reinicio_vault.sh rc=$r ($DM/c7_reinicio_vault.txt)"; FALLOS=$((FALLOS + 1)); }
 
 log "C4 divergencia del vigía (d320_vigia_e2e.sh solo con E1; arranca y para el pipeline)"

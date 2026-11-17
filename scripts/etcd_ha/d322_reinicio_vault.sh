@@ -13,6 +13,11 @@
 #   6 R6: ni un CRITICAL de Falco desde el arranque (el desellado lee su clave como dueño)
 # Trap: si no llegó a reiniciar, deshace el paso 2; en cualquier caso deja Vault desellado (si está en marcha).
 # Parámetros (entorno), enteros: D322_ESPERA_ARRANQUE_S [60, 900] defecto 300; D322_ESPERA_VAULT_S [10, 300] defecto 60.
+# [C7-LIMITE-D329] DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001: TODA llamada a la VM lleva tiempo límite (scripts/emecas/con_limite.pl,
+# que mata también el ssh hijo de vagrant): argus_lab_llamada_vm_limite_s de ansible/inventory/group_vars/all.yml, más la
+# espera propia de la llamada cuando la tiene (systemctl --wait 120 s; R5 D322_ESPERA_VAULT_S). Una VM que no contesta es
+# ❌ con el paso, no un silencio (DAY328: control-1 viva para el ping y muerta para el disco, 60 min sin veredicto).
+# D322_VAGRANT y D322_ALL_YML: solo para el test (scripts/etcd_ha/test_d322_limite.sh, vagrant falso y su all.yml).
 set -u
 LC_ALL=C; export LC_ALL
 H=/vagrant/scripts/etcd_ha/d322_reinicio_vault_vm.sh
@@ -27,8 +32,22 @@ entero() {  # nombre valor defecto min max -> VAL
 }
 entero D322_ESPERA_ARRANQUE_S "${D322_ESPERA_ARRANQUE_S:-}" 300 60 900; ESPERA_ARRANQUE=$VAL
 entero D322_ESPERA_VAULT_S "${D322_ESPERA_VAULT_S:-}" 60 10 300; ESPERA_VAULT=$VAL
+Y=${D322_ALL_YML:-ansible/inventory/group_vars/all.yml}
+VAGRANT=${D322_VAGRANT:-vagrant}
+LIM=$(ruby scripts/emecas/lab_comun.rb limite "$Y") || { log "❌ sin límite de llamada a la VM ($Y)"; exit 1; }
+log "límite por llamada a control-1: ${LIM} s (argus_lab_llamada_vm_limite_s, $Y)"
 T=$(mktemp /tmp/d322_vault.XXXXXX)
-V() { vagrant ssh control-1 -c "$*" 2>/dev/null | tr -d '\r'; }
+V() {  # límite_s orden...: la salida va a stdout; rc 142 si la VM no contesta en el límite
+  local lim=$1; shift
+  perl scripts/emecas/con_limite.pl "$lim" "$VAGRANT" ssh control-1 -c "$*" 2>/dev/null | tr -d '\r'
+  return "${PIPESTATUS[0]}"
+}
+VM() {  # paso límite_s orden... -> $T; si la VM no contesta: ❌ con el paso y fuera (el trap deja todo como estaba)
+  local paso=$1 lim=$2; shift 2
+  V "$lim" "$@" > "$T"
+  [ $? = 142 ] && { log "❌ $paso: control-1 no contesta en $lim s (cortado por el límite)"; exit 1; }
+  return 0
+}
 FALLOS=0; PREPARADO=no; REINICIADO=no
 pinta() {  # lee $T: muestra las líneas D322 y cuenta las FALLA
   local l
@@ -42,8 +61,8 @@ pinta() {  # lee $T: muestra las líneas D322 y cuenta las FALLA
 }
 valor() { sed -n "s/^D322|$1|//p" "$T" | head -n 1; }
 fin() {
-  if [ "$PREPARADO" = si ] && [ "$REINICIADO" = no ]; then V "bash $H restaurar" > "$T"; pinta; fi
-  V "systemctl is-active --quiet vault.service && sudo systemctl start argus-vault-unseal.service" > /dev/null
+  if [ "$PREPARADO" = si ] && [ "$REINICIADO" = no ]; then V "$LIM" "bash $H restaurar" > "$T"; pinta; fi
+  V "$LIM" "systemctl is-active --quiet vault.service && sudo systemctl start argus-vault-unseal.service" > /dev/null
   rm -f "$T"
 }
 trap fin EXIT
@@ -51,36 +70,37 @@ trap fin EXIT
 log "predicción: R1-R6 en ✅ (logrotate rota al arrancar, Vault arranca a la primera, lo dessella su unidad sin"
 log "            aprovisionadores, sano tras un SIGKILL, 0 CRITICAL de Falco)"
 log "1 previa"
-V "bash $H previa" > "$T"; pinta
+VM "1 previa" "$LIM" "bash $H previa"; pinta
 BOOT0=$(valor BOOT)
 [ "$FALLOS" = 0 ] && [ -n "$BOOT0" ] || { log "❌ la previa falla: no se reinicia nada"; exit 1; }
 
 log "2 rotación pendiente"
-V "bash $H preparar" > "$T"; pinta
+VM "2 rotación pendiente" "$LIM" "bash $H preparar"; pinta
 [ "$FALLOS" = 0 ] || { log "❌ no se pudo preparar la rotación pendiente"; exit 1; }
 PREPARADO=si
 
 log "3 sudo systemctl reboot (sin Vagrant; boot_id anterior $BOOT0)"
-vagrant ssh control-1 -c "sudo systemctl reboot" > /dev/null 2>&1 || true
+V "$LIM" "sudo systemctl reboot" > /dev/null 2>&1 || true
 T0=$SECONDS; B=""
 while [ $(( SECONDS - T0 )) -lt "$ESPERA_ARRANQUE" ]; do
   sleep 5
-  B=$(V "cat /proc/sys/kernel/random/boot_id" | grep -E '^[0-9a-f-]{36}$' | head -n 1)
+  B=$(V "$LIM" "cat /proc/sys/kernel/random/boot_id" | grep -E '^[0-9a-f-]{36}$' | head -n 1)
   [ -n "$B" ] && [ "$B" != "$BOOT0" ] && break
 done
 [ -n "$B" ] && [ "$B" != "$BOOT0" ] || { log "❌ la VM etcd no volvió en $ESPERA_ARRANQUE s (boot_id '$B')"; exit 1; }
 REINICIADO=si
-log "   VM de vuelta en $(( SECONDS - T0 )) s (boot_id $B); systemd: $(V "timeout 120 systemctl is-system-running --wait" | tail -n 1)"
-V "systemctl --failed --no-legend --plain" > "$T"
+VM "3 systemd tras el arranque" $((120 + LIM)) "timeout 120 systemctl is-system-running --wait"
+log "   VM de vuelta en $(( SECONDS - T0 )) s (boot_id $B); systemd: $(tail -n 1 "$T")"
+VM "3 unidades fallidas" "$LIM" "systemctl --failed --no-legend --plain"
 grep -q '[^[:space:]]' "$T" && { log "   unidades fallidas:"; grep '[^[:space:]]' "$T" | sed 's/^/     /'; }
 
 log "4 arranque (R1-R4)"
-V "bash $H arranque" > "$T"; pinta
+VM "4 arranque" "$LIM" "bash $H arranque"; pinta
 EPOCH=$(valor EPOCH)
 log "5 SIGKILL a Vault (R5)"
-V "bash $H matar $ESPERA_VAULT" > "$T"; pinta
+VM "5 SIGKILL a Vault" $((ESPERA_VAULT + LIM)) "bash $H matar $ESPERA_VAULT"; pinta
 log "6 Falco desde el arranque (R6)"
-if [[ "$EPOCH" =~ ^[0-9]+$ ]]; then V "bash $H falco $EPOCH" > "$T"; pinta
+if [[ "$EPOCH" =~ ^[0-9]+$ ]]; then VM "6 Falco" "$LIM" "bash $H falco $EPOCH"; pinta
 else log "  ❌ R6 sin hora de arranque ('$EPOCH')"; FALLOS=$((FALLOS + 1)); fi
 
 if [ "$FALLOS" = 0 ]; then log "✅ PASA: Vault arranca y se dessella solo, sin Vagrant, y Falco no ve ninguna lectura ajena"; exit 0

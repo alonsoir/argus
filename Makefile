@@ -1321,6 +1321,7 @@ emecas:
 	@$(EMECAS_PASO) test-falco-silencio -- $(MAKE) test-falco-silencio
 	@$(EMECAS_PASO) test-anfitrion-recursos -- $(MAKE) test-anfitrion-recursos
 	@$(EMECAS_PASO) test-kernel-homogeneo -- $(MAKE) test-kernel-homogeneo
+	@$(EMECAS_PASO) test-c7-limite -- $(MAKE) test-c7-limite
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1377,6 +1378,13 @@ kernel-homogeneo:
 test-kernel-homogeneo:
 	@ruby scripts/emecas/test_lab_comun.rb
 	@bash scripts/emecas/test_kernel_homogeneo.sh
+
+# [C7-LIMITE-D329] (Mac) DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001: el examinador de C7 (d322_reinicio_vault.sh) con un
+# vagrant falso: con la VM sana PASA; con la previa, systemd, el arranque o la VM entera sin contestar da ❌ con el paso
+# y en su límite, y si no contesta la previa no reinicia nada. Unos 4 min (el caso de systemd espera sus 120 s + límite).
+.PHONY: test-c7-limite
+test-c7-limite:
+	@bash scripts/etcd_ha/test_d322_limite.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
