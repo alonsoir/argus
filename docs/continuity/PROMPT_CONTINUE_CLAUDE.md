@@ -5,9 +5,12 @@ arXiv:2604.04952). Principio: «medir, no votar». El repo es SOLO LECTURA para 
 Raíz del repo en el Mac: `~/CLionProjects/test-zeromq-docker`.
 
 ## Dónde estamos
-- Rama: `feat/etcd-ha-plano-control` (PR2b de **DEBT-ETCD-HA-TLS-RAFT-001**, ADR-048), con los commits de DAY329 y el
-  de documentación. **El PR2b está CERTIFICADO: EMECAS+++ desde cero VERDE el 17-nov (08:35-13:10, 4h35m, rc=0)**, con
-  todos los pasos, también los de detrás de `mitre-check`, que no se veían desde DAY323.
+- **PR2b de DEBT-ETCD-HA-TLS-RAFT-001 (ADR-048) en `main` y etiquetado `pre-release-etcd-ha-raft-0.0.11`**
+  (sobre `b3b64402`, merge del #164). Certificado por EMECAS+++ desde cero VERDE el 17-nov (08:35-13:10, 4h35m, rc=0),
+  con todos los pasos, también los de detrás de `mitre-check`, que no se veían desde DAY323. Ojo: el #163 se mergeó
+  desde la rama de archivo (metió los 38 parcheadores en `main`); el #164 los sacó con un commit nuevo. README
+  actualizado en el #165 (con la anécdota del bug de kernel). Antes de mergear un PR: mirar en GitHub la rama de origen
+  y que el diff sea solo lo esperado.
 - **DEBT-LAB-KERNEL-HOMOGENEO-001 CERRADA** (decisión de Alonso: opción (c)). Todas las VMs en la misma fecha de
   Debian: `argus_debian_snapshot: "20261115T000000Z"` en `ansible/inventory/group_vars/all.yml` (fuente única de lo
   común a todas las lentes; validación en `scripts/emecas/lab_comun.rb`; si falta o está mal, Vagrant para: error de
@@ -19,15 +22,15 @@ Raíz del repo en el Mac: `~/CLionProjects/test-zeromq-docker`.
   su salida en el log de EMECAS (`c7:`). El resto de E2E con `vagrant ssh` (76 scripts): DEBT-E2E-VAGRANT-SSH-RESTO-001.
 - **Bug de Debian #1154153** (oops de ext4 en 6.1.192-1) presentado; otro afectado confirmó la regresión (6.1.190-1 va
   bien) y hay bisección upstream (`29897d75d649`). Decisión de Alonso: hecha nuestra parte; solo pasivo.
-- Sin trackear en `scripts/etcd_ha/`: los parcheadores `d324_*` a `d329_*` (aplicados). Se archivan al cerrar el PR2b.
+- Parcheadores `d324_*` a `d329_*` (y `d329_readme.py`) en la rama de archivo `archivo/parcheadores-d324-d329`, que no
+  se mergea ni se borra; ninguno en el Mac. Los parcheadores de documentación se ejecutan desde `/tmp`, no desde el repo.
 - Lab al cerrar DAY329: arriba y sano tras el EMECAS verde (8 VMs, kernel `6.1.0-54`).
 
 ## Lo siguiente, en este orden
-1. **Cerrar el PR2b** (Alonso): archivar los parcheadores sin trackear en la rama de archivo
-   `archivo/parcheadores-d324-d329` del remoto (lista con `git ls-files --others --exclude-standard scripts/etcd_ha/`,
-   nunca con comodines), borrarlos del Mac, push, PR, merge.
+1. (Hecho DAY329: PR2b cerrado, archivado y etiquetado.)
 2. **Decide Alonso el orden** entre: **PR2c** (Vault en clúster Raft; se borran `disco-sin-vault.json` y
-   `VIGILANCIA_DISCO_JSON`) y **DEBT-LAB-VERSIONES-TERCEROS-001** (su propio PR: versiones de terceros por lente).
+   `VIGILANCIA_DISCO_JSON`) y **DEBT-LAB-VERSIONES-TERCEROS-001** (versiones de terceros por lente). Con PRs cortos
+   (ver «Forma de trabajar»): la de terceros, un PR por lente; el PR2c, partido si se puede.
 3. **Documentación** (decidida DAY326, pendiente): ADR-060 sección 7 y el procedimiento de DEBT-VAULT-SELLADO-ALERTA-001
    (clave de desellado: Shamir con `-pgp-keys` y YubiKey, HSM solo Enterprise, KMS de nube, transit desde el Vault de la
    VM admin; nunca en claro en disco), contra la documentación de Vault 2.2.1; ADR-048 (DAY324-329) y ADR-060.
@@ -93,3 +96,10 @@ Raíz del repo en el Mac: `~/CLionProjects/test-zeromq-docker`.
   antes del `git add`. Nunca reescribir la historia. Software de terceros solo de sus mantenedores. Sin usos nuevos
   de curl. Mientras corre un EMECAS no se aplica nada al repo ni se toca el lab. Toda llamada a una VM, con límite.
 - Claves privadas nunca en el repo ni por /vagrant.
+- **PRs cortos** (decisión de Alonso DAY329): una deuda o un tema por PR, cada uno con su EMECAS; los gordos, solo si
+  son de tipo épico. La documentación puede ir en español (decisión de Alonso: hay demasiado software solo en inglés);
+  el README, en inglés.
+- **Entorno** (desde DAY329): Alonso trabaja en local con la Terminal de macOS (zsh), ya no con la terminal de CLion;
+  Claude, en su cliente de escritorio (Electron). En zsh, las variables siempre con llaves en los comandos que se le
+  dan (`"${C}:refs/…"`: con `$C:r…` zsh aplica el modificador `:r` y rompe la orden, medido DAY329); lo que lleve
+  bucles o aritmética, mejor dentro de `bash -c '…'`.
