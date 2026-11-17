@@ -1378,6 +1378,7 @@ kernel-homogeneo:
 test-kernel-homogeneo:
 	@ruby scripts/emecas/test_lab_comun.rb
 	@python3 -I scripts/emecas/test_con_limite.py
+	@bash scripts/emecas/test_provision_with.sh
 	@bash scripts/emecas/test_kernel_homogeneo.sh
 
 # [C7-LIMITE-D329] (Mac) DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001: el examinador de C7 (d322_reinicio_vault.sh) con un

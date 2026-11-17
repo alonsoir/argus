@@ -174,7 +174,9 @@ Vagrant.configure("2") do |config|
   # config (no por VM): Vagrant lo ejecuta el primero en cada VM y en cada up. Espera a que acabe el unattended-upgrades
   # en curso (hasta 600 s; cubre también el dpkg -i del agente de Wazuh) y deja DPkg::Lock::Timeout para que todo apt-get
   # posterior espere al bloqueo en vez de fallar. unattended-upgrades sigue activo (DEBT-DEBIAN-BASE-SECURITY-001).
-  config.vm.provision "shell", name: "apt-espera", run: "always", inline: <<-'APT_ESPERA'
+  # [PROVISION-WITH-D329] con nombre ("apt-espera", type: "shell"): EMECAS lo pide con --provision-with; el name: de
+  # shell solo es la etiqueta que se muestra (medido DAY329: "'apt-espera' is not a known provisioner")
+  config.vm.provision "apt-espera", type: "shell", name: "apt-espera", run: "always", inline: <<-'APT_ESPERA'
     set -u
     C=/etc/apt/apt.conf.d/80argus-espera-dpkg
     echo 'DPkg::Lock::Timeout "600";  // [APT-ESPERA-D317] generado por el Vagrantfile; no editar a mano' > "$C"
@@ -194,7 +196,7 @@ Vagrant.configure("2") do |config|
   # vagrant up --provision-with apt-espera,debian-fecha; vagrant reload --no-provision; vagrant provision; y make
   # kernel-homogeneo lo comprueba con uname -r. Medido DAY328: sin esto, unattended-upgrades (y en defender el apt-get de
   # linux-headers-amd64) instalaba el último kernel de bookworm-security en plena corrida, más ~120 paquetes.
-  config.vm.provision "shell", name: "debian-fecha", run: "always", args: [ARGUS_DEBIAN_SNAPSHOT], inline: <<-'DEBIAN_FECHA'
+  config.vm.provision "debian-fecha", type: "shell", name: "debian-fecha", run: "always", args: [ARGUS_DEBIAN_SNAPSHOT], inline: <<-'DEBIAN_FECHA'
     set -eu
     TS="$1"
     case "$TS" in
