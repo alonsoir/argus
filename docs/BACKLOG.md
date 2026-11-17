@@ -9873,7 +9873,7 @@ Después del PR2, antes de REA.
   datos para armar el informe, se envía («igual les viene bien»).
 - `emecas-progreso`: hay que darle un repaso cuando acabe la corrida buena.
 
-### DEBT-LAB-KERNEL-HOMOGENEO-001 — ABIERTA (nueva DAY328, Alonso; bloquea la certificación del PR2b)
+### DEBT-LAB-KERNEL-HOMOGENEO-001 — CERRADA DAY329 (nueva DAY328, Alonso; opción (c): fecha de Debian por snapshot en group_vars/all.yml, kernel-homogeneo verde en EMECAS+++; ver DAY329)
 Todas las VMs del lab con el mismo kernel, el que se instala es el que corre, y la versión declarada en un solo sitio.
 Hoy: caja fijada, kernel en ejecución el de la caja (2024), kernel instalado el último de Debian (cambia de un día a
 otro) y solo control-1 lo arranca, en C7. Antes de decidir, medir: (1) por dónde llega el kernel nuevo
@@ -9885,13 +9885,13 @@ versión declarada (con su test de que falla cuando debe); subir de kernel = un 
 Alternativas: quedarse en el kernel de la caja (homogéneo, pero de 2024) o fijar la fecha entera de Debian por
 snapshot (kernel y resto de paquetes). Mientras Debian no arregle el `-55`, no arrancarlo en control-1.
 
-### DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001 — ABIERTA (nueva DAY328)
+### DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001 — CERRADA DAY329 en C7 (nueva DAY328; con_limite.pl, test-c7-limite y línea de vida c7:; el resto de E2E en DEBT-E2E-VAGRANT-SSH-RESTO-001; ver DAY329)
 `scripts/etcd_ha/d322_reinicio_vault.sh`: cada llamada a la VM con tiempo límite (parámetro con rango y defecto, como
 los otros dos) y veredicto ❌ si se agota, diciendo en qué paso; test de que falla cuando la VM no contesta. Revisar
 con el mismo criterio el resto de E2E que usan `vagrant ssh` (sin medir cuántos). Que `lab_e2e_vigilancia.sh` deje en
 el log de EMECAS una línea de vida mientras C7 corre. Va antes del siguiente EMECAS.
 
-### DEBT-KERNEL-EXT4-OOPS-6-1-192-001 — ABIERTA (nueva DAY328; externa: kernel de Debian)
+### DEBT-KERNEL-EXT4-OOPS-6-1-192-001 — ABIERTA, solo seguimiento (nueva DAY328; externa: informada DAY328 como Debian #1154153, confirmada por otro afectado, bisección upstream 29897d75d649; el lab no arranca el -55: ver DAY329)
 Informar a Debian (`src:linux` 6.1.192-1) con la traza, las pilas y el volcado. Borrador en
 `~/argus-evidencias/d328/d328_informe_debian.txt`. Faltaría, si se puede: `dumpe2fs -h` del disco de control-1
 (arrancándola con el kernel `6.1.0-25` desde GRUB) y la traza entera del segundo arranque. Seguir el informe: cuando
@@ -9900,3 +9900,58 @@ haya kernel arreglado, probarlo con C7.
 ### DEBT-EMECAS-PROGRESO-REFERENCIA-001 — ABIERTA (nueva DAY328, menor)
 `make emecas-progreso`: que la referencia de pasos y tiempos se actualice con la última corrida buena y que, si la
 corrida en curso tiene pasos que la referencia no conoce, lo diga en vez de dar un porcentaje. Con su test.
+
+## DAY329 — fecha de Debian fija para todo el lab, tiempo límite en C7 y EMECAS+++ desde cero VERDE: PR2b certificado [DEBIAN-FECHA-D329] [KERNEL-HOMOGENEO-D329] [C7-LIMITE-D329]
+
+### Medido
+- **Por dónde entraba el kernel nuevo** (log de EMECAS de DAY328 y control-3): en defender, el
+  `apt-get install … linux-headers-amd64` del `Vagrantfile` (el metapaquete sin versión arrastra
+  `linux-image-amd64` 6.1.192-1 desde bookworm-security); en el resto de VMs, `unattended-upgrades` (control-3:
+  16-nov 06:22, `linux-image-amd64` y ~120 paquetes más —libc6, systemd, openssh, openssl, grub…— en plena corrida, sin
+  rastro en el log de EMECAS). `scripts/vagrant-provision.sh` (con `apt-get upgrade -y` y kernels de backports y
+  experimental) no lo usa nadie. Defender compilaba eBPF contra headers del `-55` con el `-25` en marcha.
+- El `6.1.0-54` (6.1.190-1) sigue en bookworm-security; ya hay un `linux-image-amd64` 6.1.192-2 (sin saber si arregla
+  el #1154153). snapshot.debian.org desde el lab: `apt-get update` en 4 s; en `20261115T000000Z`,
+  `linux-image-amd64` 6.1.190-1 → `linux-image-6.1.0-54-amd64` (el de DAY327).
+- La caja trae todas sus fuentes de Debian en `/etc/apt/sources.list` (con `deb-src` y bookworm-backports, que nadie
+  usa); `sources.list.d` solo tiene terceros.
+- **EMECAS+++ desde cero VERDE** (17-nov 08:35-13:10, 4h35m, rc=0, 35 pasos): vagrant-up 29m13s, vagrant-reload 6m09s,
+  vagrant-provision 42m08s (77 min frente a 53-57 min del up único: el coste de la homogeneidad), kernel-homogeneo 32 s
+  (8 VMs en `6.1.0-54-amd64`, fecha `20261115T000000Z`; 16 líneas `debian-fecha` ✅, up y provision), bootstrap 31m21s,
+  test-all 15m37s, lab-e2e 1h48m (C7: control-1 de vuelta en 44 s, R1-R6 ✅, R5 en 6 s), mitre-check 10m02s y, por
+  primera vez desde DAY323, todo lo de detrás.
+- El primer lanzamiento (08:26) cayó en vagrant-up a los 3 s: «'apt-espera' is not a known provisioner». En Vagrant, el
+  `name:` de un aprovisionador `shell` es solo su etiqueta; con nombre: `config.vm.provision "<nombre>", type: "shell"`.
+- `con_limite.pl` (tiempo límite): un `alarm` sobre `vagrant` dejaba vivo su `ssh` hijo (61 s con límite 10); se mata
+  el grupo de procesos. En su grupo, con un terminal como entrada, leerlo la detenía (SIGTTIN): falso «no contesta»
+  (`rc=142`); se le da `/dev/null`. Los tests dan 5/7 y 0/2 con el código anterior.
+
+### Decisiones de Alonso (DAY329)
+- **Opción (c)**: fijar la fecha entera de Debian por snapshot (kernel y resto de paquetes), en un único lugar
+  (`group_vars/all.yml`: «las cosas importantes, por cultura, tratamos siempre de ponerlas en un único lugar»).
+- Si falta la fecha es un problema del fabricante: debe parar y notificarlo a aRGus; el cliente no debería verlo nunca
+  porque lo habría visto antes el laboratorio.
+- **Versiones de terceros fijadas también**, en el fichero de cada lente (`argus_dev.yml`, `suricata_dev.yml`…), para
+  saber en todo momento en qué versión nos movemos. Protocolo: lo más actualizado posible que funcione, cercano en el
+  tiempo y, a ser posible, certificado por el fabricante para ese kernel. En su propio PR, después del PR2b.
+- El reinicio, en tres pasos en el Makefile; asegurarse de que un reinicio arranca de verdad el kernel nuevo
+  (`kernel-homogeneo`).
+- Bug de Debian #1154153: hecha nuestra parte; está en manos de los mantenedores del kernel.
+
+### DEBT-LAB-VERSIONES-TERCEROS-001 — ABIERTA (nueva DAY329, Alonso; su propio PR, después del PR2b)
+Cada versión de terceros, en el group_vars de su lente como fuente única (`argus_dev.yml`; `suricata_dev.yml`,
+`zeek_dev.yml`, `wazuh_dev.yml` cuando lleguen), validada con formato y límites, y el Vagrantfile y los
+aprovisionadores leyendo de ahí. Hoy: Falco 0.43.1 (`provisioning/falco/VERSION`), Wazuh 4.14.10-1
+(`provisioning/wazuh/VERSION`), Vault `VAULT_PIN` (por localizar), etcd v3.6.16 con sha256 y Apache Arrow 24.0.0-1
+escritos en el `Vagrantfile`; **sin fijar: Zeek** (repositorio OBS) y el `.deb` `apache-arrow-apt-source-latest`. Por
+inventariar: libbpf 1.4.6 y lo que se descargue de GitHub. Criterio para elegir versión: el protocolo de Alonso
+(arriba). Un paso de EMECAS que compare lo instalado con lo declarado, con su test.
+
+### DEBT-E2E-VAGRANT-SSH-RESTO-001 — ABIERTA (nueva DAY329, parte pendiente de DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001)
+76 scripts trackeados usan `vagrant ssh` (`git grep -l`, sin contar los parcheadores). Revisarlos con el criterio de
+C7: cada llamada con `scripts/emecas/con_limite.pl` y `argus_lab_llamada_vm_limite_s`, ❌ con el paso si no contesta;
+primero los que corren dentro de EMECAS.
+
+### DEBT-LAB-PROVISION-SCRIPT-MUERTO-001 — ABIERTA (nueva DAY329, menor)
+Borrar `scripts/vagrant-provision.sh`: no lo usa nadie (`git grep` vacío) y hace `apt-get upgrade -y` e instala kernels
+de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMOGENEO-001.
