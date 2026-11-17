@@ -351,22 +351,22 @@ lab-clock-step:
 	@echo "[LAB-CLOCK-STEP] OK: defender y $(LAB_CLOCK_VMS) alineados"
 
 up-argus:
-	@vagrant up defender client etcd
+	@vagrant up defender client $(CONTROL_NODOS)
 
 up-suricata:
 	@cd experiments/suricata-comparative && vagrant up suricata client
 
 up:
-	@vagrant up defender client suricata zeek wazuh etcd
+	@vagrant up defender client suricata zeek wazuh $(CONTROL_NODOS)
 
 halt-argus:
-	@vagrant halt defender client etcd
+	@vagrant halt defender client $(CONTROL_NODOS)
 
 halt-suricata:
 	@cd experiments/suricata-comparative && vagrant halt
 
 halt:
-	@vagrant halt defender client suricata zeek wazuh etcd
+	@vagrant halt defender client suricata zeek wazuh $(CONTROL_NODOS)
 
 destroy:
 	@vagrant destroy -f
@@ -875,16 +875,14 @@ test-provision-1:
 test-invariant-seed:
 	@echo ""
 	@echo "── TEST-INVARIANT-SEED: 4 seeds idénticos post-reset ──"
-	@vagrant ssh -c 'sudo bash -c " \
-	  hashes=\"\" ; \
-	  for c in etcd-server ml-detector sniffer firewall-acl-agent; do \
-	    h=\$$(od -A n -t x1 /etc/ml-defender/\$$c/seed.bin | tr -d \" \\n\") ; \
-	    hashes=\"\$$hashes \$$h\" ; \
-	  done ; \
-	  unique=\$$(echo \$$hashes | tr \" \" \"\\n\" | sort -u | grep -v \"^$$\" | wc -l) ; \
-	  echo \"Hashes únicos: \$$unique\" ; \
-	  [ \"\$$unique\" -eq 1 ] && echo \"✅ TEST-INVARIANT-SEED PASSED\" || { echo \"❌ TEST-INVARIANT-SEED FAILED\"; exit 1; } \
-	"' || (echo "❌ INVARIANTE-SEED-001 violado: seeds divergentes" && exit 1)
+	@# [FALCO-SILENCIO-D327] sha256sum hijo de sudo (traza Notice de Falco: argus_lab_invariante_semilla), no od desde
+	@# sudo bash: od vuelca la semilla por una tubería y daba 4 CRITICAL en cada EMECAS (medido DAY327 en la historia
+	@# del 11-nov). Y se exigen las 4 semillas leídas: antes, una semilla ilegible no contaba y podía dar verde.
+	@vagrant ssh -c 's=$$(for c in etcd-server ml-detector sniffer firewall-acl-agent; do sudo sha256sum /etc/ml-defender/$$c/seed.bin; done | cut -d" " -f1); \
+	  n=$$(echo "$$s" | grep -c .); unique=$$(echo "$$s" | sort -u | grep -c .); \
+	  echo "Semillas leídas: $$n de 4; huellas únicas: $$unique"; \
+	  [ "$$n" -eq 4 ] && [ "$$unique" -eq 1 ] && echo "✅ TEST-INVARIANT-SEED PASSED" || { echo "❌ TEST-INVARIANT-SEED FAILED"; exit 1; }' \
+	  || (echo "❌ INVARIANTE-SEED-001 violado: seeds divergentes o ilegibles" && exit 1)
 	@echo ""
 
 pipeline-start: test-provision-1
@@ -923,7 +921,7 @@ pipeline-status:
 	@echo "║  📊 ML Defender Pipeline Status (via TMUX + pgrep)        ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@# [ETCD-VM-D317] VM etcd: etcd-server (systemd + /health), cada miembro etcd (sano, líder, retraso) y Vault de las claves HMAC
-	@vagrant ssh etcd -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh" 2>/dev/null | grep -E '^  (✅|❌|⚠️)|^       - ' || echo '  ❌ etcd-server:   STOPPED [VM etcd parada o inalcanzable: vagrant up etcd]'
+	@vagrant ssh control-1 -c "bash /vagrant/scripts/etcd_ha/etcd_vm_estado.sh" 2>/dev/null | grep -E '^  (✅|❌|⚠️)|^       - ' || echo '  ❌ etcd-server:   STOPPED [VM etcd parada o inalcanzable: vagrant up control-1]'
 	@vagrant ssh -c "( tmux has-session -t ml-detector 2>/dev/null || pgrep -x ml-detector >/dev/null 2>&1 ) && echo '  ✅ ml-detector:   RUNNING' || echo '  ❌ ml-detector:   STOPPED'"
 	@vagrant ssh -c " \
 	  EBPF=0; PCAP=0; \
@@ -1297,20 +1295,42 @@ emecas:
 	@echo "╚════════════════════════════════════════════════════════════╝"
 	@$(EMECAS_PASO) vagrant-destroy -- vagrant destroy -f
 	@$(EMECAS_PASO) clean-host-builds -- $(MAKE) clean-host-builds
+	@# [RECURSOS-ANFITRION-D327] con las VMs ya destruidas (el Mac sin el lab): si faltan recursos no se sigue
+	@$(EMECAS_PASO) anfitrion-recursos -- $(MAKE) anfitrion-recursos RECURSOS_PERFIL=emecas
 	@# [EMECAS-TODO-D317] destroy -f borra todas las VMs: se levantan todas (Zeek y Wazuh incluidas; Acto IV de emecas+++)
-	@$(EMECAS_PASO) vagrant-up -- vagrant up defender client suricata zeek wazuh etcd
+	@# [KERNEL-HOMOGENEO-D329] DEBT-LAB-KERNEL-HOMOGENEO-001 (decisión de Alonso DAY329): primero solo apt-espera y
+	@# debian-fecha (Debian en la fecha de all.yml), luego un reinicio para arrancar el kernel de esa fecha (reload
+	@# vuelve a montar /vagrant) y después el aprovisionamiento entero, ya sobre ese kernel. kernel-homogeneo lo comprueba
+	@$(EMECAS_PASO) vagrant-up -- vagrant up --provision-with apt-espera,debian-fecha $(EMECAS_VMS)
+	@$(EMECAS_PASO) vagrant-reload -- vagrant reload --no-provision $(EMECAS_VMS)
+	@$(EMECAS_PASO) vagrant-provision -- vagrant provision $(EMECAS_VMS)
+	@$(EMECAS_PASO) kernel-homogeneo -- $(MAKE) kernel-homogeneo
 	@$(EMECAS_PASO) sello-inicio -- vagrant ssh defender -c "mkdir -p /vagrant/logs/lab && date -u > /vagrant/logs/lab/emecas_inicio.stamp"
 	@$(EMECAS_PASO) bootstrap -- $(MAKE) bootstrap
 	@$(EMECAS_PASO) emecas-frescura -- $(MAKE) emecas-frescura
 	@$(EMECAS_PASO) test-all -- $(MAKE) test-all
 	@# [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5: argus-infra (VM etcd) y la vigilancia de 8e.4d (manager y argus-disco)
 	@$(EMECAS_PASO) test-argus-infra -- $(MAKE) test-argus-infra
+	@# [EMECAS-PLANO-CONTROL-D327] DEBT-EMECAS-PLANO-CONTROL-001 (decisión de Alonso DAY326): el clúster etcd de verdad y
+	@# su reinicio de uno en uno, en cada EMECAS. Medido DAY327: 55 s y 198 s; 0 CRITICAL de Falco; sus trazas Notice
+	@# (495 en control-1) quedan antes de falco-silencio y fuera de la ventana de C8 de lab-e2e-vigilancia
+	@$(EMECAS_PASO) test-etcd-cluster -- $(MAKE) test-etcd-cluster
+	@$(EMECAS_PASO) test-etcd-reinicio -- $(MAKE) test-etcd-reinicio
+	@$(EMECAS_PASO) test-clave-bronce -- $(MAKE) test-clave-bronce
+	@$(EMECAS_PASO) test-vault-unseal -- $(MAKE) test-vault-unseal
+	@$(EMECAS_PASO) test-falco-silencio -- $(MAKE) test-falco-silencio
+	@$(EMECAS_PASO) test-anfitrion-recursos -- $(MAKE) test-anfitrion-recursos
+	@$(EMECAS_PASO) test-kernel-homogeneo -- $(MAKE) test-kernel-homogeneo
+	@$(EMECAS_PASO) test-c7-limite -- $(MAKE) test-c7-limite
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
 	@$(EMECAS_PASO) test-firewall-perf -- $(MAKE) test-firewall-perf
 	@$(EMECAS_PASO) test-e2e-synthetic -- $(MAKE) test-e2e-synthetic
-	@$(EMECAS_PASO) lab-e2e -- $(MAKE) lab-e2e
+	@# [FALCO-SILENCIO-D327] 0 CRITICAL de reglas argus_* en las VMs con Falco desde que se crearon; justo antes de
+	@# lab-e2e, que las provoca a propósito (C5 de lab-e2e-vigilancia)
+	@$(EMECAS_PASO) falco-silencio -- $(MAKE) falco-silencio
+	@$(EMECAS_PASO) lab-e2e -- $(MAKE) lab-e2e LAB_E2E_EN_EMECAS=1
 	@$(EMECAS_PY) fin $(EMECAS_META_O) emecas
 	@echo ""
 	@echo "╔════════════════════════════════════════════════════════════╗"
@@ -1330,6 +1350,43 @@ EMECAS_PASO = $(EMECAS_PY) paso $(EMECAS_META_O)
 .PHONY: emecas-progreso test-emecas-paso
 emecas-progreso:
 	@$(EMECAS_PY) ver
+
+# [RECURSOS-ANFITRION-D327] (Mac) recursos del anfitrión antes de EMECAS y de lab-e2e: carga a 5 min, swap, presión y
+# nivel de memoria de macOS y disco libre contra los umbrales de scripts/emecas/recursos_anfitrion.json. Si falta
+# alguno (o no se puede medir) no se arranca. RECURSOS_PERFIL: emecas (el Mac sin el lab; en la receta emecas va tras
+# vagrant destroy) o lab_e2e (con el lab arriba; lo lanza lab-e2e cuando no viene de EMECAS).
+# test-anfitrion-recursos (Mac): unittest con las medidas simuladas.
+.PHONY: anfitrion-recursos test-anfitrion-recursos
+RECURSOS_PERFIL ?= lab_e2e
+anfitrion-recursos:
+	@python3 -I scripts/emecas/recursos_anfitrion.py $(RECURSOS_PERFIL)
+
+test-anfitrion-recursos:
+	@python3 -I scripts/emecas/test_recursos_anfitrion.py
+
+# [KERNEL-HOMOGENEO-D329] (Mac) DEBT-LAB-KERNEL-HOMOGENEO-001: todas las VMs del lab con sus fuentes de Debian en la
+# fecha de ansible/inventory/group_vars/all.yml y EJECUTANDO el kernel de esa fecha (uname -r), el mismo en todas; con
+# el tiempo límite de all.yml en cada llamada (scripts/emecas/con_limite.pl mata también los hijos de vagrant). Tras un
+# vagrant up a mano las VMs siguen en el kernel de la caja hasta un vagrant reload: esto lo dice. EMECAS_VMS: la lista
+# de VMs de EMECAS, una sola vez. test-kernel-homogeneo (Mac): el validador de all.yml y la comprobación con un vagrant
+# falso (kernel sin arrancar, otra fecha, otro kernel, VM colgada, sin fecha, VM inexistente).
+.PHONY: kernel-homogeneo test-kernel-homogeneo
+EMECAS_VMS = defender client suricata zeek wazuh $(CONTROL_NODOS)
+kernel-homogeneo:
+	@bash scripts/emecas/kernel_homogeneo.sh ansible/inventory/group_vars/all.yml $(EMECAS_VMS)
+
+test-kernel-homogeneo:
+	@ruby scripts/emecas/test_lab_comun.rb
+	@python3 -I scripts/emecas/test_con_limite.py
+	@bash scripts/emecas/test_provision_with.sh
+	@bash scripts/emecas/test_kernel_homogeneo.sh
+
+# [C7-LIMITE-D329] (Mac) DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001: el examinador de C7 (d322_reinicio_vault.sh) con un
+# vagrant falso: con la VM sana PASA; con la previa, systemd, el arranque o la VM entera sin contestar da ❌ con el paso
+# y en su límite, y si no contesta la previa no reinicia nada. Unos 4 min (el caso de systemd espera sus 120 s + límite).
+.PHONY: test-c7-limite
+test-c7-limite:
+	@bash scripts/etcd_ha/test_d322_limite.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
@@ -1428,6 +1485,7 @@ lab-e2e-vigilancia:
 
 lab-e2e:
 	@echo "[LAB-E2E] inicio $$(date '+%F %T'): reinicio antes/ordenada/kill9, protegidos, mitigacion, vigia, antispoof, latido, vigilancia, reinicio del etcd-server"
+	@$(if $(LAB_E2E_EN_EMECAS),echo "[LAB-E2E] recursos del anfitrion: ya comprobados en EMECAS (paso anfitrion-recursos)",$(MAKE) --no-print-directory anfitrion-recursos RECURSOS_PERFIL=lab_e2e)
 	$(MAKE) lab-test-limpia-kernel
 	$(MAKE) lab-e2e-reinicio-antes
 	$(MAKE) lab-e2e-reinicio-ordenada
@@ -2250,6 +2308,9 @@ dev-setup-tools:
 #   ETCD_VM_ESPERA_S: segundos que etcd-vm-check y etcd-vm-aviso esperan a que todo esté sano (entero [0, 300], defecto 30)
 # ════════════════════════════════════════════════════════════════════════════
 ETCD_VM_ESPERA_S ?= 30
+# [PLANO-CONTROL-D324] nodos del plano de control: argus_control_nodos del group_vars, validados por nodos_control.rb
+# (la misma validación que el Vagrantfile). Sin lista válida, el target que los use para aquí diciéndolo.
+CONTROL_NODOS = $(or $(shell ruby scripts/etcd_ha/nodos_control.rb nombres ansible/inventory/group_vars/argus_dev.yml Vagrantfile),$(error [PLANO-CONTROL-D324] sin nodos de control: ruby scripts/etcd_ha/nodos_control.rb nodos ansible/inventory/group_vars/argus_dev.yml Vagrantfile))
 ETCD_VM_UNIDAD := ml-defender-etcd-server.service
 ETCD_VM_ESTADO := /vagrant/scripts/etcd_ha/etcd_vm_estado.sh
 .PHONY: etcd-vm-deploy etcd-vm-estado etcd-vm-check etcd-vm-aviso protegidos-pubkey protegidos-bootstrap test-argus-infra
@@ -2262,10 +2323,10 @@ protegidos-pubkey:
 
 # [PROTEGIDOS-BOOTSTRAP-D322] ADR-060 8e.5 (Mac): el bootstrap firma la versión 1 del manifiesto de protegidos con la
 # propia herramienta del admin (argus-infra init, VM etcd) desde la plantilla del lab (tools/argus-infra/plantillas/
-# hospital-lab.json: .20 en infraestructura con su MAC, .61 en intranet). Idempotente (decisión de Alonso DAY322): rc 0
+# hospital-lab.json: los nodos del plano de control .20-.22 en infraestructura con su MAC, .61 en intranet). Idempotente (decisión de Alonso DAY322): rc 0
 # firmada; rc 4 ya había un manifiesto publicado y no se toca; cualquier otro código para el bootstrap.
 protegidos-bootstrap:
-	@vagrant ssh etcd -c "sudo /usr/local/sbin/argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json --si; echo ARGUS_INFRA_RC=\$$?" > /tmp/argus_protegidos_bootstrap.txt 2>&1; \
+	@vagrant ssh control-1 -c "sudo /usr/local/sbin/argus-infra init --desde /vagrant/tools/argus-infra/plantillas/hospital-lab.json --si; echo ARGUS_INFRA_RC=\$$?" > /tmp/argus_protegidos_bootstrap.txt 2>&1; \
 	grep -v -e '^\[argus\]' -e '^ARGUS_INFRA_RC=' /tmp/argus_protegidos_bootstrap.txt; \
 	rc=$$(tr -d '\r' < /tmp/argus_protegidos_bootstrap.txt | sed -n 's/^ARGUS_INFRA_RC=\([0-9]*\)$$/\1/p' | tail -n 1); \
 	case "$$rc" in \
@@ -2278,13 +2339,49 @@ protegidos-bootstrap:
 # Vault) con el Python de la VM etcd, donde vive la herramienta: el validador portado de libs/protegidos, la
 # configuración, la plantilla del laboratorio, el diff y la política.
 test-argus-infra:
-	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
+	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/tools/argus-infra/test_argus_infra.py"
+
+# [CLAVE-BRONCE-D326] (Mac): tests de scripts/bronze_key/clave_bronce.py (unittest, biblioteca estándar, sin red) con el
+# Python del defender, donde se ejecuta la orden: el bloque etcd del JSON, la respuesta de /secrets/valid/{c} y la orden.
+.PHONY: test-clave-bronce
+test-clave-bronce:
+	@vagrant ssh defender -c "cd /tmp && python3 -I /vagrant/scripts/bronze_key/test_clave_bronce.py"
+
+# [DESELLADO-PY-D326] (Mac): tests del desellado del Vault del lab (provisioning/vault/argus-vault-unseal; unittest, sin
+# red ni Vault) con el Python de control-1, donde corre: espera a Vault, sin inicializar, desellado y clave sin salir.
+.PHONY: test-vault-unseal
+test-vault-unseal:
+	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/provisioning/vault/test_argus_vault_unseal.py"
+
+# [FALCO-SILENCIO-D327] (Mac, VMs arriba) el test de silencio de Falco, último trozo de DEBT-FALCO-RUIDO-ADMIN-001:
+# 0 eventos CRITICAL de reglas argus_* en el defender y en cada nodo del plano de control desde que se creó la VM
+# (eventos.json y sus rotados). Antes de contar, en cada VM: Falco en marcha y una sonda (nobody intenta leer una clave
+# vigilada: WARNING de argus_lab_clave_intento_fallido) que Falco tiene que escribir; sin eso es NO MEDIDO y FALLA.
+#   FALCO_SILENCIO_DESDE: solo eventos desde esa hora UTC (AAAA-MM-DDTHH:MM:SSZ). Vacío por defecto (y en EMECAS):
+#   desde la creación. Para medir a mano en VMs con historia: make falco-silencio FALCO_SILENCIO_DESDE=2026-11-15T05:00:00Z
+# test-falco-silencio (Mac, sin VMs): unittest de scripts/vigilancia/falco_silencio.py.
+.PHONY: falco-silencio test-falco-silencio
+FALCO_SILENCIO_DESDE ?=
+falco-silencio:
+	@python3 -I scripts/vigilancia/falco_silencio.py lab $(if $(FALCO_SILENCIO_DESDE),--desde $(FALCO_SILENCIO_DESDE)) defender $(CONTROL_NODOS)
+
+test-falco-silencio:
+	@python3 -I scripts/vigilancia/test_falco_silencio.py
 
 # [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
 # agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el
 # aprovisionador argus-vigilancia del Vagrantfile. La versión del manager sale de provisioning/wazuh/VERSION.
 vigilancia-manager-deploy:
 	@vagrant ssh wazuh -c "sudo bash /vagrant/scripts/vigilancia/wazuh_manager_desplegar.sh"
+
+# [PLANO-CONTROL-D324] comprobaciones estáticas del plano de control (Mac, sin VMs): scripts/etcd_ha/test_plano_control.py
+test-plano-control:
+	@python3 -I scripts/etcd_ha/test_plano_control.py
+
+# [PKI-NODOS-D324] d312_pki.sh nodos sobre una PKI de usar y tirar en /tmp (Mac, sin VMs): SAN con la IP de cada
+# nodo, idempotente, y falla si un certificado no lleva la IP de su nodo o no lo firmó la CA
+test-pki-nodos:
+	@bash scripts/etcd_ha/test_pki_nodos.sh
 
 # Cada regla de aRGus contra su línea de provisioning/wazuh/argus/tests/casos_reglas.tsv, con wazuh-logtest en el manager
 test-vigilancia-reglas:
@@ -2293,38 +2390,64 @@ test-vigilancia-reglas:
 # [VIGILANCIA-D321] tests de argus-disco (unittest, biblioteca estándar) con el Python de la VM etcd, donde corre:
 # configuración (rangos, tipos, defectos), medida como df y las líneas que leen el decoder y las reglas de Wazuh
 test-vigilancia-disco:
-	@vagrant ssh etcd -c "cd /tmp && python3 -I /vagrant/scripts/vigilancia/test_argus_disco.py"
+	@vagrant ssh control-1 -c "cd /tmp && python3 -I /vagrant/scripts/vigilancia/test_argus_disco.py"
 
 # Mac: binario + librerías + material (d312_etcd_vm_deploy.sh), JSON por Ansible (deploy-configs), reinicio y control estricto
 etcd-vm-deploy:
+	@$(MAKE) --no-print-directory etcd-cluster-deploy  # [ETCD-CLUSTER-D324] el etcd-server necesita el clúster antes
 	@bash scripts/etcd_ha/d312_etcd_vm_deploy.sh $(PROFILE)
 	@$(MAKE) --no-print-directory deploy-configs
-	@vagrant ssh etcd -c "sudo systemctl restart $(ETCD_VM_UNIDAD)"
+	@vagrant ssh control-1 -c "sudo systemctl restart $(ETCD_VM_UNIDAD)"
 	@$(MAKE) --no-print-directory etcd-vm-check
+
+# [ETCD-CLUSTER-D324] etcd en clúster en los nodos del plano de control (Ansible desde el defender, como deploy-configs):
+# ansible/playbooks/etcd_cluster.yml. Arranque estático; con datos solo reinicia (de uno en uno) si cambió la configuración.
+#   ETCD_CLUSTER_ARGS: argumentos de más para ansible-playbook (vacío por defecto). Lo usa make test-etcd-reinicio para
+#   desplegar con otros tiempos de Raft sin tocar el group_vars (-e etcd_heartbeat_interval_ms=... -e etcd_election_timeout_ms=...;
+#   el playbook los valida igual). El despliegue normal no lo lleva: el group_vars es la ley.
+ETCD_CLUSTER_ARGS ?=
+etcd-cluster-deploy:
+	@vagrant ssh defender -- -t "cd /vagrant && sudo ansible-playbook -i ansible/inventory/dev.yml ansible/playbooks/etcd_cluster.yml --diff $(ETCD_CLUSTER_ARGS)"
+
+# [ETCD-CLUSTER-D324] el clúster de verdad (VMs arriba): idempotencia, miembros de la lista, replicación, TLS, hashkv
+test-etcd-cluster:
+	@bash scripts/etcd_ha/test_etcd_cluster.sh
+
+# [ETCD-REINICIO-D325] el reinicio de uno en uno de verdad (VMs arriba): despliega con otros tiempos de Raft y vuelve a los
+# del group_vars; exige orden (reinicio, salud de todos, siguiente), PID nuevo en cada nodo, ninguna escritura fallida
+# durante los reinicios (quórum) y 0 CRITICAL de Falco de reglas argus_* en todos los nodos [FALCO-SILENCIO-D325].
+# Entorno: ETCD_REINICIO_HB_MS, ETCD_REINICIO_EL_MS y ETCD_REINICIO_ESCRITOR_S (pausa del escritor, [1, 10], defecto 2)
+test-etcd-reinicio:
+	@bash scripts/etcd_ha/test_etcd_reinicio.sh
+
+# [ALMACEN-ESCRIBE-D324] etcd-vm-check da NO SANO si el etcd-server no escribe en etcd (sin VMs: el script de verdad
+# con sudo/systemctl/curl/etcdctl de mentira; 6 casos de latido fresco, viejo, ausente, sin respuesta y del JSON)
+test-vm-estado-almacen:
+	@bash scripts/etcd_ha/test_vm_estado_almacen.sh
 
 # Informe (rc 0 siempre)
 etcd-vm-estado:
-	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO)"
+	@vagrant ssh control-1 -c "bash $(ETCD_VM_ESTADO)"
 
 # Estricto (EMECAS): rc 1 si etcd-server, algún miembro etcd o Vault no están sanos tras ETCD_VM_ESPERA_S
 etcd-vm-check:
-	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)"
+	@vagrant ssh control-1 -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)"
 
 # pipeline-start: informa y, si no está sano (o la VM está parada), avisa claro y sigue (decisión 4 de Alonso, DAY317)
 etcd-vm-aviso:
-	@vagrant ssh etcd -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)" > /tmp/argus_etcd_vm_aviso.txt 2>&1; rc=$$?; \
+	@vagrant ssh control-1 -c "bash $(ETCD_VM_ESTADO) --estricto --esperar $(ETCD_VM_ESPERA_S)" > /tmp/argus_etcd_vm_aviso.txt 2>&1; rc=$$?; \
 	  cat /tmp/argus_etcd_vm_aviso.txt; \
 	  if [ $$rc -ne 0 ]; then \
 	    echo "[ETCD-VM-AVISO] la VM etcd NO está sana (o está parada): los componentes arrancan y protegen, pero sin clave HMAC no"; \
-	    echo "[ETCD-VM-AVISO] firman bronce ni CSV hasta que vuelvan etcd-server, etcd y Vault. Ver: make etcd-vm-estado; VM parada: vagrant up etcd"; \
+	    echo "[ETCD-VM-AVISO] firman bronce ni CSV hasta que vuelvan etcd-server, etcd y Vault. Ver: make etcd-vm-estado; VM parada: vagrant up control-1"; \
 	  fi
 
 etcd-server-start:  # [ETCD-VM-D317] arranca el servicio de la VM etcd y exige que quede sano
-	@vagrant ssh etcd -c "sudo systemctl start $(ETCD_VM_UNIDAD)"
+	@vagrant ssh control-1 -c "sudo systemctl start $(ETCD_VM_UNIDAD)"
 	@$(MAKE) --no-print-directory etcd-vm-check
 
 etcd-server-stop:  # [ETCD-VM-D317] para el servicio de la VM etcd (Restart=always no lo relanza tras un stop explícito)
-	@vagrant ssh etcd -c "sudo systemctl stop $(ETCD_VM_UNIDAD); echo \"etcd-server de la VM etcd: \$$(systemctl is-active $(ETCD_VM_UNIDAD))\""
+	@vagrant ssh control-1 -c "sudo systemctl stop $(ETCD_VM_UNIDAD); echo \"etcd-server de la VM etcd: \$$(systemctl is-active $(ETCD_VM_UNIDAD))\""
 
 # ============================================================================
 # TSAN Validation Suite (Day 48 Phase 0)

@@ -9557,7 +9557,7 @@ salida de cada adapter, Zeek copiado del spool y pasos sin comprobar. No está e
 **Test de cierre:** ctu-start en una VM con corridas anteriores deja en el grafo solo las filas de su ventana, y falla
 si un paso falla.
 
-### DEBT-DDOS-COLATERAL-LEGITIMO-001 — ABIERTA (nueva DAY323, Alonso)
+### DEBT-DDOS-COLATERAL-LEGITIMO-001 — ABIERTA (nueva DAY323, Alonso; ampliada DAY327, ver DAY327)
 Durante un ataque contra una víctima, la cabeza DDoS mete en el episodio el tráfico legítimo de un paquete que llega a
 esa víctima (medido DAY323: NTP de los sensores a .1, un evento por sensor en `origenes=`). Fuera del modo sombra se
 bloquearía a quien solo pidió la hora o un nombre. En un hospital: cualquier equipo que consulte NTP o DNS a un
@@ -9606,3 +9606,352 @@ DEBT-VAULT-SELLADO-ALERTA-001, DEBT-CTU-START-VENTANA-001, DEBT-DDOS-COLATERAL-L
 - `etcd-server/tests/test_secrets_manager.cpp`: su `add_executable` está comentado en `etcd-server/CMakeLists.txt`
   (no se compila ni se ejecuta). Decidir: cablearlo o borrarlo.
 - Ramas viejas en el remoto: `chore/cleanup-temp-scripts` (14-may-2026) y `chore/preserve-scratch-scripts`.
+
+## DAY325 — reinicio de uno en uno del clúster etcd, restos del renombrado y un lab-e2e rojo que venía del anfitrión [ETCD-REINICIO-D325] [PLANO-CONTROL-D324]
+
+### Hecho
+- `d207ce9b0` **F1**: `etcd_cluster.yml` sin CRITICAL de Falco (etcdctl con sudo; stat sin leer las claves; salud tras
+  reinicio desde control-1, sin curl) y reinicio de uno en uno (`serial: 1`, salud de TODOS antes del siguiente).
+  `make test-etcd-reinicio` (R0-R6). Medido: PASA; 0 CRITICAL; 1 escritura de 147 fallida a la primera (propuesta en
+  vuelo al ceder el liderazgo; el reintento entra).
+- `627885d5e` restos del renombrado etcd → control-1 en tres E2E de lab-e2e y en `d321_medir_falco_hijos.sh`; el
+  detector de C1 de `test-plano-control` caza también `vm etcd "…"`, bucles sobre nombres de VM y el agente `etcd`.
+
+### Hallazgos DAY325
+- lab-e2e-protegidos rojo (1.ª corrida): **rehacer Vault sin rehacer el defender deja al firewall sin manifiesto**: el
+  Vault nuevo empieza en la versión 1 con otra clave y el defender conserva el suelo anti-retroceso (versión 5) y la caché
+  vieja. Apartando los dos, el firewall acepta la v1. Un EMECAS desde cero no lo ve (destruye también el defender).
+- lab-e2e-protegidos rojo (2.ª corrida): el Mac ahogado por una compilación ajena (carga 46, swap 5,3 de 6,1 GB):
+  `slow fdatasync` de 5-13 s en etcd, reelecciones continuas (término 164 → 216), 18 714 alertas de infraestructura (Raft
+  25-36 veces la línea base) y ningún DROP del ataque. Corrida no válida como prueba; sí como experimento de estrés.
+- Al reiniciar al líder, una escritura en vuelo puede perderse y el cliente solo lo ve por el plazo (5 s).
+
+### Decisiones de Alonso (DAY325)
+- Reinicio del clúster: se deja el orden de la lista de nodos en el PR2b; para el PR2e, seguidores primero y líder al final.
+- F2 (DEBT-FALCO-RUIDO-ADMIN-001): tar y sha256sum del despliegue como traza Notice; la clave pública del manifiesto por
+  `argus-infra clave-publica`, sin curl; test de silencio de Falco en EMECAS desde la creación de las VMs hasta justo
+  antes de lab-e2e. Borrar los instrumentos d321 que ya no hacen falta.
+- Comprobación de recursos del anfitrión al empezar lab-e2e y EMECAS (DEBT-LAB-RECURSOS-ANFITRION-001).
+
+## DAY326 — lab-e2e entero en verde con 3 nodos y Falco sin ruido de administración [CLAVE-PUBLICA-D326] [FALCO-RUIDO-D326] [CLAVE-BRONCE-D326] [DESELLADO-PY-D326]
+
+### Hecho
+- **`make lab-e2e` entero en VERDE** (04:55-06:42Z, Mac a carga ~6), primera vez con el plano de control de 3 nodos y
+  tras el renombrado: reinicios del sniffer, protegidos P1-P6, mitigación C1-C7, vigía, antispoof S1-S4, latido L0-L4,
+  vigilancia C1-C8 (C8: 16 trazas ≤ 60; C7: Vault arranca y se dessella solo) y reinicio del etcd-server.
+- `f409059ca` `argus-infra clave-publica` (cliente de Vault de la herramienta; solo Ed25519 de 32 bytes; 25 tests);
+  `protegidos_pubkey.sh` la usa; se borra `protegidos_pubkey_vm.sh` (curl). Huella `a1b73e22cf85899a`, la misma.
+- `1ac905740` Falco: `iptables-restore` del firewall permitido por su nombre cortado (`iptables-restor`; la lista lo
+  tenía con 16 caracteres y nunca casaba: 4 CRITICAL en lab-e2e) y argus-infra con sudo leyendo su clave = Notice.
+- `b6c8dcfe7` saca `scripts/local_checks.sh`, que entró vacío y por error en `1ac905740`; el prototipo queda en la rama
+  `proto/local-checks`.
+- `151109ec4` `etcd-vm-deploy` sin CRITICAL: `tar` con sudo (solo la orden exacta del script) y `sha256sum` hijo de sudo
+  sobre semilla y private.pem del etcd-server = Notice; `d312_etcd_vm_deploy.sh` usa `sudo sha256sum $(sudo find …)`.
+- `51f4ebd29` `scripts/bronze_key/clave_bronce.py`: la clave HMAC activa por mTLS con la identidad del conversor, en
+  Python estándar (bloque etcd del JSON del ml-detector; 8 tests; `make test-clave-bronce`, paso en emecas). La usan
+  mitre/ctu/custom-start y las claves A y B del E2E del etcd-server; se borra `clave_bronce_ml_detector.sh`.
+- `[DESELLADO-PY-D326]` desellado del Vault del lab en Python estándar (8 tests; `make test-vault-unseal`, paso en
+  emecas); Falco vigila `/etc/vault.d/unseal.key` (antes no) y reconoce al desellado por binario, `proc.args` y
+  fichero, no por el árbol de procesos.
+- Cada regla nueva con su prueba que debe fallar, medida: `python3`, `cat` y `tar` cualesquiera sobre las mismas claves
+  siguen dando CRITICAL.
+
+### Hallazgos DAY326
+- Las CRITICAL de lab-e2e no venían de C5 (que las provoca a propósito) sino de herramientas legítimas que Falco no
+  conocía: argus-infra (14), curl del desellado al arrancar (1), curl de las claves A/B (4), iptables-restore (4).
+- **Carrera del desellado**: al arrancar la VM, Falco abrió la fuente de syscalls 1,7 s antes del desellado y aún no
+  conocía al proceso (padre=<NA>); la regla vieja pedía padre bash y abuelo pid 1. En el reinicio de C7 (2,07 s) no pasó.
+  En una VM recién creada no aparece (Falco ya corre cuando el aprovisionador dessella): EMECAS no lo habría visto.
+- Falco en control-2/3 activo y con las reglas cargadas (provocado: `sudo head -c 0 /etc/etcd/tls/etcd.key` = 1 CRITICAL).
+- El kernel corta proc.name a 15 caracteres; GNU tar no lee si la salida es /dev/null; `vagrant ssh -c` añade `\r`.
+- `vault operator unseal` solo acepta la clave como argumento (visible en el proceso) o por el aviso interactivo.
+
+### Decisiones de Alonso (DAY326)
+- Desellado en Python estándar (no `vault` oficial: no lee la clave por stdin); vigilar `unseal.key` con el desellado
+  como único lector; claves A/B con una orden propia sin curl; iptables-restore como hijo permitido del firewall.
+- Las recomendaciones al admin sobre dónde guardar la clave de desellado en producción van a ADR-060 sección 7 y al
+  procedimiento de DEBT-VAULT-SELLADO-ALERTA-001 (pendiente de escribir).
+
+### DEBT-FALCO-RUIDO-ADMIN-001 — CERRADA DAY327 (casi cerrada DAY326; test de silencio en emecas, verde desde cero)
+Hecho (arriba). Queda: el test de silencio en EMECAS (0 CRITICAL `argus_*` en defender y control-1..3 desde la creación
+de las VMs hasta justo antes de lab-e2e) y su primera corrida desde cero.
+
+### DEBT-VAULT-SELLADO-ALERTA-001 — ampliada DAY326
+Además del aviso de Vault sellado y el procedimiento de desellado, escribir para el admin dónde guardar la clave de
+desellado en producción: Shamir con `-pgp-keys` y la clave PGP privada en YubiKey (umbral 1 por las guardias), HSM
+(solo Vault Enterprise), KMS de nube (confianza en el proveedor; depende de Internet), transit desde el Vault de la VM
+admin del hospital; nunca en claro en disco. Comprobar contra la documentación de Vault 2.2.1 antes de fijarlo.
+
+### DEBT-LAB-RECURSOS-ANFITRION-001 — CERRADA DAY327 (nueva DAY325, Alonso; recursos_anfitrion.py, ver DAY327)
+lab-e2e y EMECAS comprueban al empezar la carga de CPU, la RAM disponible, el swap y el disco del Mac; si falta algo no
+arrancan y dicen qué recurso, cuánto hay y cuánto se exige. Umbrales en configuración, con rango y defecto avisado; test
+que pruebe que falla cuando debe. Datos: DAY325 (rojo) carga 46 y swap 5,3/6,1 GB con la presión de memoria en verde (la
+memoria sola no lo habría detectado); DAY326 (verde) carga ~6 en lab-e2e, 4,65 recién arrancado, swap 0, 170 GB libres.
+
+### DEBT-PROTEGIDOS-SUELO-REVAULT-001 — ABIERTA (nueva DAY325; opción decidida DAY326)
+**Decidido DAY326 (Alonso): (b)**, «a falta de algo mejor»: el suelo guarda (huella de la clave, versión); si la huella
+compilada en el firewall no es la del suelo, el suelo se reinicia con aviso en el log. No debilita el anti-retroceso: un
+manifiesto viejo va firmado con la clave vieja y no verifica con la nueva, y cambiar la clave compilada exige cambiar el
+binario. Hay que tocar el firewall (C++), el formato del suelo (con migración), sus tests y ADR-060; lo difícil es la
+rotación (ranura actual y siguiente: qué huella manda). Mientras tanto, y en cualquier caso: el rechazo por suelo debe
+salir como error claro y periódico en el log («versión X ≤ suelo Y; huella del suelo ≠ huella compilada»). Test que pide:
+suelo del linaje viejo + clave nueva → acepta la v1 con aviso; manifiesto de versión mayor firmado con la clave vieja →
+sigue rechazado. Un análisis del binario (REA) no lo encontraría: el binario hace lo que se diseñó; el fallo es de estado
+a lo largo del ciclo de vida y solo lo enseña un E2E (rehacer Vault sin rehacer el defender).
+El problema (DAY325): tras rehacer Vault, el suelo anti-retroceso y la caché del firewall son del linaje anterior y el firewall se queda sin
+manifiesto. Decidir: (a) paso manual del runbook (retirar suelo y caché en cada firewall), o (b) el firewall ata el suelo
+a la huella de la clave compilada y lo reinicia con aviso cuando cambia (toca el modelo de seguridad de ADR-060). Medir
+si el etcd-server tiene un estado equivalente. En el defender, `/var/lib/ml-defender/firewall-linaje-anterior/` (borrar
+al cerrarla).
+
+Propuesta DAY326 (Claude, por medir; Alonso: «mediremos todo lo que haga falta»): en un JSON con rango y defecto
+avisado, carga media de 5 min ≤ 8 (la mitad de las 16 CPU lógicas; la de 1 min salta con picos y la de 15 arrastra),
+swap usado ≤ 1 GB (la señal más limpia), disco libre ≥ 50 GB (medir cuánto crece en un EMECAS) y, solo en EMECAS antes
+del vagrant up, RAM disponible ≥ 20 GB. Registrar los mismos valores también al terminar, como dato. Medir antes el Mac
+tranquilo con el lab arriba.
+
+### DEBT-EMECAS-PLANO-CONTROL-001 — CERRADA DAY327 (decidida DAY326, Alonso; los dos tests en emecas, verdes desde cero)
+`test-etcd-cluster` y `test-etcd-reinicio` entran en EMECAS, en el grupo de `test-argus-infra` (antes del test de
+silencio de Falco y de lab-e2e: sus trazas Notice no cuentan como CRITICAL ni caen en la ventana de C8). Alonso: «son
+pocos minutos, y encima nos dice si el HA va bien entre PR». Bajar el ruido del escritor de `test-etcd-reinicio` (una
+escritura cada 2 s, intervalo en su configuración). Antes: cronometrar los dos y medir las trazas con el escritor a 2 s.
+
+### DEBT-CURL-FUERA-PRODUCCION-001 — ABIERTA (nueva DAY326)
+Quedan usos de curl en las VMs del lab: `etcd-vm-check` lee `/health` del etcd-server con `sudo curl` (Notice en Falco)
+y otros por inventariar (`git grep -n curl -- scripts Makefile Vagrantfile`). Ninguno nuevo; en producción no puede
+existir curl. Sustituirlos por herramientas propias en Python estándar, como `clave_bronce.py` y el desellado.
+
+### Para el PR2e (anotado DAY325)
+- Reinicio del clúster etcd: seguidores primero y líder al final (hoy el reinicio persigue al líder y una escritura en
+  vuelo puede perderse).
+
+## DAY327 — test de silencio de Falco, recursos del anfitrión y EMECAS+++ desde cero hasta mitre-check [FALCO-SILENCIO-D327] [RECURSOS-ANFITRION-D327] [CORRELATES-CROSS-SENSOR-D327]
+
+### Hecho
+- `9a91811f2` `scripts/vigilancia/falco_silencio.py` (`make falco-silencio`, VMs arriba; `make test-falco-silencio`,
+  31 tests): 0 CRITICAL de reglas `argus_*` en el defender y en cada nodo de control desde la creación de la VM
+  (`eventos.json` y sus rotados, también `.gz`). Antes de contar, en cada VM: Falco en marcha y una **sonda** (nobody
+  intenta leer una clave vigilada; WARNING de `argus_lab_clave_intento_fallido`) que Falco tiene que escribir; sin eso es
+  NO MEDIDO y FALLA. En emecas, justo antes de lab-e2e. Medido: con la historia de DAY326, FALLA (379 CRITICAL); desde
+  una marca, PASA.
+- `346ca4ff` `test-invariant-seed` compara las semillas con `sudo sha256sum` (antes `od` desde `sudo bash`: 4 CRITICAL
+  por EMECAS) y exige las 4 leídas (antes una ilegible no contaba). Falco: macros `argus_lab_invariante_semilla` y
+  `argus_lab_inyector_sintetico` (cada inyector de test-e2e-synthetic, por ruta e hijo de sudo, solo su clave y su
+  semilla) = Notice. Medido: 20 CRITICAL antes, 0 después.
+- `0333d7f56` el escritor de `test-etcd-reinicio` escribe con una pausa de `ETCD_REINICIO_ESCRITOR_S` s ([1, 10],
+  defecto 2). Medido: 67 escrituras en 137 s, 0 fallidas, 6 reinicios.
+- `0270e609e` `test-etcd-cluster` (55 s suelto, 1m19s en EMECAS) y `test-etcd-reinicio` (198 s, 5m34s) en emecas tras
+  `test-argus-infra`.
+- `c8e21b4b2` el R3 del reinicio (modo antes) cuenta las marcas de origen protegido: marcas tras el corte = AISLADO de
+  otros flujos + `ALERTA_PROTEGIDO`. El primer EMECAS del día paró aquí: 4 marcas del manager de Wazuh
+  (`192.168.100.12`, infraestructura desde DAY323) que el firewall alertó sin bloquear, como manda el diseño; el
+  veredicto de DAY322 no conocía esa línea. Probado sobre los logs de esa corrida (pasa; con una alerta quitada, falla).
+- `ec2e3f4e1` + `7e54fdeae` `scripts/emecas/recursos_anfitrion.py` + `recursos_anfitrion.json` (16 tests,
+  `make test-anfitrion-recursos`; `make anfitrion-recursos RECURSOS_PERFIL=emecas|lab_e2e`): carga a 5 min, swap,
+  presión y nivel de memoria de macOS y disco. Perfil `emecas` tras `vagrant destroy` (el Mac sin el lab); `lab-e2e`
+  suelto empieza por el perfil `lab_e2e`. Si falta algo, no arranca y lista los procesos que más gastan.
+- `2e4c63bdd` se borran `d321_medir_falco`, `d321_medir_falco_hijos`, `d321_medir_vigilancia` y
+  `d321_comprobar_sensores` (decidido DAY325); el comentario de `argus_lab.yaml` deja de citar uno.
+- `9a5a3771b` `kuzu_query` imprime el mensaje de error de Kuzu (antes solo «la consulta no tuvo exito»).
+- `7ccee51c0` + `c89da507f` `mitre_start.sh`: (1) el poblador de `CORRELATES_FLOW` solo empareja eventos de sensores
+  distintos (`Alert` o `TelemetryEvent`); (2) mitre_start.sh y ctu_start.sh se quedan solo con la línea de 64 hex de
+  `clave_bronce.py`. `make mitre-check` en VERDE sobre el lab de la corrida: titular 1215, invariante 0.
+- **EMECAS+++ desde cero (14:17-19:15, 4h58m): 29 pasos en verde y rojo en `mitre-check`** (paso 30). Primera vez con
+  los tres nodos y todos los pasos nuevos: `anfitrion-recursos`, `test-etcd-cluster`, `test-etcd-reinicio`,
+  `test-clave-bronce`, `test-vault-unseal`, `test-falco-silencio`, `test-anfitrion-recursos`, `falco-silencio` (0
+  CRITICAL desde la creación de las 4 VMs), lab-e2e entero (1h51m) y los actos de emecas++. Los arreglos de
+  mitre-check se probaron sueltos sobre ese lab: falta la corrida que certifique.
+
+### Hallazgos DAY327
+- **El sniffer del defender ve el tráfico Raft entre los nodos de control** (puerto 2382, el líder `.21` con `.20` y
+  `.22`): en la ventana MITRE de 96 s, 12227 de las 13915 filas de aRGus son etcd (88 %), y aRGus da un `flow_uid` nuevo
+  a casi cada latido: ~1060 filas por sentido y conexión. El 11-nov (un nodo) eran ~1700 filas en total.
+- Con eso el poblador viejo de `CORRELATES_FLOW` (todos los pares del mismo `community_id`) quiso crear ~8,5 millones de
+  aristas aRGus-aRGus (cuatro grupos de ~2000 flujos) y Kuzu falló. El nuevo: 6,9 s, 13801 aristas sobre la misma BD.
+- `vagrant ssh -c` lanzado desde una terminal abre pty y el stderr de la VM llega en el stdout; con `nohup` (EMECAS),
+  no. `clave_bronce.py` (clave por stdout, `[CONFIG]` por stderr) dio len=270 en `make mitre-check` en primer plano y
+  64 en EMECAS.
+- **El swap no separa el Mac sano del ahogado**: 7,2 GB con el lab sano (lab-e2e verde), 5,3 GB ahogado (DAY325). Sí
+  separan la carga (≤ 8,2 sano, 46 ahogado) y la presión de memoria (1 en todas las muestras del día). Tras `vagrant
+  destroy` el swap bajó de 7,2 a 1,5 GB en 40 s y a 0,76 GB en unos minutos; la carga a 5 min tardó en bajar de 7,8.
+  Umbrales (JSON): carga 12 en los dos perfiles; swap 4096 MB (emecas) y 16384 MB (lab_e2e, solo techo).
+- Cabeza DDoS y manager de Wazuh: `ratio=3.1968` (DAY322: 3,19) en las marcas tras un arranque en frío del sniffer; ver
+  DEBT-DDOS-COLATERAL-LEGITIMO-001.
+- Leyendo `crypto-transport/src/transport.cpp`: ChaCha20-Poly1305 IETF (AEAD) con clave HKDF de `seed.bin` + contexto
+  fijo y nonce = contador que **arranca en 0 en cada proceso**: misma clave, mismos nonces tras cada reinicio. Sin medir.
+
+### Decisiones de Alonso (DAY327)
+- Recursos del anfitrión: dos perfiles (emecas tras el destroy, lab_e2e con el lab arriba) con los umbrales medidos.
+- `od` del invariante de semillas → `sha256sum`; los inyectores sintéticos, macro Notice en Falco («lo que tú me
+  recomiendes»).
+- DEBT-DDOS-COLATERAL-LEGITIMO-001 hay que perseguirla hasta una explicación lógica y cerrarla: «puede morder mucho más
+  adelante en modo distribuido en producción».
+- La reutilización de nonce de crypto-transport va al BACKLOG como deuda, con la medida como primer paso.
+
+### DEBT-SNIFFER-FLOW-UID-TCP-LARGA-001 — ABIERTA (nueva DAY327)
+Una conexión TCP larga y con tráfico continuo (el Raft entre nodos etcd: latido cada 100 ms) sale en el bronce como
+~11 flujos nuevos por segundo y sentido, cada uno con su `flow_uid` (medido DAY327: 2120 nodos `NetworkFlow` para una
+sola 5-tupla en 96 s). Es carga en todo el pipeline (sniffer, ml-detector, bronce, oro, grafo) y en producción, con el
+plano de control en HA, permanente. Además hace cuadrático cualquier emparejamiento por 5-tupla (el poblador de
+`CORRELATES_FLOW` sigue siéndolo entre sensores). Primero medir en el sniffer por qué se cierra y se abre el flujo (la
+caducidad de DAY307, la clave de flujo, el tope de paquetes por flujo de DEBT-SNIFFER-FLOW-PACKET-CAP-200 o la
+emisión por evento); relacionada con DEBT-SNIFFER-FLOW-UNIDIRECTIONAL-001.
+
+### DEBT-CRYPTO-NONCE-REINICIO-001 — ABIERTA (nueva DAY327; P1, sin medir)
+`CryptoTransport` (`crypto-transport/src/transport.cpp`): la clave sale de HKDF(`seed.bin`, contexto fijo del canal) y el
+nonce de 96 bits es un contador en memoria que empieza en 0 (`nonce_counter_{0}`). Tras cada reinicio del sniffer o del
+ml-detector se cifra otra vez con los nonces 0, 1, 2… bajo la misma clave. Con ChaCha20-Poly1305 eso rompe la
+confidencialidad (XOR de dos protobuf) y la autenticidad (se repite la clave de un solo uso de Poly1305: se pueden
+falsificar mensajes). Además: la cabecera (`epoch_id`) no va como datos asociados del AEAD y el receptor no comprueba que
+el nonce crezca (reinyección). Primer paso, medir: dos arranques del sniffer con captura entre sniffer y ml-detector y
+ver si el primer mensaje de cada uno lleva el nonce 0. Arreglo (cambio de protocolo, su ADR, tests negativos y EMECAS):
+clave por arranque (valor aleatorio en el HKDF, enviado en la cabecera) o XChaCha20-Poly1305 con nonce aleatorio; no
+persistir el contador (un kill -9 o restaurar el disco lo hace retroceder). Fuera del PR2b.
+
+### DEBT-DDOS-COLATERAL-LEGITIMO-001 — ampliada DAY327
+El manager de Wazuh (`.12`) hacia `.1` por TCP: marcado con `ratio=3.1968` (k_ratio=3) tras un arranque en frío del
+sniffer, en DAY322 y en DAY327; en una corrida suelta del mismo día, 0 marcas. Hipótesis sin medir: en frío, una ráfaga
+periódica normal se compara con una base casi vacía. Hoy no muerde porque `.12` está en el manifiesto de protegidos;
+el tráfico legítimo a ráfagas de un hospital (copias, monitorización, actualizaciones) no lo estará, y cada reinicio del
+sniffer abre una ventana en frío. Mientras siga, el admin tenderá a manifiestos anchos, que son inmunidad para un intruso.
+Después del PR2, antes de REA.
+
+## DAY328 — EMECAS+++ desde cero parado en C7: oops de ext4 con el kernel 6.1.0-55 de Debian al reiniciar control-1 [KERNEL-EXT4-OOPS-D328]
+
+### Hecho
+- **EMECAS+++ desde cero (05:03-09:50), sobre `19ee5962e`: verde hasta lab-e2e y colgado en C7 de
+  `lab-e2e-vigilancia`** (`d322_reinicio_vault.sh`); parado a mano (`rc=143`). No certifica. Tiempos: vagrant-up
+  52m46s, bootstrap 40m17s, test-all 15m37s. De `lab-e2e-vigilancia`, C3, C5, C6 y C8 en ✅ antes de C7.
+- Ningún cambio en el código: el día fue de diagnóstico. Pruebas guardadas fuera del repo, en el Mac:
+  `~/argus-evidencias/d328/` (salidas `d328_*.txt`, capturas de consola y el volcado de memoria de control-1).
+
+### Hallazgos DAY328 (todos medidos salvo donde se dice)
+- **Oops del kernel en ext4 al arrancar control-1 con `6.1.0-55-amd64` (Debian 6.1.192-1, compilado el 14-nov)**:
+  `BUG: kernel NULL pointer dereference, address: 0`, `RIP: ext4_mb_load_buddy_gfp+0xbc/0x380 [ext4]`. Dos arranques
+  de dos: (1) el `systemctl reboot` de C7, a los 12,1 s, en `kworker/u4:3` (`writeback wb_workfn (flush-8:0)`); (2)
+  tras `VBoxManage controlvm … reset`, a los 16,7 s, en un `unlinkat`. `RBX` = `0x3e2` y `0x3e0` (misma zona).
+- **Consecuencia: la VM queda viva y sin sistema de ficheros.** El hilo que muere tenía abierta una operación de
+  jbd2; `jbd2/sda1-8` espera para siempre en `jbd2_journal_wait_updates` y todo lo que escribe se pone detrás
+  (`wait_transaction_locked`): journald (no muere ni con SIGKILL), rsyslog, etcd, vault, Wazuh, cron, sshd, sudo.
+  Más de 40 tareas en `D`, carga 30, presión de E/S (`/proc/pressure/io`, `full`) 94 %, con memoria de sobra (393 MB
+  disponibles, presión 0) y el disco ocioso (12 lecturas y 0 escrituras en 10 s, nada en vuelo). Responden el ping, el
+  saludo de sshd y el puerto de etcd (2381); Vault (8200) no; las sesiones ssh tardan minutos o no vuelven.
+- **control-3, reiniciada con el mismo kernel, arranca sana** (carga 0,03, presión de E/S 0): no es «el `-55` rompe
+  cualquier VM»; depende de algo del disco de control-1 (único nodo con Vault, y el que tocan C2 y C3). Sin medir qué.
+- **Las dos corridas no probaron el mismo kernel**: el EMECAS de DAY327 instaló `linux-image-6.1.0-54-amd64` y el de
+  DAY328 `linux-image-6.1.0-55-amd64`. Debian publicó kernel entre una y otra.
+- **El lab no ejecuta el kernel que instala**: la caja está fijada (`debian/bookworm64` `12.20240905.1`) y las VMs
+  corren su kernel, `6.1.0-25-amd64` (6.1.106-3, de 2024), con el último instalado y esperando un reinicio (medido en
+  control-2). El único arranque del kernel instalado en todo EMECAS es el reinicio de C7, en control-1.
+- **El examinador de C7 se cuelga en vez de fallar**: `V()` y el reboot de `d322_reinicio_vault.sh` son
+  `vagrant ssh control-1 -c …` sin tiempo límite; la espera de 300 s solo se mira entre llamadas. Además
+  `lab_e2e_vigilancia.sh` manda la salida de C7 a `c7_reinicio_vault.txt`: `emecas_actual.log` quedó mudo desde las
+  08:49 y EMECAS habría seguido así hasta cerrar el portátil.
+- Pista del origen (lectura de Claude, sin confirmar): el código de la traza comprueba si un resultado es un error
+  (`cmp $-4096`) y, como no lo es, lo usa, pero es nulo (`RAX=0`); después mira dos bits de la página. Tiene la forma
+  de un parche de ext4 traído a la rama 6.1 con `IS_ERR()` donde 6.1 devuelve NULL. Sin informe público encontrado
+  para 6.1.192; en marzo de 2026 hubo uno con la misma función en 6.1.167-rc1.
+- `make emecas-progreso` calcula con los 22 pasos de la última corrida buena («paso 22/22 lab-e2e», «fin ~09:05»):
+  hoy son más de 30 y el porcentaje no vale.
+- `emecas_run.sh` rechaza bien un segundo lanzamiento (sale con 1 antes de tocar nada). Para parar una corrida:
+  `kill -TERM -<pgid del make>; sleep 5; kill -KILL -<pgid>` (la limpieza de salida de C7 abre otra sesión).
+- El anfitrión pasó `anfitrion-recursos` con carga a 5 min de 11,24 (máximo 12): justo. Con el lab arriba, como DAY327
+  (carga ~5, swap 7,1 GB, nivel 80-82).
+- Herramientas que sirvieron con la VM sorda: `VBoxManage controlvm <vm> screenshotpng` (la consola),
+  `VBoxManage debugvm <vm> dumpvmcore` + `strings` (el `kern.log` de rsyslog en memoria), `/proc/pressure/*`,
+  `/proc/diskstats`, `/proc/[0-9]*/task/*/status` (sin `ps`, que se cuelga) y `sudo cat /proc/<pid>/task/<tid>/stack`.
+  No sirvieron: `VBoxManage debugvm osdmesg` (no reconoce el kernel) ni `VBoxManage metrics` (Guest Additions 6.0.0
+  con VirtualBox 7.2.10).
+- Sin medir: si Vault dejó de atender por su audit device de syslog con journald muerto; cómo ve el clúster etcd a un
+  miembro que acepta conexiones y no puede escribir.
+
+### Decisiones de Alonso (DAY328)
+- **Todas las imágenes del pipeline deben ser iguales, con el mismo kernel**: «es mejor tender a la homogeneidad, al
+  menos en lo que podemos controlar». Se reconstruye en cada EMECAS, así que es fácil; el error fue no fijar la
+  versión del kernel.
+- Se documenta lo aprendido y se conserva el volcado de memoria de control-1 por si hay que informar a Debian; si hay
+  datos para armar el informe, se envía («igual les viene bien»).
+- `emecas-progreso`: hay que darle un repaso cuando acabe la corrida buena.
+
+### DEBT-LAB-KERNEL-HOMOGENEO-001 — CERRADA DAY329 (nueva DAY328, Alonso; opción (c): fecha de Debian por snapshot en group_vars/all.yml, kernel-homogeneo verde en EMECAS+++; ver DAY329)
+Todas las VMs del lab con el mismo kernel, el que se instala es el que corre, y la versión declarada en un solo sitio.
+Hoy: caja fijada, kernel en ejecución el de la caja (2024), kernel instalado el último de Debian (cambia de un día a
+otro) y solo control-1 lo arranca, en C7. Antes de decidir, medir: (1) por dónde llega el kernel nuevo
+(`unattended-upgrades`, activo por DEBT-DEBIAN-BASE-SECURITY-001, o un `apt-get` del aprovisionamiento); (2) si el
+`6.1.0-54` (6.1.190-1) sigue instalable desde los repositorios oficiales o hay que ir a snapshot.debian.org; (3) cuánto
+añade a `vagrant-up` reiniciar las 8 VMs. Propuesta de Claude, sin decidir: versión en `group_vars/argus_dev.yml`,
+paquete retenido, reinicio de cada VM dentro de `vagrant up` y un paso de EMECAS que compare `uname -r` de todas con la
+versión declarada (con su test de que falla cuando debe); subir de kernel = un commit que cambia esa línea y su EMECAS.
+Alternativas: quedarse en el kernel de la caja (homogéneo, pero de 2024) o fijar la fecha entera de Debian por
+snapshot (kernel y resto de paquetes). Mientras Debian no arregle el `-55`, no arrancarlo en control-1.
+
+### DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001 — CERRADA DAY329 en C7 (nueva DAY328; con_limite.pl, test-c7-limite y línea de vida c7:; el resto de E2E en DEBT-E2E-VAGRANT-SSH-RESTO-001; ver DAY329)
+`scripts/etcd_ha/d322_reinicio_vault.sh`: cada llamada a la VM con tiempo límite (parámetro con rango y defecto, como
+los otros dos) y veredicto ❌ si se agota, diciendo en qué paso; test de que falla cuando la VM no contesta. Revisar
+con el mismo criterio el resto de E2E que usan `vagrant ssh` (sin medir cuántos). Que `lab_e2e_vigilancia.sh` deje en
+el log de EMECAS una línea de vida mientras C7 corre. Va antes del siguiente EMECAS.
+
+### DEBT-KERNEL-EXT4-OOPS-6-1-192-001 — ABIERTA, solo seguimiento (nueva DAY328; externa: informada DAY328 como Debian #1154153, confirmada por otro afectado, bisección upstream 29897d75d649; el lab no arranca el -55: ver DAY329)
+Informar a Debian (`src:linux` 6.1.192-1) con la traza, las pilas y el volcado. Borrador en
+`~/argus-evidencias/d328/d328_informe_debian.txt`. Faltaría, si se puede: `dumpe2fs -h` del disco de control-1
+(arrancándola con el kernel `6.1.0-25` desde GRUB) y la traza entera del segundo arranque. Seguir el informe: cuando
+haya kernel arreglado, probarlo con C7.
+
+### DEBT-EMECAS-PROGRESO-REFERENCIA-001 — ABIERTA (nueva DAY328, menor)
+`make emecas-progreso`: que la referencia de pasos y tiempos se actualice con la última corrida buena y que, si la
+corrida en curso tiene pasos que la referencia no conoce, lo diga en vez de dar un porcentaje. Con su test.
+
+## DAY329 — fecha de Debian fija para todo el lab, tiempo límite en C7 y EMECAS+++ desde cero VERDE: PR2b certificado [DEBIAN-FECHA-D329] [KERNEL-HOMOGENEO-D329] [C7-LIMITE-D329]
+
+### Medido
+- **Por dónde entraba el kernel nuevo** (log de EMECAS de DAY328 y control-3): en defender, el
+  `apt-get install … linux-headers-amd64` del `Vagrantfile` (el metapaquete sin versión arrastra
+  `linux-image-amd64` 6.1.192-1 desde bookworm-security); en el resto de VMs, `unattended-upgrades` (control-3:
+  16-nov 06:22, `linux-image-amd64` y ~120 paquetes más —libc6, systemd, openssh, openssl, grub…— en plena corrida, sin
+  rastro en el log de EMECAS). `scripts/vagrant-provision.sh` (con `apt-get upgrade -y` y kernels de backports y
+  experimental) no lo usa nadie. Defender compilaba eBPF contra headers del `-55` con el `-25` en marcha.
+- El `6.1.0-54` (6.1.190-1) sigue en bookworm-security; ya hay un `linux-image-amd64` 6.1.192-2 (sin saber si arregla
+  el #1154153). snapshot.debian.org desde el lab: `apt-get update` en 4 s; en `20261115T000000Z`,
+  `linux-image-amd64` 6.1.190-1 → `linux-image-6.1.0-54-amd64` (el de DAY327).
+- La caja trae todas sus fuentes de Debian en `/etc/apt/sources.list` (con `deb-src` y bookworm-backports, que nadie
+  usa); `sources.list.d` solo tiene terceros.
+- **EMECAS+++ desde cero VERDE** (17-nov 08:35-13:10, 4h35m, rc=0, 35 pasos): vagrant-up 29m13s, vagrant-reload 6m09s,
+  vagrant-provision 42m08s (77 min frente a 53-57 min del up único: el coste de la homogeneidad), kernel-homogeneo 32 s
+  (8 VMs en `6.1.0-54-amd64`, fecha `20261115T000000Z`; 16 líneas `debian-fecha` ✅, up y provision), bootstrap 31m21s,
+  test-all 15m37s, lab-e2e 1h48m (C7: control-1 de vuelta en 44 s, R1-R6 ✅, R5 en 6 s), mitre-check 10m02s y, por
+  primera vez desde DAY323, todo lo de detrás.
+- El primer lanzamiento (08:26) cayó en vagrant-up a los 3 s: «'apt-espera' is not a known provisioner». En Vagrant, el
+  `name:` de un aprovisionador `shell` es solo su etiqueta; con nombre: `config.vm.provision "<nombre>", type: "shell"`.
+- `con_limite.pl` (tiempo límite): un `alarm` sobre `vagrant` dejaba vivo su `ssh` hijo (61 s con límite 10); se mata
+  el grupo de procesos. En su grupo, con un terminal como entrada, leerlo la detenía (SIGTTIN): falso «no contesta»
+  (`rc=142`); se le da `/dev/null`. Los tests dan 5/7 y 0/2 con el código anterior.
+
+### Decisiones de Alonso (DAY329)
+- **Opción (c)**: fijar la fecha entera de Debian por snapshot (kernel y resto de paquetes), en un único lugar
+  (`group_vars/all.yml`: «las cosas importantes, por cultura, tratamos siempre de ponerlas en un único lugar»).
+- Si falta la fecha es un problema del fabricante: debe parar y notificarlo a aRGus; el cliente no debería verlo nunca
+  porque lo habría visto antes el laboratorio.
+- **Versiones de terceros fijadas también**, en el fichero de cada lente (`argus_dev.yml`, `suricata_dev.yml`…), para
+  saber en todo momento en qué versión nos movemos. Protocolo: lo más actualizado posible que funcione, cercano en el
+  tiempo y, a ser posible, certificado por el fabricante para ese kernel. En su propio PR, después del PR2b.
+- El reinicio, en tres pasos en el Makefile; asegurarse de que un reinicio arranca de verdad el kernel nuevo
+  (`kernel-homogeneo`).
+- Bug de Debian #1154153: hecha nuestra parte; está en manos de los mantenedores del kernel.
+
+### DEBT-LAB-VERSIONES-TERCEROS-001 — ABIERTA (nueva DAY329, Alonso; su propio PR, después del PR2b)
+Cada versión de terceros, en el group_vars de su lente como fuente única (`argus_dev.yml`; `suricata_dev.yml`,
+`zeek_dev.yml`, `wazuh_dev.yml` cuando lleguen), validada con formato y límites, y el Vagrantfile y los
+aprovisionadores leyendo de ahí. Hoy: Falco 0.43.1 (`provisioning/falco/VERSION`), Wazuh 4.14.10-1
+(`provisioning/wazuh/VERSION`), Vault `VAULT_PIN` (por localizar), etcd v3.6.16 con sha256 y Apache Arrow 24.0.0-1
+escritos en el `Vagrantfile`; **sin fijar: Zeek** (repositorio OBS) y el `.deb` `apache-arrow-apt-source-latest`. Por
+inventariar: libbpf 1.4.6 y lo que se descargue de GitHub. Criterio para elegir versión: el protocolo de Alonso
+(arriba). Un paso de EMECAS que compare lo instalado con lo declarado, con su test.
+
+### DEBT-E2E-VAGRANT-SSH-RESTO-001 — ABIERTA (nueva DAY329, parte pendiente de DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001)
+76 scripts trackeados usan `vagrant ssh` (`git grep -l`, sin contar los parcheadores). Revisarlos con el criterio de
+C7: cada llamada con `scripts/emecas/con_limite.pl` y `argus_lab_llamada_vm_limite_s`, ❌ con el paso si no contesta;
+primero los que corren dentro de EMECAS.
+
+### DEBT-LAB-PROVISION-SCRIPT-MUERTO-001 — ABIERTA (nueva DAY329, menor)
+Borrar `scripts/vagrant-provision.sh`: no lo usa nadie (`git grep` vacío) y hace `apt-get upgrade -y` e instala kernels
+de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMOGENEO-001.

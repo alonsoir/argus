@@ -9,7 +9,9 @@ argus_env: dev
 # Raft, nunca Jenkins; cualquier miembro reenvía las escrituras al líder. El prefijo es por despliegue (p. ej.
 # /argus/<hospital>/<planta>/): dos plantas en un mismo clúster sin prefijo propio se pisarían en silencio (los CN son los
 # mismos), y el rol RBAC del etcd-server en etcd tiene que cubrirlo (en el lab: readwrite /argus/).
-# Lab: un único miembro, elegido a mano (el etcd local de la VM etcd).
+# Lab [ETCD-CLUSTER-D324]: el etcd-server habla con el miembro local del clúster (127.0.0.1 va en el SAN de cada
+# etcd-<nodo>). Con varios endpoints etcd-cpp-apiv3 v0.15.3 usa la lista entera como nombre TLS del par y falla
+# ("Peer name ... is not in peer certificate", medido DAY324): varias direcciones en los componentes, PR2d.
 etcd_almacen_endpoints:
   - "https://127.0.0.1:2381"
 argus_prefijo: "/argus/"
@@ -18,3 +20,24 @@ argus_prefijo: "/argus/"
 # (argus-transit/keys/protegidos-<hospital>, una por hospital) y es el hospital_id del manifiesto. Formato: [a-z0-9-],
 # de 1 a 64. Sin defecto en ningún sitio: el Vagrantfile para si falta. Lab: hospital-lab (decisión de Alonso DAY318).
 argus_hospital_id: "hospital-lab"
+
+# [PLANO-CONTROL-D324] nodos del plano de control del laboratorio (ADR-048/049, revisión DAY324): una VM por nodo con
+# etcd + Vault + etcd-server. La única fuente: la leen el Vagrantfile y el inventario (make test-plano-control comprueba
+# que coinciden), con la validación de scripts/etcd_ha/nodos_control.rb (formato y límites en su cabecera). Sin
+# defecto: una lista ausente o mal formada para Vagrant. El primero es control-1 en .20 (el resto del laboratorio lo da
+# por hecho hasta el PR2d). MAC fija: el manifiesto de protegidos ata cada IP de infraestructura a su MAC.
+argus_control_nodos:
+  - { nombre: control-1, ip: 192.168.100.20, mac: "080027A20020" }
+  - { nombre: control-2, ip: 192.168.100.21, mac: "080027A20021" }
+  - { nombre: control-3, ip: 192.168.100.22, mac: "080027A20022" }
+# Memoria y CPU de cada nodo. memoria_mb: entero [768, 4096]; medido DAY324 en la VM etcd: picos de los servicios
+# ~510 MB (vault 234, falco 121, etcd 64, wazuh-agent 58, etcd-server 30); 1024 hasta medir el pico del
+# aprovisionamiento y de un EMECAS+++. cpus: entero [1, 4].
+argus_control_memoria_mb: 1024
+argus_control_cpus: 2
+
+# [ETCD-CLUSTER-D324] tiempos de Raft de etcd en ms (ansible/playbooks/etcd_cluster.yml). heartbeat: entero [50, 1000];
+# election: entero [500, 10000] y >= 5 x heartbeat. Ausentes o mal: 100 y 1000 (los de etcd), avisando con
+# [ETCD-CLUSTER-DEFAULT]. Se miden en el PR2e (reelección y cambios de líder durante un EMECAS+++).
+etcd_heartbeat_interval_ms: 100
+etcd_election_timeout_ms: 1000

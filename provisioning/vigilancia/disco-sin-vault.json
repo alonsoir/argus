@@ -1,0 +1,5 @@
+{
+  "rutas": ["/var/lib/etcd"],
+  "umbral_pct": 75,
+  "periodo_s": 60
+}

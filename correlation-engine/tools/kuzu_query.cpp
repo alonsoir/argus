@@ -32,7 +32,8 @@ int main(int argc, char** argv) {
 
         auto result = conn->query(cypher);
         if (!result->isSuccess()) {
-            std::cerr << "FATAL: la consulta no tuvo exito\n";
+            // [KUZU-QUERY-ERROR-D327] el mensaje de Kuzu: sin él, el fallo del poblador de DAY327 no decía por qué
+            std::cerr << "FATAL: la consulta no tuvo exito: " << result->getErrorMessage() << "\n";
             return 1;
         }
 

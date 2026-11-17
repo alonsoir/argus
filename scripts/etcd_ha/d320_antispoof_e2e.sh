@@ -41,7 +41,7 @@ mal()   { echo "FALLA $*"; FALLOS=$((FALLOS + 1)); }
 # medido DAY320, con el filtro al final un 'grep -q' remoto sin salida devolvía 1 aunque hubiera casado).
 vm()    { local out rc; out=$(vagrant ssh "$1" -c "$2" 2>/dev/null); rc=$?
           [ -n "$out" ] && printf '%s\n' "$out" | tr -d '\r' | grep -v '^\[argus\]'; return $rc; }
-infra() { vm etcd "sudo /usr/local/sbin/argus-infra $1"; }
+infra() { vm control-1 "sudo /usr/local/sbin/argus-infra $1"; }
 cuenta(){ vm defender "sudo iptables -w -t raw -L $1 -v -x -n 2>/dev/null | awk 'NR == 4 {print \$1}'"; }   # regla 2 = la de cuenta
 llegan(){ vm defender "sudo iptables -w -t mangle -L PREROUTING -v -x -n | awk '/$1/ {print \$1}'"; }
 restaurar() {
@@ -68,7 +68,7 @@ trap 'exit 130' INT TERM
 
 paso "1 comprobaciones previas y nombres"
 git diff --quiet -- "$JSON" || falla "$JSON tiene cambios sin commit: no se toca"
-for v in client etcd; do vagrant status "$v" 2>/dev/null | grep -qE "^$v +running" || falla "la VM $v no está arriba (vagrant up $v)"; done
+for v in client control-1; do vagrant status "$v" 2>/dev/null | grep -qE "^$v +running" || falla "la VM $v no está arriba (vagrant up $v)"; done
 read -r WL BL CHAIN AS SR SI SM K < <(python3 - "$JSON" <<'PYEOF'
 import json, sys
 d = json.load(open(sys.argv[1], encoding="utf-8"))

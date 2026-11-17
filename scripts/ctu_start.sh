@@ -35,8 +35,11 @@ echo ""
 
 # 1) Clave HMAC del bronce (el hack)   [INVARIANTE]
 # [ETCD-CLIENTE-D316] E5: mTLS con la identidad del converter contra el etcd-server del bloque etcd de ml-detector
-KEY=$(vagrant ssh defender -c "sudo bash /vagrant/scripts/bronze_key/clave_bronce_ml_detector.sh" 2>/dev/null | tr -d '\r')
-[ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). Diagnostico: vagrant ssh defender -c 'sudo bash /vagrant/scripts/bronze_key/clave_bronce_ml_detector.sh'"
+# [CLAVE-PTY-D327] con terminal, vagrant ssh da pty y el stderr de la VM (las líneas [CONFIG] de clave_bronce.py)
+# llega mezclado en el stdout: len=270 (medido DAY327, make mitre-check en primer plano; en EMECAS, sin terminal,
+# salía bien). Se queda solo la línea de 64 hex; si hay más de una, la longitud no cuadra y para.
+KEY=$(vagrant ssh defender -c "sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py ml-detector" 2>/dev/null | tr -d '\r' | grep -E '^[0-9a-f]{64}$')
+[ ${#KEY} -eq 64 ] || die "clave HMAC no es 64 hex (len=${#KEY}). Diagnostico: vagrant ssh defender -c 'sudo python3 -I /vagrant/scripts/bronze_key/clave_bronce.py ml-detector'"
 echo "OK clave HMAC en mano (64 hex, head ${KEY:0:8}...)"
 
 # 2) Marca T0 y disparo del DRIVER (tcpreplay del Neris: la UNICA seccion que cambia vs mitre_start.sh)

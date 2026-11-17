@@ -1,5 +1,5 @@
 {
-  "ruta": "/var/log/vault",
+  "rutas": ["/var/log/vault", "/var/lib/etcd"],
   "umbral_pct": 75,
   "periodo_s": 60
 }

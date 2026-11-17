@@ -7,13 +7,19 @@
 # (firewall-acl-agent -> firewall-acl-ag), medido DAY321; las reglas de hardened que comparan nombres nunca vieron al
 # firewall (DEBT-HARDENED-FALCO-RUTAS-001).
 #
-# Las listas de permitidos salen de MEDIR el lab (scripts/etcd_ha/d321_medir_falco_hijos.sh v2, DAY321: pipeline-stop,
+# Las listas de permitidos salen de MEDIR el lab (DAY321, con un instrumento ya borrado; hoy las cuenta
+# scripts/vigilancia/falco_silencio.py por regla, proceso, padre y fichero. Medido en: pipeline-stop,
 # pipeline-start, pipeline-status, lab-e2e-mitigacion con la mitigación real, pipeline-start), no de leer el código:
 #   hijos:    firewall-acl-agent -> /usr/sbin/ipset (513), /usr/sbin/xtables-nft-multi (268, como iptables*),
 #             /usr/bin/ip (40); sniffer -> /usr/bin/dash (6: sh -c sysctl, DEBT-SNIFFER-SYSTEM-SYSCTL-001);
 #             etcd-server, vault, etcd y ml-detector: ninguno.
 #   lecturas: cada servidor sus claves y su semilla; etcdctl y curl con sudo (pipeline-status) la del etcd-server;
-#             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem.
+#             openssl desde bash (provision.sh verify, en pipeline-start) los private.pem; argus-infra con sudo la suya
+#             (medido DAY326: antispoof, latido, protegidos-pubkey); tar y sha256sum con sudo la semilla y el
+#             private.pem del etcd-server (d312_etcd_vm_deploy.sh, en etcd-vm-deploy; medido DAY326);
+#             clave_bronce.py con sudo la del conversor (mitre/ctu/custom-start, lab-e2e-reinicio-etcd);
+#             sha256sum con sudo las cuatro semillas (test-invariant-seed) y los inyectores sintéticos con sudo la
+#             clave y la semilla del componente al que sustituyen (test-e2e-synthetic); medido DAY327.
 # Cualquier otra cosa es CRITICAL. Coste: Falco filtra en el kernel por tipo de evento (execve y open*), O(1) por evento.
 
 # ── Procesos vigilados, por ruta ───────────────────────────────────────────────────────────────────────────────────
@@ -33,12 +39,15 @@
   condition: proc.exepath = /var/ossec/bin/wazuh-syscheckd
 
 # [VAULT-ARRANQUE-D322] el desellado del Vault del lab (provisioning/vault/argus-vault-unseal, identidad propia
-# CN=argus-vault-unseal sin políticas en Vault): lo lanza systemd (argus-vault-unseal.service), así que el bash del script
-# es hijo de pid 1 y cada curl es hijo directo del script. Solo su clave: la del etcd-server ya no la usa.
+# CN=argus-vault-unseal sin políticas en Vault), lanzado por argus-vault-unseal.service. Solo su clave TLS y la clave de
+# desellado. [DESELLADO-PY-D326] Python estándar (#!/usr/bin/python3 -I), reconocido por binario, ARGUMENTOS y fichero:
+# medido DAY326, al arrancar la VM Falco tarda ~2 s en conocer a los procesos nuevos y la regla vieja (curl, padre bash,
+# abuelo pid 1) daba CRITICAL con padre=<NA>. proc.args, no proc.name: el kernel corta el nombre a 15 caracteres
+# (argus-vault-uns). Python de Debian 12: con Debian 13 vuelve a dar CRITICAL y se mide.
 - macro: argus_lab_es_desellado
   condition: >
-    (proc.exepath = /usr/bin/curl and proc.pexepath = /usr/bin/bash and proc.apid[2] = 1 and
-     fd.name = /etc/argus-pki/argus-vault-unseal.key)
+    (proc.exepath = /usr/bin/python3.11 and proc.args = "-I /usr/local/sbin/argus-vault-unseal" and
+     fd.name in (/etc/argus-pki/argus-vault-unseal.key, /etc/vault.d/unseal.key))
 
 - macro: argus_lab_padre_vigilado
   condition: >
@@ -50,11 +59,14 @@
      proc.pexepath = /usr/bin/vault)
 
 # ── 1. Hijo inesperado de un proceso vigilado ──────────────────────────────────────────────────────────────────────
+# [FALCO-RUIDO-D326] xtables-nft-multi es un binario de varias órdenes: lo que lo distingue es argv[0], y proc.name es
+# ese nombre CORTADO a 15 caracteres por el kernel: iptables-restore (16) llega como iptables-restor. Medido DAY326:
+# 4 CRITICAL en lab-e2e (cmd=iptables-restor -w --noflush) con iptables-restore en la lista; nunca casaba.
 - macro: argus_lab_hijo_permitido
   condition: >
     (proc.pexepath glob "/vagrant/firewall-acl-agent/build-*/firewall-acl-agent" and
       (proc.exepath in (/usr/sbin/ipset, /usr/bin/ip) or
-       (proc.exepath = /usr/sbin/xtables-nft-multi and proc.name in (iptables, iptables-save, iptables-restore)))) or
+       (proc.exepath = /usr/sbin/xtables-nft-multi and proc.name in (iptables, iptables-save, iptables-restor)))) or
     (proc.pexepath glob "/vagrant/sniffer/build-*/sniffer" and proc.exepath = /usr/bin/dash and
       proc.cmdline in ("sh -c sysctl -w net.ipv4.ip_forward=1 > /dev/null 2>&1",
                        "sh -c sysctl -w net.ipv6.conf.all.forwarding=1 > /dev/null 2>&1"))
@@ -77,6 +89,7 @@
 - macro: argus_lab_fichero_secreto
   condition: >
     (fd.name glob "/etc/argus-pki/*.key" or fd.name glob "/etc/vault.d/tls/*.key" or
+     fd.name = /etc/vault.d/unseal.key or
      fd.name glob "/etc/etcd/tls/*.key" or fd.name glob "/etc/ml-defender/*/seed.bin" or
      fd.name glob "/etc/ml-defender/*/private.pem")
 
@@ -97,11 +110,67 @@
     argus_lab_es_fim_wazuh or
     argus_lab_es_desellado
 
+# [FALCO-RUIDO-D326] d312_etcd_vm_deploy.sh (make etcd-vm-deploy, en bootstrap) lleva el material del etcd-server del
+# defender a control-1 y lo compara fichero a fichero. Medido DAY326: sudo tar en el defender lee seed.bin y private.pem
+# (2 CRITICAL) y sha256sum los lee en las dos VMs (4 CRITICAL; padre xargs, que pasa a ser sudo). tar puede sacar el
+# contenido, así que solo con la orden exacta del script; sha256sum solo imprime la huella: basta padre sudo. El tar -x
+# de control-1 escribe, no lee: no da evento.
+- macro: argus_lab_despliegue_etcd_server
+  condition: >
+    fd.name in (/etc/ml-defender/etcd-server/seed.bin, /etc/ml-defender/etcd-server/private.pem) and
+    proc.pexepath = /usr/bin/sudo and
+    ((proc.exepath = /usr/bin/tar and
+      proc.cmdline = "tar -C /etc/ml-defender --exclude=etcd-server/etcd-server.json -cf - etcd-server") or
+     proc.exepath = /usr/bin/sha256sum)
+
+# [CLAVE-BRONCE-D326] scripts/bronze_key/clave_bronce.py (#!/usr/bin/python3 -I) con sudo leyendo la clave TLS del
+# conversor para pedir la clave HMAC activa a /secrets/valid/{c}: antes era curl (medido DAY326: 4 CRITICAL en
+# lab-e2e-reinicio-etcd, y las mismas en mitre-start). Solo esa clave y esa orden; /vagrant solo existe en el lab.
+# Python de Debian 12, como argus-infra: con Debian 13 vuelve a dar CRITICAL y se mide.
+- macro: argus_lab_clave_bronce
+  condition: >
+    proc.exepath = /usr/bin/python3.11 and proc.pexepath = /usr/bin/sudo and
+    proc.cmdline startswith "python3 -I /vagrant/scripts/bronze_key/clave_bronce.py " and
+    fd.name = /etc/argus-pki/bronze-to-gold-converter.key
+
+# [FALCO-SILENCIO-D327] test-invariant-seed (en test-all) compara las cuatro semillas con sudo sha256sum: solo imprime
+# la huella, basta padre sudo (como en argus_lab_despliegue_etcd_server). Antes era od desde sudo bash, que vuelca el
+# contenido: 4 CRITICAL por EMECAS (medido DAY327 en la historia del defender, 11-nov 18:53:08Z).
+- macro: argus_lab_invariante_semilla
+  condition: >
+    proc.exepath = /usr/bin/sha256sum and proc.pexepath = /usr/bin/sudo and
+    fd.name glob "/etc/ml-defender/*/seed.bin"
+
+# [FALCO-SILENCIO-D327] los inyectores sintéticos de test-e2e-synthetic (sudo env LD_LIBRARY_PATH=... <inyector>; env
+# se sustituye por el inyector, que queda hijo de sudo) se presentan como el componente al que sustituyen (decisión de
+# Alonso DAY316): leen SU clave TLS y SU semilla, nada más. Medido DAY327 en la historia del defender (11-nov): 32
+# CRITICAL en un EMECAS+++. Por ruta, no por nombre (synthetic_sniffer_injector se corta a 15); /vagrant solo existe
+# en el lab.
+- macro: argus_lab_inyector_sintetico
+  condition: >
+    proc.pexepath = /usr/bin/sudo and
+    ((proc.exepath glob "/vagrant/tools/build-*/synthetic_sniffer_injector" and
+      fd.name in (/etc/argus-pki/sniffer.key, /etc/ml-defender/sniffer/seed.bin)) or
+     (proc.exepath glob "/vagrant/tools/build-*/synthetic_ml_output_injector" and
+      fd.name in (/etc/argus-pki/ml-detector.key, /etc/ml-defender/ml-detector/seed.bin)))
+
 # Herramientas de administración medidas (trazas de bajo nivel, no alertas)
+# [FALCO-RUIDO-D326] argus-infra (#!/usr/bin/python3 -I) con sudo leyendo SU clave TLS, nada más. Medido DAY326 en
+# control-1: proc.exepath=/usr/bin/python3.11, proc.pexepath=/usr/bin/sudo, proc.cmdline="argus-infra -I
+# /usr/local/sbin/argus-infra <orden> ...", dos lecturas por orden (un contexto TLS para Vault y otro para el
+# etcd-server). Python de Debian 12: al pasar a Debian 13 (python3.13) esto vuelve a dar CRITICAL, que es lo deseado:
+# se mide y se cambia. proc.cmdline lo fija quien lanza el proceso, pero para eso ya hace falta ser root.
 - macro: argus_lab_lectura_admin
   condition: >
     (proc.exepath in (/usr/local/bin/etcdctl, /usr/bin/curl) and proc.pname = sudo and
      fd.name = /etc/argus-pki/etcd-server.key) or
+    (proc.exepath = /usr/bin/python3.11 and proc.pexepath = /usr/bin/sudo and
+     proc.cmdline startswith "argus-infra -I /usr/local/sbin/argus-infra " and
+     fd.name = /etc/argus-pki/argus-infra.key) or
+    argus_lab_despliegue_etcd_server or
+    argus_lab_clave_bronce or
+    argus_lab_invariante_semilla or
+    argus_lab_inyector_sintetico or
     (proc.exepath = /usr/bin/openssl and fd.name glob "/etc/ml-defender/*/private.pem")
 
 - rule: argus_lab_clave_leida_ajeno
@@ -114,7 +183,7 @@
   tags: [argus, secretos, adr-060]
 
 - rule: argus_lab_clave_leida_admin
-  desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify)
+  desc: Traza - una herramienta de administración lee una clave (pipeline-status, provision.sh verify, argus-infra, tests del lab)
   condition: argus_lab_lee_fichero and argus_lab_fichero_secreto and argus_lab_lectura_admin
   output: >
     aRGus lectura administrativa de clave (proc=%proc.exepath padre=%proc.pexepath fichero=%fd.name usuario=%user.name

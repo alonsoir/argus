@@ -4,6 +4,7 @@
 # Del repo (nada en el código):
 #   scripts/vigilancia/argus_disco.py            -> /opt/argus/vigilancia/argus_disco.py
 #   provisioning/vigilancia/disco.json           -> /etc/argus-vigilancia/disco.json (campos y rangos: argus_disco.py)
+#     (o el que diga VIGILANCIA_DISCO_JSON: disco.json o disco-<nombre>.json del mismo directorio [DISCO-RUTAS-D324])
 #   provisioning/vigilancia/argus-disco.service  -> /etc/systemd/system/argus-disco.service
 # Pasos: 1 pone lo que cambie (con copia de lo anterior); 2 valida: argus_disco.py --una-vez con la configuración puesta
 # tiene que dar una medida y ningún ARGUS-DISCO-ERROR; si no, restaura lo anterior y rc 1 (todo o nada); 3 reinicia el
@@ -21,7 +22,13 @@ fallo() { echo "[VIGILANCIA-DISCO] FALLA: $*"; exit 1; }
 
 [ "$(id -u)" = 0 ] || fallo "hay que ejecutarlo como root"
 command -v python3 >/dev/null || fallo "falta python3"
-for f in scripts/vigilancia/argus_disco.py provisioning/vigilancia/disco.json provisioning/vigilancia/argus-disco.service; do
+# [DISCO-RUTAS-D324] el JSON del repo que va a $CONF: provisioning/vigilancia/$VIGILANCIA_DISCO_JSON, defecto
+# disco.json. Lo elige el Vagrantfile por nodo (hasta el PR2c, los nodos sin Vault: disco-sin-vault.json).
+DISCO_JSON=${VIGILANCIA_DISCO_JSON:-disco.json}
+[[ "$DISCO_JSON" =~ ^disco(-[a-z0-9]+)*\.json$ ]] \
+  || fallo "VIGILANCIA_DISCO_JSON='$DISCO_JSON' mal formado (disco.json o disco-<nombre>.json, [a-z0-9-])"
+log "configuración: provisioning/vigilancia/$DISCO_JSON ($([ -n "${VIGILANCIA_DISCO_JSON:-}" ] && echo VIGILANCIA_DISCO_JSON || echo 'defecto: VIGILANCIA_DISCO_JSON ausente'))"
+for f in scripts/vigilancia/argus_disco.py provisioning/vigilancia/$DISCO_JSON provisioning/vigilancia/argus-disco.service; do
   [ -r "$RAIZ/$f" ] || fallo "no leo $RAIZ/$f"
 done
 
@@ -48,7 +55,7 @@ restaurar() {
   systemctl daemon-reload
 }
 poner "$RAIZ/scripts/vigilancia/argus_disco.py" "$SCRIPT" 0755
-poner "$RAIZ/provisioning/vigilancia/disco.json" "$CONF" 0644
+poner "$RAIZ/provisioning/vigilancia/$DISCO_JSON" "$CONF" 0644
 poner "$RAIZ/provisioning/vigilancia/argus-disco.service" "$UNIT" 0644
 
 # 2 validar
