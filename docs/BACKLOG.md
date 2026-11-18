@@ -9955,3 +9955,91 @@ primero los que corren dentro de EMECAS.
 ### DEBT-LAB-PROVISION-SCRIPT-MUERTO-001 — ABIERTA (nueva DAY329, menor)
 Borrar `scripts/vagrant-provision.sh`: no lo usa nadie (`git grep` vacío) y hace `apt-get upgrade -y` e instala kernels
 de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMOGENEO-001.
+
+## DAY330 — grub-pc sin disco, ONNX Runtime fuera de GitHub y Zeek con la serie fijada: tres PRs cortos con su EMECAS+++ VERDE [GRUB-DISCO-D330] [TERCEROS-ONNX-D330] [TERCEROS-ZEEK-D330]
+
+### Hecho
+- **#167** (`fix/lab-grub-install-devices`): `debian-fecha` fija `grub-pc/install_devices` al disco de `/boot`, sacado
+  de la VM (`scripts/emecas/grub_disco.sh`, como lo elige el propio postinst), antes del `full-upgrade`, y lo comprueba
+  después; test `test_grub_disco.sh` en `test-kernel-homogeneo`.
+- **#168** (`fix/lab-onnx-nuget`, apilada sobre la de grub; un solo EMECAS para las dos): ONNX Runtime 1.17.1 del paquete
+  NuGet oficial de Microsoft (`Microsoft.ML.OnnxRuntime`), con el SHA512 que publica NuGet
+  (`provisioning/onnxruntime/VERSION` y `SHA512`, `scripts/terceros/onnxruntime_instalar.sh`); fuera el `wget -q` sin
+  comprobar de GitHub; test `test-onnxruntime-instalar` en EMECAS.
+- **PR de Zeek** (`feat/lab-terceros-zeek`): Zeek desde OBS con la clave comprobada por huella
+  (`provisioning/zeek/CLAVE`) y la **serie** fijada (`provisioning/zeek/VERSION` = `9.0`), con `apt-mark hold`
+  (`scripts/vigilancia/zeek_instalar.sh`, con `repo_oficial` de `lib_apt_oficial.sh`); fuera el `curl` sin comprobar y
+  el `zeek` sin fijar; test `test-zeek-instalar` en EMECAS.
+- **EMECAS+++ desde cero VERDE dos veces**: grub + ONNX el 18-nov 11:38-15:54 (4h16m, rc=0; 8 `grub-install success`, 16
+  líneas `debian-fecha` con el disco, `[TERCEROS-ONNX] ✅`, `Found ONNX Runtime (manual)`) y Zeek, con `main` ya al día,
+  el 18-nov 16:57-21:40 (4h43m, rc=0).
+
+### Medido (DAY330)
+- **grub-pc**: la caja `debian/bookworm64` 12.20240905.1 (fijada en las 6 definiciones de VM) trae
+  `grub-pc/install_devices` **sin valor** (`config.dat-old`). El postinst de `grub-pc` 2.06-13+deb12u2, con la lista
+  vacía y en noninteractive, para con «You must correct your GRUB install devices» (líneas 664-690): no adivina el disco
+  y `grub-pc.config` no lo rellena. El EMECAS de las 08:52 cayó así en el defender (`vagrant-up`, 3m05s); el del DAY329,
+  con la misma caja, fecha y paquete, tenía disco en las 8 VMs. **De dónde salió ese valor el DAY329 no está medido.**
+  Probado el arreglo sobre el defender roto: `apt` configura el `grub-pc` a medio configurar sin pedir
+  `dpkg --configure -a`.
+- **ONNX Runtime**: `github.com/microsoft/onnxruntime` da 404 desde el 17-nov-2026 (repositorio, API y ficheros de las
+  releases; medido desde el defender con `wget -S`); PyPI, NuGet y onnxruntime.ai siguen. El EMECAS de las 09:16 cayó
+  1h40m después en `bootstrap` («ONNX Runtime not found»): el `wget -q` falló sin dejar fichero, el `tar` y los `cp`
+  fallaron detrás y el bloque, sin `set -e`, siguió. El `.nupkg` de NuGet 1.17.1: 83644213 bytes, SHA512 igual al
+  `packageHash` del catálogo (autor Microsoft, 25-02-2024), `libonnxruntime.so` con SONAME `libonnxruntime.so.1.17.1` y
+  9 cabeceras; no trae `libonnxruntime_providers_shared.so` (solo para proveedores no CPU). Firma de autor
+  (`.signature.p7s`) sin comprobar.
+- **Zeek**: el lab tenía `zeek` 9.0.1-0 (9 paquetes, con `zeek-btest`) sin fijar. OBS guarda **una sola versión** de
+  cada paquete (`apt-cache madison`), así que la versión exacta no se puede fijar; hay paquetes por serie (`zeek-7.0`,
+  `zeek-8.0`, `zeek-9.0`) y `zeek-lts` = 9.0.1-0. `zeek-9.0` depende con `=` de los suyos, **no declara conflicto** con
+  `zeek` y comparte `/opt/zeek` (el instalador para si hay paquetes fuera de la serie: probado sobre la VM vieja, se negó
+  nombrando los 9). Clave `F9FA0223B56B116C363737EF5DA57BDD6DD785CA` («security OBS Project», la del proyecto security
+  entero), creada el 23-sep-2024, **caduca el 2-dic-2026**; no la publica nadie más.
+- **Recursos del anfitrión**: un EMECAS lanzado justo tras el `destroy` de las 8 VMs cayó en `anfitrion-recursos` por el
+  swap (4500 MB, máximo 4096; carga 5,09), con Safari y un vídeo abiertos (tres procesos WebKit, ~1,6 GB). Un minuto
+  después: swap 2392 MB, carga 1,88.
+- **DEBT-SNIFFER-FLOW-UID-TCP-LARGA-001**: en control-2, `ss -tn` contra los peers de etcd (2382) dos veces con 60 s:
+  13 conexiones ESTAB, **las mismas** (puertos iguales, ninguna nueva ni cerrada). El Raft no se reconecta: los ~11
+  flujos nuevos por segundo y sentido de DAY327 los produce el sniffer partiendo una conexión larga.
+- Hipótesis de Claude que los datos tumbaron hoy: el `install_devices` de la caja apunta a un `by-id` viejo (estaba sin
+  valor); el postinst elige el disco por la firma del sector de arranque, o lo rellena `grub-pc.config` (ninguno de los
+  dos); el 404 de GitHub es un límite de peticiones (el repositorio ya no existe); `=== ` en zsh (se expande como
+  `=orden`); y dos cuentas mal (8 líneas de `debian-fecha` en vez de 16; 3 commits en vez de 2). En la rama de grub se
+  quedó sin hacer el commit de la implementación y entró solo el del test (`9f8a66c34`); se completó después
+  (`a2e78794d`), con el EMECAS medido sobre la copia de trabajo.
+
+### Decisiones de Alonso (DAY330)
+- Orden: terceros por lente, después DEBT-SNIFFER-FLOW-UID-TCP-LARGA-001, después el PR2c. Un PR y un EMECAS por tema.
+- Zeek: la **serie** fijada (opción (a)), no la versión exacta.
+- grub: su propio PR, antes del de Zeek.
+- ONNX Runtime: del paquete oficial (opción (b), NuGet), y anotar el riesgo de fondo (opción (c)).
+
+### DEBT-LAB-GRUB-INSTALL-DEVICES-001 — CERRADA DAY330 (#167)
+Ver arriba. Queda sin medir de dónde salió el valor el DAY329; ya no se depende de él.
+
+### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; ONNX Runtime hecho en #168)
+Descargas de terceros en los aprovisionadores sin el sha256/SHA512 o la firma que publica su mantenedor y sin comprobar
+que terminaron, en bloques sin `set -e`. Hecho: ONNX Runtime. Quedan, al menos: libsodium 1.0.19 y XGBoost 3.2.0 (en el
+mismo bloque `all-dependencies`, junto al de ONNX) y lo que se baje con `wget`/`curl` en el `Vagrantfile` y los
+`scripts/` de aprovisionamiento (inventario con `git grep`). `scripts/install-ml-detector-deps.sh` no lo usa nadie y aún
+apunta al GitHub de ONNX: borrar (como DEBT-LAB-PROVISION-SCRIPT-MUERTO-001). Una lente por PR.
+
+### DEBT-ONNX-RUNTIME-ORIGEN-001 — ABIERTA, seguimiento (nueva DAY330, opción (c) de Alonso)
+`ml-detector` depende de ONNX Runtime, cuyo repositorio desapareció de GitHub el 17-nov-2026 sin explicación de
+Microsoft (siguen PyPI, NuGet y la documentación). Vigilar si vuelve o si Microsoft dice algo; si NuGet dejara de
+publicarlo, evaluar alternativas (compilar desde una copia del código verificada, otro motor de inferencia). Comprobar la
+firma de autor del `.nupkg` (DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001).
+
+### DEBT-EMECAS-ESPERA-ANFITRION-001 — ABIERTA (nueva DAY330, menor)
+Tras el `vagrant destroy` de un lab lleno, el swap tarda en bajar y `anfitrion-recursos` puede parar el EMECAS
+(medido DAY330: 4500 MB contra 4096). Que espere él solo, con un límite del JSON y su test, a que el anfitrión baje de los
+umbrales, en vez de fallar al primer intento.
+
+### DEBT-LAB-VERSIONES-TERCEROS-001 — sigue ABIERTA (avance DAY330)
+Hecho: Zeek (serie 9.0 con `apt-mark hold`) y ONNX Runtime (1.17.1 con SHA512). **Ojo**: se han puesto en
+`provisioning/<producto>/` (`VERSION`, `CLAVE`, `SHA512`), igual que Falco y Wazuh, y no en el group_vars de cada lente
+que decidió Alonso el DAY329. Pendiente de su decisión: llevarlos todos (Falco, Wazuh, Zeek, ONNX y los que vengan) a
+group_vars en un PR propio, o dejar `provisioning/<producto>/` como el sitio. Falta también: Vault `VAULT_PIN`, etcd y
+Arrow (en el `Vagrantfile`), el `.deb` del repositorio de Arrow, libbpf 1.4.6, y un paso de EMECAS que compare lo
+instalado con lo declarado. La clave de OBS caduca el 2-dic-2026: comprobar ese día que OBS la ha prorrogado con la
+misma huella.
