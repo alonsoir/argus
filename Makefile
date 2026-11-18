@@ -1322,6 +1322,7 @@ emecas:
 	@$(EMECAS_PASO) test-anfitrion-recursos -- $(MAKE) test-anfitrion-recursos
 	@$(EMECAS_PASO) test-kernel-homogeneo -- $(MAKE) test-kernel-homogeneo
 	@$(EMECAS_PASO) test-c7-limite -- $(MAKE) test-c7-limite
+	@$(EMECAS_PASO) test-onnxruntime-instalar -- $(MAKE) test-onnxruntime-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1388,6 +1389,12 @@ test-kernel-homogeneo:
 .PHONY: test-c7-limite
 test-c7-limite:
 	@bash scripts/etcd_ha/test_d322_limite.sh
+
+# [TERCEROS-ONNX-D330] test-onnxruntime-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/
+# onnxruntime_instalar.sh (VERSION, SHA512, y qué se saca del paquete y qué no), también contra funciones que lo aceptan todo.
+.PHONY: test-onnxruntime-instalar
+test-onnxruntime-instalar:
+	@bash scripts/terceros/test_onnxruntime_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
