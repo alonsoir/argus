@@ -1,0 +1,10 @@
+# provisioning/zeek/CLAVE — [TERCEROS-ZEEK-D330] huella de la clave con la que OBS firma el repositorio de Zeek
+# (https://download.opensuse.org/repositories/security:/zeek/Debian_12/Release.key,
+# "security OBS Project <security@build.opensuse.org>": es la clave del proyecto security de OBS entero, no solo de Zeek).
+# scripts/vigilancia/lib_apt_oficial.sh descarga la clave y SOLO la instala si todas sus claves principales están aquí.
+# Medida DAY330 en la clave que el lab tenía instalada (creada el 23-sep-2024; caduca el 2-dic-2026 12:27 UTC: OBS suele
+# prorrogarla con la MISMA huella, y entonces aquí no cambia nada; una VM aprovisionada antes de la prórroga deja de
+# poder hacer apt update contra Zeek hasta que se vuelve a aprovisionar). No la publica nadie más (búsqueda DAY330):
+# contrastarla con OBS/Zeek, DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001. Si OBS rota la clave, se añade la nueva aquí (una
+# por línea) tras contrastarla.
+F9FA0223B56B116C363737EF5DA57BDD6DD785CA
