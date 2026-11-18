@@ -498,33 +498,12 @@ LIBBPF_PROFILE
       else
         echo "✅ libsodium 1.0.19 already installed"
       fi
-      # ONNX Runtime v1.17.1
-      if [ ! -f /usr/local/lib/libonnxruntime.so ]; then
-        echo "🧠 Installing ONNX Runtime v1.17.1..."
-        cd /tmp
-        wget -q https://github.com/microsoft/onnxruntime/releases/download/v1.17.1/onnxruntime-linux-x64-1.17.1.tgz
-        tar -xzf onnxruntime-linux-x64-1.17.1.tgz
-        cp -r onnxruntime-linux-x64-1.17.1/include/* /usr/local/include/
-        cp -r onnxruntime-linux-x64-1.17.1/lib/* /usr/local/lib/
-        ldconfig
-
-        echo "🔗 Creating /usr/local/lib64 symlinks for ONNX Runtime..."
-        mkdir -p /usr/local/lib64
-        ln -sf /usr/local/lib/libonnxruntime.so* /usr/local/lib64/
-        ln -sf /usr/local/lib/libonnxruntime_providers_shared.so /usr/local/lib64/
-
-        rm -rf onnxruntime-linux-*
-        echo "✅ ONNX Runtime installed with lib64 symlinks"
-      else
-        echo "✅ ONNX Runtime already installed"
-        if [ ! -d /usr/local/lib64 ]; then
-          echo "🔗 Creating missing /usr/local/lib64 symlinks..."
-          mkdir -p /usr/local/lib64
-          ln -sf /usr/local/lib/libonnxruntime.so* /usr/local/lib64/
-          ln -sf /usr/local/lib/libonnxruntime_providers_shared.so /usr/local/lib64/ 2>/dev/null || true
-          echo "✅ lib64 symlinks created"
-        fi
-      fi
+      # [TERCEROS-ONNX-D330] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: ONNX Runtime del paquete NuGet oficial de
+      # Microsoft (Microsoft.ML.OnnxRuntime), en la versión de provisioning/onnxruntime/VERSION y comprobado con el SHA512
+      # que publica NuGet (provisioning/onnxruntime/SHA512). Medido DAY330: github.com/microsoft/onnxruntime da 404 desde
+      # el 17-nov-2026 y el wget -q de antes fallaba en silencio (EMECAS caído 1h40m después, en ml-detector). Si falla,
+      # para aquí.
+      bash /vagrant/scripts/terceros/onnxruntime_instalar.sh || { echo "❌ ONNX Runtime"; exit 1; }
 
       # XGBoost 3.2.0 (C API + Python) - ADR-026 Track 1
       if [ ! -f /usr/local/lib/libxgboost.so ]; then
