@@ -1,0 +1,9 @@
+# provisioning/onnxruntime/SHA512 — [TERCEROS-ONNX-D330] SHA512 (base64, como lo publica NuGet) del paquete oficial de
+# Microsoft Microsoft.ML.OnnxRuntime en la versión de provisioning/onnxruntime/VERSION:
+#   https://api.nuget.org/v3-flatcontainer/microsoft.ml.onnxruntime/1.17.1/microsoft.ml.onnxruntime.1.17.1.nupkg
+# Medido DAY330: es el packageHash (SHA512) del catálogo de NuGet
+# (https://api.nuget.org/v3/catalog0/data/2024.02.25.08.13.47/microsoft.ml.onnxruntime.1.17.1.json, autor Microsoft,
+# publicado el 2024-02-25, 83644213 bytes), y coincide con el del fichero bajado. El paquete trae además la firma de autor
+# de Microsoft (.signature.p7s), sin comprobar todavía: DEBT-SUPPLY-CHAIN-ORIGEN-OFICIAL-001.
+# Una sola línea sin comentar: 88 caracteres base64. Si cambia VERSION, cambia esto (medido igual).
+/3CQBZqD3TGgU9/M+aHETPPOUsZLnokjfnDRZO/az26dZw5cdJnWICSwMpF8gHCVepqNKOGAFiLDK1qMv7Ikpg==

@@ -76,7 +76,7 @@ if(NOT onnxruntime_FOUND)
                 INTERFACE_INCLUDE_DIRECTORIES ${ONNXRUNTIME_INCLUDE_DIR}
         )
     else()
-        message(FATAL_ERROR "ONNX Runtime not found. Install from: https://github.com/microsoft/onnxruntime/releases")
+        message(FATAL_ERROR "ONNX Runtime not found: the lab installs it from the official NuGet package (scripts/terceros/onnxruntime_instalar.sh, provisioning/onnxruntime/)")
     endif()
 endif()
 
