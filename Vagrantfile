@@ -1502,13 +1502,11 @@ BASHRC_EOF
       echo "nameserver 1.1.1.1" >> /etc/resolv.conf
       chattr +i /etc/resolv.conf
 
-      # Zeek repo oficial OpenSUSE
-      echo 'deb http://download.opensuse.org/repositories/security:/zeek/Debian_12/ /' \
-        > /etc/apt/sources.list.d/zeek.list
-      curl -fsSL https://download.opensuse.org/repositories/security:/zeek/Debian_12/Release.key \
-        | gpg --dearmor > /etc/apt/trusted.gpg.d/zeek.gpg
-      apt-get update -qq
-      apt-get install -y zeek || { echo "❌ zeek install failed"; exit 1; }
+      # [TERCEROS-ZEEK-D330] DEBT-LAB-VERSIONES-TERCEROS-001, lente Zeek: el repositorio de OBS con su clave comprobada por
+      # huella (provisioning/zeek/CLAVE) y la serie fija de provisioning/zeek/VERSION; todo en zeek_instalar.sh (su
+      # cabecera explica por qué la serie y no la versión exacta). Antes: el paquete zeek sin fijar (la última serie del
+      # día) y la clave bajada sin comprobar.
+      bash /vagrant/scripts/vigilancia/zeek_instalar.sh || { echo "❌ zeek install failed"; exit 1; }
 
       echo 'export PATH=/opt/zeek/bin:$PATH' >> /etc/profile.d/zeek.sh
       chmod +x /etc/profile.d/zeek.sh

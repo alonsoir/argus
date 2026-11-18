@@ -1319,6 +1319,7 @@ emecas:
 	@$(EMECAS_PASO) test-clave-bronce -- $(MAKE) test-clave-bronce
 	@$(EMECAS_PASO) test-vault-unseal -- $(MAKE) test-vault-unseal
 	@$(EMECAS_PASO) test-falco-silencio -- $(MAKE) test-falco-silencio
+	@$(EMECAS_PASO) test-zeek-instalar -- $(MAKE) test-zeek-instalar
 	@$(EMECAS_PASO) test-anfitrion-recursos -- $(MAKE) test-anfitrion-recursos
 	@$(EMECAS_PASO) test-kernel-homogeneo -- $(MAKE) test-kernel-homogeneo
 	@$(EMECAS_PASO) test-c7-limite -- $(MAKE) test-c7-limite
@@ -2375,6 +2376,12 @@ falco-silencio:
 
 test-falco-silencio:
 	@python3 -I scripts/vigilancia/test_falco_silencio.py
+
+# [TERCEROS-ZEEK-D330] test-zeek-instalar (Mac, sin VMs): las funciones de scripts/vigilancia/zeek_instalar.sh (serie
+# de provisioning/zeek/VERSION y la comprobación de lo instalado), también contra un comprobador que lo acepta todo.
+.PHONY: test-zeek-instalar
+test-zeek-instalar:
+	@bash scripts/vigilancia/test_zeek_instalar.sh
 
 # [VIGILANCIA-D321] ADR-060 8e.4d (Mac): la vigilancia de aRGus en el wazuh-manager (VM wazuh). Decoders, reglas y
 # agent.conf por grupo (provisioning/wazuh/argus), agentes a su grupo y test de las reglas; todo o nada. Lo mismo que el
