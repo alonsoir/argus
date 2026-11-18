@@ -1380,6 +1380,7 @@ test-kernel-homogeneo:
 	@python3 -I scripts/emecas/test_con_limite.py
 	@bash scripts/emecas/test_provision_with.sh
 	@bash scripts/emecas/test_kernel_homogeneo.sh
+	@bash scripts/emecas/test_grub_disco.sh
 
 # [C7-LIMITE-D329] (Mac) DEBT-E2E-VAGRANT-SSH-SIN-LIMITE-001: el examinador de C7 (d322_reinicio_vault.sh) con un
 # vagrant falso: con la VM sana PASA; con la previa, systemd, el arranque o la VM entera sin contestar da ❌ con el paso
