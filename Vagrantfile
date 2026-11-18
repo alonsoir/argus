@@ -216,17 +216,37 @@ Vagrant.configure("2") do |config|
     if [ -n "$OTRAS" ]; then
       echo "❌ debian-fecha: fuentes de Debian sin fijar a $TS: $OTRAS"; exit 1
     fi
+    # [GRUB-DISCO-D330] DEBT-LAB-GRUB-INSTALL-DEVICES-001: la caja trae grub-pc/install_devices sin valor y, sin disco y en
+    # noninteractive, el postinst de grub-pc para el full-upgrade (medido DAY330 en el defender; el DAY329 pasó en las 8
+    # VMs sin saber por qué). Se fija aquí al disco de /boot, sacado de la VM (scripts/emecas/grub_disco.sh), y se
+    # comprueba tras el full-upgrade. También si grub-pc quedó a medio configurar de una corrida anterior.
+    GD=
+    case "$(dpkg-query -W -f='${Status}' grub-pc 2>/dev/null || true)" in
+      ""|*" not-installed"|*" config-files") echo "debian-fecha: sin grub-pc, nada que fijar" ;;
+      *)
+        GD=$(bash /vagrant/scripts/emecas/grub_disco.sh) || { echo "❌ debian-fecha: no se sabe en qué disco va grub-pc"; exit 1; }
+        echo "grub-pc grub-pc/install_devices multiselect $GD" | debconf-set-selections
+        echo "debian-fecha: grub-pc/install_devices=$GD (el disco de /boot)"
+        ;;
+    esac
     apt-get update -o Acquire::Retries=3
     DEBIAN_FRONTEND=noninteractive apt-get -y -o Acquire::Retries=3 \
       -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold full-upgrade
     if apt-cache policy | grep -E "$DEBIAN_RE"; then
       echo "❌ debian-fecha: apt sigue viendo Debian fuera de $TS (líneas de arriba)"; exit 1
     fi
+    if [ -n "$GD" ]; then
+      GS=$(dpkg-query -W -f='${Status}' grub-pc)
+      GV=$(debconf-show grub-pc | sed -n 's/^[* ] grub-pc\/install_devices: //p')
+      if [ "$GS" != "install ok installed" ] || [ "$GV" != "$GD" ]; then
+        echo "❌ debian-fecha: grub-pc '$GS', install_devices '$GV' (se fijó '$GD')"; exit 1
+      fi
+    fi
     K=$(dpkg-query -W -f='${Depends}' linux-image-amd64 | sed -n 's/.*linux-image-\([0-9][^ ,]*\).*/\1/p' | head -n 1)
     if [ -z "$K" ] || ! dpkg-query -W -f='${Status}' "linux-image-$K" 2>/dev/null | grep -q 'install ok installed'; then
       echo "❌ debian-fecha: el kernel de la fecha no quedó instalado (linux-image-amd64 -> ${K:-?})"; exit 1
     fi
-    echo "✅ debian-fecha: Debian en $TS; kernel de la fecha $K (en marcha: $(uname -r); arranca tras reiniciar)"
+    echo "✅ debian-fecha: Debian en $TS; kernel de la fecha $K (en marcha: $(uname -r); arranca tras reiniciar); grub-pc en ${GD:-ninguno}"
   DEBIAN_FECHA
 
   # ════════════════════════════════════════════════════════════════════════════
