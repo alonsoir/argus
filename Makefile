@@ -306,11 +306,14 @@ bootstrap-x86-libpcap:
 	@echo "║  Siguiente: make test-all                                  ║"
 	@echo "╚════════════════════════════════════════════════════════════╝"
 
+# [TERCEROS-SODIUM-D331] versión de libsodium: la de provisioning/libsodium/VERSION (un único lugar)
+SODIUM_VERSION := $(shell tr -d '[:space:]' < provisioning/libsodium/VERSION)
+
 check-system-deps:
 	@echo "🔍 Verificando dependencias del sistema..."
 	@vagrant ssh -c "command -v xxd >/dev/null || { echo '❌ xxd missing'; exit 1; }"
 	@vagrant ssh -c "command -v tmux >/dev/null || { echo '❌ tmux missing'; exit 1; }"
-	@vagrant ssh -c "pkg-config --modversion libsodium 2>/dev/null | grep -q '1.0.19' || { echo '❌ libsodium 1.0.19 missing'; exit 1; }"
+	@vagrant ssh -c "pkg-config --modversion libsodium 2>/dev/null | grep -qxF '$(SODIUM_VERSION)' || { echo '❌ libsodium $(SODIUM_VERSION) missing (provisioning/libsodium/VERSION)'; exit 1; }"
 	@vagrant ssh -c "bash /vagrant/tools/check-xgboost-version.sh" || { echo '❌ xgboost 3.2.0 missing'; exit 1; }
 	@vagrant ssh -c "test -f /usr/local/lib/libxgboost.so || { echo '❌ libxgboost.so missing'; exit 1; }"
 	@vagrant ssh -c "test -f /usr/local/lib/libcrypto_transport.so || { echo '❌ libcrypto_transport.so missing'; exit 1; }"
