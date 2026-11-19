@@ -481,23 +481,12 @@ LIBBPF_PROFILE
         rm cmake-3.25.0-linux-x86_64.sh
       fi
 
-      # libsodium 1.0.19 (requerido por crypto-transport HKDF-SHA256 — ADR-013)
-      # Debian bookworm provee 1.0.18 — crypto_kdf_hkdf_sha256_* requiere 1.0.19+
-      if [ "$(pkg-config --modversion libsodium 2>/dev/null)" != "1.0.19" ]; then
-        echo "🔐 Installing libsodium 1.0.19 from source..."
-        cd /tmp && rm -rf libsodium-stable libsodium-1.0.19.tar.gz
-        curl -fsSL https://github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/libsodium-1.0.19.tar.gz \
-          -o libsodium-1.0.19.tar.gz
-        tar xzf libsodium-1.0.19.tar.gz
-        cd libsodium-stable
-        ./configure --prefix=/usr/local
-        make -j4
-        make install
-        ldconfig
-        echo "✅ libsodium $(pkg-config --modversion libsodium) installed"
-      else
-        echo "✅ libsodium 1.0.19 already installed"
-      fi
+      # [TERCEROS-SODIUM-D331] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: libsodium (crypto-transport necesita
+      # HKDF-SHA256 desde la 1.0.19, ADR-013; bookworm trae la 1.0.18) de download.libsodium.org, en la versión de
+      # provisioning/libsodium/VERSION, comprobada con la firma minisign del mantenedor y el SHA256 fijado. Medido DAY331:
+      # antes se bajaba con curl de GitHub sin comprobar nada (y tools/provision.sh, que sí comprobaba, no llegaba a
+      # instalarla). Si falla, para aquí.
+      bash /vagrant/scripts/terceros/libsodium_instalar.sh || { echo "❌ libsodium"; exit 1; }
       # [TERCEROS-ONNX-D330] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: ONNX Runtime del paquete NuGet oficial de
       # Microsoft (Microsoft.ML.OnnxRuntime), en la versión de provisioning/onnxruntime/VERSION y comprobado con el SHA512
       # que publica NuGet (provisioning/onnxruntime/SHA512). Medido DAY330: github.com/microsoft/onnxruntime da 404 desde
