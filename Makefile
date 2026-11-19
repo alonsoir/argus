@@ -368,8 +368,17 @@ halt-argus:
 halt-suricata:
 	@cd experiments/suricata-comparative && vagrant halt
 
+# [LAB-PARAR-D331] parada ordenada para cerrar el día (decisión de Alonso DAY331): scripts/emecas/lab_parar.sh para
+# el pipeline si el defender está en marcha y apaga de una en una client, sensores, defender y, al final, el plano de
+# control (al revés de CONTROL_NODOS: etcd y Vault, los últimos); cada llamada con el límite
+# argus_lab_llamada_vm_limite_s de all.yml y --force de reserva; falla diciendo qué VM no quedó parada.
+CONTROL_NODOS_INVERSO = $(shell echo '$(CONTROL_NODOS)' | awk '{ for (i = NF; i > 0; i--) printf "%s%s", $$i, (i > 1 ? " " : "") }')
+
 halt:
-	@vagrant halt defender client suricata zeek wazuh $(CONTROL_NODOS)
+	@bash scripts/emecas/lab_parar.sh client suricata zeek wazuh defender $(CONTROL_NODOS_INVERSO)
+
+test-lab-parar:  # [LAB-PARAR-D331] (anfitrión, sin tocar el lab) tests de scripts/emecas/lab_parar.sh
+	@bash scripts/emecas/test_lab_parar.sh
 
 destroy:
 	@vagrant destroy -f
