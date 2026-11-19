@@ -10043,3 +10043,124 @@ group_vars en un PR propio, o dejar `provisioning/<producto>/` como el sitio. Fa
 Arrow (en el `Vagrantfile`), el `.deb` del repositorio de Arrow, libbpf 1.4.6, y un paso de EMECAS que compare lo
 instalado con lo declarado. La clave de OBS caduca el 2-dic-2026: comprobar ese día que OBS la ha prorrogado con la
 misma huella.
+
+---
+
+## DAY331 — libsodium verificada, main sin los parcheadores del #171 y XGBoost medido [DOCS-D331]
+
+### Hecho DAY331
+- **#172** (sin EMECAS: no toca ni el lab ni el pipeline): quita de main los 4 `scripts/etcd_ha/d330_*.py` que entraron
+  al mergear por error el #171, que era la rama de archivo `archivo/parcheadores-d330`. Siguen en esa rama
+  (`fec9ad2fa`). Medido antes: nada del repo los citaba fuera de los propios parcheadores.
+- **PR de `fix/lab-terceros-libsodium`** (merge `be3a544b0`), EMECAS+++ production desde cero **VERDE en 4h27m**
+  (`logs/lab/emecas/emecas_20261119_085504.log`). Cuatro commits:
+  - `86b8487a4`: `provisioning/libsodium/{VERSION,MINISIGN_PUBKEY,SHA256}` y `scripts/terceros/libsodium_instalar.sh`
+    con su test. Baja de download.libsodium.org (`releases/` y, si ya no está, `releases/old/`) y comprueba la firma
+    minisign con la clave publicada por libsodium, que el comentario de confianza nombre `libsodium-<VERSION>.tar.gz` y
+    el SHA256 fijado. Compila en `/usr/local`, crea el enlace `libsodium.so.23 -> .so.26` (FIX DAY107) y deja una marca
+    (`/usr/local/lib/argus-libsodium.verificado`). Si algo falla, para. Test: 25 casos puros (Mac) y 35 con `--vm`
+    (defender), entre ellos que falla con un byte cambiado, otra clave, la firma de otro fichero, otro SHA256 y la
+    1.0.18 firmada de verdad presentada como la 1.0.19.
+  - `be5be7b48`: el `Vagrantfile` llama al instalador; fuera el `curl` a GitHub sin comprobar.
+  - `3c0b71c7d`: `tools/provision.sh` llama al mismo instalador y lee `SODIUM_REQUIRED` de `VERSION`; fuera su copia
+    (con solo el SHA256), `SODIUM_URL`, `SODIUM_SHA256` y el bloque del FIX DAY107.
+  - `7e40c09b8`: `check-system-deps` lee la versión de `VERSION` y la compara exacta (`grep -qxF`).
+  - En el log del EMECAS: líneas 8362-8366 (desde el `Vagrantfile`: bajada, comprobada, compilada, enlace, ✅) y
+    10239-10242 (desde `provision.sh full`: «ya instalada y comprobada (marca …)»). Un solo instalador, y el segundo
+    paso no recompila.
+- Parcheadores d331 en la rama de archivo `archivo/parcheadores-d331` (`a43d27147`), **solo con push, sin PR**.
+
+### Decisiones de Alonso DAY331
+- **DEBT-LAB-VERSIONES-TERCEROS-001: opción A.** Las versiones (con su hash, clave o firma) de todos los terceros viven
+  en `provisioning/<producto>/`, como ya Falco, Wazuh, Zeek, ONNX y ahora libsodium; no en el group_vars de cada lente
+  (lo decidido DAY329 queda sustituido). Si algún día un admin pide otra forma, se considera.
+- libsodium: **firma minisign y SHA256, las dos**.
+- **XGBoost: candidato a retirar.** Las cabezas se renuevan con el método de `ddos_v2` (entrenamiento reproducible con
+  sklearn y árboles exportados a C++, sin dependencia en ejecución). Orden: primero libsodium (hecho), después el PR de
+  retirar XGBoost (DEBT-XGBOOST-RETIRAR-001).
+- **Ramas de archivo: solo `git push`, nunca PR** (el #171 se mergeó con un clic en la web).
+
+### Medido DAY331
+- **libsodium, dos instaladores**: el bloque del `Vagrantfile` (`curl -fsSL` de
+  `github.com/jedisct1/libsodium/releases/download/1.0.19-RELEASE/`, sin comprobar nada) corría antes que
+  `tools/provision.sh full` (`install_libsodium_1019`: `wget` de download.libsodium.org con SHA256 fijado desde DAY97),
+  y este, al ver la 1.0.19 ya puesta y las cabeceras de HKDF, se saltaba la instalación: el instalador que comprobaba
+  nunca instalaba nada en un lab desde cero.
+- **Firma**: `minisign -Vm libsodium-1.0.19.tar.gz -P RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3` →
+  «Signature and comment signature verified», trusted comment `timestamp:1694614745 file:libsodium-1.0.19.tar.gz`;
+  sha256 `018d79fe…`, igual que el de `provision.sh`. `minisign` 0.11-1 está en el snapshot de bookworm.
+- **download.libsodium.org**: la 1.0.19 está en `releases/`; la 1.0.18, solo en `releases/old/` (y la 1.0.19 no está
+  en `old/`). El día que libsodium mueva la 1.0.19, el instalador la busca en `old/`.
+- **Debian**: bookworm (snapshot 20261115) trae `libsodium-dev 1.0.18-1+deb12u1`. `libsodium23` la piden
+  `libsodium-dev`, `libzmq5` y `vim`; `libsodium-dev`, `libzmq3-dev`. No se puede quitar mientras se use el ZeroMQ de
+  Debian.
+- **Quién enlaza con qué** (NEEDED en el defender): `libzmq.so.5` → `libsodium.so.23`; nuestras `libvault_client`,
+  `libcrypto_provider` y `libhost_domain_v1` → `.so.23` (con `ldd` resuelven a `/usr/local/lib/libsodium.so.23`, el
+  enlace a la 1.0.19); `libcrypto_transport` y `libplugin_loader` → `.so.26`. Un `ldd` de `libzmq` suelta resuelve a
+  `/lib/x86_64-linux-gnu/libsodium.so.23` (la 1.0.18); eso no dice qué carga un proceso (el cargador no carga dos
+  veces el mismo soname ni el mismo fichero): para eso, `/proc/<pid>/maps` de un componente en marcha (sin medir).
+- **CMake, tres maneras de buscar libsodium**: `NO_DEFAULT_PATH` con `/usr/local` primero (crypto-transport,
+  plugin-loader, libs/protegidos, enterprise/plugins/vault_crypto); `find_library` sin rutas (sniffer); nombre a secas
+  o `pkg_check_modules` sin rutas (common, libs/host-domain-v1, etcd-server, correlation-engine, adapters). Las del
+  último grupo enlazan con la 1.0.18 del multiarch y en ejecución pasan por el enlace a la 1.0.19.
+- **XGBoost**:
+  - Ningún JSON carga `libplugin_xgboost.so` (solo `plugins/test-message/test_config.json`, que es otro plugin); solo
+    lo ejercita `test-integ-xgboost-1`.
+  - `ml-detector/src` y `ml-detector/include` no nombran XGBoost ni una vez.
+  - La cabeza DDoS v2 es un RandomForest de sklearn (`ml-training/scripts/ddos_detection/export_ddos_v2_fact_rf.py`)
+    exportado a `ml-detector/include/ml_defender/ddos_v2_forest_inline.hpp`: no depende de XGBoost ni para ejecutarse
+    ni para entrenarse. `requirements-ddos-pinned.txt` no instala xgboost (solo lo nombra en un comentario).
+  - El nivel 1 va por ONNX (`level1/level1_attack_detector.onnx`).
+  - `traffic_detector.cpp`, `internal_detector.cpp` y `ransomware_detector.cpp` son árboles embebidos en C++ (de
+    XGBoost según un comentario de `ml-detector/CMakeLists.txt:232`; sin medir).
+  - El wheel 3.2.0 pide `numpy`, `scipy` y `nvidia-nccl-cu12` (CUDA, en un aRGus solo de CPU).
+  - En el `Vagrantfile`: `pip install xgboost==3.2.0` sin hash, alternativa `apt-get install python3-xgboost || true`
+    sin versión fijada, cabeceras por `curl` a `raw.githubusercontent.com` con `|| true` y el symlink de
+    `libgomp-e985bcbb.so.1.0.0` con el sufijo escrito a mano.
+  - El binario del ml-detector no está en `/usr/local/bin`, `/usr/bin` ni `/opt` del defender: su `readelf` está
+    pendiente.
+- **main y los parcheadores**: además de los 4 del #171, main tiene ~185 ficheros `d300`–`d322`. De ellos, 20 tienen
+  dependencias reales (Makefile, Vagrantfile, Ansible, `scripts/vigilancia/`, `scripts/bronze_key/` o código C++); el
+  resto, solo referencias entre parcheadores.
+
+### Deudas
+- **DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001**: libsodium hecha (DAY331). Quedan Vault `VAULT_PIN`, etcd, Arrow y
+  su `.deb` y libbpf. XGBoost no se endurece: se retira (DEBT-XGBOOST-RETIRAR-001).
+- **DEBT-LAB-VERSIONES-TERCEROS-001**: decidida (opción A). Se cierra cuando todos los terceros estén en
+  `provisioning/<producto>/`.
+- **DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001** (nota DAY331): medidas arriba. Antes de diseñar nada, medir qué libsodium
+  carga de verdad cada componente en marcha (`/proc/<pid>/maps`). Candidata, sin probar: que crypto-transport y
+  plugin-loader enlacen la 1.0.19 en estático (`/usr/local/lib/libsodium.a`) con `-Wl,--exclude-libs,ALL`, de modo que
+  el resto del proceso use solo la de Debian y el enlace del DAY107 sobre. Sin prioridad: funciona.
+
+### DEBT-XGBOOST-RETIRAR-001 — ABIERTA (nueva DAY331, decisión de Alonso)
+Retirar XGBoost del lab: `plugins/xgboost` (`libplugin_xgboost.so`), `libxgboost.so` y sus cabeceras, los modelos
+`.ubj` y su firma (`sign-models`), `test-integ-xgboost-1`, el bloque del `Vagrantfile` (pip, apt, curl y `libgomp`), la
+línea de `security/apparmor/argus.ml-detector`, `tools/check-xgboost-version.sh`, las líneas de `check-system-deps` y
+lo que toque en `tools/prod/collect-libs.sh` y `tools/prod/build-x86.sh`. Las cabezas embebidas (traffic, internal,
+ransomware) se quedan como están hasta su renovación con el método de `ddos_v2`. Antes de borrar: `readelf -d` del
+binario real del ml-detector (predicción: sin `NEEDED` de xgboost ni gomp).
+**Test de cierre:** `git grep -n -i xgboost` fuera de `docs/`, `ml-training/` y los nombres de las cabezas embebidas no
+devuelve nada; en el defender no hay `libxgboost.so` ni `libplugin_xgboost.so`; el ml-detector arranca con las mismas
+cabezas que antes (su log de arranque igual salvo XGBoost); EMECAS+++ verde desde cero.
+
+### DEBT-REPO-PARCHEADORES-EN-MAIN-001 — ABIERTA (nueva DAY331)
+main lleva ~185 ficheros `d300`–`d322` (`scripts/etcd_ha/`, `scripts/timebase/`, `scripts/flow_expiry/`,
+`scripts/heads/`, `scripts/ddos_v1/`, `scripts/bronze_key/`). Algunos son herramientas vivas con nombre de día (los 20
+con dependencias reales y lo que ellos llaman: `d300_protegidos_e2e.sh`, `d302_mitigacion_e2e.sh`,
+`d303_esperar_estable_lab.sh`, `d312_pki.sh`, `d313_es_vm.sh`, `d320_vigia_e2e.sh`, `d322_reinicio_vault.sh`…); el resto
+son parcheadores ya aplicados o medidas de un solo uso. Arreglo: calcular el cierre transitivo de las vivas; las demás,
+a una rama de archivo (solo push); renombrar las vivas, si se decide, en otro PR.
+**Test de cierre:** en main no queda ningún `d3xx_*` que no esté en el cierre de las vivas; cada fichero quitado está en
+una rama de archivo; EMECAS+++ verde desde cero.
+
+### Lecciones DAY331
+- GitHub deja mergear una rama de archivo con un clic (#171): a las ramas de archivo no se les abre PR.
+- Dos instaladores de lo mismo esconden cuál manda: el bueno nunca corría. Lo importante, en un único lugar.
+- `ldd` de una biblioteca suelta no dice qué carga un proceso: Claude dio por hecho «dos libsodium en el mismo
+  proceso» con esa medida y Alonso lo paró («esto funcionaba ayer»). Para lo que carga un proceso,
+  `/proc/<pid>/maps`.
+- `pgrep -f <nombre>` dentro de un `vagrant ssh -c` se encuentra a sí mismo: usar `pgrep -x`.
+- Hipótesis de Claude que los datos tumbaron hoy: seis (menos de 15 referencias a `d3xx_`, `wget` en vez de `curl`,
+  la ruta de la 1.0.18, las dos libsodium por proceso, el log del EMECAS a tres niveles, el `pgrep -f`). Parar y medir
+  funcionó cada vez.
