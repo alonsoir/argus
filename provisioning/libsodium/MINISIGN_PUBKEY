@@ -1,0 +1,5 @@
+# [TERCEROS-SODIUM-D331] Clave Ed25519 de minisign con la que se firman los ficheros de distribución de libsodium, tal
+# como la publica https://doc.libsodium.org/installation (sección «Integrity checking»); es la misma que publica
+# https://github.com/jedisct1/minisign. Comprobada DAY331 en el defender contra la firma de libsodium-1.0.19.tar.gz.
+# Una sola línea sin comentar: RW seguido de 54 caracteres base64.
+RWQf6LRCGA9i53mlYecO4IzT51TGPpvWucNSCh1CBM0QTaLn73Y7GFO3

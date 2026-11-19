@@ -131,124 +131,21 @@ check_entropy() {
 }
 
 # =============================================================================
-# LIBSODIUM 1.0.19 — Compilación desde fuente
-#
-# Debian Bookworm solo distribuye libsodium 1.0.18.
-# crypto_kdf_hkdf_sha256_* (HKDF nativo) requiere >= 1.0.19 (ADR-013 PHASE 2).
-#
-# Función idempotente: salta si la versión correcta ya está instalada.
-# Verificación SHA-256 obligatoria antes de compilar — supply-chain safety.
-#
-# SHA-256 verificado el 2026-03-25 contra:
-#   https://download.libsodium.org/libsodium/releases/libsodium-1.0.19.tar.gz
+# LIBSODIUM — [TERCEROS-SODIUM-D331] un solo instalador: scripts/terceros/libsodium_instalar.sh
+# (download.libsodium.org, firma minisign del mantenedor y SHA256 fijado; versión, clave y SHA256 en
+# provisioning/libsodium/). Hasta DAY331 aquí había otra copia, con solo el SHA256, que en un lab desde cero no
+# llegaba a instalar nada: el Vagrantfile la instalaba antes, sin comprobar.
 # =============================================================================
 
-readonly SODIUM_REQUIRED="1.0.19"
-readonly SODIUM_URL="https://download.libsodium.org/libsodium/releases/libsodium-${SODIUM_REQUIRED}.tar.gz"
-readonly SODIUM_SHA256="018d79fe0a045cca07331d37bd0cb57b2e838c51bc48fd837a1472e50068bbea"
+ARGUS_RAIZ_SODIUM=$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)
+SODIUM_REQUIRED=$( { tr -d '[:space:]' < "${ARGUS_RAIZ_SODIUM}/provisioning/libsodium/VERSION"; } 2>/dev/null || echo "?")
+readonly ARGUS_RAIZ_SODIUM SODIUM_REQUIRED
 
 install_libsodium_1019() {
     log_section "libsodium ${SODIUM_REQUIRED}"
-
-    # ── Idempotencia: comprobar versión instalada ──────────────────────────
-    local installed
-    installed=$(pkg-config --modversion libsodium 2>/dev/null || echo "none")
-
-    if [[ "$installed" == "$SODIUM_REQUIRED" ]]; then
-        # Verificar además que crypto_kdf_hkdf_sha256 está en los headers
-        if grep -r "crypto_kdf_hkdf_sha256_extract" /usr/local/include/sodium/ \
-                >/dev/null 2>&1; then
-            log_info "libsodium ${SODIUM_REQUIRED} ya instalada con HKDF nativo — saltando"
-            return 0
-        fi
-        log_warn "libsodium ${SODIUM_REQUIRED} instalada pero HKDF headers ausentes — reinstalando"
-    else
-        log_item "Versión instalada: ${installed}  →  compilando ${SODIUM_REQUIRED} desde fuente"
-    fi
-
-    # ── Dependencias de compilación ────────────────────────────────────────
-    log_item "Instalando dependencias de compilación"
-    apt-get install -y --quiet build-essential wget pkg-config >/dev/null 2>&1
-
-    # ── Directorio temporal (limpiado al salir de la función) ──────────────
-    local tmpdir
-    tmpdir=$(mktemp -d /tmp/sodium_build_XXXXXX)
-    # shellcheck disable=SC2064
-    trap "rm -rf ${tmpdir}" RETURN
-
-    # ── Descarga ───────────────────────────────────────────────────────────
-    log_item "Descargando libsodium-${SODIUM_REQUIRED}.tar.gz"
-    if ! wget -q "${SODIUM_URL}" -O "${tmpdir}/libsodium.tar.gz"; then
-        log_error "Descarga fallida: ${SODIUM_URL}"
-        log_error "Comprueba conectividad: wget -q ${SODIUM_URL} -O /tmp/test.tar.gz"
-        exit 1
-    fi
-
-    # ── Verificación SHA-256 — obligatoria, no salteable ──────────────────
-    log_item "Verificando integridad SHA-256"
-    local actual_sha
-    actual_sha=$(sha256sum "${tmpdir}/libsodium.tar.gz" | awk '{print $1}')
-
-    if [[ "$actual_sha" != "$SODIUM_SHA256" ]]; then
-        log_error "SHA-256 no coincide — ABORTANDO"
-        log_error "  Esperado: ${SODIUM_SHA256}"
-        log_error "  Obtenido: ${actual_sha}"
-        log_error "NO se instalará libsodium — posible supply-chain attack o descarga corrupta"
-        rm -f "${tmpdir}/libsodium.tar.gz"
-        exit 1
-    fi
-    log_info "SHA-256 verificado: ${actual_sha:0:16}…"
-
-    # ── Compilación ────────────────────────────────────────────────────────
-    log_item "Compilando libsodium ${SODIUM_REQUIRED} (~2 min en primera ejecución)"
-    tar xzf "${tmpdir}/libsodium.tar.gz" -C "${tmpdir}"
-
-    # Verificar que el directorio se extrajo correctamente
-    local src_dir="${tmpdir}/libsodium-stable"
-    if [[ ! -d "$src_dir" ]]; then
-        log_error "tar no extrajo el directorio esperado: ${src_dir}"
-        log_error "Contenido de ${tmpdir}: $(ls ${tmpdir})"
-        exit 1
-    fi
-
-    cd "$src_dir"
-    ./configure --prefix=/usr/local --quiet 2>/dev/null
-    make -j"$(nproc)" --quiet
-    make install --quiet
-    cd /tmp
-
-    ldconfig
-
-    # ── Reinstalar dependencias que apt pudo eliminar al quitar libsodium23 ──
-    # apt-get remove libsodium23 arrastra libzmq5, libzmq3-dev, cppzmq-dev
-    # porque Bookworm los construyó contra libsodium.so.23. Los reinstalamos
-    # explícitamente para no romper el resto del pipeline.
-    log_item "Verificando dependencias del pipeline (ZeroMQ, vim...)"
-    apt-get install -y --quiet         libzmq5 libzmq3-dev cppzmq-dev vim >/dev/null 2>&1
-    log_info "Dependencias del pipeline verificadas"
-
-    # ── Verificación post-instalación ─────────────────────────────────────
-    local installed_now
-    installed_now=$(pkg-config --modversion libsodium 2>/dev/null || echo "none")
-
-    if [[ "$installed_now" != "$SODIUM_REQUIRED" ]]; then
-        log_error "Instalación fallida — pkg-config reporta: ${installed_now}"
-        log_error "Comprueba que /usr/local/lib está en ldconfig: ldconfig -p | grep sodium"
-        exit 1
-    fi
-
-    # Verificar que el símbolo HKDF está presente
-    if ! grep -r "crypto_kdf_hkdf_sha256_extract" /usr/local/include/sodium/ \
-            >/dev/null 2>&1; then
-        log_error "crypto_kdf_hkdf_sha256_* no encontrada tras instalación"
-        log_error "Headers instalados en: $(ls /usr/local/include/sodium/ 2>/dev/null | head -5)"
-        exit 1
-    fi
-
-    log_info "libsodium ${installed_now} instalada correctamente"
-    log_item "Headers: /usr/local/include/sodium/"
-    log_item "Libs:    /usr/local/lib/libsodium.so.${SODIUM_REQUIRED}"
-    log_item "HKDF:    crypto_kdf_hkdf_sha256_extract/expand disponibles ✅"
+    SODIUM_SRC="${ARGUS_RAIZ_SODIUM}/provisioning/libsodium" \
+        bash "${ARGUS_RAIZ_SODIUM}/scripts/terceros/libsodium_instalar.sh" \
+        || { log_error "libsodium: falló scripts/terceros/libsodium_instalar.sh"; exit 1; }
 }
 
 # =============================================================================
@@ -1183,24 +1080,7 @@ provision_full() {
         fi
     done
 
-    # ── FIX DAY 107: libsodium.so.23 → libsodium.so.26 + ldconfig ────────────
-    log_section "libsodium compat symlink (so.23 → so.26)"
-    local so26
-    so26=$(find /usr/local/lib -name "libsodium.so.26" 2>/dev/null | head -1)
-    if [[ -n "$so26" ]]; then
-        local so_dir
-        so_dir=$(dirname "$so26")
-        if [[ ! -L "${so_dir}/libsodium.so.23" ]]; then
-            ln -sf "${so_dir}/libsodium.so.26" "${so_dir}/libsodium.so.23"
-            log_item "Symlink creado: ${so_dir}/libsodium.so.23 → libsodium.so.26"
-        else
-            log_info "Symlink libsodium.so.23 ya existe"
-        fi
-        ldconfig
-        log_item "ldconfig ejecutado"
-    else
-        log_warn "libsodium.so.26 no encontrada — instalar primero con install_libsodium_1019"
-    fi
+    # FIX DAY 107 (libsodium.so.23 -> la 1.0.19): lo hace scripts/terceros/libsodium_instalar.sh [TERCEROS-SODIUM-D331]
 
     # ── FIX DAY 107: verificar/rebuild libcrypto_transport si es antigua ──────
     log_section "libcrypto_transport.so — verificación de fecha"
@@ -1490,7 +1370,7 @@ case "$MODE" in
         echo ""
         echo "  LIBSODIUM:"
         echo "    Versión requerida: ${SODIUM_REQUIRED}"
-        echo "    SHA-256:           ${SODIUM_SHA256}"
+        echo "    Verificación:      firma minisign + SHA256 (provisioning/libsodium/)"
         echo "    HKDF nativo:       crypto_kdf_hkdf_sha256_extract/expand"
         echo ""
         ;;
