@@ -10133,7 +10133,7 @@ misma huella.
   plugin-loader enlacen la 1.0.19 en estático (`/usr/local/lib/libsodium.a`) con `-Wl,--exclude-libs,ALL`, de modo que
   el resto del proceso use solo la de Debian y el enlace del DAY107 sobre. Sin prioridad: funciona.
 
-### DEBT-XGBOOST-RETIRAR-001 — ABIERTA (nueva DAY331, decisión de Alonso)
+### DEBT-XGBOOST-RETIRAR-001 — CERRADA DAY332 (PR de `fix/xgboost-retirar`; ver DAY332)
 Retirar XGBoost del lab: `plugins/xgboost` (`libplugin_xgboost.so`), `libxgboost.so` y sus cabeceras, los modelos
 `.ubj` y su firma (`sign-models`), `test-integ-xgboost-1`, el bloque del `Vagrantfile` (pip, apt, curl y `libgomp`), la
 línea de `security/apparmor/argus.ml-detector`, `tools/check-xgboost-version.sh`, las líneas de `check-system-deps` y
@@ -10164,3 +10164,59 @@ una rama de archivo; EMECAS+++ verde desde cero.
 - Hipótesis de Claude que los datos tumbaron hoy: seis (menos de 15 referencias a `d3xx_`, `wget` en vez de `curl`,
   la ruta de la 1.0.18, las dos libsodium por proceso, el log del EMECAS a tres niveles, el `pgrep -f`). Parar y medir
   funcionó cada vez.
+
+## DAY332 — XGBoost fuera del lab: la cabeza DDoS v2 no lo necesita ni para entrenar [XGBOOST-RETIRAR-D332]
+
+### Hecho DAY332
+- **PR de `fix/xgboost-retirar`**, EMECAS+++ production desde cero **VERDE en 4h29m**
+  (`logs/lab/emecas/emecas_20261120_084852.log`; 8 VMs, 28/28 hitos). Cuatro commits:
+  - `711daabe2`: el `Vagrantfile` deja de instalar XGBoost 3.2.0 (pip sin verificar, recurso a `apt` y dos `curl` a
+    raw.githubusercontent.com sin comprobar) y de compilar y desplegar `plugin_xgboost`. Fuera también la mención en
+    `ml-training/requirements-ddos-pinned.txt`, que solo lo nombraba en un comentario.
+  - `012b86d06`: el `Makefile` pierde las tres comprobaciones (`check-xgboost-version.sh`, `libxgboost.so`,
+    `libplugin_xgboost.so`), `deploy-models` y sus dos llamadas en los bootstrap, `test-integ-xgboost-1` y
+    `sign-models`.
+  - `d8fb8b804`: `git rm` de `plugins/xgboost/`, `plugins/test-message/test_integ_xgboost_1.cpp`,
+    `tools/check-xgboost-version.sh`, los cuatro scripts de entrenamiento que importaban `xgboost`
+    (`train_xgboost_baseline.py`, `train_xgboost_level1_v2.py`, `ransomware/train_xgboost_ransomware.py`,
+    `internal_traffic/train_internal_traffic_model_deepseek.py`) y los cuatro `.ubj`.
+  - `3f8e481ff`: `Jenkinsfile.dev`, `tools/prod/build-x86.sh`, `tools/prod/collect-libs.sh` y el perfil AppArmor del
+    ml-detector dejan de nombrar `libxgboost.so` y `libplugin_xgboost.so`.
+- Se quedan: los árboles compilados dentro de `traffic_detector.cpp`, `internal_detector.cpp` y
+  `ransomware_detector.cpp`, y los `.json` de `ml-detector/models/production/`; se rehacen al repensar esas cabezas.
+- Parcheadores d332 en la rama de archivo `archivo/parcheadores-d332`, **solo con push, sin PR**.
+
+### Medido DAY332
+- **Binario real del ml-detector**: `ml-detector/build-production/ml-detector` (19-nov 10:25, el del EMECAS DAY331).
+  `objdump -p` desde el Mac (el de Xcode lee ELF; no hace falta levantar el lab): sus `NEEDED` son protobuf, ONNX
+  Runtime 1.17.1, etcd_client, crypto_transport, seed_client, correlation_v1, lz4, crypto, spdlog, plugin_loader, zmq,
+  fmt y las de C/C++. **Ni `libxgboost.so` ni `libplugin_xgboost.so`.**
+- Los «árboles XGBoost generados» que nombra `ml-detector/CMakeLists.txt` (línea 232) son código C++ compilado en los
+  tres detectores: no piden la biblioteca.
+- **DDoS v2 no necesita XGBoost en ningún momento**: `requirements-ddos-pinned.txt` solo lo nombraba en el comentario
+  de la línea 1 (no lo fijaba) y ningún script de DDoS lo importa. Los cuatro que lo importaban entrenaban las cabezas
+  antiguas, y no los llamaba nadie.
+- Los `.ubj` solo los leía `plugin_xgboost` (`MLD_XGBOOST_MODEL_PATH`); `deploy-models` y `sign-models` solo los
+  servían a él. `test-integ-xgboost-1` y `sign-models` no los llamaba ningún target.
+- El plugin no lo compilaba el `Makefile` sino el `Vagrantfile`.
+- Después del PR: ningún `import xgboost` fuera de las actas del Consejo; las únicas menciones fuera de `docs/` son una
+  cadena de datos en `correlation-engine/tests/test_cypher_injection.cpp`, el comentario del CMake (cierto: los árboles
+  siguen) y los scripts históricos de `scripts/ddos_v1/`.
+
+### Decisiones de Alonso DAY332
+- **Retirar XGBoost solo después de medir que DDoS v2 no lo necesita para entrenar.** Las cabezas internal,
+  ransomware y traffic están rotas: se repensarán y reentrenarán con la misma tecnología que DDoS v2.
+
+### Deudas
+- **DEBT-XGBOOST-RETIRAR-001**: CERRADA (arriba). Con ella pierden su objeto DEBT-XGBOOST-HEADERS-001,
+  DEBT-XGBOOST-APT-001 y DEBT-XGBOOST-TEST-REAL-001, que solo citaba el código retirado.
+- **DEBT-DOCS-XGBOOST-001 — ABIERTA (nueva DAY332, va con la documentación)**: la documentación aún presenta XGBoost
+  como parte del pipeline (ADR-026 Track 1, `docs/XGBOOST-VALIDATION.md`, `docs/xgboost/`, el README). Revisarla
+  contra lo medido hoy.
+- Menor, sin deuda propia: en los dos bootstrap la numeración salta de `[5/8]` a `[6b/8]` al irse `[6/8]`.
+
+### Lecciones DAY332
+- Antes de retirar algo, preguntar quién lo va a necesitar (Alonso paró a preguntar si DDoS necesitaba XGBoost para
+  entrenar). La respuesta salió en dos `git grep`.
+- Un paquete nombrado en un comentario de un requirements no es una dependencia: mirar la línea, no el fichero.
+- `objdump -p` del Mac lee los `NEEDED` de un binario ELF sin levantar ninguna VM.
