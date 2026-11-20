@@ -38,8 +38,7 @@ for lib in \
     libplugin_loader.so.1 \
     libetcd_client.so.1 \
     libetcd-cpp-api.so \
-    libonnxruntime.so.1.17.1 \
-    libxgboost.so; do
+    libonnxruntime.so.1.17.1; do
     if [ -f "/usr/local/lib/${lib}" ]; then
         cp -L "/usr/local/lib/${lib}" "${DIST_LIB}/"
         echo "  ✅ ${lib}"

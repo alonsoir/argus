@@ -35,8 +35,6 @@ pipeline {
                     echo "🔍 Verificando entorno aRGus NDR..."
                     test -d /usr/lib/ml-defender/plugins \
                         || { echo "❌ plugins dir missing"; exit 1; }
-                    test -f /usr/lib/ml-defender/plugins/libplugin_xgboost.so \
-                        || { echo "❌ libplugin_xgboost.so missing"; exit 1; }
                     test -f /etc/ml-defender/plugins/plugin_signing.pk \
                         || { echo "❌ plugin_signing.pk missing"; exit 1; }
                     COUNT=$(sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ')

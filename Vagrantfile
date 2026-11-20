@@ -494,47 +494,7 @@ LIBBPF_PROFILE
       # para aquí.
       bash /vagrant/scripts/terceros/onnxruntime_instalar.sh || { echo "❌ ONNX Runtime"; exit 1; }
 
-      # XGBoost 3.2.0 (C API + Python) - ADR-026 Track 1
-      if [ ! -f /usr/local/lib/libxgboost.so ]; then
-        echo "🔍 Installing XGBoost 3.2.0..."
-        pip3 install xgboost==3.2.0 --break-system-packages --timeout=300 || {
-          echo "⚠️  PyPI inaccesible — fallback apt (versión no garantizada)"
-          # TODO: verificar qué versión provee apt en Debian bookworm
-          # apt show python3-xgboost — pendiente DEBT-XGBOOST-APT-001
-          # Versión apt != 3.2.0 → resultados no reproducibles científicamente
-          apt-get install -y python3-xgboost || true
-          echo "❗ WARNING: xgboost $(python3 -c 'import xgboost; print(xgboost.__version__)' 2>/dev/null || echo 'not available')"
-          echo "❗ Para reproducibilidad científica, usar xgboost==3.2.0"
-        }
-        # Headers C++ — desde pip (fallback si GitHub no accesible, DEBT-XGBOOST-HEADERS-001)
-        mkdir -p /usr/local/include/xgboost
-        XGB_INC=$(python3 -c "import xgboost,os; print(os.path.join(os.path.dirname(xgboost.__file__),'include'))" 2>/dev/null || echo "")
-        if [ -d "$XGB_INC/xgboost" ]; then
-          cp "$XGB_INC/xgboost/"*.h /usr/local/include/xgboost/ || true
-        else
-          curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/c_api.h \
-            -o /usr/local/include/xgboost/c_api.h || true
-          curl -fsSL https://raw.githubusercontent.com/dmlc/xgboost/v3.2.0/include/xgboost/base.h \
-            -o /usr/local/include/xgboost/base.h || true
-        fi
-        # Librería compartida al path estándar
-        XGBOOST_SO=$(python3 -c "import xgboost.core; print(xgboost.core.find_lib_path()[0])" 2>/dev/null)
-        if [ -n "$XGBOOST_SO" ]; then
-          cp "$XGBOOST_SO" /usr/local/lib/libxgboost.so
-          ldconfig
-          echo "✅ XGBoost installed: $(python3 -c 'import xgboost; print(xgboost.__version__)')"
-          # libgomp bundled en xgboost wheel — symlink para dlopen desde plugins C++
-          ln -sf /usr/local/lib/python3.11/dist-packages/xgboost.libs/libgomp-e985bcbb.so.1.0.0 /usr/local/lib/libgomp-e985bcbb.so.1.0.0
-          ldconfig
-        else
-          echo "❌ libxgboost.so not found after pip + apt"
-          exit 1
-        fi
-      else
-        echo "✅ XGBoost already installed"
-      fi
-
-      # Dependencias Python PINNEADAS del crank ML in-VM (RF DDoS + train xgboost).
+      # Dependencias Python PINNEADAS del crank ML in-VM (RF DDoS).
       # DEUDA-DDOS-REPRO-PIN: versiones exactas o abortar. SIN fallback apt: los
       # python3-pandas/python3-sklearn del repo producen otro entorno → otro sha.
       pip3 install -r /vagrant/ml-training/requirements-ddos-pinned.txt \
@@ -543,18 +503,6 @@ LIBBPF_PROFILE
       }
       # Directorio de plugins ML Defender
       mkdir -p /usr/lib/ml-defender/plugins
-
-      # plugin_xgboost (ADR-026 Track 1) — build + deploy
-      if [ ! -f /usr/lib/ml-defender/plugins/libplugin_xgboost.so ]; then
-        echo "🔌 Building plugin_xgboost..."
-        cd /vagrant/plugins/xgboost
-        rm -rf build && mkdir -p build && cd build
-        cmake -DCMAKE_BUILD_TYPE=Release .. && make -j4
-        cp libplugin_xgboost.so /usr/lib/ml-defender/plugins/
-        echo "✅ plugin_xgboost deployed"
-      else
-        echo "✅ plugin_xgboost already deployed"
-      fi
 
       # plugin_test_message — build gestionado por make pipeline-build (requiere plugin-loader instalado)
       # NO buildear aquí: plugin-loader headers no disponibles en este punto del provisioning
@@ -734,7 +682,7 @@ BASHRC_EOF
       # ── Auditoría de seguridad: cppcheck + semgrep (make audit, DAY 181) ──
       # Dev-only (ADR-039): análisis estático/taint, no van a prod. cppcheck por
       # apt; semgrep por pip con --break-system-packages (convención del guest
-      # desechable, igual que xgboost/pandas/jinja2). Provisión, NO runtime:
+      # desechable, igual que pandas/jinja2). Provisión, NO runtime:
       # contrib/audit/audit.mk solo VERIFICA presencia (separación build/runtime).
       if ! command -v cppcheck &>/dev/null; then
         echo "🔬 Instalando cppcheck (análisis estático C++)..."

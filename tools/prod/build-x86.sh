@@ -47,14 +47,6 @@ echo ""
 echo "── Step 3: plugins → dist/x86/plugins/ ──"
 mkdir -p /vagrant/dist/x86/plugins
 
-PLUGIN_SRC="${VAGRANT}/plugins/xgboost/build/libplugin_xgboost.so"
-if [ -f "${PLUGIN_SRC}" ]; then
-    cp "${PLUGIN_SRC}" /vagrant/dist/x86/plugins/
-    echo "  ✅ libplugin_xgboost.so → dist/x86/plugins/"
-else
-    echo "  ⚠️  libplugin_xgboost.so not found — skipping (optional)"
-fi
-
 # plugin-loader shared lib
 LOADER_SRC="${VAGRANT}/plugin-loader/build/libplugin_loader.so"
 if [ -f "${LOADER_SRC}" ]; then

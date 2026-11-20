@@ -31,7 +31,6 @@ profile argus-ml-detector /opt/argus/bin/ml-detector {
   /usr/local/lib/libseed_client.so*      mr,
   /usr/local/lib/libplugin_loader.so*    mr,
   /usr/local/lib/libetcd_client.so*      mr,
-  /usr/local/lib/libxgboost.so           mr,
   /lib/x86_64-linux-gnu/**     mr,
   /usr/lib/x86_64-linux-gnu/** mr,
 
