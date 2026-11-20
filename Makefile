@@ -246,8 +246,6 @@ bootstrap-x86-ebpf:
 	@echo "[5/8] Compilando pipeline (incluye pubkey runtime + plugin-test-message)..."
 	@$(MAKE) pipeline-build
 	@$(MAKE) check-build-artifacts
-	@echo "[6/8] Desplegando modelos ML..."
-	@$(MAKE) deploy-models
 	@echo "[6b/8] Firmando plugins..."
 	@$(MAKE) sign-plugins
 	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
@@ -286,8 +284,6 @@ bootstrap-x86-libpcap:
 	@$(MAKE) pipeline-build
 	@$(MAKE) sniffer-libpcap
 	@$(MAKE) check-build-artifacts
-	@echo "[6/8] Desplegando modelos ML..."
-	@$(MAKE) deploy-models
 	@echo "[6b/8] Firmando plugins..."
 	@$(MAKE) sign-plugins
 	@echo "[6c/8] Desplegando el etcd-server en la VM etcd (binario, configuración, servicio)..."
@@ -314,8 +310,6 @@ check-system-deps:
 	@vagrant ssh -c "command -v xxd >/dev/null || { echo '❌ xxd missing'; exit 1; }"
 	@vagrant ssh -c "command -v tmux >/dev/null || { echo '❌ tmux missing'; exit 1; }"
 	@vagrant ssh -c "pkg-config --modversion libsodium 2>/dev/null | grep -qxF '$(SODIUM_VERSION)' || { echo '❌ libsodium $(SODIUM_VERSION) missing (provisioning/libsodium/VERSION)'; exit 1; }"
-	@vagrant ssh -c "bash /vagrant/tools/check-xgboost-version.sh" || { echo '❌ xgboost 3.2.0 missing'; exit 1; }
-	@vagrant ssh -c "test -f /usr/local/lib/libxgboost.so || { echo '❌ libxgboost.so missing'; exit 1; }"
 	@vagrant ssh -c "test -f /usr/local/lib/libcrypto_transport.so || { echo '❌ libcrypto_transport.so missing'; exit 1; }"
 	@vagrant ssh -c "test -f /usr/sbin/nft || { echo '❌ nftables missing'; exit 1; }"
 	@echo "✅ Todas las dependencias del sistema presentes"
@@ -329,7 +323,6 @@ post-up-verify:
 	@echo "🔍 Verificando entorno post-up..."
 	@$(MAKE) check-system-deps
 	@vagrant ssh -c "test -d /usr/lib/ml-defender/plugins || { echo '❌ plugins dir missing'; exit 1; }"
-	@vagrant ssh -c "test -f /usr/lib/ml-defender/plugins/libplugin_xgboost.so || { echo '❌ libplugin_xgboost.so missing'; exit 1; }"
 	@vagrant ssh -c "test -f /etc/ml-defender/plugins/plugin_signing.pk || { echo '❌ plugin_signing.pk missing'; exit 1; }"
 	@vagrant ssh -c "sudo find /etc/ml-defender -name 'seed.bin' | wc -l | tr -d ' ' | grep -q '^4$$' || { echo '❌ seeds missing (esperados 4)'; exit 1; }"
 	@echo "✅ Entorno post-up verificado"
@@ -508,27 +501,9 @@ test-sign:
 	@echo "TEST-INTEG-SIGN: Ed25519 plugin verification (ADR-025)..."
 	@vagrant ssh -c 'cd /tmp && g++ -std=c++20 -o test_integ_sign /vagrant/plugins/test-message/test_integ_sign.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && sudo ./test_integ_sign && echo TEST-INTEG-SIGN PASSED || echo TEST-INTEG-SIGN FAILED'
 
-deploy-models:
-	@vagrant ssh -c "sudo mkdir -p /etc/ml-defender/models && \
-	  sudo cp /vagrant/ml-detector/models/production/level1/xgboost_cicids2017.ubj \
-	          /etc/ml-defender/models/xgboost_cicids2017.ubj && \
-	  sudo chmod 644 /etc/ml-defender/models/xgboost_cicids2017.ubj"
-	@echo "✅ Modelos ML desplegados en /etc/ml-defender/models/"
-
 sign-plugins:
 	@echo "Firmando plugins (ADR-025 D1)..."
 	@vagrant ssh -c 'sudo bash /vagrant/tools/provision.sh sign'
-
-test-integ-xgboost-1:
-	@echo "TEST-INTEG-XGBOOST-1: XGBoost plugin inference (ADR-026 OBS-2)..."
-	@vagrant ssh -c "cd /tmp && g++ -std=c++20 -o test_integ_xgboost_1 /vagrant/plugins/test-message/test_integ_xgboost_1.cpp -I/usr/local/include -L/usr/local/lib -lplugin_loader -Wl,-rpath,/usr/local/lib && sudo ./test_integ_xgboost_1 && echo TEST-INTEG-XGBOOST-1 PASSED || echo TEST-INTEG-XGBOOST-1 FAILED"
-
-sign-models:
-	@echo "══ Firma de modelos (ADR-026 OBS-1) ══"
-	@vagrant ssh -c "sudo bash /vagrant/tools/sign-model.sh /vagrant/ml-detector/models/production/level1/xgboost_cicids2017.ubj"
-	@vagrant ssh -c "sudo bash /vagrant/tools/sign-model.sh /vagrant/ml-detector/models/production/level3/ransomware_xgboost_v2/xgboost_ransomware.ubj"
-	@vagrant ssh -c "sudo bash /vagrant/tools/sign-model.sh /vagrant/ml-detector/models/production/level1/xgboost_cicids2017_v2.ubj"
-	@echo "  ✅ 3 modelo(s) firmado(s) correctamente"
 
 plugin-integ-test:
 	@echo "TEST-INTEG-4a-PLUGIN: variantes A/B/C..."
