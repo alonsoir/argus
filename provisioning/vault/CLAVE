@@ -1,0 +1,9 @@
+# provisioning/vault/CLAVE — [TERCEROS-VAULT-D333] huella de la clave con la que HashiCorp firma su repositorio apt
+# (https://apt.releases.hashicorp.com/gpg, "HashiCorp Security (HashiCorp Package Signing) <security+packaging@hashicorp.com>").
+# scripts/vigilancia/lib_apt_oficial.sh descarga la clave y SOLO la instala si todas sus claves principales están aquí.
+# Medida DAY333 en la descarga del mantenedor (una sola clave: creada el 9-sep-2026, caduca el 8-sep-2031) y CONTRASTADA
+# con la que publica HashiCorp en https://www.hashicorp.com/official-packaging-guide ("Current fingerprint"); con ella
+# verifica el InRelease de bookworm del 20-nov-2026. HashiCorp rotó la clave el 10-sep-2026: la anterior,
+# 798AEC654E5C15428C8E42EEAA16FCBCA621E701 (23-ene-2023 a 10-sep-2026), ya no firma el repositorio y no se acepta.
+# Si HashiCorp vuelve a rotarla, se cambia aquí (una por línea) tras contrastarla con esa página.
+D55C0D1AC78A8D8126CB631CFC9CA96ACA026560
