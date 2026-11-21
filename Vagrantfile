@@ -101,33 +101,14 @@ LAB_NTP = <<-'LAB_NTP_SHELL'
 LAB_NTP_SHELL
 
 # ══════════════════════════════════════════════════════════════════════════════
-# VAULT_INSTALL — [VAULT-INSTALL-D312] un único sitio donde se instala Vault, con la versión FIJADA (determinismo de
-# EMECAS: dos up separados por una publicación de HashiCorp no deben dar versiones distintas). Lo usan el defender y la
-# VM etcd. Repo y clave de HashiCorp como hasta DAY311. Versión medida en el defender DAY312: 2.2.1-1.
+# VAULT_INSTALL — [VAULT-INSTALL-D312] un único sitio donde se instala Vault (lo usan el defender y la VM etcd).
+# [TERCEROS-VAULT-D333] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente Vault: todo en scripts/terceros/vault_instalar.sh,
+# con la versión exacta de provisioning/vault/VERSION y la clave del repositorio apt de HashiCorp comprobada por huella
+# (provisioning/vault/CLAVE, contrastada con la que publica HashiCorp). Antes: VAULT_PIN aquí y la clave bajada con wget
+# e instalada sin comprobar (HashiCorp la rotó el 10-sep-2026: se habría instalado cualquiera).
 # ══════════════════════════════════════════════════════════════════════════════
 VAULT_INSTALL = <<-'VAULT_INSTALL_SHELL'
-  set -e
-  export DEBIAN_FRONTEND=noninteractive
-  VAULT_PIN="2.2.1-1"
-  ACTUAL=$(dpkg-query -W -f='${Version}' vault 2>/dev/null || true)
-  if [ "$ACTUAL" = "$VAULT_PIN" ]; then
-    apt-mark hold vault > /dev/null
-    echo "✅ Vault ${VAULT_PIN} ya instalado y fijado"; exit 0
-  fi
-  echo "📦 Instalando HashiCorp Vault ${VAULT_PIN} (instalado antes: ${ACTUAL:-ninguno})..."
-  if ! command -v wget > /dev/null || ! command -v gpg > /dev/null; then apt-get update -qq; apt-get install -y wget gnupg; fi
-  wget -O - https://apt.releases.hashicorp.com/gpg 2>/dev/null | \
-    gpg --dearmor | \
-    tee /usr/share/keyrings/hashicorp-archive-keyring.gpg > /dev/null
-  echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bookworm main" | \
-    tee /etc/apt/sources.list.d/hashicorp.list
-  apt-get update -qq
-  apt-mark unhold vault > /dev/null 2>&1 || true
-  apt-get install -y --allow-downgrades "vault=${VAULT_PIN}"
-  apt-mark hold vault > /dev/null
-  GOT=$(dpkg-query -W -f='${Version}' vault)
-  [ "$GOT" = "$VAULT_PIN" ] || { echo "❌ VAULT_INSTALL: instalado ${GOT}, se exige ${VAULT_PIN}"; exit 1; }
-  echo "✅ Vault $(vault version | head -1) instalado y fijado (apt-mark hold)"
+  bash /vagrant/scripts/terceros/vault_instalar.sh || { echo "❌ vault install failed"; exit 1; }
 VAULT_INSTALL_SHELL
 
 # [VAULT-SERVER-D312] PKI del lab en el Mac (scripts/etcd_ha/d312_pki.sh). Fuera del repo: llega a la VM etcd por el
