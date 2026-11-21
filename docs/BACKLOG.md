@@ -10017,7 +10017,7 @@ de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMO
 ### DEBT-LAB-GRUB-INSTALL-DEVICES-001 — CERRADA DAY330 (#167)
 Ver arriba. Queda sin medir de dónde salió el valor el DAY329; ya no se depende de él.
 
-### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; ONNX Runtime hecho en #168)
+### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333; quedan etcd, solo orden, y libbpf; ver DAY333)
 Descargas de terceros en los aprovisionadores sin el sha256/SHA512 o la firma que publica su mantenedor y sin comprobar
 que terminaron, en bloques sin `set -e`. Hecho: ONNX Runtime. Quedan, al menos: libsodium 1.0.19 y XGBoost 3.2.0 (en el
 mismo bloque `all-dependencies`, junto al de ONNX) y lo que se baje con `wget`/`curl` en el `Vagrantfile` y los
@@ -10035,7 +10035,7 @@ Tras el `vagrant destroy` de un lab lleno, el swap tarda en bajar y `anfitrion-r
 (medido DAY330: 4500 MB contra 4096). Que espere él solo, con un límite del JSON y su test, a que el anfitrión baje de los
 umbrales, en vez de fallar al primer intento.
 
-### DEBT-LAB-VERSIONES-TERCEROS-001 — sigue ABIERTA (avance DAY330)
+### DEBT-LAB-VERSIONES-TERCEROS-001 — sigue ABIERTA (avance DAY330; Vault y Arrow a `provisioning/<producto>/` DAY333)
 Hecho: Zeek (serie 9.0 con `apt-mark hold`) y ONNX Runtime (1.17.1 con SHA512). **Ojo**: se han puesto en
 `provisioning/<producto>/` (`VERSION`, `CLAVE`, `SHA512`), igual que Falco y Wazuh, y no en el group_vars de cada lente
 que decidió Alonso el DAY329. Pendiente de su decisión: llevarlos todos (Falco, Wazuh, Zeek, ONNX y los que vengan) a
@@ -10220,3 +10220,78 @@ una rama de archivo; EMECAS+++ verde desde cero.
   entrenar). La respuesta salió en dos `git grep`.
 - Un paquete nombrado en un comentario de un requirements no es una dependencia: mirar la línea, no el fichero.
 - `objdump -p` del Mac lee los `NEEDED` de un binario ELF sin levantar ninguna VM.
+
+## DAY333 — Vault y Arrow desde su mantenedor, con la clave comprobada por huella [TERCEROS-VAULT-D333] [TERCEROS-ARROW-D333]
+
+### Hecho DAY333
+- **#177, `fix/lab-terceros-vault`** (merge `ea13bcb0b`), EMECAS+++ production desde cero **VERDE en 4h25m**
+  (`logs/lab/emecas/emecas_20261121_073114.log`). Dos commits:
+  - `ce090f9e8`: `provisioning/vault/{VERSION,CLAVE}` y `scripts/terceros/vault_instalar.sh` con su test
+    (`test-vault-instalar`, también en el EMECAS: 22 casos; los 14 rechazos fallan contra un comprobador que lo acepta
+    todo). Usa `scripts/vigilancia/lib_apt_oficial.sh` (`repo_oficial` + `instalar_fijado`), como Zeek y Wazuh. El
+    repositorio se configura siempre, también con Vault ya instalado, y se borra el anillo viejo
+    (`hashicorp-archive-keyring.gpg`) si ya no lo nombra apt.
+  - `7b2af9a54`: `VAULT_INSTALL` llama al instalador; fuera `VAULT_PIN` y la clave bajada con `wget` e instalada sin
+    comprobar.
+  - Comprobado en el log (18/18): la clave `D55C0D1AC78A8D8126CB631CFC9CA96ACA026560` aceptada por huella, 2.2.1-1
+    desde cero y fijada en el defender y en control-1, el binario dice `v2.2.1`, ninguna otra VM instala Vault.
+- **#178, `fix/lab-terceros-arrow`** (merge `a1e1f3e34`), EMECAS+++ production desde cero **VERDE en 4h37m**
+  (`logs/lab/emecas/emecas_20261121_132623.log`). Dos commits:
+  - `bee01c358`: `provisioning/arrow/{VERSION,CLAVE}` y `scripts/terceros/arrow_instalar.sh` con su test
+    (`test-arrow-instalar`: 22 casos, 14 rechazos). Las claves se bajan del `KEYS` oficial de Apache Arrow y solo se
+    instalan si sus 25 huellas están en `CLAVE`; si queda el paquete `apache-arrow-apt-source`, se purga. El log
+    registra quién firmó el `InRelease` (solo se mide).
+  - `2ea109691`: el bloque de Arrow de `all-dependencies` llama al instalador, con `|| exit 1` (antes un fallo ahí
+    no paraba nada); fuera el `wget -q` de `apache-arrow-apt-source-latest-bookworm.deb`.
+  - Comprobado en el log: 25 claves aceptadas por huella, `InRelease` de bookworm firmado por
+    `BE7EF45DBAD38E4EECED390E9CBA4EF977CA20B8` (David Li), `libarrow-dev` y `libparquet-dev` 24.0.0-1 desde cero y
+    fijados; ni `FALLA`, ni `AVISO`, ni el `.deb`.
+- Parcheadores d333 en la rama de archivo `archivo/parcheadores-d333`, **solo con push, sin PR**.
+
+### Medido DAY333
+- **HashiCorp rotó la clave de su repositorio apt el 10-sep-2026.** La nueva, `D55C0D1AC78A8D8126CB631CFC9CA96ACA026560`
+  (creada el 9-sep-2026, caduca el 8-sep-2031), es la única del fichero `https://apt.releases.hashicorp.com/gpg`; con
+  ella verifica el `InRelease` de bookworm del 20-nov-2026. Contrastada con la que publica HashiCorp en su *Official
+  Packaging Guide* («Current fingerprint»). La anterior, `798AEC654E5C15428C8E42EEAA16FCBCA621E701`, firmó de
+  ene-2023 a sep-2026. El `VAULT_INSTALL` de antes habría instalado cualquier clave sin decir nada.
+- En el índice de HashiCorp para bookworm sigue `vault 2.2.1-1` y ya está la 2.2.2-1 (no se sube: es otro cambio).
+- **El `.deb` de Arrow no tiene scripts de mantenedor** (solo `conffiles`, `control`, `md5sums`): pone
+  `apache-arrow.sources` y un anillo de 23 claves. El riesgo era que se instalaba sin comprobar nada y decidía en qué
+  claves confiaba apt, no código como root.
+- `https://downloads.apache.org/arrow/KEYS` (sha256 `32aadf06…`): 24 bloques con **25 claves**; `gpg --dearmor` las
+  conserva todas. Las 23 del `.deb` de JFrog están todas en `KEYS` (contraste por dos canales); `KEYS` añade
+  `3D749227…` y `9656D049…`, de 2026. `libarrow-dev` y `libparquet-dev` 24.0.0-1 son la última versión del índice.
+- **etcd v3.6.16 ya está bien**: el sha256 fijado en `etcd-install` (`c8c0d96d…`, desde `db33e3f87`) es la línea de
+  `etcd-v3.6.16-linux-amd64.tar.gz` del `SHA256SUMS` oficial y el digest que da GitHub del asset. La release (22-oct,
+  `ivanvc`) trae 8 ficheros, sin ninguna firma: el sha256 es lo más fuerte que publica etcd. Le falta solo el orden:
+  `provisioning/etcd/{VERSION,SHA256}`, `scripts/terceros/etcd_instalar.sh` y su test.
+- Antes de `vault-install` ya hay `curl` en el defender y en control-1: estas lentes no añaden usos de `curl` y
+  quitan dos `wget`.
+
+### Decisiones de Alonso DAY333
+- **Arrow, opción (a)**: confiar en las 25 claves del `KEYS` de Apache (el modelo del mantenedor: firma el
+  responsable de cada release) y no solo en la que firma hoy. Registrar en el log quién firma, sin fallar.
+- **Arrow antes que etcd**: etcd ya estaba verificado; Arrow era el agujero.
+
+### Deudas
+- **DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001**: avanza (título arriba). Quedan etcd (solo orden) y libbpf 1.4.6, y
+  el inventario con `git grep` de lo que se baje con `wget`/`curl`.
+- **DEBT-LAB-HARDENED-VAULT-CLAVE-001 — ABIERTA (nueva DAY333, menor)**: `vagrant/hardened-x86/Vagrantfile` y
+  `vagrant/hardened-arm64/Vagrantfile` instalan Vault a la antigua (clave de HashiCorp con `wget`, sin comprobar la
+  huella). El EMECAS no los ejercita. Arreglo: que usen `scripts/terceros/vault_instalar.sh`. También lo hace
+  `tools/fix_vagrantfile_day160.py`, un parcheador viejo en main (va con DEBT-REPO-PARCHEADORES-EN-MAIN-001).
+- **Mejora posible, sin deuda propia**: `lib_apt_oficial.sh` podría exportar al anillo solo las huellas de `CLAVE`
+  (hoy instala la descarga entera si todas sus claves están en `CLAVE`). Sería para todas las lentes, en su PR.
+
+### Lecciones DAY333
+- Una clave de repositorio que no se comprueba se cambia sin que nadie lo vea: HashiCorp rotó la suya en septiembre y
+  el lab la aceptó sin más. La huella en `provisioning/<producto>/CLAVE`, contrastada con el mantenedor.
+- Antes de afirmar qué hace un `.deb`, abrirlo (`dpkg-deb -e`/`-c`): el de Arrow no tenía scripts de mantenedor.
+- Los intervalos `{n}` en expresiones de awk no son portables (gawk, mawk, el awk del Mac): longitud con `length()`.
+  Los tests del Mac se prueban también con `mawk`.
+- Un `git switch` de más deja los commits en otra rama: `git log --oneline -3` antes de seguir. Se arregla sin
+  reescribir nada con `git merge --ff-only`.
+- Claude no ejecuta en el repo ningún `git` que escriba, ni siquiera `fetch`: el de hoy dejó un
+  `.git/objects/maintenance.lock` (apartado a `.git/stale-maintenance-lock-d333-claude`).
+- Una predicción con un número se cuenta sobre el caso real: el comprobador dio 18 con una pasada por VM, no los 22 del
+  log sintético.
