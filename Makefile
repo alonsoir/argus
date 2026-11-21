@@ -1312,6 +1312,7 @@ emecas:
 	@$(EMECAS_PASO) test-c7-limite -- $(MAKE) test-c7-limite
 	@$(EMECAS_PASO) test-onnxruntime-instalar -- $(MAKE) test-onnxruntime-instalar
 	@$(EMECAS_PASO) test-vault-instalar -- $(MAKE) test-vault-instalar
+	@$(EMECAS_PASO) test-arrow-instalar -- $(MAKE) test-arrow-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1391,6 +1392,13 @@ test-onnxruntime-instalar:
 .PHONY: test-vault-instalar
 test-vault-instalar:
 	@bash scripts/terceros/test_vault_instalar.sh
+
+# [TERCEROS-ARROW-D333] test-arrow-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/arrow_instalar.sh
+# (VERSION, quién firma el InRelease según gpgv, versiones de libarrow-dev y libparquet-dev) y
+# provisioning/arrow/{VERSION,CLAVE}, también contra funciones que lo aceptan todo.
+.PHONY: test-arrow-instalar
+test-arrow-instalar:
+	@bash scripts/terceros/test_arrow_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
