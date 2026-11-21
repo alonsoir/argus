@@ -1311,6 +1311,7 @@ emecas:
 	@$(EMECAS_PASO) test-kernel-homogeneo -- $(MAKE) test-kernel-homogeneo
 	@$(EMECAS_PASO) test-c7-limite -- $(MAKE) test-c7-limite
 	@$(EMECAS_PASO) test-onnxruntime-instalar -- $(MAKE) test-onnxruntime-instalar
+	@$(EMECAS_PASO) test-vault-instalar -- $(MAKE) test-vault-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1383,6 +1384,13 @@ test-c7-limite:
 .PHONY: test-onnxruntime-instalar
 test-onnxruntime-instalar:
 	@bash scripts/terceros/test_onnxruntime_instalar.sh
+
+# [TERCEROS-VAULT-D333] test-vault-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/vault_instalar.sh
+# (VERSION, versión del binario, anillo de antes de la rotación) y provisioning/vault/{VERSION,CLAVE}, también contra
+# funciones que lo aceptan todo.
+.PHONY: test-vault-instalar
+test-vault-instalar:
+	@bash scripts/terceros/test_vault_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
