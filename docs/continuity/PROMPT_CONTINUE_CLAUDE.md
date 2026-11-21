@@ -1,25 +1,26 @@
-# aRGus NDR — prompt de continuidad DAY333 (sigue de DAY332)
+# aRGus NDR — prompt de continuidad DAY334 (sigue de DAY333)
 
 Responde siempre en español. Alonso es el único desarrollador de aRGus NDR (C++20, NDR para infraestructura crítica,
 arXiv:2604.04952). Principio: «medir, no votar». El repo es SOLO LECTURA para Claude: Alonso hace commits, push y PR.
+Claude no ejecuta en el repo ningún `git` que escriba, ni siquiera `fetch` (DAY333 dejó un `.lock`).
 Raíz del repo en el Mac: `~/CLionProjects/test-zeromq-docker`.
 
 ## Dónde estamos
-- **DAY332** (detalle en `docs/BACKLOG.md`, sección DAY332):
-  - **XGBoost retirado** (PR de `fix/xgboost-retirar`, EMECAS+++ desde cero VERDE 4h29m): fuera la instalación del
-    `Vagrantfile` (pip sin verificar y dos `curl`), `plugin_xgboost`, su test, sus comprobaciones y targets del
-    `Makefile` (`deploy-models`, `sign-models`, `test-integ-xgboost-1`), los cuatro scripts de entrenamiento que lo
-    importaban y los `.ubj`. DEBT-XGBOOST-RETIRAR-001 cerrada.
-  - Medido: el ml-detector no enlaza XGBoost (`objdump -p` de su binario); sus tres detectores llevan los árboles
-    compilados; DDoS v2 no lo necesita ni para entrenar.
-- **Decisiones de Alonso DAY332**: retirar XGBoost tras medir que DDoS v2 no lo necesita; las cabezas internal,
-  ransomware y traffic (rotas) se repensarán y reentrenarán con la tecnología de DDoS v2.
-- Parcheadores d332 en `archivo/parcheadores-d332` (y d331, d330, d324-d329, d313-d323 en las suyas); ninguno en el Mac.
-- Lab al cerrar DAY332: EMECAS verde terminado (8 VMs); Alonso lo para al cerrar la sesión.
+- **DAY333** (detalle en `docs/BACKLOG.md`, sección DAY333):
+  - **Vault** (#177, EMECAS+++ desde cero VERDE 4h25m): `provisioning/vault/{VERSION,CLAVE}` y
+    `scripts/terceros/vault_instalar.sh`, con `lib_apt_oficial.sh`. HashiCorp rotó su clave apt el 10-sep-2026: la
+    nueva, `D55C0D1AC78A8D8126CB631CFC9CA96ACA026560`, contrastada con su *Official Packaging Guide*.
+  - **Arrow** (#178, VERDE 4h37m): `provisioning/arrow/{VERSION,CLAVE}` (las 25 claves del `KEYS` de Apache,
+    decisión (a) de Alonso) y `scripts/terceros/arrow_instalar.sh`; fuera el `.deb` `latest` de JFrog.
+  - **etcd** medido: su sha256 fijado es el del `SHA256SUMS` oficial; etcd no publica firma. Solo falta el orden.
+- Parcheadores d333 en `archivo/parcheadores-d333` (y d332, d331, d330, d324-d329, d313-d323 en las suyas); ninguno en
+  el Mac.
+- Lab al cerrar DAY333: EMECAS verde terminado (8 VMs); Alonso lo para al cerrar la sesión.
 
 ## Lo siguiente, en este orden (decisión de Alonso DAY331)
-1. **Terceros por lente** (DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001): Vault `VAULT_PIN`, etcd, Arrow y su `.deb`,
-   libbpf; un PR por lente, cada versión en `provisioning/<producto>/`, como ONNX y libsodium.
+1. **Terceros por lente** (DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001): quedan **etcd** (solo orden:
+   `provisioning/etcd/{VERSION,SHA256}`, `scripts/terceros/etcd_instalar.sh` y su test) y **libbpf 1.4.6**; después,
+   el inventario con `git grep` de lo que se baje con `wget`/`curl`. Un PR por lente. Menor: DEBT-LAB-HARDENED-VAULT-CLAVE-001.
 2. **DEBT-SNIFFER-FLOW-UID-TCP-LARGA-001**: medir cuántos paquetes lleva cada flujo partido en el bronce (un número fijo
    apunta al tope de DEBT-SNIFFER-FLOW-PACKET-CAP-200; un tiempo fijo, a la caducidad de DAY307).
 3. **PR2c** (Vault en clúster Raft; se borran `disco-sin-vault.json` y `VIGILANCIA_DISCO_JSON`): épico, partido si se
@@ -38,14 +39,20 @@ Raíz del repo en el Mac: `~/CLionProjects/test-zeromq-docker`.
    `6.1.0-55` mientras el #1154153 siga abierto.
 8. **2-dic-2026**: caduca la clave de OBS de Zeek; comprobar que OBS la ha prorrogado con la misma huella.
 
-## Lecciones medidas (DAY331-332)
+## Lecciones medidas (DAY331-333)
 - A las ramas de archivo no se les abre PR: GitHub deja mergearlas con un clic (#171).
-- Dos instaladores de lo mismo esconden cuál manda: el que comprobaba nunca instalaba. Lo importante, en un único lugar.
+- Dos instaladores de lo mismo esconden cuál manda. Lo importante, en un único lugar.
 - `ldd` de una biblioteca suelta no dice qué carga un proceso; para eso, `/proc/<pid>/maps`. Si un resultado
   contradice algo que funciona desde hace meses, sospechar primero de la medida.
 - `pgrep -f <nombre>` dentro de `vagrant ssh -c` se encuentra a sí mismo: `pgrep -x`.
 - `objdump -p` del Mac (Xcode) lee los `NEEDED` de un binario ELF sin levantar el lab.
 - Antes de retirar algo, preguntar quién lo va a necesitar; un paquete nombrado en un comentario no es una dependencia.
+- Una clave de repositorio sin comprobar se cambia sin que nadie lo vea (HashiCorp, sep-2026): huella en
+  `provisioning/<producto>/CLAVE`, contrastada con el mantenedor por otro canal.
+- Antes de afirmar qué hace un `.deb`, abrirlo (`dpkg-deb -e`/`-c`).
+- En awk, nada de intervalos `{n}` (no portables entre gawk, mawk y el awk del Mac); los tests del Mac, también con `mawk`.
+- Tras cambiar de rama, `git log --oneline -3` antes de commitear; si los commits caen en otra rama,
+  `git merge --ff-only`, sin reescribir.
 - El log del EMECAS está en `logs/lab/emecas/emecas_<fecha>.log` (y `emecas_actual.log`).
 
 ## Datos útiles
@@ -56,8 +63,10 @@ Raíz del repo en el Mac: `~/CLionProjects/test-zeromq-docker`.
   7.2.10; Guest Additions de la caja 6.0.0. Caja `debian/bookworm64` 12.20240905.1 en todas.
 - Kernels: caja `6.1.0-25-amd64` (6.1.106-3); el del lab, el de la fecha: `6.1.0-54-amd64` (6.1.190-1).
 - Terceros en `provisioning/<producto>/`: Falco 0.43.1, Wazuh 4.14.10-1, Zeek serie 9.0 (hoy 9.0.1-0), ONNX Runtime
-  1.17.1 (NuGet, SHA512) y libsodium 1.0.19 (minisign + SHA256). En el `Vagrantfile`: Vault `VAULT_PIN`, etcd v3.6.16 y
-  Apache Arrow 24.0.0-1; sin fijar: el `.deb` del repositorio de Arrow. XGBoost: retirado DAY332.
+  1.17.1 (NuGet, SHA512), libsodium 1.0.19 (minisign + SHA256), Vault 2.2.1-1 (clave apt `D55C0D1A…CA026560`) y
+  Arrow/Parquet 24.0.0-1 (las 25 claves de `downloads.apache.org/arrow/KEYS`). Repos apt firmados:
+  `scripts/vigilancia/lib_apt_oficial.sh`; instaladores en `scripts/terceros/` y `scripts/vigilancia/`. En el
+  `Vagrantfile`: etcd v3.6.16 (sha256 `c8c0d96d…`, el del `SHA256SUMS` oficial). Sin fijar: libbpf 1.4.6.
 - Binario del ml-detector: `ml-detector/build-production/ml-detector` (visible desde el Mac).
 - libsodium: bookworm trae la 1.0.18 (`.so.23`), que piden `libzmq5`, `libzmq3-dev` y `vim`; la nuestra, 1.0.19
   (`.so.26`) en `/usr/local`, marca `/usr/local/lib/argus-libsodium.verificado`. download.libsodium.org pasa las
@@ -69,9 +78,9 @@ Raíz del repo en el Mac: `~/CLionProjects/test-zeromq-docker`.
   para el pgid del `make`, y `kill -TERM -<pgid>; sleep 5; kill -KILL -<pgid>`.
 - PRs con `gh` (instalado y con sesión): `gh pr create --base main --head <rama>`, `gh pr diff <rama> --name-only`; el
   merge lo hace Alonso en la web.
-- Duraciones EMECAS+++ (verdes): DAY332 XGBoost fuera 4h29m; DAY331 libsodium 4h27m; DAY330 grub + ONNX 4h16m, Zeek
-  4h43m. DAY329: 4h35m (vagrant-up 29m, reload 6m, provision 42m, bootstrap 31m, test-all 16m, lab-e2e 1h48m,
-  mitre-check 10m).
+- Duraciones EMECAS+++ (verdes): DAY333 Vault 4h25m, Arrow 4h37m; DAY332 XGBoost fuera 4h29m; DAY331 libsodium 4h27m;
+  DAY330 grub + ONNX 4h16m, Zeek 4h43m. DAY329: 4h35m (vagrant-up 29m, reload 6m, provision 42m, bootstrap 31m,
+  test-all 16m, lab-e2e 1h48m, mitre-check 10m).
 - Anfitrión (MacBook Pro, 16 hilos, 32 GB): sin lab carga ~2-3, swap 0; lab sano carga 5-8, swap hasta 7,2 GB;
   `anfitrion-recursos` (perfil emecas): carga 12, swap 4096 MB.
 
