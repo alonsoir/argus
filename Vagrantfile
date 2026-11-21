@@ -763,35 +763,14 @@ BASHRC_EOF
                     echo "✅ libavro-dev ya instalado"
                   fi
 
-                  # ── Apache Arrow / Parquet 24.0.0-1 (zona oro, escritura Parquet) ─────
-                  # Versión pinneada explícita — regla de proceso ratificada Consejo DAY 205:
-                  # "se pinnea la primera versión que supera la batería de validación
-                  # reproducible; toda actualización posterior exige revalidación completa".
-                  # Smoke test verde (12/12) en defender DAY 205 contra esta versión exacta.
-                  ARROW_PIN="24.0.0-1"
-                  if [ ! -f /etc/apt/sources.list.d/apache-arrow.sources ] && \
-                     ! dpkg -l apache-arrow-apt-source >/dev/null 2>&1; then
-                    echo "📦 Añadiendo repo oficial Apache Arrow (Bookworm)..."
-                    wget -q https://apache.jfrog.io/artifactory/arrow/debian/apache-arrow-apt-source-latest-bookworm.deb \
-                      -O /tmp/arrow-apt.deb
-                    apt-get install -y /tmp/arrow-apt.deb
-                    rm -f /tmp/arrow-apt.deb
-                    apt-get update -qq
-                    echo "✅ Repo apache-arrow-apt-source añadido"
-                  else
-                    echo "✅ Repo apache-arrow-apt-source ya presente"
-                  fi
-
-                  INSTALLED_ARROW=$(dpkg -s libarrow-dev 2>/dev/null | grep '^Version' | awk '{print $2}' || echo "none")
-                  if [ "$INSTALLED_ARROW" != "$ARROW_PIN" ]; then
-                    echo "📦 Instalando libarrow-dev=${ARROW_PIN} libparquet-dev=${ARROW_PIN} (pinneado)..."
-                    apt-get install -y -V "libarrow-dev=${ARROW_PIN}" "libparquet-dev=${ARROW_PIN}"
-                    apt-mark hold libarrow-dev libparquet-dev
-                    echo "✅ Arrow/Parquet ${ARROW_PIN} instalado y bloqueado (apt-mark hold)"
-                  else
-                    echo "✅ libarrow-dev ${ARROW_PIN} ya instalado y pinneado"
-                    apt-mark hold libarrow-dev libparquet-dev >/dev/null 2>&1 || true
-                  fi
+                  # ── Apache Arrow / Parquet (zona oro, escritura Parquet) ─────
+                  # [TERCEROS-ARROW-D333] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente Arrow: todo en
+                  # scripts/terceros/arrow_instalar.sh. Versión exacta de provisioning/arrow/VERSION (regla del Consejo
+                  # DAY205: se pinnea la primera versión que supera la batería de validación reproducible y toda
+                  # actualización posterior exige revalidación completa; smoke test 12/12 en el defender DAY205) y las
+                  # claves del KEYS de Apache Arrow comprobadas por huella (provisioning/arrow/CLAVE). Antes: wget -q del
+                  # .deb "latest" de JFrog, sin hash ni firma, que decidía en qué claves confiaba apt.
+                  bash /vagrant/scripts/terceros/arrow_instalar.sh || { echo "❌ arrow install failed"; exit 1; }
     DEPENDENCIES_EOF
 
     # [VAULT-INSTALL-D312] Vault con la versión fijada; antes de vault-enterprise-bootstrap, que lo usa
