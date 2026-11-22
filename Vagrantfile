@@ -1839,34 +1839,18 @@ print("✅ vault-server: argus-transit/keys/%s ed25519, exportable=False, deleti
 
     end  # if primero
 
-    # [ETCD-CLUSTER-D324] etcd en TODOS los nodos (ADR-048, revisión DAY324). Aquí solo el binario oficial (v3.6.16, sha256
-    # fijado), el certificado etcd-<nodo> del nodo (d312_pki.sh nodos: su IP en el SAN) y el usuario etcd. etcd.conf.yml,
-    # la unidad, el arranque del clúster y el RBAC los hace Ansible desde el defender: make etcd-cluster-deploy.
+    # [ETCD-CLUSTER-D324] etcd en TODOS los nodos (ADR-048, revisión DAY324). Aquí solo el binario oficial, el certificado
+    # etcd-<nodo> del nodo (d312_pki.sh nodos: su IP en el SAN) y el usuario etcd. etcd.conf.yml, la unidad, el arranque
+    # del clúster y el RBAC los hace Ansible desde el defender: make etcd-cluster-deploy.
+    # [TERCEROS-ETCD-D334] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente etcd: el binario lo pone
+    # scripts/terceros/etcd_instalar.sh, con la versión y el SHA256 (el del SHA256SUMS oficial) de provisioning/etcd/.
+    # Antes: los dos escritos aquí y la descarga con curl.
     etcd.vm.provision "shell", name: "pki-etcd-dir", inline: "install -d -m 0700 -o vagrant -g vagrant /tmp/argus-pki-etcd"
     ["ca.crt", "etcd-#{nodo["nombre"]}.crt", "etcd-#{nodo["nombre"]}.key"].each do |f|
       etcd.vm.provision "pki-etcd-#{f}", type: "file", source: File.join(ARGUS_PKI_DIR, f), destination: "/tmp/argus-pki-etcd/#{f}"
     end
-    etcd.vm.provision "shell", name: "etcd-install", inline: <<-'ETCD_INSTALL'
-  set -e
-  ETCD_VER="v3.6.16"
-  ETCD_SHA256="c8c0d96d8292ef085deabbf735e9561d3d396768e4d606df005aa25964f21911"
-  ETCD_URL="https://github.com/etcd-io/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz"
-  if [ -x /usr/local/bin/etcd ] && /usr/local/bin/etcd --version 2>/dev/null | grep -q "^etcd Version: ${ETCD_VER#v}$"; then
-    echo "✅ etcd ${ETCD_VER} ya instalado"; exit 0
-  fi
-  echo "📦 Instalando etcd ${ETCD_VER} (binario oficial, sha256 fijado)..."
-  command -v curl > /dev/null || { apt-get update -qq; apt-get install -y curl; }
-  T=$(mktemp -d); trap 'rm -rf "$T"' EXIT
-  curl -fsSL "$ETCD_URL" -o "$T/etcd.tgz"
-  GOT=$(sha256sum "$T/etcd.tgz" | awk '{print $1}')
-  [ "$GOT" = "$ETCD_SHA256" ] || { echo "❌ ETCD_INSTALL: sha256 ${GOT}, se exige ${ETCD_SHA256}"; exit 1; }
-  tar xzf "$T/etcd.tgz" -C "$T"
-  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcd"    /usr/local/bin/etcd
-  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcdctl" /usr/local/bin/etcdctl
-  install -m 0755 "$T/etcd-${ETCD_VER}-linux-amd64/etcdutl" /usr/local/bin/etcdutl
-  /usr/local/bin/etcd --version | grep -q "^etcd Version: ${ETCD_VER#v}$" || { echo "❌ ETCD_INSTALL: versión instalada inesperada"; exit 1; }
-  echo "✅ etcd $(/usr/local/bin/etcd --version | head -1 | awk '{print $3}') instalado (sha256 verificado)"
-    ETCD_INSTALL
+    etcd.vm.provision "shell", name: "etcd-install",
+      inline: "bash /vagrant/scripts/terceros/etcd_instalar.sh || { echo '❌ etcd install failed'; exit 1; }"
     etcd.vm.provision "shell", name: "etcd-tls",
       env: { "ARGUS_NODO" => nodo["nombre"], "ARGUS_NODO_IP" => nodo["ip"] }, inline: <<-'ETCD_TLS'
       set -e
