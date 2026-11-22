@@ -1314,6 +1314,7 @@ emecas:
 	@$(EMECAS_PASO) test-vault-instalar -- $(MAKE) test-vault-instalar
 	@$(EMECAS_PASO) test-arrow-instalar -- $(MAKE) test-arrow-instalar
 	@$(EMECAS_PASO) test-etcd-instalar -- $(MAKE) test-etcd-instalar
+	@$(EMECAS_PASO) test-libbpf-instalar -- $(MAKE) test-libbpf-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1407,6 +1408,13 @@ test-arrow-instalar:
 .PHONY: test-etcd-instalar
 test-etcd-instalar:
 	@bash scripts/terceros/test_etcd_instalar.sh
+
+# [TERCEROS-LIBBPF-D334] test-libbpf-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/libbpf_instalar.sh
+# (VERSION, COMMIT, el tag contra el commit fijado con un repositorio git de juguete, y a qué libbpf.so.1 resuelve
+# ldconfig) y provisioning/libbpf/{VERSION,COMMIT}, también contra funciones que lo aceptan todo.
+.PHONY: test-libbpf-instalar
+test-libbpf-instalar:
+	@bash scripts/terceros/test_libbpf_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
