@@ -1,0 +1,9 @@
+# provisioning/etcd/SHA256 — [TERCEROS-ETCD-D334] SHA256 del binario oficial de etcd para Linux amd64 en la versión de
+# provisioning/etcd/VERSION, el que publica el proyecto etcd (etcd-io) en sus releases de GitHub:
+#   https://github.com/etcd-io/etcd/releases/download/v3.6.16/etcd-v3.6.16-linux-amd64.tar.gz
+# Medido DAY333: es el valor de la línea de etcd-v3.6.16-linux-amd64.tar.gz del SHA256SUMS oficial de esa release
+# (https://github.com/etcd-io/etcd/releases/download/v3.6.16/SHA256SUMS) e igual al que fijaba el Vagrantfile desde
+# DAY324. etcd no publica firma de sus binarios: lo que manda es este valor, contrastado con el SHA256SUMS del
+# mantenedor. Si cambia VERSION, cambia esto (medido igual).
+# Una sola línea sin comentar: 64 caracteres hexadecimales en minúscula.
+c8c0d96d8292ef085deabbf735e9561d3d396768e4d606df005aa25964f21911
