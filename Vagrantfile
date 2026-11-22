@@ -397,33 +397,14 @@ Vagrant.configure("2") do |config|
       # eBPF toolchain
       apt-get install -y clang llvm bpftool linux-headers-amd64 libpcap-dev
 
-      # CRITICAL: libbpf 1.4.6 (FIX PERMANENTE)
-      CURRENT_LIBBPF_VERSION=$(PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}" pkg-config --modversion libbpf 2>/dev/null || echo "0.0.0")
-      if [ "$(printf '%s\n' "1.2.0" "$CURRENT_LIBBPF_VERSION" | sort -V | head -n1)" != "1.2.0" ]; then
-        echo "🔧 Upgrading libbpf to 1.4.6..."
-        apt-get install -y libelf-dev zlib1g-dev pkg-config
-        cd /tmp && rm -rf libbpf
-        git clone --depth 1 --branch v1.4.6 https://github.com/libbpf/libbpf.git
-        cd libbpf/src
-        make -j$(nproc) BUILD_STATIC_ONLY=y
-        make install install_headers
-        ldconfig
-
-        if ! grep -q "PKG_CONFIG_PATH.*usr/lib64/pkgconfig" /etc/environment 2>/dev/null; then
-          echo 'PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib/pkgconfig:$PKG_CONFIG_PATH"' >> /etc/environment
-        fi
-
-        cat > /etc/profile.d/libbpf.sh << 'LIBBPF_PROFILE'
-export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
-export LD_LIBRARY_PATH="/usr/lib64:/usr/local/lib:${LD_LIBRARY_PATH}"
-LIBBPF_PROFILE
-        chmod +x /etc/profile.d/libbpf.sh
-        export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
-        export LD_LIBRARY_PATH="/usr/lib64:/usr/local/lib:${LD_LIBRARY_PATH}"
-        echo "/usr/lib64" > /etc/ld.so.conf.d/libbpf.conf
-        ldconfig
-        cd /tmp && rm -rf libbpf
-      fi
+      # [TERCEROS-LIBBPF-D334] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente libbpf: libbpf del repositorio oficial
+      # (github.com/libbpf/libbpf) en el tag de provisioning/libbpf/VERSION, comprobado contra el commit de
+      # provisioning/libbpf/COMMIT (scripts/terceros/libbpf_instalar.sh). Antes: git clone del tag sin comprobar a qué
+      # apuntaba, y solo si la instalada era < 1.2.0. El script comprueba también que libbpf.so.1 se resuelve a la nuestra
+      # (/usr/lib64) y no a la 1.1.2 de bookworm, que pide iproute2 (medido DAY334). Si falla, para aquí.
+      bash /vagrant/scripts/terceros/libbpf_instalar.sh || { echo "❌ libbpf"; exit 1; }
+      export PKG_CONFIG_PATH="/usr/lib64/pkgconfig:/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
+      export LD_LIBRARY_PATH="/usr/lib64:/usr/local/lib:${LD_LIBRARY_PATH}"
 
       # Networking libraries
       apt-get install -y libjsoncpp-dev libcurl4-openssl-dev libzmq3-dev
