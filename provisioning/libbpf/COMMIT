@@ -1,0 +1,8 @@
+# provisioning/libbpf/COMMIT — [TERCEROS-LIBBPF-D334] commit del repositorio oficial de libbpf
+# (https://github.com/libbpf/libbpf, espejo del árbol bpf-next, tools/lib/bpf) al que apunta el tag v<VERSION> de
+# provisioning/libbpf/VERSION. Medido DAY334: el tag v1.4.6 es ligero (sin objeto tag ni firma) y apunta a
+# fdf402b384cc42ce29bb9e27011633be3cbafe1e, "libbpf: bump version to v1.4.6" (Andrii Nakryiko, 2024-09-03), commit sin
+# firma; git ls-remote da el mismo. libbpf no publica firma ni hash de sus versiones: lo que manda es este commit (SHA-1
+# de git). Un tag ligero se puede mover; si el tag deja de apuntar aquí, la instalación para.
+# Si cambia VERSION, cambia esto (medido igual). Una sola línea sin comentar: 40 hexadecimales en minúscula.
+fdf402b384cc42ce29bb9e27011633be3cbafe1e
