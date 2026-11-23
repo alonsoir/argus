@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # scripts/terceros/lib_git_fijado.sh — [TERCEROS-GIT-FIJADO-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: lo común
-# a los instaladores que traen código fuente de terceros por git (libbpf; después cpp-httplib, etcd-cpp-apiv3 y
-# atomic-red-team). Un tag ligero no lleva firma y se puede mover (lección DAY334): se fija el commit al que apunta y se
+# a los instaladores que traen código fuente de terceros por git (libbpf, cpp-httplib y etcd-cpp-apiv3). Un tag ligero
+# no lleva firma y se puede mover (lección DAY334): se fija el commit al que apunta y se
 # comprueba después de clonar. Sacado de libbpf_instalar.sh DAY335, sin cambiar una línea de las funciones, para que
 # esté en un único lugar.
 # Se carga con `.` desde cada instalador; no toca el sistema (lo prueba scripts/terceros/test_lib_git_fijado.sh en el

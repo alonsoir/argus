@@ -1,0 +1,10 @@
+# provisioning/kuzu/SHA256 — [TERCEROS-KUZU-D335] SHA256 del tarball oficial de la biblioteca C/C++ de Kuzu para Linux
+# x86_64 en la versión de provisioning/kuzu/VERSION, el que publica el proyecto (kuzudb) en sus releases de GitHub:
+#   https://github.com/kuzudb/kuzu/releases/download/v0.11.3/libkuzu-linux-x86_64.tar.gz
+# Medido DAY335 por dos canales: es el digest sha256 que GitHub muestra junto al fichero en la página de la release
+# v0.11.3 (visto por Alonso en el navegador) e igual al que fijaba el Vagrantfile desde DAY180, y al del tarball bajado
+# ese día (8,09 MB; trae kuzu.h, kuzu.hpp y libkuzu.so). El tag v0.11.3 es ligero y apunta a 27cba5b9 (git ls-remote y
+# la página de la release). Kuzu no firma sus releases; el repositorio está archivado desde el 10-oct-2025 y la v0.11.3
+# es la última (DEBT-KUZU-CONTINUITY-001). Si cambia VERSION, cambia esto (medido igual).
+# Una sola línea sin comentar: 64 caracteres hexadecimales en minúscula.
+e99f9671ebfacf4d6208aa4b94490016e4ac9be242deed1fea78afb31c058ebd

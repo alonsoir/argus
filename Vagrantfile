@@ -434,13 +434,13 @@ Vagrant.configure("2") do |config|
       # Testing tools (para gateway testing)
       apt-get install -y hping3 nmap tcpreplay netcat-openbsd iperf3 net-tools dnsutils
 
-      # CMake 3.25+
+      # [TERCEROS-CMAKE-CRYPTOPP-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: CMake viene de apt (en la lista
+      # de arriba; bookworm trae la 3.25.1). Antes, si faltaba o era < 3.20, se bajaba con wget el instalador 3.25.0 de
+      # GitHub, sin hash, y se ejecutaba como root. Medido DAY335: esa rama no se ejecutaba nunca (cmake 3.25.1 en
+      # /usr/bin, nada en /usr/local/bin). Queda la comprobación: sin cmake >= 3.20, para aquí.
       CMAKE_VERSION=$(cmake --version 2>/dev/null | head -1 | awk '{print $3}')
       if [ -z "$CMAKE_VERSION" ] || [ "$(printf '%s\n' "3.20" "$CMAKE_VERSION" | sort -V | head -n1)" != "3.20" ]; then
-        cd /tmp
-        wget -q https://github.com/Kitware/CMake/releases/download/v3.25.0/cmake-3.25.0-linux-x86_64.sh
-        sh cmake-3.25.0-linux-x86_64.sh --prefix=/usr/local --skip-license
-        rm cmake-3.25.0-linux-x86_64.sh
+        echo "❌ cmake de apt: '$CMAKE_VERSION', se necesita >= 3.20"; exit 1
       fi
 
       # [TERCEROS-SODIUM-D331] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: libsodium (crypto-transport necesita
@@ -469,33 +469,26 @@ Vagrant.configure("2") do |config|
       # plugin_test_message — build gestionado por make pipeline-build (requiere plugin-loader instalado)
       # NO buildear aquí: plugin-loader headers no disponibles en este punto del provisioning
 
-      # etcd-cpp-api
-      if [ ! -f /usr/local/lib/libetcd-cpp-api.so ] && [ ! -f /usr/local/lib/libetcd-cpp-api.a ]; then
-        cd /tmp && rm -rf etcd-cpp-apiv3
-        git clone https://github.com/etcd-cpp-apiv3/etcd-cpp-apiv3.git
-        cd etcd-cpp-apiv3 && git checkout v0.15.3
-        mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
-        make -j4 && make install
-        ldconfig
-      fi
+      # [TERCEROS-ETCDCPP-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente etcd-cpp-apiv3: libetcd-cpp-api.so
+      # compilada desde el repositorio oficial (github.com/etcd-cpp-apiv3/etcd-cpp-apiv3) en el tag de
+      # provisioning/etcd-cpp-apiv3/VERSION, comprobado contra el commit de provisioning/etcd-cpp-apiv3/COMMIT
+      # (scripts/terceros/etcdcpp_instalar.sh). Antes: git clone y checkout del tag sin comprobar a qué apuntaba, y un
+      # fallo de make no paraba. Si falla, para aquí.
+      bash /vagrant/scripts/terceros/etcdcpp_instalar.sh || { echo "❌ etcd-cpp-apiv3"; exit 1; }
 
-      # cpp-httplib
-      if [ ! -f /usr/local/include/httplib.h ]; then
-        cd /tmp && rm -rf cpp-httplib
-        git clone https://github.com/yhirose/cpp-httplib.git
-        mkdir -p /usr/local/include
-        cp cpp-httplib/httplib.h /usr/local/include/
-      fi
+      # [TERCEROS-HTTPLIB-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente cpp-httplib: httplib.h del repositorio
+      # oficial (github.com/yhirose/cpp-httplib) en el tag de provisioning/cpp-httplib/VERSION, comprobado contra el commit
+      # de provisioning/cpp-httplib/COMMIT (scripts/terceros/cpphttplib_instalar.sh). Antes: git clone de la rama
+      # principal, sin tag ni commit, y solo si no había httplib.h (medido DAY335: la del lab decía 0.67.0 sin saber de
+      # qué commit). Si falla, para aquí.
+      bash /vagrant/scripts/terceros/cpphttplib_instalar.sh || { echo "❌ cpp-httplib"; exit 1; }
 
-      # Crypto++
+      # [TERCEROS-CMAKE-CRYPTOPP-D335] Crypto++ de apt (libcrypto++-dev; bookworm trae la 8.7.0). Antes, si apt
+      # fallaba, se bajaba con wget cryptopp870.zip de cryptopp.com, sin hash, y se compilaba e instalaba como root.
+      # Medido DAY335: esa rama no se ejecutaba (libcrypto++-dev en ii, nada en /usr/local/include/cryptopp). Si apt
+      # falla, para aquí.
       if [ ! -f /usr/include/cryptopp/cryptlib.h ] && [ ! -f /usr/local/include/cryptopp/cryptlib.h ]; then
-        apt-get install -y libcrypto++-dev libcrypto++-doc libcrypto++-utils || {
-          cd /tmp
-          wget https://www.cryptopp.com/cryptopp870.zip
-          unzip cryptopp870.zip -d cryptopp
-          cd cryptopp && make -j4 && make install
-        }
+        apt-get install -y libcrypto++-dev libcrypto++-doc libcrypto++-utils || { echo "❌ Crypto++ de apt"; exit 1; }
       fi
 
       # Sudoers
@@ -665,21 +658,12 @@ BASHRC_EOF
       # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
       # [VAULT-INSTALL-D312] se instala en el aprovisionador vault-install (VAULT_INSTALL, versión fijada), tras este bloque
 
-      # ── Java 21 via SDKMAN (requerido por Jenkins 2.555+) ──────────────────
-      # Fix DAY 160: Java 21 no está en repos Bookworm — SDKMAN + Temurin
-      # Jenkins 2.555.2 requiere Java 21 mínimo (Java 17 falla silenciosamente)
-      if [ ! -f /root/.sdkman/candidates/java/21.0.7-tem/bin/java ]; then
-        echo "📦 Instalando prereqs SDKMAN (unzip, zip)..."
-        apt-get install -y unzip zip 2>&1 | tail -1
-        echo "📦 Instalando SDKMAN..."
-        curl -s https://get.sdkman.io | bash
-        echo "📦 Instalando Java 21.0.7 Temurin via SDKMAN..."
-        source /root/.sdkman/bin/sdkman-init.sh
-        sdk install java 21.0.7-tem < /dev/null
-        echo "✅ Java 21 Temurin instalado"
-      else
-        echo "✅ Java 21 Temurin ya instalado"
-      fi
+      # ── Java 21 (requerido por Jenkins 2.555+) ──────────────────────────────
+      # [TERCEROS-TEMURIN-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: lo instala
+      # scripts/jenkins/jenkins_instalar.sh (justo debajo) con scripts/terceros/temurin_instalar.sh: Temurin del
+      # repositorio apt de Adoptium, con la clave comprobada por huella (provisioning/temurin/CLAVE) y versión fijada.
+      # Antes, aquí: SDKMAN con `curl -s https://get.sdkman.io | bash` como root, sin firma ni hash, y unzip y zip solo
+      # para él.
 
       # ── Jenkins (DEBT-VAULT-PROVISION-PROD-001) ───────────────────────────
       # [JENKINS-CLAVE-D323] scripts/jenkins/jenkins_instalar.sh: el repositorio de pkg.jenkins.io con la clave comprobada
@@ -692,46 +676,15 @@ BASHRC_EOF
 
       # Vault autostart movido a vault-enterprise-bootstrap (run: always) — DAY 163
 
-      # ── Kuzu v0.11.3 embebido (backend IGraphSink — DAY 180) ──────────────
-            # ⚠️  Upstream ARCHIVADO (10-oct-2025): v0.11.3 = release final, sin parches
-            #     futuros. Mitigado por abstracción IGraphSink. Plan B: fork
-            #     Vela-Engineering/kuzu. Ver nota BACKLOG DAY 180.
-            # C++ client = libkuzu.so + kuzu.hpp (NO hay .deb upstream). Pin URL+SHA256.
-            # DB = fichero único .kuzu desde v0.11.0 (no directorio).
-            if [ ! -f /usr/local/lib/libkuzu.so ]; then
-              echo "🗃️  Installing Kuzu v0.11.3 (embedded graph backend)..."
-              KUZU_URL="https://github.com/kuzudb/kuzu/releases/download/v0.11.3/libkuzu-linux-x86_64.tar.gz"
-              KUZU_SHA256="e99f9671ebfacf4d6208aa4b94490016e4ac9be242deed1fea78afb31c058ebd"   # ← pega aquí el sha256sum tras la 1ª descarga
-
-              cd /tmp && rm -rf kuzu-install && mkdir kuzu-install && cd kuzu-install
-              curl -fsSL "$KUZU_URL" -o libkuzu.tar.gz
-
-              GOT=$(sha256sum libkuzu.tar.gz | awk '{print $1}')
-              if [ "$KUZU_SHA256" = "PENDIENTE_PINEAR" ]; then
-                echo "⚠️  SHA256 sin pinear. Descargado: $GOT"
-                echo "    → Pégalo en KUZU_SHA256 y re-provisiona para fijar el pin."
-              elif [ "$GOT" != "$KUZU_SHA256" ]; then
-                echo "❌ SHA256 mismatch Kuzu: esperado $KUZU_SHA256, obtenido $GOT"; exit 1
-              else
-                echo "✅ SHA256 Kuzu verificado"
-              fi
-
-              tar xzf libkuzu.tar.gz
-              KUZU_SO=$(find . -name 'libkuzu.so*' | head -1)
-              KUZU_HPP=$(find . -name 'kuzu.hpp' | head -1)
-              KUZU_H=$(find . -name 'kuzu.h' | head -1)
-              if [ -z "$KUZU_SO" ] || [ -z "$KUZU_HPP" ]; then
-                echo "❌ Artefactos Kuzu no hallados en el tarball (so/hpp)"; exit 1
-              fi
-              cp "$KUZU_SO" /usr/local/lib/libkuzu.so
-              cp "$KUZU_HPP" /usr/local/include/
-              [ -n "$KUZU_H" ] && cp "$KUZU_H" /usr/local/include/
-              ldconfig
-              cd /tmp && rm -rf kuzu-install
-              echo "✅ Kuzu instalado: $(ls -la /usr/local/lib/libkuzu.so)"
-            else
-              echo "✅ Kuzu ya instalado"
-            fi
+      # ── Kuzu (backend IGraphSink — DAY 180) ──────────────────────────────
+      # [TERCEROS-KUZU-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente Kuzu: libkuzu.so, kuzu.hpp y kuzu.h
+      # del tarball oficial (releases de github.com/kuzudb/kuzu) en la versión de provisioning/kuzu/VERSION, comprobado
+      # con el SHA256 de provisioning/kuzu/SHA256, contrastado DAY335 con el digest que publica GitHub
+      # (scripts/terceros/kuzu_instalar.sh). Antes: URL y SHA256 aquí, la descarga con curl y una rama PENDIENTE_PINEAR
+      # que instalaba sin comprobar nada. Upstream archivado (10-oct-2025): la v0.11.3 es la última; mitigado por
+      # IGraphSink, plan B el fork Vela-Engineering/kuzu (DEBT-KUZU-CONTINUITY-001, BACKLOG DAY 180).
+      # Si falla, para aquí.
+      bash /vagrant/scripts/terceros/kuzu_instalar.sh || { echo "❌ Kuzu"; exit 1; }
             # ── libavro-c 1.11.1 (I/O AVRO, zona bronce del circuito) ─────────────
                   # DEBT-CIRCUIT-PARSER-CROSSLANG-001 cerrada por diseño: I/O AVRO en API C
                   # wrapeada desde C++20, mismo patrón que OpenSSL en CorrelationWriter.
@@ -1183,13 +1136,10 @@ BASHRC_EOF
           python3 python3-pip git \
           || { echo "FATAL: herramientas base no instaladas"; exit 1; }
 
-          # Atomic Red Team (ground truth reproducible — DEBT-ARGUSPP-MITRE-001)
-          if [ ! -d /opt/atomic-red-team ]; then
-            git clone --depth 1 \
-              https://github.com/redcanaryco/atomic-red-team.git \
-              /opt/atomic-red-team || \
-              echo "⚠️  atomic-red-team clone failed — red team offline mode"
-          fi
+          # [TERCEROS-ATOMIC-FUERA-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 (decisión de Alonso DAY335): aquí se
+          # clonaba Atomic Red Team (rama principal, --depth 1, sin commit fijado, 419 MB medidos DAY335) en
+          # /opt/atomic-red-team, y nada lo usaba (git grep: ni mitre-start ni ningún script). Entrará, con su commit
+          # fijado, cuando empiece RESEARCH-MITRE-ATTACK-RANSOMWARE-001.
 
           # NTP sync — community_id requiere timestamps coherentes
           systemctl enable chrony
@@ -1208,7 +1158,7 @@ BASHRC_EOF
           echo "=== CLIENT READY ==="
           echo "   IP      : 192.168.100.50"
           echo "   Gateway : 192.168.100.1 (defender eth2)"
-          echo "   Tools   : nmap hydra sqlmap tcpreplay atomic-red-team"
+          echo "   Tools   : nmap hydra sqlmap tcpreplay"
         CLIENT
 
     # [ARGUS-LAB-NTP-D294] el client toma la hora del defender, su pasarela (el client no tiene salida a Internet

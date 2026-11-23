@@ -15,7 +15,10 @@ RAIZ=$(cd "$(dirname "$0")/../.." && pwd)
 CLAVE=${JENKINS_CLAVE:-$RAIZ/provisioning/jenkins/CLAVE}
 URL_CLAVE=https://pkg.jenkins.io/debian-stable/jenkins.io-2026.key
 URL_REPO=https://pkg.jenkins.io/debian-stable
-JAVA_DIR=/root/.sdkman/candidates/java/21.0.7-tem   # Fix DAY 160: Jenkins 2.555+ requiere Java 21 (SDKMAN + Temurin)
+# [TERCEROS-TEMURIN-D335] Jenkins 2.555+ requiere Java 21 (Fix DAY 160): el de scripts/terceros/temurin_instalar.sh,
+# en el directorio del paquete temurin-<mayor>-jdk (la mayor, de provisioning/temurin/VERSION)
+TEMURIN_VERSION=$(tr -d '[:space:]' < "$RAIZ/provisioning/temurin/VERSION" 2>/dev/null)
+JAVA_DIR=/usr/lib/jvm/temurin-${TEMURIN_VERSION%%.*}-jdk-amd64
 TAG="[JENKINS-INSTALAR]"
 instalado() { dpkg-query -W -f='${Status}' jenkins 2>/dev/null | grep -q 'install ok installed'; }
 retirar() {
@@ -35,6 +38,8 @@ rm -f /usr/share/keyrings/jenkins-keyring.gpg   # anillo del keyserver de antes 
 # bloque viejo del Vagrantfile lo escribía aunque Jenkins no se instalara, y al instalar después dpkg se quedó
 # preguntando qué hacer con él (pregunta interactiva en un aprovisionamiento: colgado). Fuera.
 rm -f /etc/default/jenkins
+# [TERCEROS-TEMURIN-D335] sin Java no hay Jenkins: se avisa en alto y el lab sigue sin él (decisión de Alonso DAY323)
+bash "$RAIZ/scripts/terceros/temurin_instalar.sh" || retirar "Temurin (Java en $JAVA_DIR) no se pudo instalar"
 # shellcheck source=../vigilancia/lib_apt_oficial.sh
 . "$RAIZ/scripts/vigilancia/lib_apt_oficial.sh"
 repo_oficial jenkins "$URL_CLAVE" "$CLAVE" "$URL_REPO" "binary/" || retirar "la clave de $URL_CLAVE no se pudo comprobar con $CLAVE"
@@ -44,7 +49,7 @@ DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::=--force-con
   jenkins < /dev/null || retirar "apt-get install jenkins falló"
 instalado || retirar "dpkg no lo da por instalado"
 
-# Fix DAY 160: Jenkins como root en dev, con Java 21 de /root/.sdkman
+# Fix DAY 160: Jenkins como root en dev, con el Java 21 de Temurin ($JAVA_DIR)
 { echo "JAVA_HOME=$JAVA_DIR"; echo "JAVA=$JAVA_DIR/bin/java"; } >> /etc/default/jenkins || { echo "❌ $TAG /etc/default/jenkins"; exit 1; }
 sed -i 's/^JENKINS_USER=.*/JENKINS_USER=root/; s/^JENKINS_GROUP=.*/JENKINS_GROUP=root/' /etc/default/jenkins
 mkdir -p /etc/systemd/system/jenkins.service.d

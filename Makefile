@@ -1316,6 +1316,10 @@ emecas:
 	@$(EMECAS_PASO) test-etcd-instalar -- $(MAKE) test-etcd-instalar
 	@$(EMECAS_PASO) test-lib-git-fijado -- $(MAKE) test-lib-git-fijado
 	@$(EMECAS_PASO) test-libbpf-instalar -- $(MAKE) test-libbpf-instalar
+	@$(EMECAS_PASO) test-cpphttplib-instalar -- $(MAKE) test-cpphttplib-instalar
+	@$(EMECAS_PASO) test-etcdcpp-instalar -- $(MAKE) test-etcdcpp-instalar
+	@$(EMECAS_PASO) test-kuzu-instalar -- $(MAKE) test-kuzu-instalar
+	@$(EMECAS_PASO) test-temurin-instalar -- $(MAKE) test-temurin-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1423,6 +1427,37 @@ test-lib-git-fijado:
 .PHONY: test-libbpf-instalar
 test-libbpf-instalar:
 	@bash scripts/terceros/test_libbpf_instalar.sh
+
+# [TERCEROS-HTTPLIB-D335] test-cpphttplib-instalar (Mac, sin VMs ni red): las funciones de
+# scripts/terceros/cpphttplib_instalar.sh (versión de la cabecera, la marca con el commit y el sha256 de la httplib.h
+# instalada) y provisioning/cpp-httplib/{VERSION,COMMIT}, también contra funciones que lo aceptan todo. El tag contra el
+# commit y los reintentos, en test-lib-git-fijado.
+.PHONY: test-cpphttplib-instalar
+test-cpphttplib-instalar:
+	@bash scripts/terceros/test_cpphttplib_instalar.sh
+
+# [TERCEROS-ETCDCPP-D335] test-etcdcpp-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/etcdcpp_instalar.sh
+# (versión del fichero de CMake, la marca con el commit y el sha256 de la libetcd-cpp-api.so instalada) y
+# provisioning/etcd-cpp-apiv3/{VERSION,COMMIT}, también contra funciones que lo aceptan todo. El tag contra el commit y
+# los reintentos, en test-lib-git-fijado.
+.PHONY: test-etcdcpp-instalar
+test-etcdcpp-instalar:
+	@bash scripts/terceros/test_etcdcpp_instalar.sh
+
+# [TERCEROS-KUZU-D335] test-kuzu-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/kuzu_instalar.sh
+# (VERSION, SHA256, qué se saca del tarball y qué no, la marca con el SHA256 y el de los tres ficheros instalados) y
+# provisioning/kuzu/{VERSION,SHA256}, también contra funciones que lo aceptan todo.
+.PHONY: test-kuzu-instalar
+test-kuzu-instalar:
+	@bash scripts/terceros/test_kuzu_instalar.sh
+
+# [TERCEROS-TEMURIN-D335] test-temurin-instalar (Mac, sin VMs ni red): las funciones de
+# scripts/terceros/temurin_instalar.sh (VERSION del paquete, qué dice java -version de esa versión) y
+# provisioning/temurin/{VERSION,CLAVE}, también contra funciones que lo aceptan todo. La clave contra sus huellas, en
+# repo_oficial (lib_apt_oficial.sh).
+.PHONY: test-temurin-instalar
+test-temurin-instalar:
+	@bash scripts/terceros/test_temurin_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
