@@ -687,46 +687,15 @@ BASHRC_EOF
 
       # Vault autostart movido a vault-enterprise-bootstrap (run: always) — DAY 163
 
-      # ── Kuzu v0.11.3 embebido (backend IGraphSink — DAY 180) ──────────────
-            # ⚠️  Upstream ARCHIVADO (10-oct-2025): v0.11.3 = release final, sin parches
-            #     futuros. Mitigado por abstracción IGraphSink. Plan B: fork
-            #     Vela-Engineering/kuzu. Ver nota BACKLOG DAY 180.
-            # C++ client = libkuzu.so + kuzu.hpp (NO hay .deb upstream). Pin URL+SHA256.
-            # DB = fichero único .kuzu desde v0.11.0 (no directorio).
-            if [ ! -f /usr/local/lib/libkuzu.so ]; then
-              echo "🗃️  Installing Kuzu v0.11.3 (embedded graph backend)..."
-              KUZU_URL="https://github.com/kuzudb/kuzu/releases/download/v0.11.3/libkuzu-linux-x86_64.tar.gz"
-              KUZU_SHA256="e99f9671ebfacf4d6208aa4b94490016e4ac9be242deed1fea78afb31c058ebd"   # ← pega aquí el sha256sum tras la 1ª descarga
-
-              cd /tmp && rm -rf kuzu-install && mkdir kuzu-install && cd kuzu-install
-              curl -fsSL "$KUZU_URL" -o libkuzu.tar.gz
-
-              GOT=$(sha256sum libkuzu.tar.gz | awk '{print $1}')
-              if [ "$KUZU_SHA256" = "PENDIENTE_PINEAR" ]; then
-                echo "⚠️  SHA256 sin pinear. Descargado: $GOT"
-                echo "    → Pégalo en KUZU_SHA256 y re-provisiona para fijar el pin."
-              elif [ "$GOT" != "$KUZU_SHA256" ]; then
-                echo "❌ SHA256 mismatch Kuzu: esperado $KUZU_SHA256, obtenido $GOT"; exit 1
-              else
-                echo "✅ SHA256 Kuzu verificado"
-              fi
-
-              tar xzf libkuzu.tar.gz
-              KUZU_SO=$(find . -name 'libkuzu.so*' | head -1)
-              KUZU_HPP=$(find . -name 'kuzu.hpp' | head -1)
-              KUZU_H=$(find . -name 'kuzu.h' | head -1)
-              if [ -z "$KUZU_SO" ] || [ -z "$KUZU_HPP" ]; then
-                echo "❌ Artefactos Kuzu no hallados en el tarball (so/hpp)"; exit 1
-              fi
-              cp "$KUZU_SO" /usr/local/lib/libkuzu.so
-              cp "$KUZU_HPP" /usr/local/include/
-              [ -n "$KUZU_H" ] && cp "$KUZU_H" /usr/local/include/
-              ldconfig
-              cd /tmp && rm -rf kuzu-install
-              echo "✅ Kuzu instalado: $(ls -la /usr/local/lib/libkuzu.so)"
-            else
-              echo "✅ Kuzu ya instalado"
-            fi
+      # ── Kuzu (backend IGraphSink — DAY 180) ──────────────────────────────
+      # [TERCEROS-KUZU-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente Kuzu: libkuzu.so, kuzu.hpp y kuzu.h
+      # del tarball oficial (releases de github.com/kuzudb/kuzu) en la versión de provisioning/kuzu/VERSION, comprobado
+      # con el SHA256 de provisioning/kuzu/SHA256, contrastado DAY335 con el digest que publica GitHub
+      # (scripts/terceros/kuzu_instalar.sh). Antes: URL y SHA256 aquí, la descarga con curl y una rama PENDIENTE_PINEAR
+      # que instalaba sin comprobar nada. Upstream archivado (10-oct-2025): la v0.11.3 es la última; mitigado por
+      # IGraphSink, plan B el fork Vela-Engineering/kuzu (DEBT-KUZU-CONTINUITY-001, BACKLOG DAY 180).
+      # Si falla, para aquí.
+      bash /vagrant/scripts/terceros/kuzu_instalar.sh || { echo "❌ Kuzu"; exit 1; }
             # ── libavro-c 1.11.1 (I/O AVRO, zona bronce del circuito) ─────────────
                   # DEBT-CIRCUIT-PARSER-CROSSLANG-001 cerrada por diseño: I/O AVRO en API C
                   # wrapeada desde C++20, mismo patrón que OpenSSL en CorrelationWriter.

@@ -1318,6 +1318,7 @@ emecas:
 	@$(EMECAS_PASO) test-libbpf-instalar -- $(MAKE) test-libbpf-instalar
 	@$(EMECAS_PASO) test-cpphttplib-instalar -- $(MAKE) test-cpphttplib-instalar
 	@$(EMECAS_PASO) test-etcdcpp-instalar -- $(MAKE) test-etcdcpp-instalar
+	@$(EMECAS_PASO) test-kuzu-instalar -- $(MAKE) test-kuzu-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1441,6 +1442,13 @@ test-cpphttplib-instalar:
 .PHONY: test-etcdcpp-instalar
 test-etcdcpp-instalar:
 	@bash scripts/terceros/test_etcdcpp_instalar.sh
+
+# [TERCEROS-KUZU-D335] test-kuzu-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/kuzu_instalar.sh
+# (VERSION, SHA256, qué se saca del tarball y qué no, la marca con el SHA256 y el de los tres ficheros instalados) y
+# provisioning/kuzu/{VERSION,SHA256}, también contra funciones que lo aceptan todo.
+.PHONY: test-kuzu-instalar
+test-kuzu-instalar:
+	@bash scripts/terceros/test_kuzu_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
