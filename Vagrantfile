@@ -658,21 +658,12 @@ BASHRC_EOF
       # ── HashiCorp Vault (DEBT-CRYPTO-MATERIAL-STORAGE-001) ─────────────────
       # [VAULT-INSTALL-D312] se instala en el aprovisionador vault-install (VAULT_INSTALL, versión fijada), tras este bloque
 
-      # ── Java 21 via SDKMAN (requerido por Jenkins 2.555+) ──────────────────
-      # Fix DAY 160: Java 21 no está en repos Bookworm — SDKMAN + Temurin
-      # Jenkins 2.555.2 requiere Java 21 mínimo (Java 17 falla silenciosamente)
-      if [ ! -f /root/.sdkman/candidates/java/21.0.7-tem/bin/java ]; then
-        echo "📦 Instalando prereqs SDKMAN (unzip, zip)..."
-        apt-get install -y unzip zip 2>&1 | tail -1
-        echo "📦 Instalando SDKMAN..."
-        curl -s https://get.sdkman.io | bash
-        echo "📦 Instalando Java 21.0.7 Temurin via SDKMAN..."
-        source /root/.sdkman/bin/sdkman-init.sh
-        sdk install java 21.0.7-tem < /dev/null
-        echo "✅ Java 21 Temurin instalado"
-      else
-        echo "✅ Java 21 Temurin ya instalado"
-      fi
+      # ── Java 21 (requerido por Jenkins 2.555+) ──────────────────────────────
+      # [TERCEROS-TEMURIN-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: lo instala
+      # scripts/jenkins/jenkins_instalar.sh (justo debajo) con scripts/terceros/temurin_instalar.sh: Temurin del
+      # repositorio apt de Adoptium, con la clave comprobada por huella (provisioning/temurin/CLAVE) y versión fijada.
+      # Antes, aquí: SDKMAN con `curl -s https://get.sdkman.io | bash` como root, sin firma ni hash, y unzip y zip solo
+      # para él.
 
       # ── Jenkins (DEBT-VAULT-PROVISION-PROD-001) ───────────────────────────
       # [JENKINS-CLAVE-D323] scripts/jenkins/jenkins_instalar.sh: el repositorio de pkg.jenkins.io con la clave comprobada

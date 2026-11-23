@@ -1319,6 +1319,7 @@ emecas:
 	@$(EMECAS_PASO) test-cpphttplib-instalar -- $(MAKE) test-cpphttplib-instalar
 	@$(EMECAS_PASO) test-etcdcpp-instalar -- $(MAKE) test-etcdcpp-instalar
 	@$(EMECAS_PASO) test-kuzu-instalar -- $(MAKE) test-kuzu-instalar
+	@$(EMECAS_PASO) test-temurin-instalar -- $(MAKE) test-temurin-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1449,6 +1450,14 @@ test-etcdcpp-instalar:
 .PHONY: test-kuzu-instalar
 test-kuzu-instalar:
 	@bash scripts/terceros/test_kuzu_instalar.sh
+
+# [TERCEROS-TEMURIN-D335] test-temurin-instalar (Mac, sin VMs ni red): las funciones de
+# scripts/terceros/temurin_instalar.sh (VERSION del paquete, qué dice java -version de esa versión) y
+# provisioning/temurin/{VERSION,CLAVE}, también contra funciones que lo aceptan todo. La clave contra sus huellas, en
+# repo_oficial (lib_apt_oficial.sh).
+.PHONY: test-temurin-instalar
+test-temurin-instalar:
+	@bash scripts/terceros/test_temurin_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:

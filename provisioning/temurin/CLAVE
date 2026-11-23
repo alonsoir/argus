@@ -1,0 +1,9 @@
+# provisioning/temurin/CLAVE — [TERCEROS-TEMURIN-D335] huella de la clave con la que Adoptium (Eclipse Foundation) firma
+# su repositorio apt (https://packages.adoptium.net/artifactory/deb) y los binarios de Temurin. Clave:
+# https://packages.adoptium.net/artifactory/api/gpg/key/public ("Adoptium GPG Key (DEB/RPM Signing Key)
+# <temurin-dev@eclipse.org>", RSA, creada el 16-nov-2021, sin caducidad). scripts/vigilancia/lib_apt_oficial.sh la
+# descarga y SOLO la instala si todas sus claves principales están aquí.
+# Medido DAY335 por dos canales: la huella de la clave descargada de packages.adoptium.net, y la que publica Adoptium en
+# su página de verificación (https://adoptium.net/installation/gpg-verification/) y en su blog de julio de 2022
+# (https://adoptium.net/blog/2022/07/gpg-signed-releases/). Con ella, gpgv da firma buena al InRelease de bookworm.
+3B04D753C9050D9A5D343F39843C48A565F8F04B
