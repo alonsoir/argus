@@ -234,6 +234,10 @@ una VM ya existente del Vagrantfile.
   tipo de evidencia que podría inclinar a Andrés (UEx/INCIBE) a apoyar
   abiertamente la solicitud de fondos.
 
+**Nota DAY335:** Atomic Red Team ya no se instala en el lab: se clonaba sin commit fijado en el client y nada lo usaba
+(decisión de Alonso). Cuando empiece esta investigación, entra con su commit fijado, con
+`scripts/terceros/lib_git_fijado.sh`, como cpp-httplib y etcd-cpp-apiv3. Ver DAY335.
+
 ## DEBT-KUZU-CONTINUITY-001 — [ACTUALIZACIÓN DAY 208]
 **Sin cambio de decisión:** NO depreciar Kuzu hoy.
 
@@ -10017,7 +10021,7 @@ de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMO
 ### DEBT-LAB-GRUB-INSTALL-DEVICES-001 — CERRADA DAY330 (#167)
 Ver arriba. Queda sin medir de dónde salió el valor el DAY329; ya no se depende de él.
 
-### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; queda el inventario con `git grep`; ver DAY334)
+### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; inventario y siete lentes DAY335, #183 y #190: el Vagrantfile, sin descargas sin verificar; queda la lente pip; ver DAY335)
 Descargas de terceros en los aprovisionadores sin el sha256/SHA512 o la firma que publica su mantenedor y sin comprobar
 que terminaron, en bloques sin `set -e`. Hecho: ONNX Runtime. Quedan, al menos: libsodium 1.0.19 y XGBoost 3.2.0 (en el
 mismo bloque `all-dependencies`, junto al de ONNX) y lo que se baje con `wget`/`curl` en el `Vagrantfile` y los
@@ -10382,3 +10386,115 @@ una rama de archivo; EMECAS+++ verde desde cero.
   juguete (`file://`), sin red.
 - Los `.py` y `.sh` que se pasan como fichero pueden no llegar a Descargas: entregarlos como bloque `cat > f <<'EOF'`
   y comprobar el sha256 en el sitio.
+
+## DAY335 — el Vagrantfile, sin descargas de terceros sin verificar: cpp-httplib, etcd-cpp-apiv3, Kuzu y Temurin con su commit, hash o clave; fuera Atomic Red Team, CMake y Crypto++ de la red [TERCEROS-GIT-FIJADO-D335] [TERCEROS-HTTPLIB-D335] [TERCEROS-ETCDCPP-D335] [TERCEROS-ATOMIC-FUERA-D335] [TERCEROS-KUZU-D335] [TERCEROS-CMAKE-CRYPTOPP-D335] [TERCEROS-TEMURIN-D335]
+
+### Hecho DAY335
+- **Inventario de descargas** del `Vagrantfile` y de los `scripts/` de aprovisionamiento: `git grep` de `wget`, `curl`,
+  `git clone` y `pip install` (el de `wget`/`curl` solo no ve los dos últimos). Cada uno, a una lente.
+- **Un solo EMECAS+++ production desde cero para las siete lentes**, apiladas, sobre `terceros/d335-temurin`
+  (`959173fb2`): **VERDE en 4h30m** (`logs/lab/emecas/emecas_20261123_085823.log`). En el log, los cinco instaladores
+  dan ✅ con su commit o SHA256, ningún reintento de clon, Jenkins 2.580.2 instalado con el Java de Temurin.
+- **PRs**: #183 (pieza 1) a main (merge `9a454c71b`). #184 a #189 se mergearon cada uno en su base apilada (la rama del
+  anterior) y no llegaron a main; los mismos siete commits entraron con #190 (`terceros/d335-temurin`, merge
+  `10896f29d`). Comprobado: `git diff --stat 959173fb2 main` vacío (main es lo que pasó el EMECAS). Los parcheadores
+  d335 van a `archivo/parcheadores-d335`, **solo con push, sin PR**.
+- **Pieza 1, `scripts/terceros/lib_git_fijado.sh`** (#183, `88e26c103` y `899a55742`): `gf_version_valida`,
+  `gf_commit_de_fichero` y `gf_clonar` salen de `libbpf_instalar.sh` sin cambiar una línea; libbpf la carga. `gf_clonar`
+  reintenta el clon hasta 3 veces (`GF_INTENTOS`, como el `wget -t 3` de los demás), 10 s entre intentos
+  (`GF_ESPERA_S`), avisando por stderr; si el tag apunta a otro commit, para al primero. `test-lib-git-fijado`: 28
+  casos, 16 rechazos (repositorio de juguete con un tag movido y un `git` falso que falla los N primeros clones).
+  `88e26c103` crea la biblioteca ya con los reintentos aunque su mensaje solo hable de estos (las dos piezas se
+  aplicaron sin commitear la primera); lo deja dicho `899a55742`.
+- **cpp-httplib** (`4b5f51550`): `provisioning/cpp-httplib/{VERSION,COMMIT}` (0.67.0, `7800c3dc…`) y
+  `scripts/terceros/cpphttplib_instalar.sh`. Antes, `git clone` de la rama principal, sin tag ni commit. Marca
+  `/usr/local/lib/argus-cpp-httplib.commit` con el commit y el sha256 de la `httplib.h` instalada.
+  `test-cpphttplib-instalar`: 16 casos, 7 rechazos.
+- **etcd-cpp-apiv3** (`8a3bcfb88`): `provisioning/etcd-cpp-apiv3/{VERSION,COMMIT}` (0.15.3, `e31ac4d4…`) y
+  `scripts/terceros/etcdcpp_instalar.sh`. Antes, `git checkout v0.15.3` sin comprobar a qué apuntaba, y un fallo de
+  `make` no paraba. Para si falla cmake, make o make install. Marca `/usr/local/lib/argus-etcd-cpp-api.commit`.
+  `test-etcdcpp-instalar`: 19 casos, 8 rechazos.
+- **Atomic Red Team, fuera** (`066c25294`, decisión de Alonso): se clonaba sin commit en el client y nada lo usaba.
+  `55328a21a` quita su mención de la cabecera de `lib_git_fijado.sh`.
+- **Kuzu** (`63f588fa8`): `provisioning/kuzu/{VERSION,SHA256}` (0.11.3, `e99f9671…`) y
+  `scripts/terceros/kuzu_instalar.sh` con `wget`. Fuera el `curl`, la URL y el sha256 escritos en el `Vagrantfile` y la
+  rama `PENDIENTE_PINEAR`, que instalaba sin comprobar. Saca `libkuzu.so`, `kuzu.hpp` y `kuzu.h` por nombre exacto
+  (antes `kuzu.h` era opcional). Marca `/usr/local/lib/argus-kuzu.sha256` con el SHA256 y el de los tres ficheros.
+  `test-kuzu-instalar`: 27 casos, 18 rechazos.
+- **CMake y Crypto++, solo de apt** (`7cdad3182`): fuera el instalador de CMake 3.25.0 y el zip de Crypto++ 8.7.0,
+  bajados con `wget` sin hash y ejecutados como root. Quedan la comprobación de cmake >= 3.20 y el `apt-get`, que paran
+  si fallan.
+- **Temurin** (`959173fb2`): `provisioning/temurin/{VERSION,CLAVE}` (`21.0.7.0.0+6-0`, huella
+  `3B04D753C9050D9A5D343F39843C48A565F8F04B`) y `scripts/terceros/temurin_instalar.sh` con `repo_oficial` e
+  `instalar_fijado` de `lib_apt_oficial.sh`, en hold; borra `/root/.sdkman`. Lo llama `jenkins_instalar.sh`, que toma
+  `JAVA_DIR` del paquete; si falla, rc 3 y el lab sigue sin Jenkins (decisión DAY323). Fuera el
+  `curl -s https://get.sdkman.io | bash` como root, y `unzip` y `zip`, que solo usaba SDKMAN. `test-temurin-instalar`:
+  19 casos, 9 rechazos.
+- Todos los tests nuevos van en el EMECAS, detrás de `test-libbpf-instalar`, y cada rechazo falla contra funciones que
+  lo aceptan todo.
+
+### Medido DAY335
+- **Antes de tocar nada, en el defender y el client**: cmake 3.25.1 de apt en `/usr/bin` y nada en `/usr/local/bin`;
+  `libcrypto++-dev` 8.7.0 en `ii` y nada en `/usr/local/include/cryptopp` (las dos ramas de descarga no se ejecutaban);
+  `httplib.h` dice 0.67.0; `libetcd-cpp-api.so` en `/usr/local/lib`; Java de SDKMAN Temurin-21.0.7+6; atomic-red-team en
+  `a0e3f9bc…` (2026-11-06).
+- **Tags ligeros** (una línea en `git ls-remote`, sin `^{}`): cpp-httplib `v0.67.0` → `7800c3dc…` («Release v0.67.0»,
+  yhirose, 2026-11-18); etcd-cpp-apiv3 `v0.15.3` → `e31ac4d4…` (Tao He, 2023-07-27); Kuzu `v0.11.3` → `27cba5b9…`.
+  Ninguno firmado. Lo instalado de cpp-httplib venía de la rama principal: decía 0.67.0 sin saber de qué commit.
+- **Kuzu**: el digest sha256 que GitHub muestra junto a `libkuzu-linux-x86_64.tar.gz` en la release (visto por Alonso
+  en el navegador) es `e99f9671…`, el que fijaba el `Vagrantfile`. El tarball (8,09 MB) trae `kuzu.h`, `kuzu.hpp` y
+  `libkuzu.so` en su raíz; la versión solo va como cadena dentro de la `.so`.
+- **etcd-cpp-apiv3 v0.15.3**: con el build por defecto, la única biblioteca real es `libetcd-cpp-api.so`, sin SOVERSION;
+  la versión queda en `lib/cmake/etcd-cpp-api/etcd-cpp-api-config-version.cmake`. **El build no es reproducible bit a
+  bit**: tres compilaciones del mismo commit, tres sha256 de la `.so` (dos en el entorno de Claude, `d230cdbc…` en el
+  EMECAS). Lo que se contrasta con el mantenedor es el commit; el sha256 de la marca solo sirve para ver si la `.so`
+  cambia después.
+- **Atomic Red Team**: nada lo usaba (`git grep` sin docs: solo el clon y el `echo` de herramientas; `mitre-start` usa
+  nmap, hydra y sqlmap). El clon superficial ocupa 419 MB y cada EMECAS+++ lo volvía a bajar.
+- **Temurin**: la huella de la clave de `packages.adoptium.net` es la misma que publica Adoptium en
+  `adoptium.net/installation/gpg-verification/` (contrastada por Alonso); con ella, `gpgv` da firma buena al
+  `InRelease` de bookworm. El `.deb` de `temurin-21-jdk` (177 MB) deja el JDK en `/usr/lib/jvm/temurin-21-jdk-amd64`,
+  depende de `adoptium-ca-certificates` (del mismo repositorio) y su `postinst` registra `java`, `javac`… en
+  `update-alternatives` con prioridad 2111. Con otro JDK de igual prioridad ya instalado (el OpenJDK 21 de Ubuntu, en el
+  entorno de Claude), `/usr/bin/java` se queda con el que estaba: el empate no lo cambia. En el defender no hay otro.
+  Jenkins usa `JAVA_HOME` con la ruta explícita.
+- Nada más usaba `unzip` ni `zip` (ONNX Runtime abre el `.nupkg` con el `zipfile` de Python).
+
+### Decisiones de Alonso DAY335
+- Jenkins se queda en el lab: sirve para probar que construye los binarios de un futuro entorno y que habla con Vault,
+  Ansible, Jinja2 y git.
+- Todas las lentes en un mismo EMECAS (PRs apilados).
+- Un clon que falla se reintenta: 3 intentos y, si no, para y avisa.
+- Atomic Red Team, fuera hasta que empiece RESEARCH-MITRE-ATTACK-RANSOMWARE-001.
+
+### Deudas
+- **DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001**: avanza (título arriba). El `Vagrantfile` ya no tiene descargas de
+  terceros sin verificar (las de apt van por `lib_apt_oficial.sh`). Queda la **lente pip**: `pip3 install` en el
+  `Vagrantfile` sin `--hash` (`ml-training/requirements-ddos-pinned.txt` tiene 8 `==` y ningún `--hash`; `jinja2`,
+  `semgrep` y `cryptography` van sin versión). Merece su EMECAS: `semgrep` arrastra muchas dependencias.
+- **DEBT-LAB-PROVISION-SCRIPT-MUERTO-001**: se añade `scripts/install-ml-detector-deps.sh` (baja CMake y ONNX Runtime de
+  GitHub; no lo llama nadie).
+- **DEBT-REPO-PARCHEADORES-EN-MAIN-001**: se añaden `tools/fix_vagrantfile_day160.py` y `fix_firewall_odr.py` (en la
+  raíz), parcheadores viejos que siguen en main.
+- **DEBT-TERCEROS-DESCARGA-COMUN-001 — ABIERTA (nueva DAY335, menor)**: los instaladores que bajan un fichero con `wget`
+  y su SHA256 (etcd, Kuzu, ONNX Runtime, libsodium) repiten las mismas funciones (versión, fichero de hash, sha256
+  portátil, descarga). Llevarlas a una biblioteca, como `lib_git_fijado.sh` para los de git, sin cambiar lo que hacen;
+  un PR con su EMECAS.
+- **DEBT-LAB-VERSIONES-TERCEROS-001**: cpp-httplib, etcd-cpp-apiv3, Kuzu y Temurin ya están en
+  `provisioning/<producto>/`. Subir de versión es otro cambio, con su EMECAS: hay etcd-cpp-apiv3 v0.15.4 (`ba621638…`) y
+  Temurin 21 más recientes que la 21.0.7 (abril de 2025); Kuzu no tendrá más (archivado).
+
+### Lecciones DAY335
+- En una pila de PRs, mergear uno cuya base no es main no lo lleva a main: o se borra la rama al mergear (GitHub pasa
+  el siguiente a main) o se cambia la base del siguiente antes de pulsar. Al final, `git diff --stat <commit del
+  EMECAS> main` vacío.
+- Al aplicar dos piezas seguidas, commitear cada una antes de empezar la siguiente.
+- `git grep -e wget -e curl` no ve los `git clone` ni los `pip install`: también son descargas.
+- Antes de fijar algo, preguntar quién lo usa: Atomic Red Team no lo usaba nadie, y las descargas de CMake y Crypto++ no
+  se ejecutaban. Retirar es más barato que fijar.
+- Un build desde fuentes puede no ser reproducible: el sha256 de lo compilado no es una referencia; lo que se contrasta
+  es el commit.
+- La huella de una clave, por dos canales: la de la clave descargada y la que publica el mantenedor en su web.
+- Con dos alternativas de igual prioridad, `update-alternatives` mantiene la que estaba: no suponer a qué apunta
+  `/usr/bin/java`; usar la ruta explícita.
+- Antes del EMECAS, `git status`: un `curl` lanzado en la raíz del repo dejó `adopt.json` sin trackear.
