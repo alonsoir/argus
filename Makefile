@@ -1317,6 +1317,7 @@ emecas:
 	@$(EMECAS_PASO) test-lib-git-fijado -- $(MAKE) test-lib-git-fijado
 	@$(EMECAS_PASO) test-libbpf-instalar -- $(MAKE) test-libbpf-instalar
 	@$(EMECAS_PASO) test-cpphttplib-instalar -- $(MAKE) test-cpphttplib-instalar
+	@$(EMECAS_PASO) test-etcdcpp-instalar -- $(MAKE) test-etcdcpp-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1432,6 +1433,14 @@ test-libbpf-instalar:
 .PHONY: test-cpphttplib-instalar
 test-cpphttplib-instalar:
 	@bash scripts/terceros/test_cpphttplib_instalar.sh
+
+# [TERCEROS-ETCDCPP-D335] test-etcdcpp-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/etcdcpp_instalar.sh
+# (versión del fichero de CMake, la marca con el commit y el sha256 de la libetcd-cpp-api.so instalada) y
+# provisioning/etcd-cpp-apiv3/{VERSION,COMMIT}, también contra funciones que lo aceptan todo. El tag contra el commit y
+# los reintentos, en test-lib-git-fijado.
+.PHONY: test-etcdcpp-instalar
+test-etcdcpp-instalar:
+	@bash scripts/terceros/test_etcdcpp_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:

@@ -469,16 +469,12 @@ Vagrant.configure("2") do |config|
       # plugin_test_message — build gestionado por make pipeline-build (requiere plugin-loader instalado)
       # NO buildear aquí: plugin-loader headers no disponibles en este punto del provisioning
 
-      # etcd-cpp-api
-      if [ ! -f /usr/local/lib/libetcd-cpp-api.so ] && [ ! -f /usr/local/lib/libetcd-cpp-api.a ]; then
-        cd /tmp && rm -rf etcd-cpp-apiv3
-        git clone https://github.com/etcd-cpp-apiv3/etcd-cpp-apiv3.git
-        cd etcd-cpp-apiv3 && git checkout v0.15.3
-        mkdir build && cd build
-        cmake .. -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=/usr/local
-        make -j4 && make install
-        ldconfig
-      fi
+      # [TERCEROS-ETCDCPP-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente etcd-cpp-apiv3: libetcd-cpp-api.so
+      # compilada desde el repositorio oficial (github.com/etcd-cpp-apiv3/etcd-cpp-apiv3) en el tag de
+      # provisioning/etcd-cpp-apiv3/VERSION, comprobado contra el commit de provisioning/etcd-cpp-apiv3/COMMIT
+      # (scripts/terceros/etcdcpp_instalar.sh). Antes: git clone y checkout del tag sin comprobar a qué apuntaba, y un
+      # fallo de make no paraba. Si falla, para aquí.
+      bash /vagrant/scripts/terceros/etcdcpp_instalar.sh || { echo "❌ etcd-cpp-apiv3"; exit 1; }
 
       # [TERCEROS-HTTPLIB-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente cpp-httplib: httplib.h del repositorio
       # oficial (github.com/yhirose/cpp-httplib) en el tag de provisioning/cpp-httplib/VERSION, comprobado contra el commit
