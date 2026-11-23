@@ -434,13 +434,13 @@ Vagrant.configure("2") do |config|
       # Testing tools (para gateway testing)
       apt-get install -y hping3 nmap tcpreplay netcat-openbsd iperf3 net-tools dnsutils
 
-      # CMake 3.25+
+      # [TERCEROS-CMAKE-CRYPTOPP-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: CMake viene de apt (en la lista
+      # de arriba; bookworm trae la 3.25.1). Antes, si faltaba o era < 3.20, se bajaba con wget el instalador 3.25.0 de
+      # GitHub, sin hash, y se ejecutaba como root. Medido DAY335: esa rama no se ejecutaba nunca (cmake 3.25.1 en
+      # /usr/bin, nada en /usr/local/bin). Queda la comprobación: sin cmake >= 3.20, para aquí.
       CMAKE_VERSION=$(cmake --version 2>/dev/null | head -1 | awk '{print $3}')
       if [ -z "$CMAKE_VERSION" ] || [ "$(printf '%s\n' "3.20" "$CMAKE_VERSION" | sort -V | head -n1)" != "3.20" ]; then
-        cd /tmp
-        wget -q https://github.com/Kitware/CMake/releases/download/v3.25.0/cmake-3.25.0-linux-x86_64.sh
-        sh cmake-3.25.0-linux-x86_64.sh --prefix=/usr/local --skip-license
-        rm cmake-3.25.0-linux-x86_64.sh
+        echo "❌ cmake de apt: '$CMAKE_VERSION', se necesita >= 3.20"; exit 1
       fi
 
       # [TERCEROS-SODIUM-D331] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001: libsodium (crypto-transport necesita
@@ -483,14 +483,12 @@ Vagrant.configure("2") do |config|
       # qué commit). Si falla, para aquí.
       bash /vagrant/scripts/terceros/cpphttplib_instalar.sh || { echo "❌ cpp-httplib"; exit 1; }
 
-      # Crypto++
+      # [TERCEROS-CMAKE-CRYPTOPP-D335] Crypto++ de apt (libcrypto++-dev; bookworm trae la 8.7.0). Antes, si apt
+      # fallaba, se bajaba con wget cryptopp870.zip de cryptopp.com, sin hash, y se compilaba e instalaba como root.
+      # Medido DAY335: esa rama no se ejecutaba (libcrypto++-dev en ii, nada en /usr/local/include/cryptopp). Si apt
+      # falla, para aquí.
       if [ ! -f /usr/include/cryptopp/cryptlib.h ] && [ ! -f /usr/local/include/cryptopp/cryptlib.h ]; then
-        apt-get install -y libcrypto++-dev libcrypto++-doc libcrypto++-utils || {
-          cd /tmp
-          wget https://www.cryptopp.com/cryptopp870.zip
-          unzip cryptopp870.zip -d cryptopp
-          cd cryptopp && make -j4 && make install
-        }
+        apt-get install -y libcrypto++-dev libcrypto++-doc libcrypto++-utils || { echo "❌ Crypto++ de apt"; exit 1; }
       fi
 
       # Sudoers
