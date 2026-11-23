@@ -1,0 +1,9 @@
+# provisioning/cpp-httplib/COMMIT — [TERCEROS-HTTPLIB-D335] commit del repositorio oficial de cpp-httplib
+# (https://github.com/yhirose/cpp-httplib) al que apunta el tag v<VERSION> de provisioning/cpp-httplib/VERSION. Medido
+# DAY335: el tag v0.67.0 es ligero (sin objeto tag ni firma) y apunta a 7800c3dc5b33285cbb18baa5998de4ff7ef63515,
+# "Release v0.67.0" (yhirose, 2026-11-18), commit sin firma; git ls-remote da el mismo. cpp-httplib no publica firma ni
+# hash de sus versiones: lo que manda es este commit (SHA-1 de git). Un tag ligero se puede mover; si el tag deja de
+# apuntar aquí, la instalación para. Antes (hasta DAY334) se clonaba la rama principal, sin tag ni commit: el lab tenía
+# una httplib.h que dice 0.67.0 sin saber de qué commit.
+# Si cambia VERSION, cambia esto (medido igual). Una sola línea sin comentar: 40 hexadecimales en minúscula.
+7800c3dc5b33285cbb18baa5998de4ff7ef63515

@@ -480,13 +480,12 @@ Vagrant.configure("2") do |config|
         ldconfig
       fi
 
-      # cpp-httplib
-      if [ ! -f /usr/local/include/httplib.h ]; then
-        cd /tmp && rm -rf cpp-httplib
-        git clone https://github.com/yhirose/cpp-httplib.git
-        mkdir -p /usr/local/include
-        cp cpp-httplib/httplib.h /usr/local/include/
-      fi
+      # [TERCEROS-HTTPLIB-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente cpp-httplib: httplib.h del repositorio
+      # oficial (github.com/yhirose/cpp-httplib) en el tag de provisioning/cpp-httplib/VERSION, comprobado contra el commit
+      # de provisioning/cpp-httplib/COMMIT (scripts/terceros/cpphttplib_instalar.sh). Antes: git clone de la rama
+      # principal, sin tag ni commit, y solo si no había httplib.h (medido DAY335: la del lab decía 0.67.0 sin saber de
+      # qué commit). Si falla, para aquí.
+      bash /vagrant/scripts/terceros/cpphttplib_instalar.sh || { echo "❌ cpp-httplib"; exit 1; }
 
       # Crypto++
       if [ ! -f /usr/include/cryptopp/cryptlib.h ] && [ ! -f /usr/local/include/cryptopp/cryptlib.h ]; then

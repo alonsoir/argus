@@ -1316,6 +1316,7 @@ emecas:
 	@$(EMECAS_PASO) test-etcd-instalar -- $(MAKE) test-etcd-instalar
 	@$(EMECAS_PASO) test-lib-git-fijado -- $(MAKE) test-lib-git-fijado
 	@$(EMECAS_PASO) test-libbpf-instalar -- $(MAKE) test-libbpf-instalar
+	@$(EMECAS_PASO) test-cpphttplib-instalar -- $(MAKE) test-cpphttplib-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1423,6 +1424,14 @@ test-lib-git-fijado:
 .PHONY: test-libbpf-instalar
 test-libbpf-instalar:
 	@bash scripts/terceros/test_libbpf_instalar.sh
+
+# [TERCEROS-HTTPLIB-D335] test-cpphttplib-instalar (Mac, sin VMs ni red): las funciones de
+# scripts/terceros/cpphttplib_instalar.sh (versión de la cabecera, la marca con el commit y el sha256 de la httplib.h
+# instalada) y provisioning/cpp-httplib/{VERSION,COMMIT}, también contra funciones que lo aceptan todo. El tag contra el
+# commit y los reintentos, en test-lib-git-fijado.
+.PHONY: test-cpphttplib-instalar
+test-cpphttplib-instalar:
+	@bash scripts/terceros/test_cpphttplib_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
