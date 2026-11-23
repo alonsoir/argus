@@ -1314,6 +1314,7 @@ emecas:
 	@$(EMECAS_PASO) test-vault-instalar -- $(MAKE) test-vault-instalar
 	@$(EMECAS_PASO) test-arrow-instalar -- $(MAKE) test-arrow-instalar
 	@$(EMECAS_PASO) test-etcd-instalar -- $(MAKE) test-etcd-instalar
+	@$(EMECAS_PASO) test-lib-git-fijado -- $(MAKE) test-lib-git-fijado
 	@$(EMECAS_PASO) test-libbpf-instalar -- $(MAKE) test-libbpf-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
@@ -1409,9 +1410,16 @@ test-arrow-instalar:
 test-etcd-instalar:
 	@bash scripts/terceros/test_etcd_instalar.sh
 
+# [TERCEROS-GIT-FIJADO-D335] test-lib-git-fijado (Mac, sin VMs ni red): las funciones de scripts/terceros/lib_git_fijado.sh
+# (VERSION, COMMIT y el tag contra el commit fijado, con un repositorio git de juguete y un tag movido), las que
+# comparten los instaladores que traen código de terceros por git; también contra funciones que lo aceptan todo.
+.PHONY: test-lib-git-fijado
+test-lib-git-fijado:
+	@bash scripts/terceros/test_lib_git_fijado.sh
+
 # [TERCEROS-LIBBPF-D334] test-libbpf-instalar (Mac, sin VMs ni red): las funciones de scripts/terceros/libbpf_instalar.sh
-# (VERSION, COMMIT, el tag contra el commit fijado con un repositorio git de juguete, y a qué libbpf.so.1 resuelve
-# ldconfig) y provisioning/libbpf/{VERSION,COMMIT}, también contra funciones que lo aceptan todo.
+# (a qué libbpf.so.1 resuelve ldconfig y qué se exige de la carga) y provisioning/libbpf/{VERSION,COMMIT}, también contra
+# funciones que lo aceptan todo. Versión, COMMIT y tag, en test-lib-git-fijado desde DAY335.
 .PHONY: test-libbpf-instalar
 test-libbpf-instalar:
 	@bash scripts/terceros/test_libbpf_instalar.sh
