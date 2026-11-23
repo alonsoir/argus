@@ -17,8 +17,8 @@
 #     libbpf.so.1 se resuelve a /usr/lib64/libbpf.so.<VERSION>; si no, para: la 1.1.2 tiene el fallo de mapas BPF que
 #     se corrigió en la 1.2.0.
 # Idempotente: si la marca /usr/local/lib/argus-libbpf.commit dice este commit, pkg-config da esta versión y libbpf.so.1
-# se resuelve a la nuestra, no baja ni compila nada. Las funciones lb_* no tocan el sistema (las prueba
-# scripts/terceros/test_libbpf_instalar.sh en el Mac, sin red: con un repositorio git hecho allí).
+# se resuelve a la nuestra, no baja ni compila nada. Las funciones lb_*, y las gf_* de lib_git_fijado.sh, no tocan el
+# sistema (las prueban scripts/terceros/test_libbpf_instalar.sh y test_lib_git_fijado.sh en el Mac, sin red).
 set -u
 LC_ALL=C; export LC_ALL
 log() { echo "[TERCEROS-LIBBPF] $*"; }
@@ -26,29 +26,9 @@ fallo() { echo "[TERCEROS-LIBBPF] FALLA: $*"; exit 1; }
 LB_URL=https://github.com/libbpf/libbpf.git
 LB_LIBDIR=/usr/lib64
 
-# lb_version_valida VERSION -> rc 0 si es X.Y.Z (la cadena entera: un salto de línea dentro también es error)
-lb_version_valida() {
-  [[ "$1" =~ ^[0-9]{1,3}[.][0-9]{1,3}[.][0-9]{1,3}$ ]]
-}
-
-# lb_commit_de_fichero FICHERO -> la única línea sin comentar, si son 40 hex en minúscula; rc 1 si no
-lb_commit_de_fichero() {
-  local s
-  s=$(grep -v '^#' "$1" 2>/dev/null | tr -d ' \t\r' | grep -v '^$')
-  [ "$(printf '%s\n' "$s" | grep -c .)" = 1 ] || return 1
-  printf '%s\n' "$s" | grep -Eqx '[0-9a-f]{40}' || return 1
-  printf '%s\n' "$s"
-}
-
-# lb_clonar URL TAG DESTINO COMMIT -> clona TAG (solo ese, profundidad 1) en DESTINO y rc 0 si HEAD es COMMIT; si no,
-# rc 1 y el commit al que apunta por la salida. No compila nada.
-lb_clonar() {
-  local h
-  git -c advice.detachedHead=false clone -q --depth 1 --branch "$2" "$1" "$3" >/dev/null 2>&1 \
-    || { echo "no se pudo clonar el tag $2 de $1"; return 1; }
-  h=$(git -C "$3" rev-parse HEAD 2>/dev/null)
-  [ "$h" = "$4" ] || { echo "el tag $2 apunta a ${h:-nada}, se exige $4"; return 1; }
-}
+# gf_version_valida, gf_commit_de_fichero y gf_clonar: [TERCEROS-GIT-FIJADO-D335] en lib_git_fijado.sh, a su lado (la
+# comparten los instaladores que traen código de terceros por git)
+. "$(dirname "${BASH_SOURCE[0]}")/lib_git_fijado.sh" || fallo "no se pudo cargar lib_git_fijado.sh"
 
 # lb_primera_resolucion TEXTO_LDCONFIG -> la ruta de la primera entrada libbpf.so.1 de `ldconfig -p` (la que usa el
 # cargador); vacío si no hay
@@ -77,8 +57,8 @@ main() {
   local src=${LIBBPF_SRC:-/vagrant/provisioning/libbpf} v c tmp r marca=/usr/local/lib/argus-libbpf.commit
   [ "$(id -u)" = 0 ] || fallo "hay que ejecutarlo como root"
   v=$(tr -d '[:space:]' < "$src/VERSION" 2>/dev/null)
-  lb_version_valida "$v" || fallo "$src/VERSION: '$v' mal formado (X.Y.Z: p. ej. 1.4.6). ERROR DE FABRICANTE: avisar a aRGus"
-  c=$(lb_commit_de_fichero "$src/COMMIT") || fallo "$src/COMMIT: hace falta una línea sin comentar de 40 hexadecimales en minúscula. ERROR DE FABRICANTE: avisar a aRGus"
+  gf_version_valida "$v" || fallo "$src/VERSION: '$v' mal formado (X.Y.Z: p. ej. 1.4.6). ERROR DE FABRICANTE: avisar a aRGus"
+  c=$(gf_commit_de_fichero "$src/COMMIT") || fallo "$src/COMMIT: hace falta una línea sin comentar de 40 hexadecimales en minúscula. ERROR DE FABRICANTE: avisar a aRGus"
   log "versión $v y commit ${c:0:12}... (de $src)"
   if r=$(lb_estado "$v" "$c" "$marca"); then
     log "✅ libbpf $v ya instalada (marca $marca; libbpf.so.1 -> $LB_LIBDIR/libbpf.so.$v)"; return 0
@@ -86,7 +66,7 @@ main() {
   log "hay que instalar: $r"
   apt-get install -y libelf-dev zlib1g-dev pkg-config git >/dev/null || fallo "apt-get install libelf-dev zlib1g-dev pkg-config git"
   tmp=$(mktemp -d)
-  r=$(lb_clonar "$LB_URL" "v$v" "$tmp/libbpf" "$c") || { rm -rf "$tmp"; fallo "$r"; }
+  r=$(gf_clonar "$LB_URL" "v$v" "$tmp/libbpf" "$c") || { rm -rf "$tmp"; fallo "$r"; }
   log "tag v$v clonado de $LB_URL y comprobado: commit $c"
   make -C "$tmp/libbpf/src" -j"$(nproc)" >/dev/null || { rm -rf "$tmp"; fallo "make de libbpf"; }
   make -C "$tmp/libbpf/src" install install_headers >/dev/null || { rm -rf "$tmp"; fallo "make install de libbpf"; }
