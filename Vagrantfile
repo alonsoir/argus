@@ -1178,13 +1178,10 @@ BASHRC_EOF
           python3 python3-pip git \
           || { echo "FATAL: herramientas base no instaladas"; exit 1; }
 
-          # Atomic Red Team (ground truth reproducible — DEBT-ARGUSPP-MITRE-001)
-          if [ ! -d /opt/atomic-red-team ]; then
-            git clone --depth 1 \
-              https://github.com/redcanaryco/atomic-red-team.git \
-              /opt/atomic-red-team || \
-              echo "⚠️  atomic-red-team clone failed — red team offline mode"
-          fi
+          # [TERCEROS-ATOMIC-FUERA-D335] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 (decisión de Alonso DAY335): aquí se
+          # clonaba Atomic Red Team (rama principal, --depth 1, sin commit fijado, 419 MB medidos DAY335) en
+          # /opt/atomic-red-team, y nada lo usaba (git grep: ni mitre-start ni ningún script). Entrará, con su commit
+          # fijado, cuando empiece RESEARCH-MITRE-ATTACK-RANSOMWARE-001.
 
           # NTP sync — community_id requiere timestamps coherentes
           systemctl enable chrony
@@ -1203,7 +1200,7 @@ BASHRC_EOF
           echo "=== CLIENT READY ==="
           echo "   IP      : 192.168.100.50"
           echo "   Gateway : 192.168.100.1 (defender eth2)"
-          echo "   Tools   : nmap hydra sqlmap tcpreplay atomic-red-team"
+          echo "   Tools   : nmap hydra sqlmap tcpreplay"
         CLIENT
 
     # [ARGUS-LAB-NTP-D294] el client toma la hora del defender, su pasarela (el client no tiene salida a Internet
