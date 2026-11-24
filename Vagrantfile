@@ -429,7 +429,12 @@ Vagrant.configure("2") do |config|
         libgtest-dev libssl-dev libcpprest-dev cmake
 
       # Python
-      apt-get install -y python3 python3-pip python3-venv python3-dev
+      # [PYTHON-APT-D336] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente pip: jinja2 (la usa Ansible) y
+      # cryptography (enterprise/scripts/generate_token.py) de Debian, de la fecha fijada; nunca de pip. Medido DAY336:
+      # los pip3 install de antes no bajaban nada (pip daba por buenos los de apt). Si un import no resuelve a
+      # /usr/lib/python3/dist-packages, para aquí (scripts/terceros/python_apt.sh).
+      apt-get install -y python3 python3-pip python3-venv python3-dev python3-jinja2 python3-cryptography
+      bash /vagrant/scripts/terceros/python_apt.sh || { echo "❌ Python de apt (python_apt.sh)"; exit 1; }
 
       # Testing tools (para gateway testing)
       apt-get install -y hping3 nmap tcpreplay netcat-openbsd iperf3 net-tools dnsutils
@@ -627,7 +632,6 @@ BASHRC_EOF
       if ! command -v ansible &>/dev/null; then
         echo "📦 Instalando Ansible + Jinja2..."
         apt-get install -y ansible
-        pip3 install jinja2 --break-system-packages --quiet
         echo "✅ Ansible $(ansible --version | head -1) instalado"
         echo "✅ Jinja2 $(python3 -c 'import jinja2; print(jinja2.__version__)')"
       else
@@ -949,8 +953,8 @@ BASHRC_EOF
       echo "✅ secret/argus/crypto recreado"
 
       # ── 2. Python cryptography (si no está) ───────────────────────────
-      python3 -c "import cryptography" 2>/dev/null || \
-        pip3 install cryptography --break-system-packages --quiet
+      # [PYTHON-APT-D336] python3-cryptography lo pone la provisión base (apt); aquí solo se comprueba, sin instalar
+      bash /vagrant/scripts/terceros/python_apt.sh || { echo "❌ Python de apt (python_apt.sh)"; exit 1; }
 
       # ── 3. Generar nuevo keypair Ed25519 enterprise ────────────────────
       echo "🔑 Generando nuevo keypair enterprise (Modelo B)..."

@@ -1320,6 +1320,7 @@ emecas:
 	@$(EMECAS_PASO) test-etcdcpp-instalar -- $(MAKE) test-etcdcpp-instalar
 	@$(EMECAS_PASO) test-kuzu-instalar -- $(MAKE) test-kuzu-instalar
 	@$(EMECAS_PASO) test-temurin-instalar -- $(MAKE) test-temurin-instalar
+	@$(EMECAS_PASO) test-python-apt -- $(MAKE) test-python-apt
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1458,6 +1459,14 @@ test-kuzu-instalar:
 .PHONY: test-temurin-instalar
 test-temurin-instalar:
 	@bash scripts/terceros/test_temurin_instalar.sh
+
+# [PYTHON-APT-D336] test-python-apt (Mac, sin VMs ni red): las funciones de scripts/terceros/python_apt.sh (de dónde
+# resuelve un import, qué línea instala con pip) y el Vagrantfile (sin pip3 install de jinja2 ni cryptography, con
+# python3-jinja2 y python3-cryptography en el apt-get de Python, dos llamadas a python_apt.sh), también contra
+# funciones que lo aceptan todo. En el defender lo comprueba la propia provisión.
+.PHONY: test-python-apt
+test-python-apt:
+	@bash scripts/terceros/test_python_apt.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
