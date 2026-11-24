@@ -619,7 +619,7 @@ BASHRC_EOF
         . /vagrant/scripts/vigilancia/lib_apt_oficial.sh
         repo_oficial falcosecurity https://falco.org/repo/falcosecurity-packages.asc /vagrant/provisioning/falco/CLAVE \
           https://download.falco.org/packages/deb "stable main" || { echo "❌ repositorio de Falco"; exit 1; }
-        apt-get update -qq
+        actualizar_indices || { echo "❌ apt-get update (repositorio de Falco)"; exit 1; }
         (cd /vagrant/dist/vendor && apt-get download "falco=${FV}") || { echo "❌ apt-get download falco=${FV}"; exit 1; }
         echo "✅ Falco ${FV} .deb descargado en /vagrant/dist/vendor/"
       fi
@@ -1427,7 +1427,7 @@ BASHRC_EOF
       . /vagrant/scripts/vigilancia/lib_apt_oficial.sh
       repo_oficial wazuh https://packages.wazuh.com/key/GPG-KEY-WAZUH /vagrant/provisioning/wazuh/CLAVE \
         https://packages.wazuh.com/4.x/apt/ "stable main" || { echo "❌ repositorio de Wazuh"; exit 1; }
-      apt-get update -qq
+      actualizar_indices || { echo "❌ apt-get update (repositorio de Wazuh)"; exit 1; }
       # [VIGILANCIA-D321] versión FIJA (provisioning/wazuh/VERSION, la misma para manager y agentes): sin fijar, apt
       # instalaba la última del día (medido DAY321: el lab tenía 4.14.9-1 y apt daba ya 4.14.10-1).
       WV=$(tr -d '[:space:]' < /vagrant/provisioning/wazuh/VERSION)

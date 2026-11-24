@@ -66,7 +66,7 @@ log "estado: instalado '${TENGO:-ninguno}', hold '${FIJADO:-no}'"
 # 2 y 3 repo oficial e instalación fijada
 repo_oficial wazuh https://packages.wazuh.com/key/GPG-KEY-WAZUH "$SRC/CLAVE" \
   https://packages.wazuh.com/4.x/apt/ "stable main" || fallo "repositorio de Wazuh"
-apt-get update -qq || fallo "apt-get update"
+actualizar_indices || fallo "apt-get update"
 # WAZUH_MANAGER/WAZUH_AGENT_NAME/WAZUH_AGENT_GROUP solo los usa una instalación nueva; una actualización conserva
 # ossec.conf (vacía, WAZUH_AGENT_GROUP no pide grupo).
 WAZUH_MANAGER="$M" WAZUH_AGENT_NAME="$NOMBRE" WAZUH_AGENT_GROUP="$GRUPO" instalar_fijado wazuh-agent "$V" \

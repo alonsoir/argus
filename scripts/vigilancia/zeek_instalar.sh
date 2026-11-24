@@ -82,7 +82,7 @@ main() {
   . "$lib"
   repo_oficial zeek https://download.opensuse.org/repositories/security:/zeek/Debian_12/Release.key "$src/CLAVE" \
     http://download.opensuse.org/repositories/security:/zeek/Debian_12/ "/" || fallo "repositorio de Zeek"
-  apt-get update -qq || fallo "apt-get update"
+  actualizar_indices || fallo "apt-get update"
   actuales=$(zeek_instalados | cut -d= -f1)
   [ -z "$actuales" ] || apt-mark unhold $actuales >/dev/null
   DEBIAN_FRONTEND=noninteractive apt-get install -y "zeek-$s" || fallo "apt-get install zeek-$s"

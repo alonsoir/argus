@@ -45,7 +45,7 @@ else
   log "estado: instalado '${TENGO:-ninguno}', hold '${FIJADO:-no}'; se instala falco $V"
   repo_oficial falcosecurity https://falco.org/repo/falcosecurity-packages.asc "$SRC/CLAVE" \
     https://download.falco.org/packages/deb "stable main" || fallo "repositorio de Falco"
-  apt-get update -qq || fallo "apt-get update"
+  actualizar_indices || fallo "apt-get update"
   # Sin diálogos: driver modern_ebpf y sin seguimiento automático de reglas (postinst del paquete 0.43.1).
   FALCO_FRONTEND=noninteractive FALCO_DRIVER_CHOICE=modern_ebpf FALCOCTL_ENABLED=no \
     instalar_fijado falco "$V" || fallo "instalación de falco $V"

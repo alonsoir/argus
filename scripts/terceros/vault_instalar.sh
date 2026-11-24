@@ -63,7 +63,7 @@ main() {
     log "vault $v ya instalado"
   else
     log "instalando vault $v (instalado antes: ${actual:-ninguno})"
-    apt-get update -qq || fallo "apt-get update"
+    actualizar_indices || fallo "apt-get update"
     instalar_fijado vault "$v" || fallo "vault $v"
   fi
   linea=$(vault version 2>&1 | head -1)

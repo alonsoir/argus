@@ -1,0 +1,6 @@
+# provisioning/apt-oficial/ESPERAS_S — [APT-REINTENTO-D336] esperas, en segundos, entre los intentos de apt-get update
+# tras añadir un repositorio oficial (scripts/vigilancia/lib_apt_oficial.sh, actualizar_indices). Intentos = esperas + 1.
+# Formato: enteros separados por espacios o por líneas; las líneas que empiezan por # no cuentan. Límites: de 1 a 5
+# esperas, cada una de 0 a 600 s. Ausente o mal formado: 30 60 (3 intentos), con aviso en el log.
+# Medido DAY336: download.falco.org dio 503 y 504 en las tres corridas del día, cada vez a una VM distinta.
+30 60

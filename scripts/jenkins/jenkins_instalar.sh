@@ -43,7 +43,7 @@ bash "$RAIZ/scripts/terceros/temurin_instalar.sh" || retirar "Temurin (Java en $
 # shellcheck source=../vigilancia/lib_apt_oficial.sh
 . "$RAIZ/scripts/vigilancia/lib_apt_oficial.sh"
 repo_oficial jenkins "$URL_CLAVE" "$CLAVE" "$URL_REPO" "binary/" || retirar "la clave de $URL_CLAVE no se pudo comprobar con $CLAVE"
-apt-get update -qq || retirar "apt-get update falló con el repositorio de Jenkins"
+actualizar_indices || retirar "apt-get update falló con el repositorio de Jenkins"
 # Nunca una pregunta de dpkg (DEBIAN_FRONTEND solo cubre debconf): confdef/confold y sin terminal
 DEBIAN_FRONTEND=noninteractive apt-get install -y -o Dpkg::Options::=--force-confdef -o Dpkg::Options::=--force-confold \
   jenkins < /dev/null || retirar "apt-get install jenkins falló"
