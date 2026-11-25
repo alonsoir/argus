@@ -7834,10 +7834,13 @@ Contratos protobuf propios entre sniffer y ml-detector y entre ml-detector y fir
 forma optimizada. El contrato actual (NetworkSecurityEvent unico) quedara deprecado. Los campos reservados en DAY306
 son el primer paso.
 
-### DEBT-DDOS-V2-PINNED-ENV-001 — ABIERTA
+### DEBT-DDOS-V2-PINNED-ENV-001 — CERRADA DAY337 (#198)
 ml-training/requirements-ddos-pinned.txt lo instala el Vagrantfile (linea 417), pero su comentario documenta el
 entorno de la manivela v1 (sha 56f0c5ae, DAY256). Medir con que entorno se entrena la v2
 (export_ddos_v2_fact_rf.py) y reescribir el comentario o el pin.
+Cerrada DAY337: la v2 se entrenó con sklearn 1.9.0 (cabecera de ddos_v2_forest_inline.hpp); del resto de versiones no
+quedó registro. El fichero y su comentario salen del repo; el entorno, con su cierre entero y sus hashes, está en
+provisioning/ml-entreno/requirements.txt (make ml-entreno). Ver DAY337.
 
 ### DEBT-REPO-RESIDUOS-001 — ampliada DAY306
 tools/generate_synthetic_events.cpp y los targets day38-step2/day38-step3 (escriben a logs/rag/, RAG retirado
@@ -10021,7 +10024,7 @@ de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMO
 ### DEBT-LAB-GRUB-INSTALL-DEVICES-001 — CERRADA DAY330 (#167)
 Ver arriba. Queda sin medir de dónde salió el valor el DAY329; ya no se depende de él.
 
-### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; inventario y siete lentes DAY335, #183 y #190: el Vagrantfile, sin descargas sin verificar; lente pip partida en A-D DAY336, A hecho (jinja2 y cryptography de Debian), quedan B entorno ML, C pyarrow y D semgrep; ver DAY336)
+### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; inventario y siete lentes DAY335, #183 y #190: el Vagrantfile, sin descargas sin verificar; lente pip partida en A-D DAY336: A hecho (#192, jinja2 y cryptography de Debian), B hecho DAY337 (#196 validate_roundtrip.py sin numpy y #198 el entorno de entrenamiento ML a un venv opcional con hashes), quedan C pyarrow y D semgrep; ver DAY336 y DAY337)
 Descargas de terceros en los aprovisionadores sin el sha256/SHA512 o la firma que publica su mantenedor y sin comprobar
 que terminaron, en bloques sin `set -e`. Hecho: ONNX Runtime. Quedan, al menos: libsodium 1.0.19 y XGBoost 3.2.0 (en el
 mismo bloque `all-dependencies`, junto al de ONNX) y lo que se baje con `wget`/`curl` en el `Vagrantfile` y los
@@ -10565,7 +10568,8 @@ una rama de archivo; EMECAS+++ verde desde cero.
   hashes de `pip3 download` en el defender contrastados con PyPI; el test, también con el sha `56f0c5ae` del `.hpp`,
   que hoy no comprueba nadie), **C** pyarrow 26.0.1 (hash de arriba, a la provisión, como root) y **D** semgrep (venv
   opcional; quitarlo de la base deja de tapar urllib3 y protobuf de apt: medirlo después).
-- **DEBT-APT-OFICIAL-UPDATE-SIN-REINTENTO-001 — nueva y hecha DAY336** (B′, pendiente de merge).
+- **DEBT-APT-OFICIAL-UPDATE-SIN-REINTENTO-001 — nueva y hecha DAY336** (B′; en main por el #195, DAY337: el #193
+  se mergeó en la rama de A).
 - **DEBT-LAB-APT-DEBIAN-UPDATE-SIN-COMPROBAR-001 — ABIERTA (nueva DAY336, menor)**: los `apt-get update -qq` contra el
   Debian fijado del `Vagrantfile` (unos cinco: toolchain de adapters, herramientas de red, unbound, Suricata, Zeek)
   tampoco comprueban nada; con `actualizar_indices`.
@@ -10592,3 +10596,90 @@ una rama de archivo; EMECAS+++ verde desde cero.
 - Tras destruir el lab, esperar a que baje la carga antes de lanzar el EMECAS.
 - Un programa que da a un agente el teclado de tus terminales es un shell remoto: inventario (procesos, launchd,
   `~/Library`, llavero, repo) y fuera. Al mover a la Papelera varias rutas que acaban igual, un destino por ruta.
+
+## DAY337 — merge de A y B′; lente pip B: validate_roundtrip.py sin numpy y el entorno de entrenamiento ML a un venv opcional con hashes [PARQUET-SIN-NUMPY-D337] [ML-ENTRENO-D337]
+
+### Hecho DAY337
+- **Merge de DAY336**: A entró por el **#192** (`fb2d636ee`). El **#193** (B′) se mergeó con su base de partida,
+  `terceros/d336-python-apt` (`67447f2ba`), y no llegó a main; B′ entró por el **#195** (`f1a902246`), el mismo
+  `b9e19ed17`, sin EMECAS nuevo: `git diff --stat b9e19ed17 main` solo dio los dos ficheros de docs del **#194**
+  (`159d6987c`). DEBT-APT-OFICIAL-UPDATE-SIN-REINTENTO-001 queda cerrada en main por el #195.
+- **#196, `terceros/d337-parquet-sin-numpy`** (`797f5547d`, merge `b2b0ab384`): la comprobación de `timestamp_utc_ns`
+  en todas las filas pasa a `scripts/parquet/filas_ts.py` (`fallos_ts`: nulos, `< TS_MIN_NS`, del futuro, no múltiplo
+  de 1 ms), solo con `pyarrow.compute`, lineal; `validate_roundtrip.py` la usa y ya no importa numpy. Mismos mensajes
+  que la función de antes: 0 diferencias en 20000 columnas aleatorias (nulos, varios trozos, negativos, extremos de
+  int64, valores en el límite); el validador entero, igual con un Parquet bueno (`ROUNDTRIP PASSED`) y con uno malo (los
+  mismos 3 `FAIL`). `scripts/parquet/test_filas_ts.py`, en el defender con numpy bloqueado
+  (`sys.modules['numpy'] = None`): 15 casos, 9 rechazos contra una función que lo acepta todo; contra el validador de
+  antes, 2 fallos. En `make test-parquet`, antes del roundtrip.
+- **#198, `terceros/d337-ml-entreno`** (`59a8d32bd`, merge `e0b36abf2`): el entorno de entrenamiento ML sale de la
+  provisión base. `provisioning/ml-entreno/requirements.txt`: el cierre entero, 10 paquetes, cada uno con el sha256 de
+  su wheel cp311 (los 8 de `requirements-ddos-pinned.txt`, más narwhals 2.29.0 y six 1.17.0).
+  `scripts/terceros/ml_entreno_instalar.sh`: como root, venv `/opt/argus/ml-entreno`, `--require-hashes --no-deps
+  --only-binary=:all:`, `pip check` y `pip freeze` exactamente igual al lock; si ya lo es, no baja nada. `make
+  ml-entreno`, opcional y fuera del EMECAS. Fuera del `Vagrantfile` el `pip3 install -r requirements-ddos-pinned.txt` y
+  fuera el fichero. `test-ml-entreno` en el Mac (35 casos, 23 rechazos contra funciones que lo aceptan todo; contra el
+  `Vagrantfile` de antes, 1 fallo), en el EMECAS tras `test-apt-oficial-reintento`. El **#197** se mergeó con su base de
+  partida, `terceros/d337-parquet-sin-numpy` (`c52f487a1`), y no llegó a main: tercera vez (DAY335, #193, #197); el
+  #198 lleva el mismo `59a8d32bd`, y `git diff --stat 59a8d32bd main` sale vacío.
+- **EMECAS+++ production desde cero de #196 y #198 apilados**: **VERDE en 5h08m**
+  (`logs/lab/emecas/emecas_20261125_094402.log`). `✅ test-parquet-filas`, `ROUNDTRIP PASSED` y `✅ test-ml-entreno`.
+
+### Medido DAY337
+- **Quién usa el entorno ML**: de los 28 `.py` que nombra el Makefile, solo `validate_roundtrip.py` importa algo de él
+  (numpy). 40 `.py` importan pandas, sklearn, scipy, joblib, dateutil, pytz o narwhals: ninguno lo llama el Makefile,
+  el `Vagrantfile`, un `.sh` o un `.yml` (solo los nombra, para renombrarlos, `scripts/cleanup_scripts.sh`, que no llama
+  nadie); los que se llaman entre sí son de análisis o entrenamiento. El sha `56f0c5ae` (`.hpp` v1) y `ddos-regen` se
+  borraron DAY306: ya no hay nada que comprobar con él.
+- **La v2 de DDoS**: cabecera de `ddos_v2_forest_inline.hpp`: `sklearn 1.9.0; random_state 42; K de entrenamiento 3;
+  2026-10-10T04:20:04Z` (consolidado `f3d6b261…`, `logs/lab/day292/`, fuera del repo). Del resto de versiones no quedó
+  registro.
+- **pyarrow 26.0.1 sin numpy**: `requires_dist` vacío en PyPI; en un venv sin numpy, `import pyarrow` y
+  `pyarrow.compute` funcionan y `to_numpy()` da `ImportError`; el validador de antes, `ModuleNotFoundError`.
+- **Los 10 sha256 del lock**, iguales por tres caminos: `pip download` en el defender, `pip download` fuera del lab y
+  la API JSON de PyPI.
+- **El defender (lab de DAY336)**: Python 3.11.2; las 8 versiones fijadas y narwhals ya en la 2.29.0 (la última, sin
+  fijar); six 1.16.0 de apt (`/usr/lib/python3/dist-packages`); numpy de pip (`/usr/local`); `python3-venv` instalado
+  (está en el `apt-get` de Python del `Vagrantfile`). `make ml-entreno` en ese lab: los 10 instalados (8 desde la caché
+  de pip de root, pytz y six bajados), `No broken requirements found`; la segunda y la tercera, sin descargas; sklearn
+  1.9.0, pandas 3.0.5, scipy 1.17.1, pip 23.0.1.
+- **El defender recién provisionado (tras el EMECAS)**: `import numpy` da `ModuleNotFoundError`; de numpy,
+  scikit-learn, pandas, scipy, joblib, threadpoolctl, narwhals y pyarrow, `pip3 list` solo muestra pyarrow 26.0.1;
+  `/opt/argus/ml-entreno` no existe.
+- **Los 41 min de más del EMECAS frente a DAY336 son de red**: vagrant-up 44m20s (+17m25s) y vagrant-provision 56m23s
+  (+13m20s). Suma de los `Fetched … in …` de apt por paso: los mismos 1318,4 MB en vagrant-up, en 1143 s frente a 251 s,
+  y 2429,1 MB en vagrant-provision, en 1188 s frente a 420 s (+1660 s, unos 28 min). Todas las VMs, más lentas (control-2,
+  317 s frente a 40 s en vagrant-up). 0 reintentos de `apt-get update` en las dos corridas. El resto, unos 10 min
+  repartidos entre los pasos de las VMs.
+
+### Decisiones de Alonso DAY337
+- Lente pip B como **B2**: el entorno de entrenamiento ML fuera de la base, a un target opcional con venv y lock de
+  hashes (como D, semgrep); en un venv, no en el Python del sistema.
+- `validate_roundtrip.py` sin numpy: «eliminar superficie de contacto innecesaria; menos a verificar».
+- DEBT-DDOS-V2-PINNED-ENV-001, cerrada con lo medido (solo la versión de sklearn).
+- La frase del README sobre terceros (línea 87: «All third-party software…»), se corrige en un PR de README al cerrar
+  la lente pip.
+- Pilas de PRs: el segundo se abre cuando el primero ya está en main, contra main.
+
+### Deudas
+- **DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001**: avanza. Lente pip: **A** (#192) y **B** (#196 y #198) hechos.
+  Quedan **C** pyarrow 26.0.1 y **D** semgrep.
+- **DEBT-DDOS-V2-PINNED-ENV-001 — CERRADA DAY337 (#198)**.
+- **DEBT-APT-OFICIAL-UPDATE-SIN-REINTENTO-001 — CERRADA DAY337 (#195)**.
+- **DEBT-EMECAS-RESUMEN-APT-001 — ABIERTA (nueva DAY337, menor)**: que `resumen.md` muestre, al lado de cada paso, la
+  suma de los `Fetched <MB> in <tiempo>` de apt (MB y segundos), para que una corrida lenta por la red se explique
+  sola.
+- **DEBT-LAB-TERCEROS-CACHE-CORRIDA-001**: se añade lo medido hoy (28 min de apt más lento en una corrida).
+
+### Lecciones DAY337
+- **Pilas de PRs**: tres veces se ha mergeado un PR con base distinta de main (DAY335, #193, #197); avisar de cambiar
+  la base antes de pulsar no basta. El EMECAS se corre sobre la punta de la pila; el segundo PR se abre después del
+  merge del primero, ya contra main.
+- **Ningún número sin su medida**: Claude dio el sha256 de un script como calculado sin haberlo calculado. El script
+  llegó entero; el número era inventado. Todo sha256 o cifra que se presente como medida sale de una herramienta
+  ejecutada en la sesión, sobre los mismos bytes.
+- Antes de quitar algo de la base, buscar quién lo usa por debajo (`to_numpy()`); mejor quitar la dependencia que
+  verificarla.
+- `sys.modules['x'] = None` en un test prueba que el código no usa `x` aunque siga instalado.
+- Un EMECAS lento: sumar los `Fetched` de apt por VM antes de sospechar del PR.
+- En zsh, nada de `<…>` en un comando: lo toma por redirección.
