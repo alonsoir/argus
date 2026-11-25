@@ -1244,7 +1244,11 @@ parquet-convert:
 	@echo "📦 Converting CSVs to Parquet..."
 	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 generate_parquet.py"
 
+# [PARQUET-SIN-NUMPY-D337] test_filas_ts.py (en el defender, con numpy bloqueado): las comprobaciones de
+# timestamp_utc_ns de filas_ts.py, que validate_roundtrip.py usa, sin numpy; también contra una función que lo acepta
+# todo. Va antes del roundtrip y después de parquet-convert, que es quien instala pyarrow.
 test-parquet: parquet-convert
+	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 test_filas_ts.py"
 	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 validate_roundtrip.py"
 
 test-all: test-libs test-components test-provision-1 test-invariant-seed plugin-integ-test argus-network-isolate-test test-parquet host-engine-test
