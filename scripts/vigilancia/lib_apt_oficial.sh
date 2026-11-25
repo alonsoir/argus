@@ -48,6 +48,8 @@ repo_oficial() {
 # pone quien llama.
 instalar_fijado() {
   local paquete=$1 version=$2 got
+  ao_version_visible "$paquete" "$version" \
+    || { echo "[APT-OFICIAL] FALLA: $paquete $version no está en los índices de apt (¿repositorio no disponible o versión retirada?)"; return 1; }
   apt-mark unhold "$paquete" >/dev/null 2>&1 || true
   DEBIAN_FRONTEND=noninteractive apt-get install -y --allow-downgrades "$paquete=$version" \
     || { echo "[APT-OFICIAL] FALLA: apt-get install $paquete=$version"; return 1; }
@@ -55,4 +57,58 @@ instalar_fijado() {
   got=$(dpkg-query -W -f='${Version}' "$paquete" 2>/dev/null)
   [ "$got" = "$version" ] || { echo "[APT-OFICIAL] FALLA: instalado $paquete '$got', se exige '$version'"; return 1; }
   echo "[APT-OFICIAL] $paquete $got instalado y fijado (apt-mark hold)"
+}
+
+# [APT-REINTENTO-D336] DEBT-APT-OFICIAL-UPDATE-SIN-REINTENTO-001. Medido DAY336 (apt 2.6.2): con un repositorio caído,
+# `apt-get update` escribe «W: Failed to fetch» y sale con 0, y el fallo aparecía después como «Unable to locate
+# package»; con --error-on=any sale con 100. Los repositorios oficiales se actualizan con actualizar_indices, que
+# reintenta con las esperas de provisioning/apt-oficial/ESPERAS_S.
+AO_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
+AO_ESPERAS_DEFECTO="30 60"
+
+# ao_esperas FICHERO — escribe en la salida las esperas validadas; en la de errores, de dónde salen. Ausente o mal
+# formado: AO_ESPERAS_DEFECTO, con aviso.
+ao_esperas() {
+  local f=$1 v n=0 e malo=""
+  if [ ! -r "$f" ]; then
+    echo "[APT-OFICIAL] AVISO: no leo $f; esperas por defecto: $AO_ESPERAS_DEFECTO s" >&2
+    echo "$AO_ESPERAS_DEFECTO"; return 0
+  fi
+  v=$(grep -v '^[[:space:]]*#' "$f" | tr '\n\t' '  ')
+  for e in $v; do
+    n=$((n + 1))
+    case "$e" in ''|*[!0-9]*) malo="'$e' no es un entero"; break ;; esac
+    [ "${#e}" -le 3 ] && [ "$e" -le 600 ] || { malo="'$e' fuera de 0..600"; break; }
+  done
+  if [ -z "$malo" ] && { [ "$n" -lt 1 ] || [ "$n" -gt 5 ]; }; then malo="$n esperas (de 1 a 5)"; fi
+  if [ -n "$malo" ]; then
+    echo "[APT-OFICIAL] AVISO: $f mal formado ($malo; enteros de 0 a 600, de 1 a 5); esperas por defecto: $AO_ESPERAS_DEFECTO s" >&2
+    echo "$AO_ESPERAS_DEFECTO"; return 0
+  fi
+  echo "[APT-OFICIAL] esperas entre intentos de apt-get update: $(echo $v) s (de $f)" >&2
+  echo $v
+}
+
+# actualizar_indices — apt-get update -qq --error-on=any, con reintentos. Devuelve 0 si algún intento sale bien; 1 si
+# fallan todos, con las líneas de error de apt en el log.
+actualizar_indices() {
+  local esperas e i=0 n salida
+  esperas=$(ao_esperas "${APT_OFICIAL_ESPERAS:-$AO_DIR/../../provisioning/apt-oficial/ESPERAS_S}")
+  n=0; for e in $esperas -; do n=$((n + 1)); done
+  for e in $esperas -; do
+    i=$((i + 1))
+    if salida=$(apt-get update -qq --error-on=any 2>&1); then
+      [ "$i" = 1 ] || echo "[APT-OFICIAL] apt-get update bien al intento $i de $n"
+      return 0
+    fi
+    echo "[APT-OFICIAL] apt-get update, intento $i de $n, falla: $(printf '%s\n' "$salida" | grep -E '^(E|W): ' | grep -v 'Some index files' | head -3 | tr '\n' ' ')"
+    [ "$e" = - ] || sleep "$e"
+  done
+  echo "[APT-OFICIAL] FALLA: apt-get update sin éxito en $n intentos (repositorio no disponible)"
+  return 1
+}
+
+# ao_version_visible PAQUETE VERSION — 0 si esa versión exacta está en los índices de apt (apt-cache madison).
+ao_version_visible() {
+  apt-cache madison "$1" 2>/dev/null | awk -F'|' -v v="$2" '{gsub(/[ \t]/, "", $2)} $2 == v {f = 1} END {exit !f}'
 }

@@ -67,7 +67,7 @@ main() {
   fi
   repo_oficial apache-arrow https://downloads.apache.org/arrow/KEYS "$src/CLAVE" \
     https://packages.apache.org/artifactory/arrow/debian/ "bookworm main" || fallo "repositorio de Apache Arrow"
-  apt-get update -qq || fallo "apt-get update"
+  actualizar_indices || fallo "apt-get update"
   lista=$(ls /var/lib/apt/lists/*_artifactory_arrow_debian_dists_bookworm_InRelease 2>/dev/null)
   n=$(printf '%s\n' "$lista" | grep -c .)
   if [ "$n" = 1 ] && firma=$(gpgv --keyring "$anillo" "$lista" 2>&1 | arrow_firmante); then

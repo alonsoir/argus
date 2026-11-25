@@ -1321,6 +1321,7 @@ emecas:
 	@$(EMECAS_PASO) test-kuzu-instalar -- $(MAKE) test-kuzu-instalar
 	@$(EMECAS_PASO) test-temurin-instalar -- $(MAKE) test-temurin-instalar
 	@$(EMECAS_PASO) test-python-apt -- $(MAKE) test-python-apt
+	@$(EMECAS_PASO) test-apt-oficial-reintento -- $(MAKE) test-apt-oficial-reintento
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1467,6 +1468,14 @@ test-temurin-instalar:
 .PHONY: test-python-apt
 test-python-apt:
 	@bash scripts/terceros/test_python_apt.sh
+
+# [APT-REINTENTO-D336] test-apt-oficial-reintento (Mac, sin VMs ni red): actualizar_indices, ao_esperas y
+# ao_version_visible de scripts/vigilancia/lib_apt_oficial.sh con apt-get y apt-cache de juguete (503 con y sin
+# --error-on=any, como se midió en DAY336), provisioning/apt-oficial/ESPERAS_S y quién los llama; también contra las
+# funciones de antes y contra funciones que lo aceptan todo.
+.PHONY: test-apt-oficial-reintento
+test-apt-oficial-reintento:
+	@bash scripts/vigilancia/test_apt_oficial_reintento.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:

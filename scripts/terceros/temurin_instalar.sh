@@ -67,7 +67,7 @@ main() {
     . "$(dirname "${BASH_SOURCE[0]}")/../vigilancia/lib_apt_oficial.sh" || fallo "no se pudo cargar lib_apt_oficial.sh"
     repo_oficial adoptium "$TM_URL_CLAVE" "$src/CLAVE" "$TM_URL_REPO" "$codigo main" \
       || { tm_retirar; fallo "la clave de $TM_URL_CLAVE no se pudo comprobar con $src/CLAVE (repositorio retirado)"; }
-    apt-get update -qq || { tm_retirar; fallo "apt-get update con el repositorio de Adoptium (repositorio retirado)"; }
+    actualizar_indices || { tm_retirar; fallo "apt-get update con el repositorio de Adoptium (repositorio retirado)"; }
     instalar_fijado "$paquete" "$v" || { tm_retirar; fallo "apt-get install $paquete=$v (repositorio retirado)"; }
     tm_java_cuadra "$v" "$("$dir/bin/java" -version 2>&1)" \
       || { tm_retirar; fallo "$dir/bin/java no dice $(tm_esperado "$v") (repositorio retirado)"; }
