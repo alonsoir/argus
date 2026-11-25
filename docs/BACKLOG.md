@@ -10021,7 +10021,7 @@ de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMO
 ### DEBT-LAB-GRUB-INSTALL-DEVICES-001 — CERRADA DAY330 (#167)
 Ver arriba. Queda sin medir de dónde salió el valor el DAY329; ya no se depende de él.
 
-### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; inventario y siete lentes DAY335, #183 y #190: el Vagrantfile, sin descargas sin verificar; queda la lente pip; ver DAY335)
+### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; inventario y siete lentes DAY335, #183 y #190: el Vagrantfile, sin descargas sin verificar; lente pip partida en A-D DAY336, A hecho (jinja2 y cryptography de Debian), quedan B entorno ML, C pyarrow y D semgrep; ver DAY336)
 Descargas de terceros en los aprovisionadores sin el sha256/SHA512 o la firma que publica su mantenedor y sin comprobar
 que terminaron, en bloques sin `set -e`. Hecho: ONNX Runtime. Quedan, al menos: libsodium 1.0.19 y XGBoost 3.2.0 (en el
 mismo bloque `all-dependencies`, junto al de ONNX) y lo que se baje con `wget`/`curl` en el `Vagrantfile` y los
@@ -10498,3 +10498,97 @@ una rama de archivo; EMECAS+++ verde desde cero.
 - Con dos alternativas de igual prioridad, `update-alternatives` mantiene la que estaba: no suponer a qué apunta
   `/usr/bin/java`; usar la ruta explícita.
 - Antes del EMECAS, `git status`: un `curl` lanzado en la raíz del repo dejó `adopt.json` sin trackear.
+
+## DAY336 — lente pip (A): jinja2 y cryptography de Debian; apt-get update de los repositorios oficiales con reintentos [PYTHON-APT-D336] [APT-REINTENTO-D336]
+
+### Hecho DAY336
+- **Inventario de la lente pip**, medido en el defender (lab de DAY335): 67 paquetes de pip. 9 del entorno ML (los 8
+  de `requirements-ddos-pinned.txt` y `narwhals` 2.29.0, que pide scikit-learn 1.9.0 y no está fijado); pyarrow 26.0.1
+  en `/home/vagrant/.local` (lo instala `parquet-convert` con `pip3 install --upgrade pyarrow`, en cada EMECAS, como
+  `vagrant`); 57 de semgrep 1.186.0 (mcp, uvicorn, starlette, httpx, pydantic, diez de opentelemetry…). jinja2 3.1.2 y
+  cryptography 38.0.4 salen de apt: sus `pip3 install` no bajaban nada. Script de medida: `medir_pip_d336.sh`.
+- **PR A, `terceros/d336-python-apt`** (`d96372349`): fuera `pip3 install jinja2` y `pip3 install cryptography`;
+  `python3-jinja2` y `python3-cryptography` en el `apt-get` de Python, de la fecha fijada.
+  `scripts/terceros/python_apt.sh` comprueba que los dos `import` resuelven a `/usr/lib/python3/dist-packages`, en la
+  provisión y en `vault-enterprise-bootstrap` (que ya no instala nada). `test-python-apt` en el Mac: 17 casos, 10
+  rechazos contra funciones que lo aceptan todo; contra el `Vagrantfile` de antes, 3 fallos.
+- **PR B′, `terceros/d336-apt-reintento`**, apilado sobre el A (DEBT-APT-OFICIAL-UPDATE-SIN-REINTENTO-001):
+  `actualizar_indices` en `lib_apt_oficial.sh` hace `apt-get update -qq --error-on=any` con las esperas de
+  `provisioning/apt-oficial/ESPERAS_S` (30 60: 3 intentos; ausente o mal formado, 30 60 con aviso). `instalar_fijado`
+  comprueba antes con `ao_version_visible` (`apt-cache madison`) que la versión fijada está en los índices. La usan
+  falco, zeek, wazuh-agente, vault, arrow, temurin, jenkins y dos bloques del `Vagrantfile` (`dist/vendor` de Falco y
+  wazuh-manager), que antes no comprobaban ni el código de salida. `test-apt-oficial-reintento`: 34 casos, 10 rechazos
+  contra las funciones de antes (`apt-get update -qq` a secas); contra el árbol de antes, 30 fallos.
+- **EMECAS+++ production desde cero de A y B′ apilados**: **VERDE en 4h27m**
+  (`logs/lab/emecas/emecas_20261124_190219.log`). Antes, cuatro corridas en rojo, ninguna por el PR:
+  `emecas_20261124_074510.log` (paso 35, test-firewall-e2e: el caso A8 de `test_protegidos_antispoof_root`),
+  `emecas_20261124_135805.log` (paso 3, anfitrion-recursos: carga 21,69 recién destruido el lab) y
+  `emecas_20261124_140644.log` y `emecas_20261124_153352.log` (paso 6, provisión: `download.falco.org` dio 503 a
+  control-1). En las cinco, las cuatro líneas `[PYTHON-APT] ✅`.
+- **Fuera del repo**: Orca (stablyai, IDE de agentes), Codex de OpenAI y opencode, borrados del Mac. Orca tenía un
+  servicio en launchd (`com.stablyai.orca.terminal…`) con dos shells abiertos, uno con `opencode` dentro; no dejó
+  worktrees, ramas ni hooks en el repo. Pendiente de Alonso: revocar las sesiones y claves en OpenAI y en el proveedor
+  de opencode.
+
+### Medido DAY336
+- **pyarrow**: la 26.0.1 (PyPI, 3-nov-2026) es la que pasó el EMECAS verde de DAY335: `RECORD` del 23-nov 09:57 UTC y
+  `ROUNDTRIP PASSED` con 150 307 filas del firewall. Solo la usan `generate_parquet.py` y `validate_roundtrip.py` (las
+  dos puntas, Python); el wheel trae su libarrow, ajena a la Arrow C++ 24.0.0 del pipeline. Wheel
+  `pyarrow-26.0.1-cp311-cp311-manylinux_2_28_x86_64.whl`, sha256 según PyPI `39cb0f2418282c24bea6ceda77b03e5a8f0a5766b63a8bf194d4e2a2c423548c`.
+- pandas 3.0.5 no pide `tzdata` (no está instalado). `urllib3` 2.8.0 y `protobuf` 6.33.6 vienen de pip (semgrep) y
+  van antes que los de apt en `sys.path`; sin medir a qué resuelve el `requests` de apt.
+- **El A8 de antispoof es intermitente**: 1 fallo en 36 logs del EMECAS (el de hoy); repetido 5 veces seguidas, 5
+  verdes. El CHECK de la línea 158 junta dos condiciones y no dice cuál falla.
+- **Falco**: solo lo instalan defender y control-1/2/3. `download.falco.org` falló en las tres corridas que llegaron a
+  la provisión: 504 en control-3 a las 07:45 (IP `3.67.33.93`, después de instalar, en un `update` que salió con 0 y
+  nadie vio) y 503 en control-1 a las 14:06 y a las 15:33 (IP `3.77.103.135`). No falla siempre en la misma petición:
+  servidor intermitente, no un límite por número de peticiones.
+- **apt 2.6.2** (control-1, con `download.falco.org` llevado a `127.0.0.1:9` solo en la línea de comandos): sin opción,
+  `W: Failed to fetch` y rc 0; con `--error-on=any`, `E: Failed to fetch` y rc 100. En el defender, un `update` normal
+  con la opción da rc 0.
+- Recién destruidas las 8 VMs, la carga a 5 min del Mac llega a 21,69 y tarda unos 8 min en bajar de 6: el EMECAS
+  destruye en el paso 1 y mide en el paso 3, así que con el lab encendido conviene destruirlo antes y esperar.
+- `dist/vendor/falco_<V>_amd64.deb` ya es una caché (ADR-030), pero su `CHECKSUMS` se regenera con el `sha256sum` de lo
+  bajado: referencia circular.
+
+### Decisiones de Alonso DAY336
+- semgrep sale de la provisión base a un target opcional que lo instala en un venv con su lock de hashes (lo usa solo
+  `make audit`, que no está en el EMECAS).
+- pyarrow 26.0.1, fijada con su hash; la instala la provisión y `parquet-convert` solo comprueba.
+- B′ (reintento) antes que la caché. La caché de descargas, **opcional** (apagada por defecto). En producción habrá
+  siempre un repositorio cacheado en la intranet, para no abrir más puertos a internet de los necesarios.
+- Fuera Orca, Codex y opencode del Mac. El merge de A y B′ a main, lo primero de DAY337.
+
+### Deudas
+- **DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001**: avanza. La lente pip, partida: **A** hecho (jinja2, cryptography).
+  Quedan **B** entorno ML (`narwhals==2.29.0` y `--hash` en los 9, con `--require-hashes --no-deps` y `pip3 check`;
+  hashes de `pip3 download` en el defender contrastados con PyPI; el test, también con el sha `56f0c5ae` del `.hpp`,
+  que hoy no comprueba nadie), **C** pyarrow 26.0.1 (hash de arriba, a la provisión, como root) y **D** semgrep (venv
+  opcional; quitarlo de la base deja de tapar urllib3 y protobuf de apt: medirlo después).
+- **DEBT-APT-OFICIAL-UPDATE-SIN-REINTENTO-001 — nueva y hecha DAY336** (B′, pendiente de merge).
+- **DEBT-LAB-APT-DEBIAN-UPDATE-SIN-COMPROBAR-001 — ABIERTA (nueva DAY336, menor)**: los `apt-get update -qq` contra el
+  Debian fijado del `Vagrantfile` (unos cinco: toolchain de adapters, herramientas de red, unbound, Suricata, Zeek)
+  tampoco comprueban nada; con `actualizar_indices`.
+- **DEBT-FIREWALL-ANTISPOOF-A8-INTERMITENTE-001 — ABIERTA (nueva DAY336)**: A8 de `test_protegidos_antispoof_root`
+  (línea 158, modo descarta). Primero partir el CHECK en dos para saber qué condición falla; hipótesis sin medir: los
+  300 ms de `usleep` o el `DROP` de raw aún no aplicado.
+- **DEBT-LAB-TERCEROS-CACHE-CORRIDA-001 — ABIERTA (nueva DAY336)**: bajar cada artefacto una vez y copiarlo a las VMs
+  que lo usan (Falco en 4, wazuh-agent en varias, etcd en 3). Opcional, apagada por defecto, encendida desde el JSON del
+  lab. La autoridad es el hash del repo (`provisioning/<producto>/`), comprobado en cada VM; la caché solo transporta.
+  Los de apt, con `apt-get download` en la primera VM y `apt-get install ./<deb>` en las demás. Partir de
+  `dist/vendor/` y dejar de regenerar su `CHECKSUMS`. Por producto, empezando por Falco. El mismo mecanismo apuntará
+  en producción al repositorio de la intranet.
+- **DEBT-EMECAS-ESPERA-ANFITRION-001**: se añade lo medido hoy (destruir y medir enseguida da 21,69).
+
+### Lecciones DAY336
+- Un `pip install` sin `--upgrade` da por bueno lo de apt y no baja nada: antes de fijar, ver a qué fichero resuelve
+  el `import`.
+- `--require-hashes` pide el cierre entero: medir el árbol (`pip3 show`, `Requires:`), no solo las versiones; así salió
+  `narwhals`.
+- `vagrant ssh -c` corre como `vagrant`: un `pip install` sin root acaba en `~/.local`.
+- `apt-get update` sale con 0 con un repositorio caído: `--error-on=any`.
+- Un servidor intermitente no deja patrón: contar en los logs por VM y corrida antes de construir hipótesis (la del
+  límite por número de peticiones no se sostuvo).
+- Tras destruir el lab, esperar a que baje la carga antes de lanzar el EMECAS.
+- Un programa que da a un agente el teclado de tus terminales es un shell remoto: inventario (procesos, launchd,
+  `~/Library`, llavero, repo) y fuera. Al mover a la Papelera varias rutas que acaban igual, un destino por ruta.
