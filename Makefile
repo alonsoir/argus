@@ -1326,6 +1326,7 @@ emecas:
 	@$(EMECAS_PASO) test-temurin-instalar -- $(MAKE) test-temurin-instalar
 	@$(EMECAS_PASO) test-python-apt -- $(MAKE) test-python-apt
 	@$(EMECAS_PASO) test-apt-oficial-reintento -- $(MAKE) test-apt-oficial-reintento
+	@$(EMECAS_PASO) test-ml-entreno -- $(MAKE) test-ml-entreno
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1480,6 +1481,19 @@ test-python-apt:
 .PHONY: test-apt-oficial-reintento
 test-apt-oficial-reintento:
 	@bash scripts/vigilancia/test_apt_oficial_reintento.sh
+
+# [ML-ENTRENO-D337] ml-entreno (opcional, fuera del EMECAS): el entorno de entrenamiento de las cabezas ML en el
+# defender, en el venv /opt/argus/ml-entreno, desde provisioning/ml-entreno/requirements.txt (el cierre entero, con
+# --require-hashes --no-deps); si ya está, no baja nada. Uso:
+#   vagrant ssh defender -c "/opt/argus/ml-entreno/bin/python3 /vagrant/ml-training/scripts/ddos_detection/<script>"
+# test-ml-entreno (Mac, sin VMs ni red): el lock, la comparación con pip freeze, que el Vagrantfile ya no instala el
+# entorno ML y que el fichero de antes no existe; también contra funciones que lo aceptan todo.
+.PHONY: ml-entreno test-ml-entreno
+ml-entreno:
+	@vagrant ssh defender -c "sudo bash /vagrant/scripts/terceros/ml_entreno_instalar.sh"
+
+test-ml-entreno:
+	@bash scripts/terceros/test_ml_entreno.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
