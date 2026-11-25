@@ -461,13 +461,10 @@ Vagrant.configure("2") do |config|
       # para aquí.
       bash /vagrant/scripts/terceros/onnxruntime_instalar.sh || { echo "❌ ONNX Runtime"; exit 1; }
 
-      # Dependencias Python PINNEADAS del crank ML in-VM (RF DDoS).
-      # DEUDA-DDOS-REPRO-PIN: versiones exactas o abortar. SIN fallback apt: los
-      # python3-pandas/python3-sklearn del repo producen otro entorno → otro sha.
-      pip3 install -r /vagrant/ml-training/requirements-ddos-pinned.txt \
-      --break-system-packages --timeout=300 || {
-      echo "❌ deps ML pinneadas fallaron — NO se cae a apt (reproducibilidad)"; exit 1;
-      }
+      # [ML-ENTRENO-D337] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente pip B: el entorno de entrenamiento ML
+      # (numpy, scikit-learn, pandas, scipy y su cierre) ya no se instala en la base. Medido DAY337: nada del pipeline
+      # ni del EMECAS lo usaba (validate_roundtrip.py, el único, ya no usa numpy). Para entrenar: make ml-entreno, un
+      # venv aparte (/opt/argus/ml-entreno) con el cierre entero y sus hashes (provisioning/ml-entreno/requirements.txt).
       # Directorio de plugins ML Defender
       mkdir -p /usr/lib/ml-defender/plugins
 

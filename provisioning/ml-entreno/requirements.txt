@@ -1,0 +1,20 @@
+# provisioning/ml-entreno/requirements.txt — [ML-ENTRENO-D337] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente pip B:
+# entorno de entrenamiento de las cabezas ML (hoy, ml-training/scripts/ddos_detection/export_ddos_v2_fact_rf.py), en un
+# venv aparte del defender (make ml-entreno, opcional, fuera del EMECAS). El cierre entero: cada paquete con su versión
+# y el sha256 de su wheel para CPython 3.11 manylinux x86_64 (el del defender, Debian bookworm), comprobados DAY337 por
+# dos caminos (pip download aquí y en el defender) y contra la API JSON de PyPI. Se instala con --require-hashes
+# --no-deps --only-binary=:all:, así que no entra nada que no esté aquí. Formato: una línea por paquete,
+# <nombre>==<versión> --hash=sha256:<64 hex>; lo valida scripts/terceros/ml_entreno_instalar.sh.
+# Versiones: las de ml-training/requirements-ddos-pinned.txt (DAY256), más narwhals (pandas) y six (python-dateutil).
+# La v2 se entrenó con sklearn 1.9.0 (cabecera de ml-detector/include/ml_defender/ddos_v2_forest_inline.hpp, DAY293);
+# del resto no quedó registro. No tocar una versión sin volver a medir su hash por los dos caminos.
+numpy==2.4.6 --hash=sha256:89cd468399cfd2504718f0ba50e410dca55a170b61a02ad92bb18c8a65186e93
+scikit-learn==1.9.0 --hash=sha256:f7e254636164090da847715a27f8e5478feb98c40a9e0ee90cbd277de9e5ceb8
+pandas==3.0.5 --hash=sha256:2c0cf1dd9b55a22d105fc46c1b489af3bd42264fcba7c66297bf47a9a1d9c78a
+scipy==1.17.1 --hash=sha256:43af8d1f3bea642559019edfe64e9b11192a8978efbd1539d7bc2aaa23d92de4
+joblib==1.5.3 --hash=sha256:5fc3c5039fc5ca8c0276333a188bbd59d6b7ab37fe6632daa76bc7f9ec18e713
+threadpoolctl==3.6.0 --hash=sha256:43a0b8fd5a2928500110039e43a5eed8480b918967083ea48dc3ab9f13c4a7fb
+python-dateutil==2.9.0.post0 --hash=sha256:a8b2bc7bffae282281c8140a97d3aa9c14da0b136dfe83f850eea9a5f7470427
+pytz==2022.7.1 --hash=sha256:78f4f37d8198e0627c5f1143240bb0206b8691d8d7ac6d78fee88b78733f8c4a
+narwhals==2.29.0 --hash=sha256:1c69b3dc30240f6e848c5a673cafc86affa44184ecce721e25b7194663ad10dc
+six==1.17.0 --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274
