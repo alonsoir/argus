@@ -2,7 +2,7 @@
 # scripts/parquet/test_filas_ts.py — [PARQUET-SIN-NUMPY-D337] tests de fallos_ts (filas_ts.py) en el defender, con
 # numpy BLOQUEADO (sys.modules['numpy'] = None antes de importar pyarrow): si filas_ts.py, pyarrow.compute o lo que
 # usa validate_roundtrip.py necesitaran numpy, esto falla aunque numpy siga instalado. Cada caso de rechazo se vuelve a
-# correr contra una función que lo acepta todo, y tiene que fallar ahí. Sin -I: pyarrow está en ~vagrant/.local.
+# correr contra una función que lo acepta todo, y tiene que fallar ahí. pyarrow, el de la provisión (/usr/local).
 # Uso: python3 scripts/parquet/test_filas_ts.py   (Makefile: make test-parquet, antes del roundtrip)
 import os, re, sys
 sys.modules["numpy"] = None   # import numpy -> ImportError

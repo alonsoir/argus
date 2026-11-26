@@ -460,6 +460,12 @@ Vagrant.configure("2") do |config|
       # el 17-nov-2026 y el wget -q de antes fallaba en silencio (EMECAS caído 1h40m después, en ml-detector). Si falla,
       # para aquí.
       bash /vagrant/scripts/terceros/onnxruntime_instalar.sh || { echo "❌ ONNX Runtime"; exit 1; }
+      # [PYARROW-D338] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente pip C: pyarrow (scripts/parquet/, make
+      # test-parquet) en el Python del sistema, como root, en la versión y con el hash de
+      # provisioning/pyarrow/requirements.txt (--require-hashes --no-deps; el cierre es solo pyarrow, medido DAY338).
+      # Antes, make parquet-convert hacía pip3 install --upgrade pyarrow como vagrant en cada corrida: la última de
+      # PyPI, sin hash, en ~vagrant/.local. Si falla, para aquí.
+      bash /vagrant/scripts/terceros/pyarrow_instalar.sh || { echo "❌ pyarrow"; exit 1; }
 
       # [ML-ENTRENO-D337] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente pip B: el entorno de entrenamiento ML
       # (numpy, scikit-learn, pandas, scipy y su cierre) ya no se instala en la base. Medido DAY337: nada del pipeline

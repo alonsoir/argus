@@ -1,0 +1,8 @@
+# provisioning/pyarrow/requirements.txt — [PYARROW-D338] DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001, lente pip C:
+# pyarrow para scripts/parquet/ (make test-parquet, en el EMECAS), en el Python del sistema del defender (/usr/local),
+# instalado por la provisión como root con --require-hashes --no-deps --only-binary=:all:
+# (scripts/terceros/pyarrow_instalar.sh). El cierre entero: pyarrow 26.0.1 no declara dependencias (Requires-Dist vacío
+# en el METADATA del wheel y requires_dist null en la API JSON de PyPI, medido DAY338). Wheel cp311 manylinux_2_28
+# x86_64 (CPython 3.11 de Debian bookworm); sha256 igual por pip download y en la API JSON de PyPI (DAY336 y DAY338).
+# Para subir de versión: cambiar la línea y su hash (de PyPI, contrastado por los dos caminos) y pasar el EMECAS.
+pyarrow==26.0.1 --hash=sha256:39cb0f2418282c24bea6ceda77b03e5a8f0a5766b63a8bf194d4e2a2c423548c
