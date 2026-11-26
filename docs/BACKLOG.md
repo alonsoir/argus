@@ -10024,7 +10024,7 @@ de bookworm-backports y experimental, justo lo contrario de DEBT-LAB-KERNEL-HOMO
 ### DEBT-LAB-GRUB-INSTALL-DEVICES-001 — CERRADA DAY330 (#167)
 Ver arriba. Queda sin medir de dónde salió el valor el DAY329; ya no se depende de él.
 
-### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; inventario y siete lentes DAY335, #183 y #190: el Vagrantfile, sin descargas sin verificar; lente pip partida en A-D DAY336: A hecho (#192, jinja2 y cryptography de Debian), B hecho DAY337 (#196 validate_roundtrip.py sin numpy y #198 el entorno de entrenamiento ML a un venv opcional con hashes), quedan C pyarrow y D semgrep; ver DAY336 y DAY337)
+### DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001 — ABIERTA (nueva DAY330; hechos ONNX Runtime #168, libsodium DAY331, Vault #177 y Arrow #178 DAY333, etcd #180 y libbpf #181 DAY334; inventario y siete lentes DAY335, #183 y #190: el Vagrantfile, sin descargas sin verificar; lente pip partida en A-D DAY336: A hecho (#192, jinja2 y cryptography de Debian), B hecho DAY337 (#196 validate_roundtrip.py sin numpy y #198 el entorno de entrenamiento ML a un venv opcional con hashes), C hecho DAY338 (#200 pyarrow 26.0.1 con su hash, instalado por la provisión), queda D semgrep; ver DAY336 a DAY338)
 Descargas de terceros en los aprovisionadores sin el sha256/SHA512 o la firma que publica su mantenedor y sin comprobar
 que terminaron, en bloques sin `set -e`. Hecho: ONNX Runtime. Quedan, al menos: libsodium 1.0.19 y XGBoost 3.2.0 (en el
 mismo bloque `all-dependencies`, junto al de ONNX) y lo que se baje con `wget`/`curl` en el `Vagrantfile` y los
@@ -10683,3 +10683,76 @@ una rama de archivo; EMECAS+++ verde desde cero.
 - `sys.modules['x'] = None` en un test prueba que el código no usa `x` aunque siga instalado.
 - Un EMECAS lento: sumar los `Fetched` de apt por VM antes de sospechar del PR.
 - En zsh, nada de `<…>` en un comando: lo toma por redirección.
+
+## DAY338 — lente pip C: pyarrow 26.0.1 con su hash, instalado por la provisión [PYARROW-D338]
+
+### Hecho DAY338
+- **Ramas**: borradas en GitHub las ya mergeadas `terceros/d336-python-apt`, `terceros/d336-apt-reintento`,
+  `terceros/d337-parquet-sin-numpy`, `terceros/d337-ml-entreno` y `docs/d333` a `docs/d337`; antes, comprobado que los
+  merges #193 (`67447f2b`) y #197 (`c52f487a`), que solo estaban en dos de ellas, tienen sus dos padres en main y el
+  árbol de su segundo padre (no añaden nada). Borrada `fix/lab-terceros-vault`, en local y en GitHub: sus dos commits
+  sin subir (`bee01c358`, `2ea109691`, lente Arrow de DAY333) ya estaban en main; la única línea distinta de
+  `arrow_instalar.sh` era `apt-get update -qq` frente al `actualizar_indices` del B′ de DAY336 (`b9e19ed1`): main iba
+  por delante. Archivo: `archivo/parcheadores-d337` (`d9b56e107`, DAY337) y `archivo/parcheadores-d338` (`f763eebed`).
+- **Los parcheadores de DAY336 se perdieron**: estaban en `/tmp` del Mac y no sobrevivieron a un reinicio; no hay
+  `archivo/parcheadores-d336`. Su código está en main (#192, #195, #194).
+- **#200, `terceros/d338-pyarrow`** (`d56e09eaf`, merge `36e1b6d3a`): `provisioning/pyarrow/requirements.txt`, una
+  línea, `pyarrow==26.0.1` con el sha256 de su wheel. `scripts/terceros/pyarrow_instalar.sh`: como root en la
+  provisión del defender (tras ONNX Runtime), `pip3 install --require-hashes --no-deps --only-binary=:all:
+  --break-system-packages` en `/usr/local`; si el import ya da esa versión desde ahí, no baja nada. Con `--comprobar`
+  (como `vagrant`, lo que hace ahora `make parquet-convert`) solo comprueba versión y origen: una copia en `~/.local`
+  taparía a la de la provisión, y sale con 1 diciendo cómo quitarla. Antes, `parquet-convert` hacía `pip3 install
+  --upgrade pyarrow` como `vagrant` en cada corrida: la última de PyPI, sin versión ni hash, en `~vagrant/.local`.
+  `test-pyarrow-instalar` en el Mac (42 casos, 27 rechazos contra funciones que lo aceptan todo; `python3`, `pip3` e
+  `id` de juguete; contra el `Makefile` y el `Vagrantfile` de antes, 3 fallos; también con mawk), en el EMECAS tras
+  `test-ml-entreno`. En la copia de Claude, antes de entregarlo, el test cazó un fallo del propio script: `pip3 install
+  "pyarrow"`, con comillas, se le escapaba a `pya_sin_pip`.
+- **EMECAS+++ production desde cero del #200**: **VERDE en 4h09m** (`logs/lab/emecas/emecas_20261126_084111.log`).
+  `git diff --stat d56e09eaf main`, vacío.
+
+### Medido DAY338
+- **El cierre de pyarrow 26.0.1 es solo pyarrow**: `Requires-Dist` vacío en el METADATA del wheel y `requires_dist`
+  null en la API JSON de PyPI; `Requires-Python: >=3.11`.
+- **El sha256 del wheel** `pyarrow-26.0.1-cp311-cp311-manylinux_2_28_x86_64.whl` (55016622 bytes), igual por `pip
+  download` y en la API JSON de PyPI: `39cb0f2418282c24bea6ceda77b03e5a8f0a5766b63a8bf194d4e2a2c423548c`, el de DAY336.
+- **Dónde instala pip como root en el defender**: en el log del EMECAS, `[PYARROW] ✅ pyarrow 26.0.1
+  /usr/local/lib/python3.11/dist-packages/pyarrow/__init__.py`, en la provisión (línea 8312) y en `parquet-convert`
+  (línea 17359). Era una predicción sin medir hasta esta corrida.
+- **Sin medir**: por qué el EMECAS fue 59 min más corto que el de DAY337 (no se sumaron los `Fetched` de apt;
+  DEBT-EMECAS-RESUMEN-APT-001).
+
+### Decisiones de Alonso (final de DAY337)
+- **Orden de las cabezas**: la siguiente, **ransomware**: su ruta llena la ventana que lee DDoS (es cableado:
+  `ring_consumer.cpp`, `set_aggregator(ransomware_processor_->get_aggregator())`), y en la literatura el DDoS suele
+  acompañar al ransomware; se mide que DDoS v2 y ransomware funcionan bien a la par. Después, antes la que comparta
+  ruta y features con las ya hechas.
+- **Inventario por cabeza justo antes de empezar ransomware**: qué features consume cada una, de dónde sale cada una y
+  con qué ventana; del código de ese día.
+- La cabeza ransomware actual no es válida; se trabajará cuando toque, paso a paso.
+- `is_external_ip` y el orden de bytes, «tiene que entrar pronto, no se puede perder»: deuda nueva abajo.
+- Uno o varios ml-detector, o repartir el tráfico por hardware (RSS, flow steering): se decide con la medida de CPU
+  por etapa, cuando existan las cabezas v2. El hardware real, si algún día hay fondos de investigación.
+
+### Deudas
+- **DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001**: avanza. Lente pip: **A**, **B** y **C** (#200) hechas. Queda **D**
+  semgrep.
+- **DEBT-SNIFFER-IS-EXTERNAL-IP-BYTE-ORDER-001 — ABIERTA (nueva DAY338; hasta hoy no estaba en el BACKLOG)**:
+  `TimeWindowAggregator::is_external_ip` (`sniffer/src/userspace/time_window_aggregator.cpp:392`) compara la IP como un
+  entero con el primer octeto en los bits altos (`(ip & 0xFF000000) == 0x0A000000` para 10/8, `0xAC100000` para
+  172.16/12…); el comentario dice «Convert to host byte order if needed (assuming network byte order)», pero no
+  convierte nada. La usan `fast_detector.cpp:40` y `ransomware_feature_processor.cpp:97`, con `dst_ip` del evento. Si
+  `dst_ip` llega con el otro orden, cada IP interna cuenta como externa, o al revés, en el fast path y en la ruta de
+  ransomware. Nunca se ha medido. Primero medir, con un evento real del sniffer, con qué orden llega `evt.dst_ip` (misma
+  familia que DEBT-SNIFFER-IP-BYTE-ORDER-001); el arreglo, si hace falta, en su PR con su EMECAS, antes de la cabeza
+  ransomware.
+
+### Lecciones DAY338
+- **`/tmp` del Mac no es archivo**: se vacía al reiniciar; ahí se perdieron los parcheadores de DAY336. Todo
+  parcheador, también los de documentación, a `scripts/etcd_ha/` (sin trackear) y se ejecuta desde ahí, hasta su rama
+  de archivo.
+- **Un parcheador que lleva ficheros enteros dentro** (líneas de miles de caracteres) no se pega en zsh con
+  `cat <<'EOF'`: se entrega como fichero y Alonso comprueba su sha256 en el Mac antes de ejecutarlo.
+- **Lo que una medida no ha medido, se dice como predicción**, y el EMECAS lo convierte en medida (pip como root en
+  `/usr/local`, línea 8312).
+- Antes de borrar una rama con commits propios, comprobar con `git merge-base --is-ancestor` que están en main; un
+  `git diff` no vacío puede ser main por delante.
