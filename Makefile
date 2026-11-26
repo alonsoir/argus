@@ -1238,15 +1238,18 @@ deploy-configs-prod:
 	@echo "🚀 Desplegando configs por entorno (Ansible) ($(INVENTARIO))..."
 	@ansible-playbook -i "$(INVENTARIO)" ansible/playbooks/deploy_configs.yml --diff
 
+# [PYARROW-D338] parquet-convert ya no instala pyarrow: lo instala la provisión del defender (pyarrow_instalar.sh, con
+# su hash); aquí solo se comprueba que el import da la versión del lock desde /usr/local (una copia en ~/.local la
+# taparía).
 parquet-convert:
-	@echo "📦 Installing/upgrading pyarrow..."
-	@vagrant ssh -c "pip3 install --upgrade pyarrow --break-system-packages --quiet 2>&1 | tail -1"
+	@echo "📦 Checking pyarrow (provisioning/pyarrow/requirements.txt)..."
+	@vagrant ssh defender -c "bash /vagrant/scripts/terceros/pyarrow_instalar.sh --comprobar"
 	@echo "📦 Converting CSVs to Parquet..."
 	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 generate_parquet.py"
 
 # [PARQUET-SIN-NUMPY-D337] test_filas_ts.py (en el defender, con numpy bloqueado): las comprobaciones de
 # timestamp_utc_ns de filas_ts.py, que validate_roundtrip.py usa, sin numpy; también contra una función que lo acepta
-# todo. Va antes del roundtrip y después de parquet-convert, que es quien instala pyarrow.
+# todo. Va antes del roundtrip y después de parquet-convert, que comprueba pyarrow.
 test-parquet: parquet-convert
 	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 test_filas_ts.py"
 	@vagrant ssh -c "cd /vagrant/scripts/parquet && python3 validate_roundtrip.py"
@@ -1327,6 +1330,7 @@ emecas:
 	@$(EMECAS_PASO) test-python-apt -- $(MAKE) test-python-apt
 	@$(EMECAS_PASO) test-apt-oficial-reintento -- $(MAKE) test-apt-oficial-reintento
 	@$(EMECAS_PASO) test-ml-entreno -- $(MAKE) test-ml-entreno
+	@$(EMECAS_PASO) test-pyarrow-instalar -- $(MAKE) test-pyarrow-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1494,6 +1498,13 @@ ml-entreno:
 
 test-ml-entreno:
 	@bash scripts/terceros/test_ml_entreno.sh
+
+# [PYARROW-D338] test-pyarrow-instalar (Mac, sin VMs ni red): el lock provisioning/pyarrow/requirements.txt, las
+# funciones de pyarrow_instalar.sh (con python3, pip3 e id de juguete), que el Vagrantfile lo llama y que ni el
+# Makefile ni el Vagrantfile instalan pyarrow con pip; también contra funciones que lo aceptan todo.
+.PHONY: test-pyarrow-instalar
+test-pyarrow-instalar:
+	@bash scripts/terceros/test_pyarrow_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
