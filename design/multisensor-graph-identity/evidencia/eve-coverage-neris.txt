@@ -1,0 +1,65 @@
+==============================================================================
+eve_field_coverage — logs/day225-suricata-neris/eve.json
+==============================================================================
+lineas ilegibles : 0
+eventos totales  : 107264
+diana 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=: 2 ocurrencias
+
+[1] Cobertura de campos por event_type
+event_type       total   community_id   flow.start   flow_id
+dns              84570          84570            0     84570
+flow             17346          17346        17346     17346
+alert             2872           2870         2870      2870
+http              1405           1405            0      1405
+fileinfo           630            630            0       630
+anomaly            220            220            0       220
+smtp               114            114            0       114
+tls                 52             52            0        52
+smb                 36             36            0        36
+snmp                16             16            0        16
+stats                2              0            0         0
+sip                  1              1            0         1
+
+[2] Alertas sin community_id, por firma
+         2  gid=1 sid=2200076 rev=2 'SURICATA ICMPv4 invalid checksum'
+
+[3] Colapso de community_id por protocolo (solo eventos `flow`)
+proto      eventos   distintos   colapso        %
+TCP          12305       11686       619     5.0%
+UDP           5039        2758      2281    45.3%
+ICMP             2           2         0     0.0%
+TOTAL        17346       14446      2900    16.7%
+
+[4] Top 5 community_id reutilizados (separacion temporal)
+      40x  1:nF7MEqDHHoTxOpYyRa5BzjAT8Iw=  proto=UDP sport=138 dport=138
+            2011-08-10T09:04:32.432327+0000
+            2011-08-10T09:06:49.296295+0000
+            2011-08-10T09:09:24.431525+0000
+            2011-08-10T09:11:23.810005+0000
+            ... (36 mas)
+      27x  1:B9e5xujmJL67ML4H7XayLZ7Sx/8=  proto=UDP sport=137 dport=137
+            2011-08-10T09:04:23.241037+0000
+            2011-08-10T09:06:33.366206+0000
+            2011-08-10T09:09:24.310342+0000
+            2011-08-10T09:22:59.915040+0000
+            ... (23 mas)
+      23x  1:1NSaGeefvaDTJnoXCC/lW2TZrMg=  proto=TCP sport=2049 dport=21
+            2011-08-10T09:09:52.708603+0000
+            2011-08-10T09:11:31.737747+0000
+            2011-08-10T09:16:31.051443+0000
+            2011-08-10T09:19:30.770343+0000
+            ... (19 mas)
+      20x  1:yt49SxApT/n5DtnQIX+YWxLskd0=  proto=TCP sport=2048 dport=21
+            2011-08-10T09:09:51.217548+0000
+            2011-08-10T09:11:29.273487+0000
+            2011-08-10T09:24:00.070031+0000
+            2011-08-10T09:47:59.135153+0000
+            ... (16 mas)
+      14x  1:e72hi0SdXxHgQucCjYAkZ/z3/yU=  proto=UDP sport=1291 dport=53
+            2011-08-10T09:09:26.563790+0000
+            2011-08-10T09:46:38.568768+0000
+            2011-08-10T09:55:23.981424+0000
+            2011-08-10T10:10:29.761751+0000
+            ... (10 mas)
+
+==============================================================================

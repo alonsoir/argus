@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Defender - Autonomous Network Security System</title>
+    <meta name="description" content="Self-evolving network security system with embedded ML - protecting life-critical infrastructure with sub-microsecond detection.">
+
+    <style>
+        /* --- CSS VARIABLES & RESET --- */
+        :root {
+            --bg-dark: #0a0e17;
+            --bg-panel: #111625;
+            --bg-card: #161e31;
+            --primary: #00f0ff; /* Cyber Cyan */
+            --primary-dim: rgba(0, 240, 255, 0.1);
+            --secondary: #7000ff; /* Neon Purple */
+            --success: #00ff9d;
+            --warning: #ffb800;
+            --danger: #ff0055;
+            --text-main: #e0e6ed;
+            --text-muted: #94a3b8;
+            --border: rgba(255, 255, 255, 0.1);
+            --font-mono: 'Courier New', Courier, monospace;
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --radius: 8px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-sans);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        a { text-decoration: none; color: inherit; transition: 0.3s; }
+        ul { list-style: none; }
+
+        /* --- UTILITIES --- */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 10px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-right: 8px;
+        }
+        .badge.license { background: rgba(255, 184, 0, 0.2); color: var(--warning); border: 1px solid var(--warning); }
+        .badge.cpp { background: rgba(0, 99, 255, 0.2); color: #4da6ff; border: 1px solid #4da6ff; }
+        .badge.bpf { background: rgba(255, 160, 0, 0.2); color: #ff9f40; border: 1px solid #ff9f40; }
+        .badge.new { background: rgba(0, 240, 255, 0.2); color: var(--primary); border: 1px solid var(--primary); }
+
+        h1, h2, h3 { font-weight: 700; margin-bottom: 1rem; color: #fff; }
+        h2 { font-size: 2rem; border-bottom: 2px solid var(--primary); display: inline-block; padding-bottom: 5px; margin-bottom: 1.5rem; margin-top: 3rem; }
+
+        /* --- HEADER & NAV --- */
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            background: rgba(10, 14, 23, 0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 15px 0;
+        }
+
+        .nav-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .logo span { color: var(--primary); }
+
+        nav ul { display: flex; gap: 20px; }
+        nav a:hover { color: var(--primary); }
+
+        /* Mobile Menu Toggle */
+        .menu-toggle { display: none; background: none; border: none; color: #fff; font-size: 1.5rem; cursor: pointer; }
+
+        /* --- HERO SECTION --- */
+        .hero {
+            padding: 80px 0;
+            text-align: center;
+            background: radial-gradient(circle at center, rgba(0, 240, 255, 0.05) 0%, transparent 70%);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            line-height: 1.2;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #fff, var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: var(--text-muted);
+            max-width: 700px;
+            margin: 0 auto 30px;
+        }
+
+        .hero-badges { margin-bottom: 30px; }
+
+        .btn {
+            display: inline-block;
+            background: var(--primary);
+            color: #000;
+            padding: 12px 30px;
+            border-radius: var(--radius);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border: 2px solid var(--primary);
+        }
+        .btn:hover {
+            background: transparent;
+            color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-dim);
+        }
+
+        /* --- FEATURES GRID --- */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 25px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            transition: transform 0.3s, border-color 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            font-size: 2rem;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        /* --- DASHBOARD / TERMINAL SECTION --- */
+        .dashboard-section {
+            padding: 60px 0;
+        }
+
+        .terminal-window {
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .terminal-header {
+            background: #161b22;
+            padding: 10px 15px;
+            border-bottom: 1px solid #30363d;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .dot { width: 12px; height: 12px; border-radius: 50%; }
+        .red { background: #ff5f56; }
+        .yellow { background: #ffbd2e; }
+        .green { background: #27c93f; }
+        .title { margin-left: 10px; color: var(--text-muted); font-size: 0.8rem; }
+
+        .terminal-body {
+            padding: 20px;
+            color: #c9d1d9;
+            overflow-x: auto;
+            white-space: pre-wrap; /* Wraps text but keeps layout */
+        }
+
+        .terminal-header .status-text {
+            margin-left: auto;
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Syntax Highlighting for Terminal */
+        .t-cyan { color: var(--primary); }
+        .t-green { color: var(--success); }
+        .t-yellow { color: var(--warning); }
+        .t-dim { color: #6e7681; }
+        .t-highlight { background: rgba(255,255,255,0.1); padding: 2px 5px; border-radius: 4px; }
+
+        /* --- ARCHITECTURE DIAGRAMS --- */
+        .arch-diagram {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin: 40px 0;
+        }
+
+        .arch-step {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            padding: 20px;
+            background: rgba(255,255,255,0.03);
+            border-left: 4px solid var(--primary);
+        }
+
+        .arch-icon {
+            font-size: 2rem;
+            color: var(--primary);
+            background: rgba(0, 240, 255, 0.1);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .arch-content h4 { color: #fff; margin-bottom: 5px; }
+        .arch-content ul { padding-left: 20px; list-style: disc; color: var(--text-muted); font-size: 0.9rem; }
+
+        .arch-arrow {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 1.5rem;
+            margin-left: 50px; /* Align with center of box */
+        }
+
+        /* --- DOCS & TABLE --- */
+        .docs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .doc-card {
+            background: var(--bg-panel);
+            padding: 20px;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+        }
+        .doc-card h4 { margin-bottom: 10px; color: var(--primary); }
+        .doc-card ul li { margin-bottom: 5px; color: var(--text-muted); }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            overflow: hidden;
+        }
+        .data-table th, .data-table td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        .data-table th { background: rgba(0,0,0,0.3); color: #fff; text-transform: uppercase; font-size: 0.8rem; }
+        .data-table tr:hover { background: rgba(255,255,255,0.02); }
+
+        /* --- FOOTER --- */
+        footer {
+            background: #05070a;
+            padding: 40px 0;
+            margin-top: 60px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .footer-quote {
+            font-style: italic;
+            color: var(--text-muted);
+            margin-bottom: 20px;
+            font-family: serif;
+        }
+        .footer-links a { color: var(--primary); margin: 0 10px; }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            nav ul { display: none; } /* Simplified for static demo */
+            .menu-toggle { display: block; }
+            .terminal-window { font-size: 0.75rem; }
+            .arch-step { flex-direction: column; text-align: center; }
+            .arch-arrow { transform: rotate(90deg); margin: 0; }
+            .arch-content ul { text-align: left; }
+        }
+    </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+    <div class="container nav-wrapper">
+        <a href="#" class="logo">
+            🛡️ <span>ML Defender</span>
+        </a>
+        <button class="menu-toggle" aria-label="Toggle Menu">☰</button>
+        <nav>
+            <ul>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#status">Status</a></li>
+                <li><a href="#architecture">Architecture</a></li>
+                <li><a href="#docs">Docs</a></li>
+                <li><a href="#contact">Contact</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<!-- HERO SECTION -->
+<section class="hero">
+    <div class="container">
+        <div class="hero-badges">
+            <span class="badge license">MIT License</span>
+            <span class="badge cpp">C++20</span>
+            <span class="badge bpf">eBPF/XDP</span>
+        </div>
+        <h1>Self-Evolving Network Security<br>with Embedded ML</h1>
+        <p>Protecting life-critical infrastructure with sub-microsecond detection. Zero external dependencies. Production-ready.</p>
+        <a href="#quickstart" class="btn">Quick Start</a>
+    </div>
+</section>
+
+<!-- FEATURES SECTION -->
+<section id="features" class="container">
+    <h2>Why ML Defender?</h2>
+    <div class="features-grid">
+        <article class="feature-card">
+            <span class="feature-icon">⚡</span>
+            <h3>Sub-microsecond Detection</h3>
+            <p>4 embedded C++20 RandomForest detectors with 400 trees and 6,330 nodes ensuring instant threat identification.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon">🎯</span>
+            <h3>Zero External Dependencies</h3>
+            <p>Pure C++20 constexpr implementation. No ONNX for core detectors. Just raw performance and reliability.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon">🧬</span>
+            <h3>Autonomous Evolution</h3>
+            <p>Self-improving system with transparent methodology. Synthetic data training yielding F1 = 1.00.</p>
+        </article>
+        <article class="feature-card">
+            <span class="feature-icon">🔐</span>
+            <h3>Unified Crypto Ecosystem</h3>
+            <p>End-to-End Encryption using ChaCha20-Poly1305 + LZ4 across the entire pipeline.</p>
+        </article>
+    </div>
+</section>
+
+<!-- PROJECT STATUS (TERMINAL) -->
+<section id="status" class="container dashboard-section">
+    <h2>Current Project Status</h2>
+    <div class="terminal-window">
+        <div class="terminal-header">
+            <div class="dot red"></div>
+            <div class="dot yellow"></div>
+            <div class="dot green"></div>
+            <span class="title">bash — ml-defender-status</span>
+            <span class="status-text">● LIVE</span>
+        </div>
+        <div class="terminal-body">
+            <span class="t-cyan">┌─────────────────────────────────────────────────────────────────┐</span>
+            <span class="t-cyan">│</span>  <span class="t-green">DAY 33 COMPLETE:</span> Real ONNX Embedder Models Created ✅         <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>  (January 5, 2026)                                             <span class="t-cyan">│</span>
+            <span class="t-cyan">├─────────────────────────────────────────────────────────────────┤</span>
+            <span class="t-cyan">│</span>  🎉 <span class="t-highlight">DAY 33: Real ONNX Embedder Models</span>                          <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     Synthetic models with correct architecture created         <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>                                                                  <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>  ✅ <span class="t-yellow">Models Created:</span>                                             <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • chronos_embedder.onnx (13KB): 83→512-d ✅                <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • sbert_embedder.onnx (22KB): 83→384-d ✅                  <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • attack_embedder.onnx (9.7KB): 83→256-d ✅                <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>                                                                  <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>  📊 <span class="t-highlight">Achievements:</span>                                               <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • Time: 2.5h of 4-6h estimated (50% faster!) ⚡            <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • Strategy: Architecture > Perfect weights                 <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>                                                                  <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>  🏛️ <span class="t-dim">Via Appia Quality - Day 33 Success:</span>                        <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     "Creamos modelos sintéticos con arquitectura correcta     <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     para validar el pipeline HOY. Los modelos reales son      <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     future work. Pipeline validation > Model perfection."      <span class="t-cyan">│</span>
+            <span class="t-cyan">└─────────────────────────────────────────────────────────────────┘</span>
+
+            <span class="t-cyan">┌─────────────────────────────────────────────────────────────────┐</span>
+            <span class="t-cyan">│</span>  <span class="t-green">DAY 30 COMPLETE:</span> Memory Leak Resolved ✅                    <span class="t-cyan">│</span>
+            <span class="t-cyan">├─────────────────────────────────────────────────────────────────┤</span>
+            <span class="t-cyan">│</span>  ✅ <span class="t-yellow">Memory Leak Metrics:</span>                                        <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • PRE-FIX:  102 MB/h, 246 KB/event ❌                       <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • POST-FIX:  <span class="t-green">31 MB/h,  63 KB/event ✅ (OPTIMAL)</span>            <span class="t-cyan">│</span>
+            <span class="t-cyan">│</span>     • Solution: flush() + artifacts + cron restart             <span class="t-cyan">│</span>
+            <span class="t-cyan">└─────────────────────────────────────────────────────────────────┘</span>
+        </div>
+    </div>
+
+    <div style="text-align: center;">
+        <h3>Next Priority: <span class="t-cyan">Day 34 - Test with Real Data</span></h3>
+        <p class="t-dim">Loading events from JSONL (~32,957 available) → Extract 83 features → Run inference.</p>
+    </div>
+</section>
+
+<!-- ARCHITECTURE SECTION -->
+<section id="architecture" class="container">
+    <h2>Architecture Overview</h2>
+
+    <h3 style="margin-bottom: 20px;">Crypto-Transport Unified Ecosystem</h3>
+    <div class="arch-diagram">
+
+        <div class="arch-step">
+            <div class="arch-icon">🔒</div>
+            <div class="arch-content">
+                <h4>crypto-transport (SINGLE source of truth)</h4>
+                <ul>
+                    <li>XSalsa20-Poly1305 + LZ4 Compression</li>
+                    <li>All components depend on this core library</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="arch-arrow">⬇</div>
+
+        <div class="arch-step" style="border-left-color: var(--secondary);">
+            <div class="arch-icon" style="color: var(--secondary); background: rgba(112, 0, 255, 0.1);">⚙️</div>
+            <div class="arch-content">
+                <h4>etcd-client (uses crypto-transport)</h4>
+                <ul>
+                    <li>HTTP + Key Exchange</li>
+                    <li>Secure configuration management</li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="arch-arrow">⬇</div>
+
+        <div class="arch-step" style="border-left-color: var(--success);">
+            <div class="arch-icon" style="color: var(--success); background: rgba(0, 255, 157, 0.1);">🛡️</div>
+            <div class="arch-content">
+                <h4>ALL Integrated Components</h4>
+                <ul>
+                    <li><strong>Sniffer</strong> (eBPF/XDP)</li>
+                    <li><strong>ml-detector</strong> (Dual-Score + RAG)</li>
+                    <li><strong>Firewall</strong> & <strong>etcd-server</strong></li>
+                    <li><strong>RAG System</strong> (Analysis)</li>
+                </ul>
+            </div>
+        </div>
+
+    </div>
+
+    <h3 style="margin-top: 50px; margin-bottom: 20px;">Dual-Score Detection Logic</h3>
+    <div class="arch-diagram">
+        <div class="arch-step">
+            <div class="arch-icon">👁️</div>
+            <div class="arch-content">
+                <h4>SNIFFER (Fast Detector)</h4>
+                <p>Populates: <code>fast_detector_score</code>, <code>reason</code>, <code>triggered</code></p>
+            </div>
+        </div>
+        <div class="arch-arrow">📡 (Encrypted ZMQ)</div>
+        <div class="arch-step">
+            <div class="arch-icon">🧠</div>
+            <div class="arch-content">
+                <h4>ML DETECTOR</h4>
+                <ul>
+                    <li>Decrypt Packet</li>
+                    <li>Calculate <code>ml_detector_score</code> (4 models)</li>
+                    <li><code>final_score = max(fast_score, ml_score)</code></li>
+                    <li>RAGLogger: 83-field events</li>
+                </ul>
+            </div>
+        </div>
+        <div class="arch-arrow">🚫 (Block/Monitor)</div>
+        <div class="arch-step">
+            <div class="arch-icon">🧱</div>
+            <div class="arch-content">
+                <h4>FIREWALL / RAG QUEUE</h4>
+                <ul>
+                    <li>Block/Monitor based on <code>final_score</code></li>
+                    <li>RAG analysis for divergent events</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- DOCS & BUILD SECTION -->
+<section id="docs" class="container">
+    <h2>Documentation & Build Targets</h2>
+    <div class="docs-grid">
+        <div class="doc-card">
+            <h4>Core Docs</h4>
+            <ul>
+                <li><a href="#">Architecture Deep Dive</a></li>
+                <li><a href="#">Dual-Score Analysis</a></li>
+                <li><a href="#">RAGLogger Schema</a></li>
+                <li><a href="#">Synthetic Data Methodology</a></li>
+            </ul>
+        </div>
+        <div class="doc-card">
+            <h4>Phase 2A (FAISS)</h4>
+            <ul>
+                <li><a href="#">Day 31: FAISS Installation</a></li>
+                <li><a href="#">Day 32: ONNX Runtime</a></li>
+                <li><a href="#">Day 33: Embedder Models ✨</a></li>
+                <li><a href="#">Day 30: Memory Leak Fix</a></li>
+            </ul>
+        </div>
+        <div class="doc-card">
+            <h4>Build Targets</h4>
+            <code style="display:block; background: #000; padding: 10px; border-radius: 4px; font-size: 0.8rem; margin-top: 5px; color: var(--success);">
+                $ make proto-unified<br>
+                $ make crypto-transport-build<br>
+                $ make sniffer<br>
+                $ make detector<br>
+                $ make run-lab-dev
+            </code>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 40px;">Multi-Agent Collaboration</h3>
+    <table class="data-table">
+        <thead>
+        <tr>
+            <th>AI Agent</th>
+            <th>Contribution</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td><strong>Claude (Anthropic)</strong></td>
+            <td>Architecture, Days 16-33 implementation, Phase 2A design</td>
+        </tr>
+        <tr>
+            <td><strong>DeepSeek (v3)</strong></td>
+            <td>RAG system, ETCD-Server, memory leak analysis</td>
+        </tr>
+        <tr>
+            <td><strong>Grok4 (xAI)</strong></td>
+            <td>XDP expertise, eBPF edge cases</td>
+        </tr>
+        <tr>
+            <td><strong>Qwen (Alibaba)</strong></td>
+            <td>Network routing, production insights, FAISS strategies</td>
+        </tr>
+        <tr>
+            <td><strong>Alonso</strong></td>
+            <td>Vision, C++ implementation, scientific methodology 🔍</td>
+        </tr>
+        </tbody>
+    </table>
+</section>
+
+<!-- FOOTER -->
+<footer id="contact">
+    <div class="container">
+        <div class="footer-quote">
+            "Creamos modelos sintéticos con arquitectura correcta para validar el pipeline HOY... Despacio, pero avanzando. 🏛️"
+        </div>
+        <p class="t-dim">Built with 🛡️ for a safer internet. Via Appia Quality.</p>
+        <div class="footer-links" style="margin-top: 20px;">
+            <a href="#">GitHub: @alonsoir</a>
+            <a href="#">Project Repository</a>
+        </div>
+        <p class="t-dim" style="margin-top: 30px; font-size: 0.8rem;">
+            License: MIT | Latest Update: January 5, 2026
+        </p>
+    </div>
+</footer>
+
+<!-- Minimal JS for Mobile Menu -->
+<script>
+    document.querySelector('.menu-toggle').addEventListener('click', function() {
+        const nav = document.querySelector('nav ul');
+        if (nav.style.display === 'flex') {
+            nav.style.display = 'none';
+        } else {
+            nav.style.display = 'flex';
+            nav.style.flexDirection = 'column';
+            nav.style.position = 'absolute';
+            nav.style.top = '60px';
+            nav.style.left = '0';
+            nav.style.width = '100%';
+            nav.style.background = '#0a0e17';
+            nav.style.padding = '20px';
+            nav.style.borderBottom = '1px solid #333';
+        }
+    });
+</script>
+</body>
+</html>

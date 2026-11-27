@@ -1,0 +1,1125 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source embedded-ML NDR for hospitals and schools">
+      
+      
+        <meta name="author" content="Alonso Isidoro Roman">
+      
+      
+        <link rel="canonical" href="https://alonsoir.github.io/argus/continuity/PROMPT_CONTINUE_CLAUDE/">
+      
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>aRGus NDR — prompt de continuidad DAY340 (sigue de DAY339) - ML Defender (aRGus NDR)</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="deep-purple" data-md-color-accent="amber">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#argus-ndr-prompt-de-continuidad-day340-sigue-de-day339" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-header__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ML Defender (aRGus NDR)
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              aRGus NDR — prompt de continuidad DAY340 (sigue de DAY339)
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../README.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Architecture
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/BACKLOG.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Backlog
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Security Model
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-tabs__link">
+          
+  
+  
+  ADRs
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../docs/contracts/Protobuf contracts.md" class="md-tabs__link">
+          
+  
+  
+  Contracts
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="ML Defender (aRGus NDR)" class="md-nav__button md-logo" aria-label="ML Defender (aRGus NDR)" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    ML Defender (aRGus NDR)
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/alonsoir/argus" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    alonsoir/argus
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../README.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/ARCHITECTURE.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Architecture
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/BACKLOG.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Backlog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/SECURITY_MODEL.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Security Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADRs
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    ADRs
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-013 seed distribution component authentication.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-013 Seed Distribution
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-021-deployment-topology-seed-families.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-021 Topology SSOT
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/adr/ADR-022-threat-model-opcion2-descartada.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ADR-022 Threat Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contracts
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contracts
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Protobuf contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Protobuf
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/JSON contracts.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    JSON
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../docs/contracts/Rag security commands.md" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    RAG API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#donde-estamos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dónde estamos
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lo-siguiente-en-este-orden-decisiones-de-alonso-day331-day336-day337-day338-y-day339" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lo siguiente, en este orden (decisiones de Alonso DAY331, DAY336, DAY337, DAY338 y DAY339)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#lecciones-medidas-day334-339" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Lecciones medidas (DAY334-339)
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#datos-utiles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Datos útiles
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#forma-de-trabajar-siguen-en-vigor" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Forma de trabajar (siguen en vigor)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="argus-ndr-prompt-de-continuidad-day340-sigue-de-day339">aRGus NDR — prompt de continuidad DAY340 (sigue de DAY339)</h1>
+<p>Responde siempre en español. Alonso es el único desarrollador de aRGus NDR (C++20, NDR para infraestructura crítica,
+arXiv:2604.04952). Principio: «medir, no votar». El repo es SOLO LECTURA para Claude: Alonso hace commits, push y PR.
+Claude no ejecuta en el repo ningún <code>git</code> que escriba, ni siquiera <code>fetch</code> (DAY333 dejó un <code>.lock</code>), ni nada en el Mac.
+Raíz del repo en el Mac: <code>~/CLionProjects/test-zeromq-docker</code> (remoto <code>github.com/alonsoir/argus</code>, público: Claude
+puede clonarlo en su entorno para leer y probar, nunca en el Mac).</p>
+<p><strong>Ningún número inventado, jamás</strong> (DAY337): todo sha256, conteo, duración o cifra que se presente como medida sale de
+una herramienta ejecutada en la sesión sobre los mismos bytes que se entregan. Si no se ha calculado, se dice («sin
+sha256: no lo he calculado»). Un script escrito directamente en el mensaje se guarda y se mide antes de dar su sha256.
+<strong>También las cuentas</strong> (DAY339: una resta hecha de cabeza salió 2 millones mal): se ejecutan, no se calculan a ojo.</p>
+<h2 id="donde-estamos">Dónde estamos</h2>
+<ul>
+<li><strong>DAY339</strong> (detalle en <code>docs/BACKLOG.md</code>, sección DAY339): main en <code>30d6603c</code>. Entraron:</li>
+<li><strong>#202</strong> (DEBT-SNIFFER-IS-EXTERNAL-IP-BYTE-ORDER-001, CERRADA): medido en el bronce que <code>evt.dst_ip</code> llega a
+    <code>is_external_ip</code> en el orden que espera (el del eBPF, <code>sniffer.bpf.c:315</code>); sin cambio de lógica, comentario
+    corregido y <code>sniffer/tests/test_is_external_ip.cpp</code> (oráculo externo y control de que discrimina el orden).</li>
+<li><strong>#203</strong> (DEBT-SNIFFER-IS-EXTERNAL-IP-MULTICAST-001, nueva y CERRADA): <code>224.0.0.0/4</code> y <code>255.255.255.255</code> ya no
+    cuentan como IP externa (opción (a) de Alonso: solo lo medido; 111 259 filas <code>argus</code> a <code>224.0.x.x</code> lo eran).</li>
+<li>El PR de docs de DAY339.</li>
+<li>EMECAS+++ desde cero de la pila #202+#203: <strong>VERDE en 4h16m</strong> (<code>emecas_20261127_090132.log</code>); <code>git diff --stat</code> entre
+  su punta y main, vacío.</li>
+<li>Deudas nuevas abiertas DAY339 (aviso de datos): DEBT-BRONCE-ANTERIOR-D229-IPS-INVERTIDAS-001 (el bronce modificado
+  antes del 24-jul tiene parte de las IPs invertidas en el texto) y DEBT-BRONCE-SINTETICO-EN-LAB-001 (una fila
+  <code>synthetic-97</code> en <code>logs/correlation/argus-2026-09-04-062100.csv.tmp</code>; no se sabe qué la escribió).</li>
+<li>Ramas: <code>fix/d339-*</code> borradas. Archivo: <code>archivo/parcheadores-d339</code> (parcheadores, scripts de medida y el de docs).</li>
+<li>Lab al cerrar DAY339: el del EMECAS verde.</li>
+<li>Pendiente de Alonso (DAY336): revocar sesiones y claves en OpenAI y en el proveedor de opencode; vaciar la Papelera.</li>
+</ul>
+<h2 id="lo-siguiente-en-este-orden-decisiones-de-alonso-day331-day336-day337-day338-y-day339">Lo siguiente, en este orden (decisiones de Alonso DAY331, DAY336, DAY337, DAY338 y DAY339)</h2>
+<ol>
+<li><strong>Lente pip D</strong> (lo último de DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001): semgrep 1.186.0 fuera de la base, a un
+   target opcional con venv y lock de hashes, como <code>ml-entreno</code> (solo lo usa <code>make audit</code>). Antes, medir su cierre
+   entero (57 dependencias en DAY336) y, después, a qué resuelven urllib3 y protobuf en el Python del sistema. Con D, el
+   PR de README de la línea 87 («All third-party software…»).</li>
+<li><strong>DEBT-LAB-TERCEROS-CACHE-CORRIDA-001</strong>: caché de descargas opcional (apagada por defecto), autoridad el hash del
+   repo, por producto empezando por Falco; partir de <code>dist/vendor/</code> (su <code>CHECKSUMS</code> hoy es circular). DAY337 midió lo
+   que cuesta no tenerla: 28 min de apt más lento en una corrida.</li>
+<li>Menores: DEBT-EMECAS-RESUMEN-APT-001, DEBT-FIREWALL-ANTISPOOF-A8-INTERMITENTE-001 (partir el CHECK de la línea 158),
+   DEBT-LAB-APT-DEBIAN-UPDATE-SIN-COMPROBAR-001, DEBT-LAB-PROVISION-SCRIPT-MUERTO-001, DEBT-TERCEROS-DESCARGA-COMUN-001,
+   DEBT-LAB-CURL-NODOS-001, DEBT-LAB-HARDENED-VAULT-CLAVE-001, DEBT-MAKE-CHECK-LIBBPF-001,
+   DEBT-SNIFFER-LIBBPF-ORDEN-LDCONFIG-001 (RUNPATH o <code>libbpf.a</code>; medir con <code>/proc/&lt;pid&gt;/maps</code>),
+   DEBT-BRONCE-SINTETICO-EN-LAB-001 (medir qué generador escribe <code>synthetic-*</code> en el bronce real).</li>
+<li><strong>DEBT-SNIFFER-FLOW-UID-TCP-LARGA-001</strong>: medir cuántos paquetes lleva cada flujo partido en el bronce (un número fijo
+   apunta al tope de DEBT-SNIFFER-FLOW-PACKET-CAP-200; un tiempo fijo, a la caducidad de DAY307).</li>
+<li><strong>PR2c</strong> (Vault en clúster Raft; se borran <code>disco-sin-vault.json</code> y <code>VIGILANCIA_DISCO_JSON</code>): épico, partido si se
+   puede. Dos o tres semanas (estimación de Alonso).</li>
+<li><strong>Cabezas</strong> (decisión de Alonso DAY337): la siguiente es <strong>ransomware</strong>. Su ruta llena la ventana que lee DDoS
+   (<code>ring_consumer.cpp</code>: <code>set_aggregator(ransomware_processor_-&gt;get_aggregator())</code>, el único <code>add_event</code>), así que se
+   mide que DDoS v2 y ransomware funcionan bien a la par. Justo antes de empezarla, un <strong>inventario por cabeza</strong> (DDoS
+   v2, ransomware, internal, traffic): qué features consume, de dónde sale cada una (ventana del aggregator,
+   estadísticas del flujo u otro sitio) y con qué ventana; después, antes la que comparta ruta y features con las ya
+   hechas. La v1 de ransomware no vale (DEBT-RANSOMWARE-ML-HEAD-INERT-001); datos reales en red (DAY195, DAY316): el lab
+   no tiene VMs Windows y Atomic Red Team entra con su commit fijado (RESEARCH-MITRE-ATTACK-RANSOMWARE-001). El
+   entorno, <code>make ml-entreno</code>. <code>new_external_ips_30s</code> ya sale con <code>is_external_ip</code> medido y sin multicast (DAY339). El
+   bronce anterior al 24-jul tiene IPs invertidas en el texto (DEBT-BRONCE-ANTERIOR-D229-IPS-INVERTIDAS-001): no usarlo
+   para entrenar sin tratarlo. Después de la v2 de ransomware, investigación: CPU por etapa (captura, extracción, cada
+   cabeza) a varias tasas, para decidir entre un ml-detector con todas las cabezas o varios (repartir por flujo, no por
+   cabeza; las ventanas compartidas, en un único sniffer).</li>
+<li><strong>Documentación</strong> (decidida DAY326): ADR-060 sección 7 y el procedimiento de DEBT-VAULT-SELLADO-ALERTA-001, contra la
+   documentación de Vault 2.2.1; ADR-048 (DAY324-329) y ADR-060; y DEBT-DOCS-XGBOOST-001 (ADR-026 Track 1,
+   <code>docs/XGBOOST-VALIDATION.md</code>, <code>docs/xgboost/</code>, README).</li>
+<li>Por medir: suelo del manifiesto (b) (DEBT-PROTEGIDOS-SUELO-REVAULT-001); después, borrar en el defender
+   <code>/var/lib/ml-defender/firewall-linaje-anterior/</code>.</li>
+<li>Otras: DEBT-REPO-PARCHEADORES-EN-MAIN-001 (con <code>tools/fix_vagrantfile_day160.py</code> y <code>fix_firewall_odr.py</code>),
+   DEBT-LIBSODIUM-SO-VERSION-CONFLICT-001 (medir antes <code>/proc/&lt;pid&gt;/maps</code>), DEBT-CRYPTO-NONCE-REINICIO-001 (medir
+   primero), DEBT-DDOS-COLATERAL-LEGITIMO-001 (después del PR2, antes de REA; para dar por buena la v2),
+   DEBT-EMECAS-PROGRESO-REFERENCIA-001, DEBT-EMECAS-ESPERA-ANFITRION-001, DEBT-E2E-VAGRANT-SSH-RESTO-001,
+   DEBT-ONNX-RUNTIME-ORIGEN-001 (seguimiento), DEBT-BRONCE-ANTERIOR-D229-IPS-INVERTIDAS-001 (marcar, apartar o
+   reescribir, nunca en silencio), subir de versión etcd-cpp-apiv3 (v0.15.4) y Temurin 21
+   (DEBT-LAB-VERSIONES-TERCEROS-001, cada una con su EMECAS). Ramas locales del Mac con el remoto <code>gone</code> (24 en el
+   <code>git branch -vv</code> de DAY338, de DAY202 a DAY337): revisar y borrar con <code>git branch -d</code>.</li>
+<li><strong>Subir la fecha de Debian</strong>: un commit que cambia <code>argus_debian_snapshot</code> y su EMECAS+++. No a una fecha con el
+    <code>6.1.0-55</code> mientras el #1154153 siga abierto.</li>
+<li><strong>2-dic-2026</strong>: caduca la clave de OBS de Zeek; comprobar que OBS la ha prorrogado con la misma huella.</li>
+</ol>
+<h2 id="lecciones-medidas-day334-339">Lecciones medidas (DAY334-339)</h2>
+<ul>
+<li><strong>Las cuentas se ejecutan</strong> (DAY339): una resta de cabeza dio 41 430 272 donde eran 39 430 272.</li>
+<li><strong>Un criterio de «sospechoso» ancho da cifras sin significado</strong> (DAY339: toda IP acabada en <code>.10</code> o <code>.127</code> contaba
+  como «privada al revés»). Antes de contar, calcular lo que daría el azar.</li>
+<li><strong><code>sort | head</code> con <code>pipefail</code> sale con 141</strong> (SIGPIPE): <code>sed -n '1,Np'</code>.</li>
+<li><strong>Mirar el valor tal cual antes de agrupar</strong>: <code>int(x/86400)</code> mete en el «día 0» vacíos, negativos y segundos desde
+  el arranque. La fecha de modificación de los ficheros fecha lo que la columna no puede.</li>
+<li><strong>Un parcheador que sustituye un fichero conserva su modo</strong> (<code>os.replace</code> dejaba <code>100644</code> un <code>100755</code>):
+  <code>git diff --summary</code> vacío antes del <code>git add</code>.</li>
+<li><strong>Antes del EMECAS, <code>make pipeline-build</code> y <code>make test-components</code> en el defender</strong>: el CMake entero con los flags de
+  production; un fallo ahí no cuesta una corrida de 4 h.</li>
+<li><strong><code>gh pr create</code> siempre con <code>--title</code> y <code>--body-file</code></strong>, y con la rama ya en GitHub («Head ref must be a branch» es
+  que falta el push); sin <code>--title</code> entra en modo interactivo y «Continue in browser» no crea nada.</li>
+<li><strong>En el Mac, un fichero descargado con el mismo nombre sustituye al anterior</strong> en Descargas (sin <code>(1)</code>): el nombre,
+  con <code>shasum</code>, no supuesto.</li>
+<li><strong>Un test se prueba también contra el código roto a propósito</strong> (DAY339: con la IP invertida, 9 y 13 fallos; contra
+  el código anterior, exactamente los casos nuevos).</li>
+<li><strong><code>/tmp</code> del Mac no es archivo</strong> (DAY338: se perdieron los parcheadores de DAY336 con un reinicio): todo
+  parcheador, también los de documentación, a <code>scripts/etcd_ha/</code> y desde ahí, hasta su rama de archivo.</li>
+<li>Un parcheador con ficheros enteros dentro (líneas de miles de caracteres) se entrega como fichero, no con
+  <code>cat &lt;&lt;'EOF'</code>; Alonso comprueba su sha256 en el Mac antes de ejecutarlo.</li>
+<li>Lo que no se ha medido se dice como predicción; el EMECAS la convierte en medida (DAY338: pip como root en
+  <code>/usr/local</code>, comprobado en el log).</li>
+<li>Antes de borrar una rama con commits propios: <code>git merge-base --is-ancestor &lt;commit&gt; main</code>. Un <code>git diff</code> no vacío
+  puede ser main por delante (<code>fix/lab-terceros-vault</code>, DAY338).</li>
+<li><strong>Pilas de PRs</strong> (DAY335 #184-#189, DAY336 #193, DAY337 #197: tres veces): mergear un PR cuya base no es main no lo
+  lleva a main, y avisar de cambiar la base antes de pulsar no ha bastado. Método desde DAY337 (DAY339 #202+#203: bien):
+  el EMECAS se corre sobre la punta de la pila; se abre y mergea el primer PR contra main; el siguiente se abre
+  <strong>después</strong>, ya contra main. Al final, <code>git diff --stat &lt;commit del EMECAS&gt; main</code> vacío.</li>
+<li>Ningún número sin su medida (ver arriba). Un sha256 que no coincide es motivo para no ejecutar, aunque luego resulte
+  que el error estaba en el número.</li>
+<li>Antes de quitar algo de la base, buscar quién lo usa también por debajo: <code>to_numpy()</code> de pyarrow necesita numpy
+  aunque pyarrow no lo declare. Mejor quitar la dependencia que verificarla.</li>
+<li><code>sys.modules['x'] = None</code> en un test prueba que el código no usa <code>x</code> aunque <code>x</code> siga instalado.</li>
+<li>Un EMECAS lento: sumar los <code>Fetched &lt;MB&gt; in &lt;tiempo&gt;</code> de apt por VM y paso antes de sospechar del PR (DAY337: los
+  mismos MB, 3,5 veces más lento).</li>
+<li>En zsh, nada de <code>&lt;…&gt;</code> en un comando (lo toma por redirección): escribir el valor; <code>gh pr view|diff|edit</code> aceptan el
+  nombre de la rama.</li>
+<li>Al aplicar dos piezas seguidas, commitear cada una antes de empezar la siguiente.</li>
+<li><code>git grep -e wget -e curl</code> no ve los <code>git clone</code> ni los <code>pip install</code>: también son descargas.</li>
+<li>Antes de fijar algo, preguntar quién lo usa (Atomic Red Team, CMake y Crypto++, semgrep: solo <code>make audit</code>; el
+  entorno ML: nadie del pipeline ni del EMECAS).</li>
+<li>Un <code>pip install</code> sin <code>--upgrade</code> da por bueno lo de apt: ver a qué fichero resuelve el <code>import</code> antes de fijar.</li>
+<li><code>--require-hashes</code> pide el cierre entero: medir el árbol (<code>pip3 show</code>, <code>Requires:</code>), no solo las versiones (DAY337:
+  <code>six</code>, que llegaba por apt).</li>
+<li><code>vagrant ssh -c</code> corre como <code>vagrant</code>: un <code>pip install</code> sin root acaba en <code>~/.local</code>.</li>
+<li><code>apt-get update</code> sale con 0 con un repositorio caído: <code>--error-on=any</code> (apt 2.6.2 la tiene).</li>
+<li>Un servidor intermitente no deja patrón: contar en los logs por VM y corrida antes de construir hipótesis.</li>
+<li>Un test que falla una vez: repetirlo y contar en los logs antiguos antes de culpar al PR (antispoof A8: 1 de 36).</li>
+<li>Tras destruir el lab, esperar a que la carga a 5 min baje de 6 antes de lanzar (el EMECAS mide en el paso 3).</li>
+<li>El sha256 de algo compilado no es una referencia (etcd-cpp-apiv3 no es reproducible): se contrasta el commit.</li>
+<li>Con dos alternativas de igual prioridad, <code>update-alternatives</code> mantiene la que estaba: rutas explícitas.</li>
+<li>Antes del EMECAS, <code>git status</code>.</li>
+<li>A las ramas de archivo no se les abre PR: GitHub deja mergearlas con un clic (#171).</li>
+<li>Dos instaladores de lo mismo esconden cuál manda. Lo importante, en un único lugar.</li>
+<li><code>ldd</code> de una biblioteca suelta no dice qué carga un proceso; para eso, <code>/proc/&lt;pid&gt;/maps</code>. Si un resultado
+  contradice algo que funciona desde hace meses, sospechar primero de la medida.</li>
+<li><code>pgrep -f &lt;nombre&gt;</code> dentro de <code>vagrant ssh -c</code> se encuentra a sí mismo: <code>pgrep -x</code>.</li>
+<li>Una clave de repositorio sin comprobar se cambia sin que nadie lo vea: huella en <code>provisioning/&lt;producto&gt;/CLAVE</code>,
+  contrastada con el mantenedor por otro canal. Si el mantenedor no firma, su hash o el commit del tag.</li>
+<li>Antes de afirmar qué hace un <code>.deb</code>, abrirlo (<code>dpkg-deb -e</code>/<code>-c</code>). Antes de predecir, leer el bloque.</li>
+<li>En awk, nada de intervalos <code>{n}</code>; los tests del Mac, también con <code>mawk</code>.</li>
+<li>Tras cambiar de rama, <code>git log --oneline -3</code> antes de commitear; si los commits caen en otra rama,
+  <code>git merge --ff-only</code>, sin reescribir.</li>
+<li>El log del EMECAS está en <code>logs/lab/emecas/emecas_&lt;fecha&gt;.log</code> (y <code>emecas_actual.log</code>); el resumen, en
+  <code>logs/lab/emecas/&lt;fecha&gt;T&lt;hora&gt;_emecas+++/resumen.md</code> (<code>sed -n '/^## Falló/,$p'</code>), con un log por paso.</li>
+<li>Los <code>.py</code>/<code>.sh</code> se entregan como bloque <code>cat &gt; f &lt;&lt;'EOF'</code>, con su sha256 comprobado en el sitio.</li>
+<li>Un programa que da a un agente el teclado de tus terminales es un shell remoto: no en el Mac del lab.</li>
+</ul>
+<h2 id="datos-utiles">Datos útiles</h2>
+<ul>
+<li>Nodos: control-1 <code>192.168.100.20</code>, control-2 <code>.21</code>, control-3 <code>.22</code>; 1024 MB, 2 vCPU. etcd 3.6.16 (cliente 2381,
+  peers 2382, mTLS, RBAC por CN). Vault 2.2.1 (solo en control-1). Clave transit: huella <code>a1b73e22cf85899a</code>.</li>
+<li>VMs en VirtualBox: <code>ml-defender-gateway-lab</code>, <code>ml-defender-client</code>, <code>argus-suricata</code>, <code>argus-zeek</code>, <code>argus-wazuh</code>,
+  <code>argus-control-1/2/3</code>; en Vagrant: <code>defender</code>, <code>client</code>, <code>suricata</code>, <code>zeek</code>, <code>wazuh</code>, <code>control-1/2/3</code>. VirtualBox
+  7.2.10; Guest Additions de la caja 6.0.0. Caja <code>debian/bookworm64</code> 12.20240905.1 en todas. apt 2.6.2.</li>
+<li>Kernels: caja <code>6.1.0-25-amd64</code> (6.1.106-3); el del lab, el de la fecha: <code>6.1.0-54-amd64</code> (6.1.190-1).</li>
+<li>Terceros en <code>provisioning/&lt;producto&gt;/</code>: Falco 0.43.1, Wazuh 4.14.10-1, Zeek serie 9.0 (hoy 9.0.1-0), ONNX Runtime
+  1.17.1 (NuGet, SHA512), libsodium 1.0.19 (minisign + SHA256), Vault 2.2.1-1 (clave apt <code>D55C0D1A…CA026560</code>),
+  Arrow/Parquet 24.0.0-1 (las 25 claves de <code>downloads.apache.org/arrow/KEYS</code>), etcd 3.6.16 (SHA256 <code>c8c0d96d…</code>),
+  libbpf 1.4.6 (commit <code>fdf402b3…</code>), cpp-httplib 0.67.0 (commit <code>7800c3dc…</code>), etcd-cpp-apiv3 0.15.3 (commit
+  <code>e31ac4d4…</code>), Kuzu 0.11.3 (SHA256 <code>e99f9671…</code>), Temurin <code>21.0.7.0.0+6-0</code> (clave <code>3B04D753…F8F04B</code>), pyarrow 26.0.1
+  (<code>provisioning/pyarrow/requirements.txt</code>, wheel cp311 con sha256) y el entorno de entrenamiento ML
+  (<code>provisioning/ml-entreno/requirements.txt</code>, 10 wheels cp311 con sha256). Los de git, con
+  <code>scripts/terceros/lib_git_fijado.sh</code>; los de apt, con <code>scripts/vigilancia/lib_apt_oficial.sh</code> (<code>repo_oficial</code>,
+  <code>actualizar_indices</code>, <code>instalar_fijado</code>; usa <code>curl</code> para la clave). Esperas de apt en <code>provisioning/apt-oficial/</code>.</li>
+<li>Python del defender (Python 3.11.2, <code>python3-venv</code> en el <code>apt-get</code> de Python del <code>Vagrantfile</code>): jinja2,
+  cryptography y six de apt; de pip, el inventario de DAY336 menos el entorno ML: pyarrow 26.0.1 en <code>/usr/local</code>, de la
+  provisión con su hash (<code>pyarrow_instalar.sh</code>; <code>parquet-convert</code> solo comprueba) y semgrep 1.186.0 con 57
+  dependencias (urllib3 2.8.0 y protobuf 6.33.6 tapan a los de apt).
+  numpy, pandas y scikit-learn, solo en el venv opcional <code>/opt/argus/ml-entreno</code> (<code>make ml-entreno</code>; pip 23.0.1 de
+  Debian; uso: <code>/opt/argus/ml-entreno/bin/python3 &lt;script&gt;</code>). La v2 de DDoS se entrenó con sklearn 1.9.0
+  (<code>ddos_v2_fact_rf@day293-f3d6b261</code>); su consolidado está en <code>logs/lab/day292/</code>, fuera del repo (en el Mac).
+  <code>download.falco.org</code> falla de vez en cuando (503/504).</li>
+<li>Binarios visibles desde el Mac: <code>ml-detector/build-production/ml-detector</code>, <code>sniffer/build-production/sniffer</code>.</li>
+<li>libsodium: bookworm trae la 1.0.18 (<code>.so.23</code>); la nuestra, 1.0.19 (<code>.so.26</code>) en <code>/usr/local</code>, marca
+  <code>/usr/local/lib/argus-libsodium.verificado</code>. libbpf: bookworm trae la 1.1.2; la nuestra, 1.4.6 en <code>/usr/lib64</code>, marca
+  <code>/usr/local/lib/argus-libbpf.commit</code>.</li>
+<li><strong>Orden de bytes de las IPs del sniffer</strong> (medido DAY339): el eBPF ensambla <code>src_ip</code>/<code>dst_ip</code> como número de host
+  (<code>a&lt;&lt;24|b&lt;&lt;16|c&lt;&lt;8|d</code>, <code>sniffer.bpf.c:314-315</code>); a texto, solo con <code>ip_host_to_buffer</code> (<code>sniffer/include/ip_format.hpp</code>,
+  <code>htonl</code> + <code>inet_ntop</code>). <code>is_external_ip</code> no excluye la clase E ni los demás rangos especiales de IANA (solo RFC 1918,
+  loopback, link-local, multicast y broadcast limitado).</li>
+<li><strong>Bronce del lab</strong>: <code>/vagrant/logs/correlation</code> (en el Mac, <code>logs/correlation</code>; 38 814 ficheros en DAY339), CSV de 19
+  columnas: <code>source_sensor</code> 2, <code>flow_start_sec</code> 6, <code>src_ip</code> 8, <code>dst_ip</code> 9 (contadas desde 1). Leerlo entero con perl
+  tarda unos 2-3 min en el Mac.</li>
+<li>Llamadas del anfitrión a una VM: <code>perl scripts/emecas/con_limite.pl &lt;s&gt; vagrant ssh &lt;vm&gt; …</code>, con
+  <code>argus_lab_llamada_vm_limite_s</code> (60) de <code>all.yml</code>.</li>
+<li>Lanzar EMECAS: con el lab encendido, <code>vagrant destroy -f</code> y esperar a que la carga a 5 min baje de 6
+  (<code>sysctl -n vm.loadavg</code>); después <code>nohup bash scripts/emecas/emecas_run.sh emecas+++ production &lt; /dev/null &gt; /dev/null
+  2&gt;&amp;1 &amp;</code>. Vigilar: <code>bash scripts/emecas/emecas_watch.sh 60</code>. Parar: <code>ps -axo pid,ppid,pgid,command | grep 'make
+  emecas'</code> para el pgid del <code>make</code>, y <code>kill -TERM -&lt;pgid&gt;; sleep 5; kill -KILL -&lt;pgid&gt;</code>.</li>
+<li>PRs con <code>gh</code> (instalado y con sesión; 2.96.0): <code>gh pr create --base main --head &lt;rama&gt; --title "&lt;t&gt;" --body-file &lt;f&gt;</code>
+  (rama ya subida), <code>gh pr view &lt;rama&gt; --json number,baseRefName,state</code>, <code>gh pr diff &lt;rama&gt; --name-only</code>; el merge lo
+  hace Alonso en la web, con «Create a merge commit». CodeRabbit comenta en cada PR pero no revisa (menos de 10
+  estrellas).</li>
+<li>Duraciones EMECAS+++ (verdes): DAY339 #202+#203 4h16m; DAY338 #200 4h09m; DAY337 #196+#198 5h08m (red lenta:
+  vagrant-up 44m20s, provision 56m23s); DAY336 A+B′ 4h27m; DAY335 siete lentes 4h30m; DAY334 etcd 4h52m, libbpf 4h33m;
+  DAY333 Vault 4h25m, Arrow 4h37m; DAY332 4h29m; DAY331 4h27m. DAY336 por pasos: vagrant-up 27m, reload 6m, provision
+  43m, bootstrap 29m, test-all 14m, lab-e2e 1h48m, mitre-check 10m.</li>
+<li>Anfitrión (MacBook Pro, 16 hilos, 32 GB): sin lab carga ~2-3, swap 0; lab sano carga 5-8, swap hasta 7,2 GB;
+  <code>anfitrion-recursos</code> (perfil emecas): carga 12, swap 4096 MB.</li>
+</ul>
+<h2 id="forma-de-trabajar-siguen-en-vigor">Forma de trabajar (siguen en vigor)</h2>
+<ul>
+<li>Predicción escrita antes de cada medida; si no sale, parar y mirar. Tests que también prueban que fallan cuando
+  deben (y que la herramienta no se salte la prueba). Complejidad lineal como mucho. El JSON es la ley; lo importante,
+  en un único lugar (JSON, Makefile, protobuf, Ansible, Jinja2, <code>provisioning/&lt;producto&gt;/</code>).</li>
+<li>Parcheadores: sha256 de partida, cada ancla las veces exactas, nada escrito si algo falla, sha256 de llegada,
+  conservan el modo; se copian a <code>scripts/etcd_ha/</code> y se ejecutan desde ahí, con su sha256 (también los de
+  documentación). Lo que lleve tabuladores, por parcheador. Claude los prueba antes en su copia del repo. Al acabar, a
+  la rama de archivo del día, solo con push.</li>
+<li>Comandos exactos, en orden, diciendo dónde se ejecutan; salida a <code>/tmp/…</code> y <code>; cat</code>; no encadenar salidas grandes.
+  <code>git grep</code>, nunca <code>grep -rn .</code> en la raíz. Un commit por cambio lógico, con el mensaje propuesto y <code>git status</code>
+  antes del <code>git add</code>, y <code>git log</code> después. Nunca reescribir la historia. Software de terceros solo de sus
+  mantenedores, con su hash o firma. Sin usos nuevos de curl. Mientras corre un EMECAS no se aplica nada al repo ni se
+  toca el lab. Toda llamada a una VM, con límite.</li>
+<li>Claves privadas nunca en el repo ni por /vagrant.</li>
+<li><strong>PRs cortos</strong> (decisión de Alonso DAY329): una deuda o un tema por PR, cada uno con su EMECAS; los gordos, solo si
+  son de tipo épico. Dos PRs pueden compartir EMECAS si van apilados (y se abren uno tras otro, ver lecciones). Los de
+  documentación o que no tocan ni el lab ni el pipeline, sin EMECAS. La documentación puede ir en español; el README,
+  en inglés.</li>
+<li><strong>Entorno</strong> (desde DAY329): Alonso trabaja en local con la Terminal de macOS (zsh); Claude, en su cliente de
+  escritorio. En zsh, las variables siempre con llaves (<code>"${C}:refs/…"</code>), nada que empiece por <code>=</code> sin comillas, y lo
+  que lleve bucles o aritmética, mejor dentro de <code>bash -c '…'</code>.</li>
+</ul>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "search.highlight"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+    
+  </body>
+</html>

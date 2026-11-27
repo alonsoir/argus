@@ -1,0 +1,36 @@
+==============================================================================
+eve_field_coverage — logs/day225-suricata-stale-config/eve.json
+==============================================================================
+lineas ilegibles : 0
+eventos totales  : 764
+diana 1:IN7uqVpMWxpmuhQTowSQB2XEe0E=: 0 ocurrencias
+
+[1] Cobertura de campos por event_type
+event_type       total   community_id   flow.start   flow_id
+stats              613              0            0         0
+flow               123             63          123       123
+dns                 20             16            0        20
+ssh                  7              0            0         7
+tls                  1              0            0         1
+
+[2] Alertas sin community_id, por firma
+    (ninguna)
+
+[3] Colapso de community_id por protocolo (solo eventos `flow`)
+proto      eventos   distintos   colapso        %
+UDP             56          56         0     0.0%
+IPv6-ICMP         7           2         5    71.4%
+TOTAL           63          58         5     7.9%
+
+[4] Top 5 community_id reutilizados (separacion temporal)
+       4x  1:6tvPKjNKBnOFHjuz8OkQtsUck1s=  proto=IPv6-ICMP sport=None dport=None
+            2026-07-20T05:26:13.031380+0000
+            2026-07-20T05:34:07.552330+0000
+            2026-07-20T05:49:56.675825+0000
+            2026-07-20T06:23:45.885233+0000
+       3x  1:/85c+zwLZO5Oc6HeQdrkW7rawK0=  proto=IPv6-ICMP sport=None dport=None
+            2026-07-20T05:28:28.679220+0000
+            2026-07-20T05:45:24.485150+0000
+            2026-07-20T06:18:43.344242+0000
+
+==============================================================================
