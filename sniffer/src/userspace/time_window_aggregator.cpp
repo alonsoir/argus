@@ -390,8 +390,10 @@ uint64_t TimeWindowAggregator::get_current_time_ns() noexcept {
 }
 
 bool TimeWindowAggregator::is_external_ip(uint32_t ip) noexcept {
-    // Convert to host byte order if needed (assuming network byte order)
-    // Check RFC 1918 private address ranges
+    // [EXTIP-ORDEN-D339] `ip` llega en orden NUMERICO de host (a.b.c.d = a<<24|b<<16|c<<8|d), tal como lo
+    // ensambla sniffer.bpf.c (event->dst_ip): no hay nada que convertir. Medido DAY339 sobre el bronce
+    // (DEBT-SNIFFER-IS-EXTERNAL-IP-BYTE-ORDER-001) y fijado por tests/test_is_external_ip.cpp.
+    // Rangos RFC 1918, loopback y link-local.
 
     // 10.0.0.0/8
     if ((ip & 0xFF000000) == 0x0A000000) {

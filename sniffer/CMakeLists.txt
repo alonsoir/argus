@@ -1041,6 +1041,22 @@ target_include_directories(test_ip_format PRIVATE
 add_test(NAME test_ip_format COMMAND test_ip_format)
 message(STATUS "🧪 Unit Test: test_ip_format configured (DAY 229 - DEBT-SNIFFER-IP-BYTE-ORDER-001)")
 
+add_executable(test_is_external_ip  # [EXTIP-ORDEN-D339]
+        tests/test_is_external_ip.cpp
+        src/userspace/time_window_aggregator.cpp
+        src/userspace/flow_tracker.cpp
+        src/userspace/dns_analyzer.cpp
+        src/userspace/ip_whitelist.cpp
+)
+target_include_directories(test_is_external_ip PRIVATE
+        ${CMAKE_SOURCE_DIR}/include
+)
+target_link_libraries(test_is_external_ip
+        Threads::Threads
+)
+add_test(NAME test_is_external_ip COMMAND test_is_external_ip)
+message(STATUS "🧪 Unit Test: test_is_external_ip configured (DAY339 - DEBT-SNIFFER-IS-EXTERNAL-IP-BYTE-ORDER-001)")
+
 # DAY305 [HEADS-TESTS-D305] lectores de configuracion del fast-path y de los intervalos (heads_config.hpp)
 add_executable(test_heads_config
         tests/test_heads_config.cpp
