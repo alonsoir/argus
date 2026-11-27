@@ -10756,3 +10756,79 @@ una rama de archivo; EMECAS+++ verde desde cero.
   `/usr/local`, línea 8312).
 - Antes de borrar una rama con commits propios, comprobar con `git merge-base --is-ancestor` que están en main; un
   `git diff` no vacío puede ser main por delante.
+
+## DAY339 — `is_external_ip`: el orden de bytes medido en el bronce; multicast y broadcast, no externos [EXTIP-ORDEN-D339] [EXTIP-MULTICAST-D339]
+
+### Hecho DAY339
+- **#202, `fix/d339-is-external-ip-orden`** (`931fec97`, merge `7a9f43f5`): sin cambio de lógica. El comentario de
+  `TimeWindowAggregator::is_external_ip` («assuming network byte order») se cambia por el contrato medido (orden
+  numérico de host, el de `sniffer.bpf.c`). Test nuevo `sniffer/tests/test_is_external_ip.cpp`, registrado en
+  `sniffer/CMakeLists.txt` tras `test_ip_format`: oráculo externo (los enteros se construyen desde los cuatro octetos
+  con la fórmula del eBPF, `sniffer.bpf.c:315`) y control de que el test discrimina el orden (cada caso no capicúa se
+  comprueba también con los bytes invertidos y tiene que dar la respuesta contraria). Sin `assert()` (production lleva
+  `-DNDEBUG`). En la copia de Claude: 14 casos ok; con `is_external_ip` invirtiendo la IP, 9 fallos.
+- **#203, `fix/d339-is-external-ip-multicast`** (`b86f5fd4`, merge `30d6603c`), apilado sobre el #202: `is_external_ip`
+  devuelve `false` para `224.0.0.0/4` y `255.255.255.255`. Decisión de Alonso: opción (a), solo lo medido; la clase E
+  (`240/4`) y el resto de rangos especiales de IANA siguen como estaban. El test pasa a 22 casos (multicast, broadcast y
+  sus bordes); con el código del #202 fallan exactamente los 5 nuevos; con el orden invertido, 13 fallos. Solo usan
+  `is_external_ip` el fast path (`fast_detector.cpp`) y la ruta de ransomware (`ransomware_feature_processor.cpp`).
+- **Antes del EMECAS, en el defender** (perfil production): `make pipeline-build` y `make test-components` verdes
+  (9, 24, 13, 9 y 95 tests, 100 %); `test_is_external_ip`, Passed (test 19 de 24 del sniffer).
+- **EMECAS+++ production desde cero sobre la punta de la pila** (`fix/d339-is-external-ip-multicast`): **VERDE en
+  4h16m** (`logs/lab/emecas/emecas_20261127_090132.log`, hito 28/28). Primero el #202 contra main y, después, el #203
+  abierto ya contra main. `git diff --stat` entre la punta del EMECAS y main, vacío; los tres ficheros de main dan los
+  sha256 de llegada de los parcheadores.
+- Ramas `fix/d339-*` borradas en local y en GitHub. Archivo: `archivo/parcheadores-d339` (`51780819a`, los dos
+  parcheadores; `281947882`, los cuatro scripts de medida).
+
+### Medido DAY339 (bronce `logs/correlation` del Mac: 38 814 ficheros, 42 758 221 filas `argus`)
+- **El eBPF escribe `event->dst_ip = ip[16]<<24 | ip[17]<<16 | ip[18]<<8 | ip[19]`** (`sniffer.bpf.c:315`), sin
+  cambios desde `f1501b55` (23-sep-2025). La misma referencia `event` de `process_raw_event` va a
+  `fast_detector_.ingest` y a `ransomware_processor_->process_packet`, y su copia en `QueuedEvent`, a
+  `ip_host_to_buffer` del bronce (`ring_consumer.cpp:1040`). Una IP bien pintada en el bronce es, por tanto, una medida
+  del campo que recibe `is_external_ip`.
+- **Desde el arreglo de texto de DAY229** (`599f704a`, 24-jul-2026), **ninguna fila real del sniffer con la IP
+  invertida**. Filas con fecha de flujo (17-jul a 26-nov): 39 430 272 a `192.168.x.x`, 0 con el lab al revés
+  (`x.x.168.192`).
+- **Las invertidas**: 12 476 a `255.56.168.192` (`192.168.56.255` al revés) y 44 388 a `251.0.0.224` (`224.0.0.251` al
+  revés), en 3521 y 3395 ficheros modificados del 7-jun al 20-jul-2026 (`archive-pre-neris/` incluido), todos
+  anteriores al 24-jul. En las muestras, también `src_ip` invertida (`1.56.168.192`, el anfitrión host-only), puertos
+  57621 y 5353, `node_id` `cpp_sniffer_v33_day12`; `flow_start_sec` con valores de unos miles (segundos desde el
+  arranque, no fechas). Lo que salía invertido era el texto, no el campo: `is_external_ip` siempre ha recibido el orden
+  que espera.
+- **Una fila sintética en el bronce real del lab**: `logs/correlation/argus-2026-09-04-062100.csv.tmp`, línea 98,
+  `event_id` `synthetic-97`, `node_id` `synth-node-00`, `dst_ip` `251.0.85.146`. No es del sniffer; no se ha medido qué
+  la escribió.
+- **Multicast contado como externo** (antes del #203): 111 259 filas `argus` a `224.0.x.x`, de 913 987 que
+  `is_external_ip` daba por externas.
+
+### Deudas
+- **DEBT-SNIFFER-IS-EXTERNAL-IP-BYTE-ORDER-001 — CERRADA DAY339** (#202): medida en el bronce; no hacía falta
+  arreglo de lógica; comentario corregido y `test_is_external_ip`.
+- **DEBT-SNIFFER-IS-EXTERNAL-IP-MULTICAST-001 — nueva y CERRADA DAY339** (#203): multicast y broadcast limitado, no
+  externos. Cambia `new_external_ips_30s` en tráfico con multicast; la cabeza ransomware v2 se entrenará ya con esta
+  definición (la v1 es inerte, DEBT-RANSOMWARE-ML-HEAD-INERT-001).
+- **DEBT-BRONCE-ANTERIOR-D229-IPS-INVERTIDAS-001 — ABIERTA (nueva DAY339; aviso de datos)**: el bronce de
+  `logs/correlation` modificado antes del 24-jul-2026 tiene `src_ip`/`dst_ip` invertidas en el texto en parte de sus
+  filas. Todo uso de esos ficheros para entrenar, comparar o reproducir resultados tiene que saberlo; decidir si se
+  marcan, se apartan o se reescriben (nunca en silencio).
+- **DEBT-BRONCE-SINTETICO-EN-LAB-001 — ABIERTA (nueva DAY339)**: medir qué generador escribe filas `synthetic-*` /
+  `synth-node-*` en `/vagrant/logs/correlation` (el bronce real del lab) y por qué queda un `.csv.tmp`; los datos de
+  prueba, fuera del directorio del bronce real.
+- **DEBT-LAB-TERCEROS-DESCARGA-SIN-VERIFICAR-001**: sin cambios; queda la lente pip **D** (semgrep).
+
+### Lecciones DAY339
+- **Un criterio de «sospechoso» ancho da cifras sin significado**: «privada si se lee al revés» contaba toda IP externa
+  acabada en `.10` o `.127` (13 807 filas). Antes de contar, calcular lo que daría el azar.
+- **`sort | head` con `pipefail` sale con 141** (SIGPIPE): `sed -n '1,Np'` lee hasta el final.
+- **Agrupar por `int(x/86400)` mete en el «día 0» lo vacío, lo negativo y los segundos desde el arranque**: mirar el
+  valor tal cual antes de agrupar (la v2 y la v3 se contradecían por eso). La fecha de modificación de los ficheros
+  fecha lo que la columna no puede.
+- **Un parcheador que sustituye un fichero conserva su modo** (`os.replace` dejaba en `100644` el
+  `time_window_aggregator.cpp`, que está en `100755`): `git diff --summary` vacío antes del `git add`.
+- **Probar en el defender antes del EMECAS** (`make pipeline-build`, `make test-components`): el CMake entero, con
+  el compilador y los flags de production; si algo falla, no se pierde una corrida de 4 h.
+- **`gh pr create` sin `--title` entra en modo interactivo**, y «Continue in browser» no crea nada. La rama tiene que
+  estar en GitHub antes: «Head ref must be a branch» es que falta el push.
+- **En este Mac, un fichero descargado con el mismo nombre sustituye al anterior en Descargas** (no hay `(1)`):
+  comprobar el nombre con `shasum`, no suponerlo.
