@@ -1,16 +1,23 @@
 # ============================================================================
 # SECURITY AUDIT (DAY 180) — analisis estatico + taint especifico de aRGus
 # ============================================================================
-.PHONY: audit audit-static audit-taint audit-tools
+.PHONY: audit audit-static audit-taint audit-tools audit-semgrep
 
 AUDIT_DIRS := sniffer/src ml-detector/src firewall-acl-agent/src \
               etcd-server/src correlation-engine/src crypto-transport \
               plugin-loader libs
 
+# [SEMGREP-D340] semgrep va en su venv del defender, desde provisioning/semgrep/requirements.txt (el cierre entero, con
+# --require-hashes --no-deps); si ya está, no baja nada. Opcional, fuera del EMECAS. Lo prueba make test-semgrep-instalar.
+SEMGREP_VENV := /opt/argus/semgrep
+
+audit-semgrep:
+	@vagrant ssh defender -c "sudo SG_VENV=$(SEMGREP_VENV) bash /vagrant/scripts/terceros/semgrep_instalar.sh"
+
 audit-tools:
 	echo "🔧 Verificando herramientas de auditoria en el guest..."
 	vagrant ssh -c "command -v cppcheck >/dev/null 2>&1" || { echo "❌ cppcheck ausente. Re-provisiona: vagrant provision defender"; exit 1; }
-	vagrant ssh -c "command -v semgrep >/dev/null 2>&1" || { echo "❌ semgrep ausente. Re-provisiona: vagrant provision defender"; exit 1; }
+	vagrant ssh -c "test -x $(SEMGREP_VENV)/bin/semgrep" || { echo "❌ semgrep ausente en $(SEMGREP_VENV). Instálalo: make audit-semgrep"; exit 1; }
 	echo "✅ cppcheck + semgrep disponibles"
 
 audit-static: audit-tools
@@ -25,9 +32,9 @@ audit-taint: audit-tools
 	echo ""
 	echo "🛡️  AUDIT (2/2) — semgrep (taint: shell + Cypher)"
 	echo "── [a] reglas custom aRGus (H-1 Cypher / H-2 command injection) ──"
-	vagrant ssh -c "cd /vagrant && semgrep scan --error --quiet --config contrib/audit/argus-taint.yml $(AUDIT_DIRS)" && echo "✅ reglas aRGus: limpio" || (echo ""; echo "❌ AUDIT-TAINT: regla custom disparada (inyeccion potencial)"; exit 1)
+	vagrant ssh -c "cd /vagrant && $(SEMGREP_VENV)/bin/semgrep scan --error --quiet --config contrib/audit/argus-taint.yml $(AUDIT_DIRS)" && echo "✅ reglas aRGus: limpio" || (echo ""; echo "❌ AUDIT-TAINT: regla custom disparada (inyeccion potencial)"; exit 1)
 	echo "── [b] ruleset estandar C (semgrep p/c) ──"
-	vagrant ssh -c "cd /vagrant && semgrep scan --error --quiet --config p/c --exclude third_party --exclude dist --exclude experiments $(AUDIT_DIRS)" && echo "✅ semgrep p/c: limpio" || (echo ""; echo "❌ AUDIT-TAINT: hallazgo en ruleset estandar p/c"; exit 1)
+	vagrant ssh -c "cd /vagrant && $(SEMGREP_VENV)/bin/semgrep scan --error --quiet --config p/c --exclude third_party --exclude dist --exclude experiments $(AUDIT_DIRS)" && echo "✅ semgrep p/c: limpio" || (echo ""; echo "❌ AUDIT-TAINT: hallazgo en ruleset estandar p/c"; exit 1)
 
 audit: audit-static audit-taint
 	echo ""
