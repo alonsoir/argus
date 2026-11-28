@@ -1331,6 +1331,7 @@ emecas:
 	@$(EMECAS_PASO) test-apt-oficial-reintento -- $(MAKE) test-apt-oficial-reintento
 	@$(EMECAS_PASO) test-ml-entreno -- $(MAKE) test-ml-entreno
 	@$(EMECAS_PASO) test-pyarrow-instalar -- $(MAKE) test-pyarrow-instalar
+	@$(EMECAS_PASO) test-semgrep-instalar -- $(MAKE) test-semgrep-instalar
 	@$(EMECAS_PASO) test-vigilancia-reglas -- $(MAKE) test-vigilancia-reglas
 	@$(EMECAS_PASO) test-vigilancia-disco -- $(MAKE) test-vigilancia-disco
 	@$(EMECAS_PASO) test-firewall-e2e -- $(MAKE) test-firewall-e2e
@@ -1505,6 +1506,14 @@ test-ml-entreno:
 .PHONY: test-pyarrow-instalar
 test-pyarrow-instalar:
 	@bash scripts/terceros/test_pyarrow_instalar.sh
+
+# [SEMGREP-D340] test-semgrep-instalar (Mac, sin VMs ni red): el lock provisioning/semgrep/requirements.txt, las
+# funciones de semgrep_instalar.sh, que el Vagrantfile ya no instala con pip ni semgrep ni nada de su cierre, y que
+# contrib/audit/audit.mk instala (make audit-semgrep) y usa el semgrep del venv; también contra funciones que lo
+# aceptan todo.
+.PHONY: test-semgrep-instalar
+test-semgrep-instalar:
+	@bash scripts/terceros/test_semgrep_instalar.sh
 
 # Tests del ayudante del avance (unittest, biblioteca estándar, directorio temporal; Mac)
 test-emecas-paso:
